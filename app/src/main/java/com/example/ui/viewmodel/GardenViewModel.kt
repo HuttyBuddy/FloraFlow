@@ -43,6 +43,14 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     private val _arPlacedPlants = MutableStateFlow<List<ArPlantPlacement>>(emptyList())
     val arPlacedPlants: StateFlow<List<ArPlantPlacement>> = _arPlacedPlants.asStateFlow()
 
+    // Premium subscription state for Devil's Advocate paywall demo
+    private val _isPremium = MutableStateFlow(false)
+    val isPremium: StateFlow<Boolean> = _isPremium.asStateFlow()
+
+    fun upgradeToPremium() {
+        _isPremium.value = true
+    }
+
     init {
         val database = GardenDatabase.getDatabase(application)
         repository = GardenRepository(database.gardenDao())

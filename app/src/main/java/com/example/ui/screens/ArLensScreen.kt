@@ -38,6 +38,16 @@ fun ArLensScreen(
     viewModel: GardenViewModel,
     modifier: Modifier = Modifier
 ) {
+    val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
+    
+    if (!isPremium) {
+        PremiumUpsellScreen(
+            onUpgradeClick = { viewModel.upgradeToPremium() },
+            modifier = modifier
+        )
+        return
+    }
+
     val activePlants by viewModel.activePlants.collectAsStateWithLifecycle()
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
     val arPlacedPlants by viewModel.arPlacedPlants.collectAsStateWithLifecycle()

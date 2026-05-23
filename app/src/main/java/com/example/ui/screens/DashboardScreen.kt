@@ -89,12 +89,25 @@ fun DashboardScreen(
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
-                        Icon(
-                            imageIcons("eco"),
-                            contentDescription = "Leaf",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(40.dp)
-                        )
+                        
+                        val isPro by viewModel.isPremium.collectAsStateWithLifecycle()
+                        if (isPro) {
+                            Icon(
+                                Icons.Default.WorkspacePremium,
+                                contentDescription = "Pro Member",
+                                tint = Color(0xFFFFB74D),
+                                modifier = Modifier.size(40.dp)
+                            )
+                        } else {
+                            SuggestionChip(
+                                onClick = { viewModel.upgradeToPremium() },
+                                label = { Text("GO PRO ✨", fontWeight = FontWeight.Bold, color = Color(0xFF6A994E)) },
+                                border = SuggestionChipDefaults.suggestionChipBorder(
+                                    enabled = true,
+                                    borderColor = Color(0xFF6A994E)
+                                )
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
