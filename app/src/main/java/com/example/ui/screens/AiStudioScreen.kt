@@ -3,6 +3,8 @@ package com.example.ui.screens
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -39,6 +41,11 @@ fun AiStudioScreen(
     val chatHistory by viewModel.aiChatHistory.collectAsStateWithLifecycle()
     val isAiLoading by viewModel.isAiLoading.collectAsStateWithLifecycle()
     val aiStatus by viewModel.aiStatus.collectAsStateWithLifecycle()
+    val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
+
+    val userQueriesCount = remember(chatHistory) {
+        chatHistory.count { it.role == "user" }
+    }
 
     var textInput by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
@@ -201,28 +208,53 @@ fun AiStudioScreen(
                             }
                         }
 
-                        Card(
+                        Box(
                             modifier = Modifier
                                 .widthIn(max = 280.dp)
-                                .testTag(if (isUser) "user_chat_bubble" else "model_chat_bubble"),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (isUser) MaterialTheme.colorScheme.primaryContainer
-                                else MaterialTheme.colorScheme.surface
-                            ),
-                            shape = RoundedCornerShape(
-                                topStart = 12.dp,
-                                topEnd = 12.dp,
-                                bottomStart = if (isUser) 12.dp else 2.dp,
-                                bottomEnd = if (isUser) 2.dp else 12.dp
-                            )
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(
-                                    text = text,
-                                    fontSize = 13.sp,
-                                    color = if (isUser) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                .testTag(if (isUser) "user_chat_bubble" else "model_chat_bubble")
+                                .clip(
+                                    RoundedCornerShape(
+                                        topStart = 16.dp,
+                                        topEnd = 16.dp,
+                                        bottomStart = if (isUser) 16.dp else 4.dp,
+                                        bottomEnd = if (isUser) 4.dp else 16.dp
+                                    )
                                 )
-                            }
+                                .background(
+                                    if (isUser) {
+                                        Brush.horizontalGradient(
+                                            listOf(
+                                                Color(0xFF386641), // Vibrant leaf green
+                                                Color(0xFF6A994E)  // Fresh sprout green
+                                            )
+                                        )
+                                    } else {
+                                        Brush.linearGradient(
+                                            listOf(
+                                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                                MaterialTheme.colorScheme.surface
+                                            )
+                                        )
+                                    }
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                                    shape = RoundedCornerShape(
+                                        topStart = 16.dp,
+                                        topEnd = 16.dp,
+                                        bottomStart = if (isUser) 16.dp else 4.dp,
+                                        bottomEnd = if (isUser) 4.dp else 16.dp
+                                    )
+                                )
+                                .padding(horizontal = 14.dp, vertical = 10.dp)
+                        ) {
+                            Text(
+                                text = text,
+                                fontSize = 13.5.sp,
+                                color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
+                                style = androidx.compose.ui.text.TextStyle(lineHeight = 18.sp)
+                            )
                         }
                     }
                 }
@@ -253,47 +285,135 @@ fun AiStudioScreen(
             }
         }
 
-        // Send message toolbar input
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 76.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            OutlinedTextField(
-                value = textInput,
-                onValueChange = { textInput = it },
-                placeholder = { Text("Ask about companion seeds...", fontSize = 13.sp) },
+        // Send message toolbar input or beautiful premium conversion card
+        if (!isPremium && userQueriesCount >= 2) {
+            Card(
                 modifier = Modifier
-                    .weight(1f)
-                    .testTag("ai_chat_text_input"),
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+                    .testTag("premium_ai_paywall_card"),
                 shape = RoundedCornerShape(16.dp),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                keyboardActions = KeyboardActions(onSend = {
-                    if (textInput.isNotBlank()) {
-                        viewModel.sendAiChatMessage(textInput)
-                        textInput = ""
-                    }
-                })
-            )
-
-            FloatingActionButton(
-                onClick = {
-                    if (textInput.isNotBlank()) {
-                        viewModel.sendAiChatMessage(textInput)
-                        textInput = ""
-                    }
-                },
-                modifier = Modifier
-                    .size(54.dp)
-                    .testTag("send_ai_chat_button"),
-                shape = RoundedCornerShape(16.dp),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
+                ),
+                border = androidx.compose.foundation.BorderStroke(
+                    width = 2.dp,
+                    brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                        listOf(Color(0xFFFFD54F), MaterialTheme.colorScheme.primary)
+                    )
+                )
             ) {
-                Icon(Icons.Default.Send, contentDescription = "Send advice query")
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = "Premium lock icon",
+                            tint = Color(0xFFFFD54F),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Text(
+                            text = "Botanist AI Limit Reached (2/2)",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                    Text(
+                        text = "You have exhausted your free Master Botanist questions. Upgrade to FloraFlow PRO to unlock unlimited expert answers, AI companion recommendations, and AR visual planting layout simulation!",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
+                    )
+                    Button(
+                        onClick = { viewModel.upgradeToPremium() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                    ) {
+                        Text("Unlock FloraFlow PRO For $4.99/mo ✨", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                if (!isPremium) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Free consultations remaining: ${2 - userQueriesCount}/2",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = "GO PRO ✨",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable { viewModel.upgradeToPremium() }
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = textInput,
+                        onValueChange = { textInput = it },
+                        placeholder = { Text("Ask about companion seeds...", fontSize = 13.sp) },
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("ai_chat_text_input"),
+                        shape = RoundedCornerShape(16.dp),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                        keyboardActions = KeyboardActions(onSend = {
+                            if (textInput.isNotBlank()) {
+                                viewModel.sendAiChatMessage(textInput)
+                                textInput = ""
+                            }
+                        })
+                    )
+
+                    FloatingActionButton(
+                        onClick = {
+                            if (textInput.isNotBlank()) {
+                                viewModel.sendAiChatMessage(textInput)
+                                textInput = ""
+                            }
+                        },
+                        modifier = Modifier
+                            .size(54.dp)
+                            .testTag("send_ai_chat_button"),
+                        shape = RoundedCornerShape(16.dp),
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = Color.White
+                    ) {
+                        Icon(Icons.Default.Send, contentDescription = "Send advice query")
+                    }
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun PremiumUpsellScreen(
     onUpgradeClick: () -> Unit,
+    onRestoreClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -172,10 +174,14 @@ fun PremiumUpsellScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Restore Purchases",
-                fontSize = 12.sp,
+                text = "Restore Purchases",
+                fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.ExtraBold,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onRestoreClick() }
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             )
             Spacer(modifier = Modifier.height(48.dp))
         }

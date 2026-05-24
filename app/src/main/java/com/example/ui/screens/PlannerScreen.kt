@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -43,11 +45,12 @@ fun PlannerScreen(
     var selectedPlantNameForCell by remember { mutableStateOf("") }
     var selectedPlantTheme by remember { mutableStateOf("Rose") }
 
-    val activeGridItems = remember(activeLayout?.gridString) {
-        parseGridString(activeLayout?.gridString ?: "")
+    val currentLayout = activeLayout
+    val activeGridItems = remember(currentLayout?.gridString) {
+        parseGridString(currentLayout?.gridString ?: "")
     }
 
-    if (activeLayout == null) {
+    if (currentLayout == null) {
         Column(
             modifier = modifier
                 .fillMaxSize()
@@ -80,7 +83,9 @@ fun PlannerScreen(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Layout Info Card
@@ -107,7 +112,7 @@ fun PlannerScreen(
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = activeLayout!!.name,
+                                text = currentLayout.name,
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold
                             )
@@ -119,7 +124,7 @@ fun PlannerScreen(
                                 .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
-                                text = "${activeLayout!!.style} | 5x5",
+                                text = "${currentLayout.style} | 5x5",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
@@ -129,7 +134,7 @@ fun PlannerScreen(
 
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Climate: ${activeLayout!!.climate}. Tap any plot below to choose and assign vegetation.",
+                        text = "Climate: ${currentLayout.climate}. Tap any plot below to choose and assign vegetation.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -179,14 +184,13 @@ fun PlannerScreen(
             // Interactive 5x5 Grid Planner
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                    .fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
@@ -199,60 +203,93 @@ fun PlannerScreen(
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
 
-                    // 5x5 Matrix implementation using standard lazy grid
-                    val cellsList = remember { (0..24).toList() }
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(5),
+                    // 5x5 Matrix implementation using standard nested Columns and Rows inside a scrollable screen
+                    Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(cellsList) { index ->
-                            val r = index / 5
-                            val c = index % 5
-                            val item = activeGridItems.firstOrNull { it.x == r && it.y == c }
-                            val emoji = getEmojiForPlantName(item?.plantName ?: "")
-
-                            Box(
-                                modifier = Modifier
-                                    .aspectRatio(1f)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(
-                                        if (item != null) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                        else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                                    )
-                                    .border(
-                                        width = 1.5.dp,
-                                        color = if (item != null) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                                        shape = RoundedCornerShape(12.dp)
-                                    )
-                                    .clickable { showCellConfigDialog = Pair(r, c) }
-                                    .testTag("grid_cell_${r}_${c}"),
-                                contentAlignment = Alignment.Center
+                        for (r in 0..4) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                if (item != null) {
-                                    Column(
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center,
-                                        modifier = Modifier.padding(2.dp)
+                                for (c in 0..4) {
+                                    val item = activeGridItems.firstOrNull { it.x == r && it.y == c }
+                                    val emoji = getEmojiForPlantName(item?.plantName ?: "")
+
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .aspectRatio(1f)
+                                            .clip(RoundedCornerShape(16.dp))
+                                            .background(
+                                                if (item != null) {
+                                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                                } else {
+                                                    // Clay tilled tilling soil shade
+                                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                                                }
+                                            )
+                                            .border(
+                                                width = if (item != null) 2.dp else 1.dp,
+                                                color = if (item != null) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                                shape = RoundedCornerShape(16.dp)
+                                            )
+                                            .clickable { showCellConfigDialog = Pair(r, c) }
+                                            .testTag("grid_cell_${r}_${c}"),
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        Text(emoji, fontSize = 24.sp)
-                                        Text(
-                                            text = item.plantName.take(6),
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            textAlign = TextAlign.Center
-                                        )
+                                        if (item != null) {
+                                            Column(
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                                verticalArrangement = Arrangement.Center,
+                                                modifier = Modifier.padding(2.dp)
+                                            ) {
+                                                // Outer concentric ring representing root nourishment limit
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(44.dp)
+                                                        .border(
+                                                            width = 1.dp,
+                                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                                            shape = CircleShape
+                                                        )
+                                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f), CircleShape),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(emoji, fontSize = 26.sp)
+                                                }
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text(
+                                                    text = item.plantName.take(7),
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.ExtraBold,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    textAlign = TextAlign.Center
+                                                )
+                                            }
+                                        } else {
+                                            // Tilled ground layout detailing concentric circular dot guide
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(32.dp)
+                                                    .border(
+                                                        width = 1.dp,
+                                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
+                                                        shape = CircleShape
+                                                    ),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.Add,
+                                                    contentDescription = "Empty",
+                                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        }
                                     }
-                                } else {
-                                    Icon(
-                                        Icons.Default.AddCircleOutline,
-                                        contentDescription = "Empty",
-                                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                                        modifier = Modifier.size(24.dp)
-                                    )
                                 }
                             }
                         }
@@ -283,14 +320,15 @@ fun PlannerScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(60.dp)) // Avoid navigation overlapping
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 
     // --- Cell Configuration Dialog ---
-    if (showCellConfigDialog != null) {
-        val row = showCellConfigDialog!!.first
-        val col = showCellConfigDialog!!.second
+    val cellDialogCoords = showCellConfigDialog
+    if (cellDialogCoords != null) {
+        val row = cellDialogCoords.first
+        val col = cellDialogCoords.second
         val currentOccupant = activeGridItems.firstOrNull { it.x == row && it.y == col }
 
         Dialog(onDismissRequest = { showCellConfigDialog = null }) {

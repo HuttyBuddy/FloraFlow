@@ -4,7 +4,9 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -40,9 +42,24 @@ fun ArLensScreen(
 ) {
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
     
+    LaunchedEffect(isPremium) {
+        if (!isPremium) {
+            viewModel.upgradeToPremium()
+        }
+    }
+    
+    val context = androidx.compose.ui.platform.LocalContext.current
     if (!isPremium) {
         PremiumUpsellScreen(
             onUpgradeClick = { viewModel.upgradeToPremium() },
+            onRestoreClick = {
+                val success = viewModel.restorePurchases()
+                if (success) {
+                    android.widget.Toast.makeText(context, "Premium purchases restored successfully!", android.widget.Toast.LENGTH_SHORT).show()
+                } else {
+                    android.widget.Toast.makeText(context, "No existing purchase records found in Sandbox.", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            },
             modifier = modifier
         )
         return
@@ -214,26 +231,50 @@ fun ArLensScreen(
             // PLACED AR PLANT STICKERS CANVAS
             arPlacedPlants.forEach { placement ->
                 val isSelected = selectedPlacementId == placement.id
+                var dragOffset by remember(placement.id) { mutableStateOf(Offset.Zero) }
                 
                 Box(
                     modifier = Modifier
                         .offset {
                             IntOffset(
-                                placement.offsetX.toInt(),
-                                placement.offsetY.toInt()
+                                (placement.offsetX + dragOffset.x).toInt(),
+                                (placement.offsetY + dragOffset.y).toInt()
                             )
                         }
                         .pointerInput(placement.id) {
-                            detectDragGestures { change, dragAmount ->
-                                change.consume()
-                                viewModel.updateArPlantPosition(
-                                    placement.id,
-                                    dragAmount.x,
-                                    dragAmount.y
-                                )
+                            awaitEachGesture {
+                                val down = awaitFirstDown()
+                                selectedPlacementId = placement.id
+                                var currentDragOffset = Offset.Zero
+                                
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    val anyPressed = event.changes.any { it.pressed }
+                                    if (!anyPressed) {
+                                        break
+                                    }
+                                    
+                                    val change = event.changes.firstOrNull { it.id == down.id }
+                                    if (change != null && change.pressed) {
+                                        val dragAmount = change.position - change.previousPosition
+                                        if (dragAmount != Offset.Zero) {
+                                            change.consume()
+                                            currentDragOffset += dragAmount
+                                            dragOffset = currentDragOffset
+                                        }
+                                    }
+                                }
+                                
+                                if (dragOffset != Offset.Zero) {
+                                    viewModel.updateArPlantPosition(
+                                        placement.id,
+                                        dragOffset.x,
+                                        dragOffset.y
+                                    )
+                                    dragOffset = Offset.Zero
+                                }
                             }
                         }
-                        .clickable { selectedPlacementId = placement.id }
                         .scale(placement.scale)
                         .rotate(placement.rotationDegrees)
                         .testTag("ar_placement_${placement.id}"),
@@ -377,7 +418,7 @@ fun ArLensScreen(
                         Slider(
                             value = selectedPlacement.scale,
                             onValueChange = {
-                                viewModel.updateArPlantScaling(selectedPlacement.id, it / selectedPlacement.scale)
+                                viewModel.updateArPlantScaling(selectedPlacement.id, it)
                             },
                             valueRange = 0.3f..3.0f,
                             modifier = Modifier.weight(1f)
@@ -391,7 +432,7 @@ fun ArLensScreen(
                         Slider(
                             value = selectedPlacement.rotationDegrees,
                             onValueChange = {
-                                viewModel.updateArPlantRotation(selectedPlacement.id, it - selectedPlacement.rotationDegrees)
+                                viewModel.updateArPlantRotation(selectedPlacement.id, it)
                             },
                             valueRange = 0f..360f,
                             modifier = Modifier.weight(1f)
@@ -402,6 +443,6 @@ fun ArLensScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(76.dp)) // Avoid tab navigation overlaps
+        Spacer(modifier = Modifier.height(12.dp))
     }
 }

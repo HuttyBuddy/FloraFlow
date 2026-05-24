@@ -3,6 +3,7 @@ package com.example.ui.screens
 import androidx.compose.animation.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,6 +36,8 @@ import com.example.data.model.ClimatePlants
 import com.example.data.model.GardenLayout
 import com.example.data.model.MoodLog
 import com.example.ui.viewmodel.GardenViewModel
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.graphics.Path
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,86 +63,133 @@ fun DashboardScreen(
     ) {
         // --- Header Section ---
         item {
-            Card(
+            val darkTheme = isSystemInDarkTheme()
+            val gradientColors = if (darkTheme) {
+                listOf(
+                    Color(0xFF19251D), // Deep botanical moss
+                    Color(0xFF0D1410)  // Dark soil forest
+                )
+            } else {
+                listOf(
+                    Color(0xFFE6F3EC), // Dewy morning mint
+                    Color(0xFFF6FAF7)  // Pale spring leaf mist
+                )
+            }
+            
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag("welcome_card"),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                shape = RoundedCornerShape(20.dp)
+                    .testTag("welcome_card")
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Brush.linearGradient(gradientColors))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                        shape = RoundedCornerShape(24.dp)
+                    )
             ) {
                 Column(
-                    modifier = Modifier.padding(20.dp)
+                    modifier = Modifier.padding(24.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "My Dream Garden",
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.5.sp
                             )
                             Text(
                                 text = "Therapeutic Botanical Design",
-                                style = MaterialTheme.typography.displaySmall.copy(fontSize = 24.sp),
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                                style = MaterialTheme.typography.displaySmall.copy(fontSize = 25.sp),
+                                fontWeight = FontWeight.Black,
+                                color = if (darkTheme) Color(0xFFE5E2D9) else Color(0xFF1B1C17),
+                                modifier = Modifier.padding(top = 2.dp)
                             )
                         }
                         
                         val isPro by viewModel.isPremium.collectAsStateWithLifecycle()
                         if (isPro) {
-                            Icon(
-                                Icons.Default.WorkspacePremium,
-                                contentDescription = "Pro Member",
-                                tint = Color(0xFFFFB74D),
-                                modifier = Modifier.size(40.dp)
-                            )
-                        } else {
-                            SuggestionChip(
-                                onClick = { viewModel.upgradeToPremium() },
-                                label = { Text("GO PRO ✨", fontWeight = FontWeight.Bold, color = Color(0xFF6A994E)) },
-                                border = SuggestionChipDefaults.suggestionChipBorder(
-                                    enabled = true,
-                                    borderColor = Color(0xFF6A994E)
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFFFF8E1))
+                                    .clickable { viewModel.setSubscriptionManagementVisible(true) }
+                                    .padding(4.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.WorkspacePremium,
+                                    contentDescription = "Pro Member - Tap to Manage Subscription",
+                                    tint = Color(0xFFFFB300),
+                                    modifier = Modifier.size(28.dp)
                                 )
-                            )
+                            }
+                        } else {
+                            Button(
+                                onClick = { viewModel.upgradeToPremium() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF4C7B60),
+                                    contentColor = Color.White
+                                ),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier.height(34.dp)
+                            ) {
+                                Text("GO PRO ✨", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                    if (activeLayout != null) {
+                    val currentLayout = activeLayout
+                    if (currentLayout != null) {
                         Text(
-                            text = "Currently Cultivating: ${activeLayout!!.name}",
+                            text = "Currently Cultivating: ${currentLayout.name}",
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
                         )
                         Row(
-                            modifier = Modifier.padding(top = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier.padding(top = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             SuggestionChip(
                                 onClick = {},
-                                label = { Text(activeLayout!!.style) },
-                                colors = SuggestionChipDefaults.suggestionChipColors(containerColor = MaterialTheme.colorScheme.background)
+                                label = { Text(currentLayout.style, fontWeight = FontWeight.Medium) },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
+                                ),
+                                border = SuggestionChipDefaults.suggestionChipBorder(
+                                    enabled = true,
+                                    borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                                )
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
                             SuggestionChip(
                                 onClick = {},
-                                label = { Text(activeLayout!!.climate) },
-                                colors = SuggestionChipDefaults.suggestionChipColors(containerColor = MaterialTheme.colorScheme.background)
+                                label = { Text(currentLayout.climate, fontWeight = FontWeight.Medium) },
+                                colors = SuggestionChipDefaults.suggestionChipColors(
+                                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
+                                ),
+                                border = SuggestionChipDefaults.suggestionChipBorder(
+                                    enabled = true,
+                                    borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                                )
                             )
                         }
                     } else {
                         Text(
                             text = "Choose or create a themed garden layout template below to get started with your layout generated design!",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -540,6 +590,8 @@ fun DashboardScreen(
 fun InteractiveTherapyChart(
     logs: List<MoodLog>
 ) {
+    if (logs.isEmpty()) return
+
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.tertiary
     val grayColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
@@ -618,13 +670,55 @@ fun InteractiveTherapyChart(
                     )
                 }
 
+                // Draw filled gradient area under curves
+                val pathDuration = Path().apply {
+                    if (pointsDuration.isNotEmpty()) {
+                        moveTo(pointsDuration[0].x, paddingY + chartHeight)
+                        for (pt in pointsDuration) {
+                            lineTo(pt.x, pt.y)
+                        }
+                        lineTo(pointsDuration.last().x, paddingY + chartHeight)
+                        close()
+                    }
+                }
+                drawPath(
+                    path = pathDuration,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(primaryColor.copy(alpha = 0.18f), Color.Transparent),
+                        startY = paddingY,
+                        endY = paddingY + chartHeight
+                    )
+                )
+
+                val pathMood = Path().apply {
+                    if (pointsMood.isNotEmpty()) {
+                        moveTo(pointsMood[0].x, paddingY + chartHeight)
+                        for (pt in pointsMood) {
+                            lineTo(pt.x, pt.y)
+                        }
+                        lineTo(pointsMood.last().x, paddingY + chartHeight)
+                        close()
+                    }
+                }
+                drawPath(
+                    path = pathMood,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(secondaryColor.copy(alpha = 0.18f), Color.Transparent),
+                        startY = paddingY,
+                        endY = paddingY + chartHeight
+                    )
+                )
+
                 // Draw Dots
                 for (idx in pointsDuration.indices) {
-                    drawCircle(color = primaryColor, radius = 10f, center = pointsDuration[idx])
-                    drawCircle(color = Color.White, radius = 5f, center = pointsDuration[idx])
+                    // Pulsing glow outer ring
+                    drawCircle(color = primaryColor.copy(alpha = 0.3f), radius = 16f, center = pointsDuration[idx])
+                    drawCircle(color = primaryColor, radius = 9f, center = pointsDuration[idx])
+                    drawCircle(color = Color.White, radius = 4f, center = pointsDuration[idx])
 
-                    drawCircle(color = secondaryColor, radius = 10f, center = pointsMood[idx])
-                    drawCircle(color = Color.White, radius = 5f, center = pointsMood[idx])
+                    drawCircle(color = secondaryColor.copy(alpha = 0.3f), radius = 16f, center = pointsMood[idx])
+                    drawCircle(color = secondaryColor, radius = 9f, center = pointsMood[idx])
+                    drawCircle(color = Color.White, radius = 4f, center = pointsMood[idx])
                 }
             }
         }

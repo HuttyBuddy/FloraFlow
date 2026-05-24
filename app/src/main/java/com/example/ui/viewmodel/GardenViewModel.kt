@@ -47,11 +47,141 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     private val _isPremium = MutableStateFlow(false)
     val isPremium: StateFlow<Boolean> = _isPremium.asStateFlow()
 
+    // Advanced Billing State Properties
+    private val _subscriptionTier = MutableStateFlow<String?>(null)
+    val subscriptionTier: StateFlow<String?> = _subscriptionTier.asStateFlow()
+
+    private val _subscriptionTransactionId = MutableStateFlow<String?>(null)
+    val subscriptionTransactionId: StateFlow<String?> = _subscriptionTransactionId.asStateFlow()
+
+    private val _subscriptionBillingDate = MutableStateFlow<String?>(null)
+    val subscriptionBillingDate: StateFlow<String?> = _subscriptionBillingDate.asStateFlow()
+
+    private val _showBillingDialog = MutableStateFlow(false)
+    val showBillingDialog: StateFlow<Boolean> = _showBillingDialog.asStateFlow()
+
+    private val _showSubscriptionManagement = MutableStateFlow(false)
+    val showSubscriptionManagement: StateFlow<Boolean> = _showSubscriptionManagement.asStateFlow()
+
+    private val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", android.content.Context.MODE_PRIVATE)
+
     fun upgradeToPremium() {
+        _showBillingDialog.value = true
+    }
+
+    fun setBillingDialogVisible(visible: Boolean) {
+        _showBillingDialog.value = visible
+    }
+
+    fun setSubscriptionManagementVisible(visible: Boolean) {
+        _showSubscriptionManagement.value = visible
+    }
+
+    fun processPurchase(tier: String, price: String, isAnnual: Boolean) {
+        val txId = "GPA." + (1000..9999).random().toString() + "-" + 
+                   (1000..9999).random().toString() + "-" + 
+                   (1000..9999).random().toString() + "-" + 
+                   (10000..99999).random().toString()
+        
+        val sdf = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US)
+        val cal = java.util.Calendar.getInstance()
+        if (isAnnual) {
+            cal.add(java.util.Calendar.YEAR, 1)
+        } else {
+            cal.add(java.util.Calendar.MONTH, 1)
+        }
+        val nextBillingDate = sdf.format(cal.time)
+
         _isPremium.value = true
+        _subscriptionTier.value = tier
+        _subscriptionTransactionId.value = txId
+        _subscriptionBillingDate.value = nextBillingDate
+
+        sharedPrefs.edit().apply {
+            putBoolean("is_premium", true)
+            putString("subscription_tier", tier)
+            putString("subscription_transaction_id", txId)
+            putString("subscription_billing_date", nextBillingDate)
+            putBoolean("purchased_historically", true)
+            apply()
+        }
+    }
+
+    fun cancelPremiumSubscription() {
+        _isPremium.value = false
+        _subscriptionTier.value = null
+        _subscriptionTransactionId.value = null
+        _subscriptionBillingDate.value = null
+
+        sharedPrefs.edit().apply {
+            putBoolean("is_premium", false)
+            putString("subscription_tier", null)
+            putString("subscription_transaction_id", null)
+            putString("subscription_billing_date", null)
+            apply()
+        }
+    }
+
+    fun restorePurchases(): Boolean {
+        val hasHistory = sharedPrefs.getBoolean("purchased_historically", false)
+        return if (hasHistory) {
+            val txId = "GPA.RESTORED-" + (1000..9999).random().toString() + "-RE"
+            val tier = "FloraFlow PRO Annual"
+            val nextDate = "Jun 15, 2027"
+            
+            _isPremium.value = true
+            _subscriptionTier.value = tier
+            _subscriptionTransactionId.value = txId
+            _subscriptionBillingDate.value = nextDate
+
+            sharedPrefs.edit().apply {
+                putBoolean("is_premium", true)
+                putString("subscription_tier", tier)
+                putString("subscription_transaction_id", txId)
+                putString("subscription_billing_date", nextDate)
+                apply()
+            }
+            true
+        } else {
+            // Force seed a standard restored purchase if they don't have local history (makes demo seamless)
+            val txId = "GPA.DEMO-" + (1000..9999).random().toString() + "-RESTORED"
+            val tier = "FloraFlow PRO Monthly"
+            val nextDate = "Jul 21, 2026"
+            
+            _isPremium.value = true
+            _subscriptionTier.value = tier
+            _subscriptionTransactionId.value = txId
+            _subscriptionBillingDate.value = nextDate
+
+            sharedPrefs.edit().apply {
+                putBoolean("is_premium", true)
+                putString("subscription_tier", tier)
+                putString("subscription_transaction_id", txId)
+                putString("subscription_billing_date", nextDate)
+                putBoolean("purchased_historically", true)
+                apply()
+            }
+            true
+        }
+    }
+
+    // Theme toggling state (null means follow system theme, true means dark theme, false means light theme)
+    private val _isDarkTheme = MutableStateFlow<Boolean?>(null)
+    val isDarkTheme: StateFlow<Boolean?> = _isDarkTheme.asStateFlow()
+
+    fun toggleTheme(isSystemDark: Boolean) {
+        val current = _isDarkTheme.value ?: isSystemDark
+        _isDarkTheme.value = !current
     }
 
     init {
+        // Load persistent billing subscription values on start
+        val savedPremium = sharedPrefs.getBoolean("is_premium", false)
+        _isPremium.value = savedPremium
+        _subscriptionTier.value = sharedPrefs.getString("subscription_tier", null)
+        _subscriptionTransactionId.value = sharedPrefs.getString("subscription_transaction_id", null)
+        _subscriptionBillingDate.value = sharedPrefs.getString("subscription_billing_date", null)
+
         val database = GardenDatabase.getDatabase(application)
         repository = GardenRepository(database.gardenDao())
 
@@ -224,6 +354,25 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     // --- Real-time Gemini Client interactions ---
     fun sendAiChatMessage(message: String) {
         if (message.isBlank()) return
+        
+        val userCount = _aiChatHistory.value.count { it.role == "user" }
+        if (!_isPremium.value && userCount >= 2) {
+            val currentHistory = _aiChatHistory.value.toMutableList()
+            currentHistory.add(Content(role = "user", parts = listOf(Part(text = message))))
+            currentHistory.add(
+                Content(
+                    role = "model",
+                    parts = listOf(
+                        Part(
+                            text = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
+                        )
+                    )
+                )
+            )
+            _aiChatHistory.value = currentHistory
+            return
+        }
+
         val currentHistory = _aiChatHistory.value.toMutableList()
         currentHistory.add(Content(role = "user", parts = listOf(Part(text = message))))
         _aiChatHistory.value = currentHistory
@@ -257,6 +406,25 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     // Automatic Layout advice based on current design style
     fun askAiForLayoutAdvice() {
         val layout = _activeLayout.value ?: return
+        
+        val userCount = _aiChatHistory.value.count { it.role == "user" }
+        if (!_isPremium.value && userCount >= 2) {
+            val updatedHistory = _aiChatHistory.value.toMutableList()
+            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = "Suggest some visual additions and companion compatibility checks!"))))
+            updatedHistory.add(
+                Content(
+                    role = "model",
+                    parts = listOf(
+                        Part(
+                            text = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock advanced layout analysis, visual companion additions, and expert styling advice! 🌸✨"
+                        )
+                    )
+                )
+            )
+            _aiChatHistory.value = updatedHistory
+            return
+        }
+
         val plantsListStr = _activePlants.value.joinToString(", ") { it.name }
         val prompt = "I have a garden layout styled as a '${layout.style}' in a '${layout.climate}' climate region. " +
                 "The current vegetation includes: [$plantsListStr]. " +
@@ -279,6 +447,24 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     // Automatically generate visual plant selections for layouts using Gemini
     fun generateAILayoutSuggestion() {
         val layout = _activeLayout.value ?: return
+        
+        val userCount = _aiChatHistory.value.count { it.role == "user" }
+        if (!_isPremium.value && userCount >= 2) {
+            val updatedHistory = _aiChatHistory.value.toMutableList()
+            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = "Generate a companion design blueprint for my space!"))))
+            updatedHistory.add(
+                Content(
+                    role = "model",
+                    parts = listOf(
+                        Part(
+                            text = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock AI garden layout generator, instant database seeding, and dynamic blueprinting! 🌸✨"
+                        )
+                    )
+                )
+            )
+            _aiChatHistory.value = updatedHistory
+            return
+        }
         
         val prompt = "Suggest a brand new layout idea. " +
                 "For a garden with the style '${layout.style}' and climate of '${layout.climate}', name 3 highly compatible, beautifully flowering plants or useful crops. " +
@@ -360,19 +546,19 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         _arPlacedPlants.value = list
     }
 
-    fun updateArPlantScaling(id: Int, factor: Float) {
+    fun updateArPlantScaling(id: Int, scale: Float) {
         val list = _arPlacedPlants.value.map {
             if (it.id == id) {
-                it.copy(scale = (it.scale * factor).coerceIn(0.3f, 3.0f))
+                it.copy(scale = scale.coerceIn(0.3f, 3.0f))
             } else it
         }
         _arPlacedPlants.value = list
     }
 
-    fun updateArPlantRotation(id: Int, rot: Float) {
+    fun updateArPlantRotation(id: Int, rotationDegrees: Float) {
         val list = _arPlacedPlants.value.map {
             if (it.id == id) {
-                it.copy(rotationDegrees = (it.rotationDegrees + rot) % 360f)
+                it.copy(rotationDegrees = (rotationDegrees % 360f + 360f) % 360f)
             } else it
         }
         _arPlacedPlants.value = list

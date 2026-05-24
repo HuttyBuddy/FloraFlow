@@ -1,5 +1,6 @@
 package com.example
 
+import androidx.test.core.app.ActivityScenario
 import androidx.compose.material3.Text
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
@@ -25,5 +26,14 @@ class GreetingScreenshotTest {
     composeTestRule.setContent { MyApplicationTheme { Text("Robolectric") } }
 
     composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/greeting.png")
+  }
+
+  @Test
+  fun main_activity_render_test() {
+    ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+      scenario.onActivity { activity ->
+        assert(activity != null)
+      }
+    }
   }
 }
