@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -132,7 +133,7 @@ fun LibraryScreen(
                         horizontalArrangement = Arrangement.Center
                     ) {
                         Icon(
-                            Icons.Default.MenuBook,
+                            Icons.AutoMirrored.Filled.MenuBook,
                             contentDescription = "Encyclopedia",
                             tint = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
@@ -670,7 +671,7 @@ fun PlantCareTrackerCard(
                                 Text(plant.wateringNeeds, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
                             }
                         }
-                        Divider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text("🌸 Bloom Season", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
@@ -681,7 +682,7 @@ fun PlantCareTrackerCard(
                                 Text(plant.pestsDiseases, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
                             }
                         }
-                        Divider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text("🌱 Preferred Soil", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
@@ -718,7 +719,7 @@ fun PlantCareTrackerCard(
                         SeasonCareBadge(season = "Winter", careInfo = plant.careWinter, modifier = Modifier.weight(1f))
                     }
 
-                    Divider()
+                    HorizontalDivider()
 
                     // Simulate Growth adjust bar
                     Text(
@@ -883,7 +884,7 @@ fun SpeciesEncyclopediaCard(
                     modifier = Modifier.padding(top = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Divider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
 
                     // Premium Botanical detailed stats grid
                     Column(
@@ -903,7 +904,7 @@ fun SpeciesEncyclopediaCard(
                                 Text(template.bloomTime, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
                             }
                         }
-                        Divider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text("🌱 Preferred Soil", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)

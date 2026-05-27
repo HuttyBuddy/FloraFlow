@@ -47,6 +47,14 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     private val _isPremium = MutableStateFlow(false)
     val isPremium: StateFlow<Boolean> = _isPremium.asStateFlow()
 
+    private val _isOnboardingCompleted = MutableStateFlow(false)
+    val isOnboardingCompleted: StateFlow<Boolean> = _isOnboardingCompleted.asStateFlow()
+
+    fun completeOnboarding() {
+        _isOnboardingCompleted.value = true
+        sharedPrefs.edit().putBoolean("onboarding_completed", true).apply()
+    }
+
     // Advanced Billing State Properties
     private val _subscriptionTier = MutableStateFlow<String?>(null)
     val subscriptionTier: StateFlow<String?> = _subscriptionTier.asStateFlow()
@@ -175,9 +183,10 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     init {
-        // Load persistent billing subscription values on start
+        // Load persistent billing subscription and onboarding values on start
         val savedPremium = sharedPrefs.getBoolean("is_premium", false)
         _isPremium.value = savedPremium
+        _isOnboardingCompleted.value = sharedPrefs.getBoolean("onboarding_completed", false)
         _subscriptionTier.value = sharedPrefs.getString("subscription_tier", null)
         _subscriptionTransactionId.value = sharedPrefs.getString("subscription_transaction_id", null)
         _subscriptionBillingDate.value = sharedPrefs.getString("subscription_billing_date", null)
@@ -198,6 +207,99 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList()
             )
+
+        // Seed default database values if empty
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val existing = repository.allLayouts.firstOrNull() ?: emptyList()
+                if (existing.isEmpty()) {
+                    val defaultLayout = GardenLayout(
+                        name = "My First Zen Space",
+                        style = "Zen Garden",
+                        climate = "Temperate",
+                        gridString = "0,0,Bonsai Cherry|4,4,English Lavender"
+                    )
+                    val layoutId = repository.insertLayout(defaultLayout).toInt()
+
+                    repository.insertPlant(
+                        Plant(
+                            layoutId = layoutId,
+                            name = "Bonsai Cherry",
+                            type = "Tree",
+                            careSpring = "Prune branches to maintain classic zen shape. Water regularly.",
+                            careSummer = "Keep in partial shade during intense afternoon sun. Water daily.",
+                            careAutumn = "Let foliage change naturally. Clear fallen leaves quickly.",
+                            careWinter = "Protect roots from deep freeze. Keep compost moist but not wet.",
+                            soilType = "Rich organic clay loam",
+                            sunlight = "Partial shade",
+                            growthProgress = 40,
+                            matureSize = "Small (1-2 ft)",
+                            wateringNeeds = "High",
+                            bloomTime = "Early Spring",
+                            pestsDiseases = "Scale insects, Root rot"
+                        )
+                    )
+
+                    repository.insertPlant(
+                        Plant(
+                            layoutId = layoutId,
+                            name = "English Lavender",
+                            type = "Flower",
+                            careSpring = "Cut back old gray woody parts to encourage green growth.",
+                            careSummer = "Water minimal. Enjoys full direct hot sun.",
+                            careAutumn = "Prune flowers post-bloom to prevent legginess.",
+                            careWinter = "Enjoys dry root bed. Extremely frost hardy.",
+                            soilType = "Sandy, highly well-draining grit",
+                            sunlight = "Full Sun",
+                            growthProgress = 60,
+                            matureSize = "Medium (2 ft)",
+                            wateringNeeds = "Low",
+                            bloomTime = "Mid Summer",
+                            pestsDiseases = "Spittlebugs, Damp-off rots"
+                        )
+                    )
+
+                    repository.insertMoodLog(
+                        MoodLog(
+                            mood = "Serene",
+                            moodScore = 4,
+                            activityMinutes = 30,
+                            notes = "Had a wonderful morning watering the garden.",
+                            growthIndex = 30
+                        )
+                    )
+                    repository.insertMoodLog(
+                        MoodLog(
+                            mood = "Refreshed",
+                            moodScore = 5,
+                            activityMinutes = 45,
+                            notes = "Breathed fresh air and spent quality time under the sun.",
+                            growthIndex = 40
+                        )
+                    )
+                    repository.insertMoodLog(
+                        MoodLog(
+                            mood = "Calm",
+                            moodScore = 5,
+                            activityMinutes = 40,
+                            notes = "Very restful and grounding companion planting session.",
+                            growthIndex = 50
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        // Auto-select first layout on launch if available
+        viewModelScope.launch {
+            allLayouts.collect { layouts ->
+                if (_activeLayout.value == null && layouts.isNotEmpty()) {
+                    _activeLayout.value = layouts.first()
+                }
+            }
+        }
 
         // Sync active plants with Active Layout
         viewModelScope.launch {

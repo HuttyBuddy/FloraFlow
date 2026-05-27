@@ -41,137 +41,148 @@ class MainActivity : ComponentActivity() {
             val useDarkTheme = isDarkThemeOverridden ?: systemDark
 
             MyApplicationTheme(darkTheme = useDarkTheme) {
-                var currentTab by remember { mutableStateOf(0) }
-                val isPremium by viewModel.isPremium.collectAsState()
+                val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
 
-                // Universal sandbox Billing & Subscription Management Checkout Dialog
-                BillingDialog(viewModel = viewModel)
+                if (!isOnboardingCompleted) {
+                    OnboardingScreen(viewModel = viewModel)
+                } else {
+                    var currentTab by remember { mutableStateOf(0) }
+                    val isPremium by viewModel.isPremium.collectAsState()
 
-                val showSubscriptionManagement by viewModel.showSubscriptionManagement.collectAsState()
-                SubscriptionManagementDialog(
-                    visible = showSubscriptionManagement,
-                    onDismiss = { viewModel.setSubscriptionManagementVisible(false) },
-                    viewModel = viewModel
-                )
+                    // Universal sandbox Billing & Subscription Management Checkout Dialog
+                    BillingDialog(viewModel = viewModel)
 
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    topBar = {
-                        @OptIn(ExperimentalMaterial3Api::class)
-                        CenterAlignedTopAppBar(
-                            title = {
-                                Text(
-                                    text = "FloraFlow",
-                                    fontWeight = FontWeight.ExtraBold,
-                                    style = MaterialTheme.typography.titleLarge,
-                                    color = MaterialTheme.colorScheme.primary
+                    val showSubscriptionManagement by viewModel.showSubscriptionManagement.collectAsState()
+                    SubscriptionManagementDialog(
+                        visible = showSubscriptionManagement,
+                        onDismiss = { viewModel.setSubscriptionManagementVisible(false) },
+                        viewModel = viewModel
+                    )
+
+                    Scaffold(
+                        modifier = Modifier.fillMaxSize(),
+                        topBar = {
+                            @OptIn(ExperimentalMaterial3Api::class)
+                            CenterAlignedTopAppBar(
+                                title = {
+                                    Text(
+                                        text = "FloraFlow",
+                                        fontWeight = FontWeight.ExtraBold,
+                                        style = MaterialTheme.typography.titleLarge,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                },
+                                actions = {
+                                    IconButton(
+                                        onClick = {
+                                            if (isPremium) {
+                                                viewModel.setSubscriptionManagementVisible(true)
+                                            } else {
+                                                viewModel.upgradeToPremium()
+                                            }
+                                        },
+                                        modifier = Modifier.testTag("premium_key_status_crown")
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.WorkspacePremium,
+                                            contentDescription = "Subscription Info Status",
+                                            tint = if (isPremium) Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = { viewModel.toggleTheme(systemDark) },
+                                        modifier = Modifier.testTag("theme_toggle_button")
+                                    ) {
+                                        Icon(
+                                            imageVector = if (useDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                                            contentDescription = "Toggle Light/Dark Theme"
+                                        )
+                                    }
+                                },
+                                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
                                 )
-                            },
-                            actions = {
-                                IconButton(
+                            )
+                        },
+                        bottomBar = {
+                            NavigationBar(
+                                modifier = Modifier.testTag("app_navigation_bar"),
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                tonalElevation = 8.dp
+                            ) {
+                                NavigationBarItem(
+                                    selected = currentTab == 0,
+                                    onClick = { currentTab = 0 },
+                                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
+                                    label = { Text("Dashboard", style = MaterialTheme.typography.bodySmall) },
+                                    modifier = Modifier.testTag("nav_tab_dashboard")
+                                )
+                                NavigationBarItem(
+                                    selected = currentTab == 1,
+                                    onClick = { currentTab = 1 },
+                                    icon = { Icon(Icons.Default.Explore, contentDescription = "2D Planner") },
+                                    label = { Text("2D Planner", style = MaterialTheme.typography.bodySmall) },
+                                    modifier = Modifier.testTag("nav_tab_planner")
+                                )
+                                NavigationBarItem(
+                                    selected = currentTab == 2,
+                                    onClick = { currentTab = 2 },
+                                    icon = { Icon(Icons.Default.Spa, contentDescription = "Greenhouse") },
+                                    label = { Text("Greenhouse", style = MaterialTheme.typography.bodySmall) },
+                                    modifier = Modifier.testTag("nav_tab_greenhouse")
+                                )
+                                NavigationBarItem(
+                                    selected = currentTab == 3,
+                                    onClick = { currentTab = 3 },
+                                    icon = { Icon(Icons.Default.SmartToy, contentDescription = "AI Advisor") },
+                                    label = { Text("AI Advisor", style = MaterialTheme.typography.bodySmall) },
+                                    modifier = Modifier.testTag("nav_tab_ai")
+                                )
+                                NavigationBarItem(
+                                    selected = currentTab == 4,
                                     onClick = {
-                                        if (isPremium) {
-                                            viewModel.setSubscriptionManagementVisible(true)
-                                        } else {
+                                        currentTab = 4
+                                        if (!isPremium) {
                                             viewModel.upgradeToPremium()
                                         }
                                     },
-                                    modifier = Modifier.testTag("premium_key_status_crown")
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.WorkspacePremium,
-                                        contentDescription = "Subscription Info Status",
-                                        tint = if (isPremium) Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                    )
-                                }
-                                IconButton(
-                                    onClick = { viewModel.toggleTheme(systemDark) },
-                                    modifier = Modifier.testTag("theme_toggle_button")
-                                ) {
-                                    Icon(
-                                        imageVector = if (useDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                                        contentDescription = "Toggle Light/Dark Theme"
-                                    )
-                                }
-                            },
-                            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        )
-                    },
-                    bottomBar = {
-                        NavigationBar(
-                            modifier = Modifier.testTag("app_navigation_bar"),
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            tonalElevation = 8.dp
-                        ) {
-                            NavigationBarItem(
-                                selected = currentTab == 0,
-                                onClick = { currentTab = 0 },
-                                icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
-                                label = { Text("Dashboard", style = MaterialTheme.typography.bodySmall) },
-                                modifier = Modifier.testTag("nav_tab_dashboard")
-                            )
-                            NavigationBarItem(
-                                selected = currentTab == 1,
-                                onClick = { currentTab = 1 },
-                                icon = { Icon(Icons.Default.Explore, contentDescription = "2D Planner") },
-                                label = { Text("2D Planner", style = MaterialTheme.typography.bodySmall) },
-                                modifier = Modifier.testTag("nav_tab_planner")
-                            )
-                            NavigationBarItem(
-                                selected = currentTab == 2,
-                                onClick = { currentTab = 2 },
-                                icon = { Icon(Icons.Default.Spa, contentDescription = "Greenhouse") },
-                                label = { Text("Greenhouse", style = MaterialTheme.typography.bodySmall) },
-                                modifier = Modifier.testTag("nav_tab_greenhouse")
-                            )
-                            NavigationBarItem(
-                                selected = currentTab == 3,
-                                onClick = { currentTab = 3 },
-                                icon = { Icon(Icons.Default.SmartToy, contentDescription = "AI Advisor") },
-                                label = { Text("AI Advisor", style = MaterialTheme.typography.bodySmall) },
-                                modifier = Modifier.testTag("nav_tab_ai")
-                            )
-                            NavigationBarItem(
-                                selected = currentTab == 4,
-                                onClick = { currentTab = 4 },
-                                icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Lens") },
-                                label = { Text("AR Lens", style = MaterialTheme.typography.bodySmall) },
-                                modifier = Modifier.testTag("nav_tab_ar")
-                            )
+                                    icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Lens") },
+                                    label = { Text("AR Lens", style = MaterialTheme.typography.bodySmall) },
+                                    modifier = Modifier.testTag("nav_tab_ar")
+                                )
+                            }
                         }
-                    }
-                ) { innerPadding ->
-                    val safeBottomPadding = if (innerPadding.calculateBottomPadding() < 90.dp) 90.dp else innerPadding.calculateBottomPadding() + 12.dp
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(
-                                start = 0.dp,
-                                top = innerPadding.calculateTopPadding(),
-                                end = 0.dp,
-                                bottom = safeBottomPadding
-                            )
-                    ) {
-                        when (currentTab) {
-                            0 -> DashboardScreen(
-                                viewModel = viewModel
-                            )
-                            1 -> PlannerScreen(
-                                viewModel = viewModel,
-                                switchToChatTab = { currentTab = 3 }
-                            )
-                            2 -> LibraryScreen(
-                                viewModel = viewModel,
-                                switchToChatTab = { currentTab = 3 }
-                            )
-                            3 -> AiStudioScreen(
-                                viewModel = viewModel
-                            )
-                            4 -> ArLensScreen(
-                                viewModel = viewModel
-                            )
+                    ) { innerPadding ->
+                        val safeBottomPadding = if (innerPadding.calculateBottomPadding() < 90.dp) 90.dp else innerPadding.calculateBottomPadding() + 12.dp
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(
+                                    start = 0.dp,
+                                    top = innerPadding.calculateTopPadding(),
+                                    end = 0.dp,
+                                    bottom = safeBottomPadding
+                                )
+                        ) {
+                            when (currentTab) {
+                                0 -> DashboardScreen(
+                                    viewModel = viewModel
+                                )
+                                1 -> PlannerScreen(
+                                    viewModel = viewModel,
+                                    switchToChatTab = { currentTab = 3 }
+                                )
+                                2 -> LibraryScreen(
+                                    viewModel = viewModel,
+                                    switchToChatTab = { currentTab = 3 }
+                                )
+                                3 -> AiStudioScreen(
+                                    viewModel = viewModel
+                                )
+                                4 -> ArLensScreen(
+                                    viewModel = viewModel
+                                )
+                            }
                         }
                     }
                 }

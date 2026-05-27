@@ -626,7 +626,7 @@ fun InteractiveTherapyChart(
                 }
 
                 // Parse max bounds
-                val maxMinutes = logs.maxOf { it.activityMinutes }.coerceAtLeast(1).toFloat()
+                val maxMinutes = logs.maxOfOrNull { it.activityMinutes }?.coerceAtLeast(1)?.toFloat() ?: 1f
                 val minMinutes = 0f
                 val count = logs.size
 

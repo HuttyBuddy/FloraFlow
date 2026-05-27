@@ -1,5 +1,5 @@
 {
-  "name": "FloraFlow Garden Designer",
+  "name": "FloraFlow",
   "description": "Design your dream garden with custom layouts, companion plant suggestions, seasonal care routines, real-time Gemini AI assistance, simulated AR, and therapeutic mood tracking.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

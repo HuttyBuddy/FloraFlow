@@ -4,8 +4,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -230,80 +229,62 @@ fun ArLensScreen(
 
             // PLACED AR PLANT STICKERS CANVAS
             arPlacedPlants.forEach { placement ->
-                val isSelected = selectedPlacementId == placement.id
-                var dragOffset by remember(placement.id) { mutableStateOf(Offset.Zero) }
-                
-                Box(
-                    modifier = Modifier
-                        .offset {
-                            IntOffset(
-                                (placement.offsetX + dragOffset.x).toInt(),
-                                (placement.offsetY + dragOffset.y).toInt()
-                            )
-                        }
-                        .pointerInput(placement.id) {
-                            awaitEachGesture {
-                                val down = awaitFirstDown()
-                                selectedPlacementId = placement.id
-                                var currentDragOffset = Offset.Zero
-                                
-                                while (true) {
-                                    val event = awaitPointerEvent()
-                                    val anyPressed = event.changes.any { it.pressed }
-                                    if (!anyPressed) {
-                                        break
-                                    }
-                                    
-                                    val change = event.changes.firstOrNull { it.id == down.id }
-                                    if (change != null && change.pressed) {
-                                        val dragAmount = change.position - change.previousPosition
-                                        if (dragAmount != Offset.Zero) {
-                                            change.consume()
-                                            currentDragOffset += dragAmount
-                                            dragOffset = currentDragOffset
-                                        }
-                                    }
-                                }
-                                
-                                if (dragOffset != Offset.Zero) {
-                                    viewModel.updateArPlantPosition(
-                                        placement.id,
-                                        dragOffset.x,
-                                        dragOffset.y
-                                    )
-                                    dragOffset = Offset.Zero
-                                }
-                            }
-                        }
-                        .scale(placement.scale)
-                        .rotate(placement.rotationDegrees)
-                        .testTag("ar_placement_${placement.id}"),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
+                key(placement.id) {
+                    val isSelected = selectedPlacementId == placement.id
+                    
+                    Box(
                         modifier = Modifier
-                            .padding(8.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(
-                                if (isSelected) Color.White.copy(alpha = 0.8f)
-                                else Color.Black.copy(alpha = 0.15f)
-                            )
-                            .border(
-                                width = if (isSelected) 3.dp else 0.dp,
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                shape = RoundedCornerShape(12.dp)
-                            )
-                            .padding(12.dp)
+                            .offset {
+                                IntOffset(
+                                    placement.offsetX.toInt(),
+                                    placement.offsetY.toInt()
+                                )
+                            }
+                            .pointerInput(placement.id) {
+                                detectDragGestures(
+                                    onDragStart = {
+                                        selectedPlacementId = placement.id
+                                    },
+                                    onDrag = { change, dragAmount ->
+                                        change.consume()
+                                        viewModel.updateArPlantPosition(
+                                            placement.id,
+                                            dragAmount.x,
+                                            dragAmount.y
+                                        )
+                                    }
+                                )
+                            }
+                            .scale(placement.scale)
+                            .rotate(placement.rotationDegrees)
+                            .testTag("ar_placement_${placement.id}"),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Text(placement.emoji, fontSize = 48.sp)
-                        Text(
-                            placement.name,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp,
-                            color = if (isSelected) Color.Black else Color.White
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    if (isSelected) Color.White.copy(alpha = 0.8f)
+                                    else Color.Black.copy(alpha = 0.15f)
+                                )
+                                .border(
+                                    width = if (isSelected) 3.dp else 0.dp,
+                                    color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .padding(12.dp)
+                        ) {
+                            Text(placement.emoji, fontSize = 48.sp)
+                            Text(
+                                placement.name,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp,
+                                color = if (isSelected) Color.Black else Color.White
+                            )
+                        }
                     }
                 }
             }

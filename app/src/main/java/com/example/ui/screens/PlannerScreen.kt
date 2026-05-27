@@ -404,7 +404,7 @@ fun PlannerScreen(
                         }
                     }
 
-                    Divider()
+                    HorizontalDivider()
 
                     // Text Field for Custom Plant name
                     var customName by remember { mutableStateOf("") }
