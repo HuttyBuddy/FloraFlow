@@ -5,16 +5,16 @@ import androidx.compose.ui.graphics.Color
 // --- Natural Tones Light Palette ---
 val NaturalBg = Color(0xFFFCF9F1)          // Sunlit linen canvas
 val NaturalText = Color(0xFF1B1C17)        // Onyx charcoal text
-val NaturalMuted = Color(0xFF5D6054)       // Sage-tinted graphite
-val NaturalSage = Color(0xFF3A665B)        // Deep therapeutic forest green (Primary)
-val NaturalMutedGreen = Color(0xFF979A8B)  // Soft organic secondary green (Secondary)
-val NaturalWood = Color(0xFF744B16)        // Rich timber tone (Tertiary)
+val NaturalMuted = Color(0xFF43493E)       // Darker sage-tinted graphite for clear body copy and subtext
+val NaturalSage = Color(0xFF1F483E)        // Crisp deep therapeutic forest green (Primary) - high contrast
+val NaturalMutedGreen = Color(0xFF384F45)  // Rich deep pine green (Secondary) - high contrast for icons & secondary details
+val NaturalWood = Color(0xFF633B0D)        // Strong deep timber tone (Tertiary) - high contrast accent
 
-val NaturalCardBg = Color(0xFFE7E9D9)      // Calming visual graph green-wash
-val NaturalPillActive = Color(0xFFDDE5D6)  // Muted active interaction background
-val NaturalArBg = Color(0xFFF1E8D9)        // Warm pine wood preview background
-val NaturalBorder = Color(0xFFE1E3D5)      // Fine sand border line
-val NaturalNavBg = Color(0xFFF3F4E9)       // Clay wash bottom nav
+val NaturalCardBg = Color(0xFFE2E6D5)      // Elegant organic container green-wash
+val NaturalPillActive = Color(0xFFD7DEC6)  // Solid legible interactive background
+val NaturalArBg = Color(0xFFEADFCD)        // Warm pine wood preview background
+val NaturalBorder = Color(0xFFCBD0BE)      // Well-defined sand border line
+val NaturalNavBg = Color(0xFFECEFE0)       // Clay wash bottom nav with high-contrast text support
 val NaturalWhite = Color(0xFFFFFFFF)       // Crisp white container elements
 
 // --- Natural Tones Dark Palette (Eye-Safe Night Soil) ---

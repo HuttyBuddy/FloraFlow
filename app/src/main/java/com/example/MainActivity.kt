@@ -4,9 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Explore
@@ -20,9 +19,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.ui.screens.*
 import androidx.activity.viewModels
 import com.example.ui.theme.MyApplicationTheme
@@ -41,11 +42,21 @@ class MainActivity : ComponentActivity() {
             val useDarkTheme = isDarkThemeOverridden ?: systemDark
 
             MyApplicationTheme(darkTheme = useDarkTheme) {
-                val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
+                var showSplash by remember { mutableStateOf(true) }
 
-                if (!isOnboardingCompleted) {
-                    OnboardingScreen(viewModel = viewModel)
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(1000) // Defer heavy layout loading with 1 second of warm organic splash/load timer
+                    showSplash = false
+                }
+
+                if (showSplash) {
+                    SplashWarmUpScreen()
                 } else {
+                    val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
+
+                    if (!isOnboardingCompleted) {
+                        OnboardingScreen(viewModel = viewModel)
+                    } else {
                     var currentTab by remember { mutableStateOf(0) }
                     val isPremium by viewModel.isPremium.collectAsState()
 
@@ -187,6 +198,67 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
+        }
+    }
+}
+}
+
+@Composable
+fun SplashWarmUpScreen() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            // Elegant pulsing organic icon container
+            Surface(
+                modifier = Modifier.size(110.dp),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                tonalElevation = 4.dp
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(text = "🌿", fontSize = 54.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "FloraFlow",
+                style = MaterialTheme.typography.headlineLarge,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Therapeutic Space & Advisor",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+            )
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                strokeWidth = 3.dp,
+                modifier = Modifier.size(32.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Syncing botanical resources...",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            )
         }
     }
 }

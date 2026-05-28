@@ -39,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.ClimatePlants
 import com.example.ui.viewmodel.ArPlantPlacement
 import com.example.ui.viewmodel.GardenViewModel
+import kotlinx.coroutines.isActive
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -132,7 +133,7 @@ fun ArLensScreen(
     }
 
     val selectedOverride = selectedPlacementId?.let { id ->
-        localOverrides.getOrPut(id) { PlantExtraProps(id = id) }
+        localOverrides[id] ?: PlantExtraProps(id = id)
     }
 
     // ENHANCEMENT 1: Tech camera styles and coloring overlays
@@ -194,7 +195,7 @@ fun ArLensScreen(
         label = "radar_sweep"
     )
 
-    // Local 60fps dynamic weather particle list updater
+    // Local 60fps dynamic weather particle list generator
     val particlesList = remember(activeWeather) {
         val count = when (activeWeather) {
             "Gentle Rain" -> 40
@@ -202,58 +203,55 @@ fun ArLensScreen(
             "Fireflies Spark" -> 15
             else -> 0
         }
-        mutableStateListOf<ArParticle>().apply {
-            val rand = Random(System.nanoTime())
-            for (i in 0 until count) {
-                add(
-                    ArParticle(
-                        x = rand.nextFloat() * 1000f,
-                        y = rand.nextFloat() * 800f,
-                        speed = if (activeWeather == "Gentle Rain") (15f + rand.nextFloat() * 15f) else (2f + rand.nextFloat() * 4f),
-                        size = if (activeWeather == "Gentle Rain") (2f + rand.nextFloat() * 2f) else (6f + rand.nextFloat() * 12f),
-                        alpha = 0.2f + rand.nextFloat() * 0.8f,
-                        driftAngle = rand.nextFloat() * 3.14f
-                    )
-                )
-            }
+        val rand = Random(System.nanoTime())
+        List(count) {
+            ArParticle(
+                x = rand.nextFloat() * 1000f,
+                y = rand.nextFloat() * 800f,
+                speed = if (activeWeather == "Gentle Rain") (15f + rand.nextFloat() * 15f) else (2f + rand.nextFloat() * 4f),
+                size = if (activeWeather == "Gentle Rain") (2f + rand.nextFloat() * 2f) else (6f + rand.nextFloat() * 12f),
+                alpha = 0.2f + rand.nextFloat() * 0.8f,
+                driftAngle = rand.nextFloat() * 3.14f
+            )
         }
     }
 
-    // Canvas ticker effect for updating weather particles at 60fps
+    var animatedParticles by remember(activeWeather) { mutableStateOf(particlesList) }
+
+    // Canvas ticker effect for updating weather particles at 60fps with single state updates
     if (activeWeather != "Clear Sky" && particlesList.isNotEmpty()) {
         LaunchedEffect(activeWeather) {
             val rand = Random(System.currentTimeMillis())
-            while (true) {
-                withFrameNanos { frameTime ->
-                    for (i in 0 until particlesList.size) {
-                        val particle = particlesList[i]
-                        if (activeWeather == "Gentle Rain") {
-                            particle.y += particle.speed
-                            particle.x += 1.5f // gentle diagonal wind
-                            if (particle.y > 1000f) {
-                                particle.y = -20f
-                                particle.x = rand.nextFloat() * 1000f
-                            }
-                        } else if (activeWeather == "Cherry Blossoms") {
-                            particle.y += particle.speed * 0.6f
-                            particle.driftAngle += 0.04f
-                            particle.x += sin(particle.driftAngle) * 2f
-                            if (particle.y > 1000f) {
-                                particle.y = -20f
-                                particle.x = rand.nextFloat() * 1000f
-                            }
-                        } else if (activeWeather == "Fireflies Spark") {
-                            particle.driftAngle += 0.05f
-                            particle.y -= particle.speed * 0.3f
-                            particle.x += cos(particle.driftAngle) * 1.5f
-                            // Pulse firefly alpha glow
-                            particle.alpha = 0.2f + (sin(particle.driftAngle) * 0.4f + 0.4f)
-                            if (particle.y < -20f) {
-                                particle.y = 1000f
-                                particle.x = rand.nextFloat() * 1000f
-                            }
+            while (isActive) {
+                animatedParticles = animatedParticles.map { p ->
+                    val particle = p.copy()
+                    if (activeWeather == "Gentle Rain") {
+                        particle.y += particle.speed
+                        particle.x += 1.5f // gentle diagonal wind
+                        if (particle.y > 1000f) {
+                            particle.y = -20f
+                            particle.x = rand.nextFloat() * 1000f
+                        }
+                    } else if (activeWeather == "Cherry Blossoms") {
+                        particle.y += particle.speed * 0.6f
+                        particle.driftAngle += 0.04f
+                        particle.x += sin(particle.driftAngle) * 2f
+                        if (particle.y > 1000f) {
+                            particle.y = -20f
+                            particle.x = rand.nextFloat() * 1000f
+                        }
+                    } else if (activeWeather == "Fireflies Spark") {
+                        particle.driftAngle += 0.05f
+                        particle.y -= particle.speed * 0.3f
+                        particle.x += cos(particle.driftAngle) * 1.5f
+                        // Pulse firefly alpha glow
+                        particle.alpha = 0.2f + (sin(particle.driftAngle) * 0.4f + 0.4f)
+                        if (particle.y < -20f) {
+                            particle.y = 1000f
+                            particle.x = rand.nextFloat() * 1000f
                         }
                     }
+                    particle
                 }
                 // Yield thread cycle
                 kotlinx.coroutines.delay(16)
@@ -445,10 +443,10 @@ fun ArLensScreen(
         ) {
             
             // RENDERING BASE CLIMATE ATMOSPHERE GRAPHICS
-            if (activeWeather != "Clear Sky" && particlesList.isNotEmpty()) {
+            if (activeWeather != "Clear Sky" && animatedParticles.isNotEmpty()) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     clipRect {
-                        particlesList.forEach { particle ->
+                        animatedParticles.forEach { particle ->
                             if (activeWeather == "Gentle Rain") {
                                 // Draw thin slanted raindrop lines
                                 drawLine(
@@ -702,9 +700,7 @@ fun ArLensScreen(
                     }
 
                     // Get this decal's growth overrides and wetness
-                    val decalOverride = localOverrides.getOrPut(placement.id) {
-                        PlantExtraProps(id = placement.id)
-                    }
+                    val decalOverride = localOverrides[placement.id] ?: PlantExtraProps(id = placement.id)
 
                     // Growth Stage Modifiers: Sprout 🌱, Young 🌿, Mature 🌸, Colossal 🌳
                     val (stageEmoji, stageScaleMultiplier) = remember(decalOverride.growthStage) {
