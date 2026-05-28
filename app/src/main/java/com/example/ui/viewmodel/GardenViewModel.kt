@@ -387,6 +387,72 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    fun clearLayoutGrid() {
+        val current = _activeLayout.value ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateLayoutGrid(current.id, "")
+            _activeLayout.value = current.copy(gridString = "")
+        }
+    }
+
+    fun autoSowClimateSeeds() {
+        val current = _activeLayout.value ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            val items = parseGridString(current.gridString).toMutableList()
+            // Identify all free spots on the 5x5 grid
+            val occupied = items.map { Pair(it.x, it.y) }.toSet()
+            val available = mutableListOf<Pair<Int, Int>>()
+            for (r in 0..4) {
+                for (c in 0..4) {
+                    if (!occupied.contains(Pair(r, c))) {
+                        available.add(Pair(r, c))
+                    }
+                }
+            }
+            if (available.isEmpty()) return@launch
+
+            // Fetch compatible plant templates for the layout climate
+            val templates = ClimatePlants.getTemplatesForClimate(current.climate)
+            if (templates.isEmpty()) return@launch
+
+            // Randomly select up to 5 empty slots to sow seeds
+            val countToSow = minOf(5, available.size)
+            available.shuffle()
+            val slotsToSow = available.take(countToSow)
+
+            for (slot in slotsToSow) {
+                val tpl = templates.random()
+                items.add(GridPlantItem(slot.first, slot.second, tpl.name))
+                
+                // Also add to inventory if not already cultivated
+                if (_activePlants.value.none { it.name == tpl.name }) {
+                    repository.insertPlant(
+                        Plant(
+                            layoutId = current.id,
+                            name = tpl.name,
+                            type = tpl.type,
+                            careSpring = tpl.careSpring,
+                            careSummer = tpl.careSummer,
+                            careAutumn = tpl.careAutumn,
+                            careWinter = tpl.careWinter,
+                            soilType = tpl.soilType,
+                            sunlight = tpl.sunlight,
+                            growthProgress = 20,
+                            matureSize = tpl.matureSize,
+                            wateringNeeds = tpl.wateringNeeds,
+                            bloomTime = tpl.bloomTime,
+                            pestsDiseases = tpl.pestsDiseases
+                        )
+                    )
+                }
+            }
+
+            val newGridString = toGridString(items)
+            repository.updateLayoutGrid(current.id, newGridString)
+            _activeLayout.value = current.copy(gridString = newGridString)
+        }
+    }
+
     // --- Plants Operations ---
     fun addPlant(name: String, type: String, template: PlantTemplate?) {
         val layout = _activeLayout.value ?: return
@@ -625,9 +691,10 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     // --- AR Preview Control Methods ---
     fun addArPlant(name: String, emoji: String) {
         val list = _arPlacedPlants.value.toMutableList()
+        val nextId = (list.maxOfOrNull { it.id } ?: 0) + 1
         list.add(
             ArPlantPlacement(
-                id = System.currentTimeMillis().toInt(),
+                id = nextId,
                 name = name,
                 emoji = emoji,
                 offsetX = 0f,

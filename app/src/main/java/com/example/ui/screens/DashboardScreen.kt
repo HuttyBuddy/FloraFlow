@@ -49,6 +49,7 @@ fun DashboardScreen(
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
     val activePlants by viewModel.activePlants.collectAsStateWithLifecycle()
     val moodLogs by viewModel.allMoodLogs.collectAsStateWithLifecycle()
+    val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var showLogMoodDialog by remember { mutableStateOf(false) }
@@ -113,8 +114,7 @@ fun DashboardScreen(
                             )
                         }
                         
-                        val isPro by viewModel.isPremium.collectAsStateWithLifecycle()
-                        if (isPro) {
+                        if (isPremium) {
                             Box(
                                 modifier = Modifier
                                     .size(44.dp)

@@ -564,6 +564,7 @@ fun PlantCareTrackerCard(
     onConsultAi: () -> Unit
 ) {
     val emoji = getEmojiForPlantName(plant.name)
+    var localGrowthProgress by remember(plant.growthProgress) { mutableStateOf(plant.growthProgress.toFloat()) }
 
     Card(
         modifier = Modifier
@@ -733,8 +734,9 @@ fun PlantCareTrackerCard(
                     ) {
                         Text("Seed 🌱", style = MaterialTheme.typography.bodySmall)
                         Slider(
-                            value = plant.growthProgress.toFloat(),
-                            onValueChange = { onGrowthChange(it.toInt()) },
+                            value = localGrowthProgress,
+                            onValueChange = { localGrowthProgress = it },
+                            onValueChangeFinished = { onGrowthChange(localGrowthProgress.toInt()) },
                             valueRange = 0f..100f,
                             modifier = Modifier
                                 .weight(1f)

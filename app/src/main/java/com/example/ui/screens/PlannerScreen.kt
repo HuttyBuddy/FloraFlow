@@ -1,6 +1,7 @@
 package com.example.ui.screens
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,7 +21,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,6 +34,58 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.*
 import com.example.ui.viewmodel.GardenViewModel
 
+// Companion Planting Synergy Checking Logic
+fun checkPlantSynergy(plant1: String, plant2: String): Boolean {
+    val p1 = plant1.lowercase()
+    val p2 = plant2.lowercase()
+    if (p1 == p2) return false // diversity is key
+    
+    val companionRules = listOf(
+        setOf("rose", "maple"),
+        setOf("rose", "lavender"),
+        setOf("lavender", "cherry"),
+        setOf("cactus", "aloe"),
+        setOf("marigold", "tomato"),
+        setOf("tomato", "potato"),
+        setOf("aster", "thyme"),
+        setOf("columbine", "fern"),
+        setOf("rosemary", "lavender"),
+        setOf("rosemary", "thyme")
+    )
+    
+    return companionRules.any { rule ->
+        rule.any { r -> p1.contains(r) } && rule.any { r -> p2.contains(r) }
+    }
+}
+
+fun hasNeighborSynergy(row: Int, col: Int, gridItems: List<GridPlantItem>): Boolean {
+    val currentLoc = gridItems.firstOrNull { it.x == row && it.y == col } ?: return false
+    val neighbors = listOf(
+        Pair(row - 1, col),
+        Pair(row + 1, col),
+        Pair(row, col - 1),
+        Pair(row, col + 1)
+    )
+    for (n in neighbors) {
+        val neighborItem = gridItems.firstOrNull { it.x == n.first && it.y == n.second }
+        if (neighborItem != null) {
+            if (checkPlantSynergy(currentLoc.plantName, neighborItem.plantName)) {
+                return true
+            }
+        }
+    }
+    return false
+}
+
+data class SoilTheme(
+    val name: String,
+    val bgColors: List<Color>,
+    val outlineColor: Color,
+    val slotBgColor: Color,
+    val description: String
+)
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun PlannerScreen(
     viewModel: GardenViewModel,
@@ -42,8 +97,34 @@ fun PlannerScreen(
     val layouts by viewModel.allLayouts.collectAsStateWithLifecycle()
 
     var showCellConfigDialog by remember { mutableStateOf<Pair<Int, Int>?>(null) } // Row, Col of clicked cell
-    var selectedPlantNameForCell by remember { mutableStateOf("") }
-    var selectedPlantTheme by remember { mutableStateOf("Rose") }
+    var highlightedPlantName by remember { mutableStateOf<String?>(null) }
+    var showBlueprintDialog by remember { mutableStateOf(false) }
+
+    val soilThemes = listOf(
+        SoilTheme(
+            name = "Loam 🟫",
+            bgColors = listOf(Color(0xFFEFEBE9), Color(0xFFD7CCC8)),
+            outlineColor = Color(0xFF8D6E63),
+            slotBgColor = Color(0xFF5D4037).copy(alpha = 0.08f),
+            description = "Rich organic tilled loam soil with excellent moisture absorption."
+        ),
+        SoilTheme(
+            name = "Sand 🟧",
+            bgColors = listOf(Color(0xFFFFF8E1), Color(0xFFFFECB3)),
+            outlineColor = Color(0xFFFFB74D),
+            slotBgColor = Color(0xFFE65100).copy(alpha = 0.08f),
+            description = "Coarse gritty sand. Extremely well draining workspace."
+        ),
+        SoilTheme(
+            name = "Pebbles ⬜",
+            bgColors = listOf(Color(0xFFECEFF1), Color(0xFFCFD8DC)),
+            outlineColor = Color(0xFF78909C),
+            slotBgColor = Color(0xFF37474F).copy(alpha = 0.08f),
+            description = "Smoothed stones. Best suited for raked Zen spaces."
+        )
+    )
+    var selectedSoilIdx by remember { mutableStateOf(0) }
+    val currentSoilTheme = soilThemes[selectedSoilIdx]
 
     val currentLayout = activeLayout
     val activeGridItems = remember(currentLayout?.gridString) {
@@ -106,15 +187,15 @@ fun PlannerScreen(
                     ) {
                         Column {
                             Text(
-                                text = "Design Blueprint",
-                                style = MaterialTheme.typography.titleMedium,
+                                text = "Design Blueprint Workspace",
+                                style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Bold
                             )
                             Text(
                                 text = currentLayout.name,
                                 style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Black
                             )
                         }
                         Box(
@@ -134,7 +215,7 @@ fun PlannerScreen(
 
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Climate: ${currentLayout.climate}. Tap any plot below to choose and assign vegetation.",
+                        text = "Climate: ${currentLayout.climate}. Substrate: ${currentSoilTheme.name}.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -155,7 +236,7 @@ fun PlannerScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "AI Layout Helper:",
+                        "AI Assistant:",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -166,7 +247,7 @@ fun PlannerScreen(
                             viewModel.askAiForLayoutAdvice()
                             switchToChatTab()
                         },
-                        label = { Text("Design Review") },
+                        label = { Text("Layout Review") },
                         leadingIcon = { Icon(Icons.Default.AutoAwesome, contentDescription = "AI", modifier = Modifier.size(16.dp)) }
                     )
 
@@ -175,18 +256,109 @@ fun PlannerScreen(
                             viewModel.generateAILayoutSuggestion()
                             switchToChatTab()
                         },
-                        label = { Text("Sow AI Plants") },
+                        label = { Text("Blueprint Suggestion") },
                         leadingIcon = { Icon(Icons.Default.Spa, contentDescription = "Sow", modifier = Modifier.size(16.dp)) }
                     )
                 }
             }
 
-            // Interactive 5x5 Grid Planner
+            // Theme Preset Selector Row
             Card(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Surface Substrate Type:",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        soilThemes.forEachIndexed { index, theme ->
+                            val isSelected = selectedSoilIdx == index
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) theme.outlineColor.copy(alpha = 0.12f) else Color.Transparent)
+                                    .border(
+                                        width = if (isSelected) 2.dp else 1.dp,
+                                        color = if (isSelected) theme.outlineColor else MaterialTheme.colorScheme.outlineVariant,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable { selectedSoilIdx = index }
+                                    .padding(vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = theme.name,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSelected) theme.outlineColor else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        text = currentSoilTheme.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontSize = 10.sp
+                    )
+                }
+            }
+
+            // Interactive Actions Panel
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Auto-Sow Seeds Button
+                Button(
+                    onClick = {
+                        viewModel.autoSowClimateSeeds()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    modifier = Modifier.weight(1f).testTag("quick_sow_button"),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Spa, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Auto-Sow Seeds 🌱", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+
+                // Uproot All Seeds Button
+                FilledTonalButton(
+                    onClick = {
+                        viewModel.clearLayoutGrid()
+                    },
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f),
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    ),
+                    modifier = Modifier.weight(1f).testTag("clear_grid_button"),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Uproot All 🧹", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            // Interactive 5x5 Grid Planner Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier
@@ -195,15 +367,38 @@ fun PlannerScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Plot Blueprint Editor",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        if (highlightedPlantName != null) {
+                            Text(
+                                text = "FILTER ACTIVE 🎯",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFC62828),
+                                modifier = Modifier
+                                    .clickable { highlightedPlantName = null }
+                                    .background(Color(0xFFFFEBEE), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
                     Text(
-                        text = "Yard Space Grid Blueprint",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
+                        text = "Touch any sector block below to choose and assign seeds.",
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
 
-                    // 5x5 Matrix implementation using standard nested Columns and Rows inside a scrollable screen
+                    // 5x5 Matrix implementation using standard nested Columns and Rows
                     Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -216,24 +411,40 @@ fun PlannerScreen(
                                 for (c in 0..4) {
                                     val item = activeGridItems.firstOrNull { it.x == r && it.y == c }
                                     val emoji = getEmojiForPlantName(item?.plantName ?: "")
+                                    val isHighlighted = highlightedPlantName != null && item?.plantName == highlightedPlantName
+                                    val hasSynergy = item != null && hasNeighborSynergy(r, c, activeGridItems)
+
+                                    // Custom scale dynamic feedback
+                                    val scaleVal by animateFloatAsState(
+                                        targetValue = if (isHighlighted) 1.08f else 1f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessLow
+                                        ),
+                                        label = "gridHighlighter"
+                                    )
 
                                     Box(
                                         modifier = Modifier
                                             .weight(1f)
                                             .aspectRatio(1f)
+                                            .scale(scaleVal)
                                             .clip(RoundedCornerShape(16.dp))
                                             .background(
                                                 if (item != null) {
-                                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                                    if (isHighlighted) Color(0xFFFFD54F).copy(alpha = 0.5f)
+                                                    else if (hasSynergy) Color(0xFFE8F5E9)
+                                                    else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                                                 } else {
-                                                    // Clay tilled tilling soil shade
-                                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                                                    currentSoilTheme.slotBgColor
                                                 }
                                             )
                                             .border(
-                                                width = if (item != null) 2.dp else 1.dp,
-                                                color = if (item != null) MaterialTheme.colorScheme.primary
-                                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
+                                                width = if (isHighlighted) 3.dp else if (hasSynergy) 2.2.dp else if (item != null) 2.dp else 1.dp,
+                                                color = if (isHighlighted) Color(0xFFF57F17)
+                                                else if (hasSynergy) Color(0xFF4CAF50)
+                                                else if (item != null) MaterialTheme.colorScheme.primary
+                                                else currentSoilTheme.outlineColor.copy(alpha = 0.4f),
                                                 shape = RoundedCornerShape(16.dp)
                                             )
                                             .clickable { showCellConfigDialog = Pair(r, c) }
@@ -241,53 +452,64 @@ fun PlannerScreen(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         if (item != null) {
-                                            Column(
-                                                horizontalAlignment = Alignment.CenterHorizontally,
-                                                verticalArrangement = Arrangement.Center,
-                                                modifier = Modifier.padding(2.dp)
-                                            ) {
-                                                // Outer concentric ring representing root nourishment limit
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(44.dp)
-                                                        .border(
-                                                            width = 1.dp,
-                                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
-                                                            shape = CircleShape
-                                                        )
-                                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f), CircleShape),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Text(emoji, fontSize = 26.sp)
-                                                }
-                                                Spacer(modifier = Modifier.height(2.dp))
-                                                Text(
-                                                    text = item.plantName.take(7),
-                                                    fontSize = 9.sp,
-                                                    fontWeight = FontWeight.ExtraBold,
-                                                    color = MaterialTheme.colorScheme.primary,
-                                                    textAlign = TextAlign.Center
-                                                )
-                                            }
+                                             Column(
+                                                 horizontalAlignment = Alignment.CenterHorizontally,
+                                                 verticalArrangement = Arrangement.Center,
+                                                 modifier = Modifier.padding(2.dp)
+                                             ) {
+                                                 Box(
+                                                     modifier = Modifier
+                                                         .size(38.dp)
+                                                         .border(
+                                                             width = 1.dp,
+                                                             color = if (hasSynergy) Color(0xFF4CAF50).copy(alpha = 0.4f)
+                                                             else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                                             shape = CircleShape
+                                                         )
+                                                         .background(
+                                                             if (hasSynergy) Color(0xFFC8E6C9).copy(alpha = 0.4f)
+                                                             else MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                                             CircleShape
+                                                         ),
+                                                     contentAlignment = Alignment.Center
+                                                 ) {
+                                                     Text(emoji, fontSize = 22.sp)
+                                                 }
+                                                 Spacer(modifier = Modifier.height(2.dp))
+                                                 Row(
+                                                     verticalAlignment = Alignment.CenterVertically,
+                                                     horizontalArrangement = Arrangement.Center
+                                                 ) {
+                                                     Text(
+                                                         text = item.plantName.take(6),
+                                                         fontSize = 8.5.sp,
+                                                         fontWeight = FontWeight.ExtraBold,
+                                                         color = if (hasSynergy) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
+                                                         textAlign = TextAlign.Center
+                                                     )
+                                                     if (hasSynergy) {
+                                                         Text("✨", fontSize = 7.sp, modifier = Modifier.padding(start = 1.dp))
+                                                     }
+                                                 }
+                                             }
                                         } else {
-                                            // Tilled ground layout detailing concentric circular dot guide
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(32.dp)
-                                                    .border(
-                                                        width = 1.dp,
-                                                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f),
-                                                        shape = CircleShape
-                                                    ),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Icon(
-                                                    Icons.Default.Add,
-                                                    contentDescription = "Empty",
-                                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.25f),
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                            }
+                                             Box(
+                                                 modifier = Modifier
+                                                     .size(26.dp)
+                                                     .border(
+                                                         width = 1.dp,
+                                                         color = currentSoilTheme.outlineColor.copy(alpha = 0.15f),
+                                                         shape = CircleShape
+                                                     ),
+                                                 contentAlignment = Alignment.Center
+                                             ) {
+                                                 Icon(
+                                                     Icons.Default.Add,
+                                                     contentDescription = "Empty Plot",
+                                                     tint = currentSoilTheme.outlineColor.copy(alpha = 0.5f),
+                                                     modifier = Modifier.size(12.dp)
+                                                 )
+                                             }
                                         }
                                     }
                                 }
@@ -295,32 +517,118 @@ fun PlannerScreen(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                    // Legend description
+                    // Interactive Filters Legend Row
+                    Text(
+                        "Legend (Tap to highlight on layout):",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.align(Alignment.Start).padding(bottom = 6.dp)
+                    )
                     androidx.compose.foundation.lazy.LazyRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(activeGridItems.map { it.plantName }.distinct()) { name ->
-                            val emoji = getEmojiForPlantName(name)
-                            Row(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(emoji, fontSize = 12.sp)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(name, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
-                            }
+                        val distinctPlanted = activeGridItems.map { it.plantName }.distinct()
+                        if (distinctPlanted.isEmpty()) {
+                             item {
+                                 Text(
+                                     "No seeds sown on layout workspace yet.",
+                                     style = MaterialTheme.typography.bodySmall,
+                                     color = MaterialTheme.colorScheme.secondary,
+                                     fontSize = 11.sp
+                                 )
+                             }
+                        } else {
+                             items(distinctPlanted) { name ->
+                                 val isSelected = highlightedPlantName == name
+                                 val emoji = getEmojiForPlantName(name)
+                                 Row(
+                                     modifier = Modifier
+                                         .clip(RoundedCornerShape(8.dp))
+                                         .background(
+                                             if (isSelected) MaterialTheme.colorScheme.primary
+                                             else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                                         )
+                                         .clickable {
+                                             highlightedPlantName = if (isSelected) null else name
+                                         }
+                                         .padding(horizontal = 10.dp, vertical = 6.dp),
+                                     verticalAlignment = Alignment.CenterVertically
+                                 ) {
+                                     Text(emoji, fontSize = 12.sp)
+                                     Spacer(modifier = Modifier.width(5.dp))
+                                     Text(
+                                         text = name,
+                                         fontSize = 11.sp,
+                                         fontWeight = FontWeight.Bold,
+                                         color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                     )
+                                 }
+                             }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            // Coverage Density Gauge Card
+            val countPlanted = activeGridItems.size
+            val densityPercentage = (countPlanted * 100) / 25
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Yard Spacing Utilisation Density",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            "$countPlanted / 25 Slots ($densityPercentage%)",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                     }
+                     Spacer(modifier = Modifier.height(8.dp))
+                     LinearProgressIndicator(
+                         progress = { countPlanted.toFloat() / 25f },
+                         modifier = Modifier
+                             .fillMaxWidth()
+                             .height(8.dp)
+                             .clip(RoundedCornerShape(4.dp)),
+                         color = MaterialTheme.colorScheme.primary,
+                         trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                     )
+                }
+            }
+
+            // CAD Blueprint Export Action
+            Button(
+                onClick = { showBlueprintDialog = true },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                modifier = Modifier.fillMaxWidth().testTag("view_blueprint_button"),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.Layers, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("RENDER ARCHITECT CAD BLUEPRINT 📐", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 
@@ -330,6 +638,7 @@ fun PlannerScreen(
         val row = cellDialogCoords.first
         val col = cellDialogCoords.second
         val currentOccupant = activeGridItems.firstOrNull { it.x == row && it.y == col }
+        val hasSynergy = currentOccupant != null && hasNeighborSynergy(row, col, activeGridItems)
 
         Dialog(onDismissRequest = { showCellConfigDialog = null }) {
             Surface(
@@ -342,18 +651,39 @@ fun PlannerScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
-                        text = "Plot Configuration (${row + 1}, ${col + 1})",
+                        text = "Plot Dimension Details (${row + 1}, ${col + 1})",
                         style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.ExtraBold,
                         color = MaterialTheme.colorScheme.primary
                     )
 
                     if (currentOccupant != null) {
-                        Text(
-                            text = "Current: ${currentOccupant.plantName} ${getEmojiForPlantName(currentOccupant.plantName)}",
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Medium
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    if (hasSynergy) Color(0xFFE8F5E9) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .padding(12.dp)
+                        ) {
+                            Text(
+                                text = "Occupant: ${currentOccupant.plantName} ${getEmojiForPlantName(currentOccupant.plantName)}",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = if (hasSynergy) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
+                            )
+                            if (hasSynergy) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "✨ COMPANION SYNERGY ACTIVE: This species benefits beautifully from neighboring root enzymes and shared microclimate shade!",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF2E7D32),
+                                    fontWeight = FontWeight.Bold,
+                                    lineHeight = 15.sp
+                                )
+                            }
+                        }
                     }
 
                     Text(
@@ -363,14 +693,13 @@ fun PlannerScreen(
                     )
 
                     // Selection lists
-                    Text("My Layout Cultivated Items:", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Text("Recommended Climate Seed Bank:", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.heightIn(max = 140.dp)
                     ) {
-                        // Quick add recommendation list
                         val defaultRecommendations = ClimatePlants.getTemplatesForClimate(activeLayout?.climate ?: "")
                         val allAvailablePlants = (activePlants.map { it.name } + defaultRecommendations.map { it.name }).distinct()
 
@@ -391,16 +720,16 @@ fun PlannerScreen(
                                     },
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                                 shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(emoji, fontSize = 16.sp)
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(pName, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-                                }
-                            }
+                             ) {
+                                 Row(
+                                     modifier = Modifier.padding(8.dp),
+                                     verticalAlignment = Alignment.CenterVertically
+                                 ) {
+                                     Text(emoji, fontSize = 16.sp)
+                                     Spacer(modifier = Modifier.width(6.dp))
+                                     Text(pName, fontSize = 10.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                                 }
+                             }
                         }
                     }
 
@@ -452,7 +781,7 @@ fun PlannerScreen(
                             ) {
                                 Icon(Icons.Default.Delete, contentDescription = "Uproot")
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("Uproot Plant")
+                                Text("Uproot")
                             }
                         } else {
                             Spacer(modifier = Modifier.width(1.dp))
@@ -466,32 +795,190 @@ fun PlannerScreen(
             }
         }
     }
+
+    // --- Cyber CAD Blueprint Render Dialog ---
+    if (showBlueprintDialog) {
+        Dialog(onDismissRequest = { showBlueprintDialog = false }) {
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = Color(0xFF031604), // Immersive deep cyber blueprints
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+                    .border(2.dp, Color(0xFF4CAF50), RoundedCornerShape(20.dp))
+            ) {
+                Column(
+                     modifier = Modifier
+                         .padding(20.dp)
+                         .verticalScroll(rememberScrollState()),
+                     verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                     Row(
+                         modifier = Modifier.fillMaxWidth(),
+                         horizontalArrangement = Arrangement.SpaceBetween,
+                         verticalAlignment = Alignment.Top
+                     ) {
+                         Column {
+                             Text(
+                                 text = "FLORAFLOW CAD SHEET PL-5",
+                                 color = Color(0xFF81C784),
+                                 fontSize = 9.sp,
+                                 fontWeight = FontWeight.Bold,
+                                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                             )
+                             Text(
+                                 text = "Vector Blueprint",
+                                 color = Color.White,
+                                 fontSize = 20.sp,
+                                 fontWeight = FontWeight.Black
+                             )
+                         }
+                         IconButton(onClick = { showBlueprintDialog = false }) {
+                             Icon(
+                                 Icons.Default.Close,
+                                 contentDescription = "Close Blueprint Overlay",
+                                 tint = Color.White
+                             )
+                         }
+                     }
+
+                     HorizontalDivider(color = Color(0xFF4CAF50).copy(alpha = 0.4f))
+
+                     Column(
+                         modifier = Modifier
+                             .fillMaxWidth()
+                             .background(Color.Black.copy(alpha = 0.5f))
+                             .padding(12.dp)
+                             .border(1.dp, Color(0xFF4CAF50).copy(alpha = 0.25f)),
+                         verticalArrangement = Arrangement.spacedBy(4.dp)
+                     ) {
+                         val formatTime = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.US)
+                         Text("PROJECT-NAME : ${currentLayout?.name?.uppercase() ?: ""}", color = Color(0xFF81C784), fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                         Text("STYLE-THEME : ${currentLayout?.style?.uppercase() ?: ""}", color = Color(0xFF81C784), fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                         Text("ZONE-CLIMATE: ${currentLayout?.climate?.uppercase() ?: ""}", color = Color(0xFF81C784), fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                         Text("SOIL-DENSITY: ${currentSoilTheme.name.uppercase()}", color = Color(0xFF81C784), fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                         Text("TIMESTAMP   : ${formatTime.format(java.util.Date())} UTC", color = Color(0xFF81C784), fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                     }
+
+                     Text(
+                         "5X5 GRID MAP SYSTEM:",
+                         color = Color.White,
+                         fontSize = 11.sp,
+                         fontWeight = FontWeight.Bold,
+                         fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                     )
+
+                     Column(
+                         modifier = Modifier
+                             .fillMaxWidth()
+                             .background(Color.Black)
+                             .padding(14.dp)
+                             .border(1.dp, Color(0xFF4CAF50)),
+                         verticalArrangement = Arrangement.spacedBy(4.dp),
+                         horizontalAlignment = Alignment.CenterHorizontally
+                     ) {
+                         for (r in 0..4) {
+                             var rowStr = "["
+                             for (c in 0..4) {
+                                 val item = activeGridItems.firstOrNull { it.x == r && it.y == c }
+                                 rowStr += if (item != null) " ${getEmojiForPlantName(item.plantName)} " else " . "
+                             }
+                             rowStr += "]"
+                             Text(
+                                 text = rowStr,
+                                 color = Color(0xFF4CAF50),
+                                 fontSize = 14.sp,
+                                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace,
+                                 fontWeight = FontWeight.Bold,
+                                 letterSpacing = 2.sp
+                             )
+                         }
+                     }
+
+                     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                         Text(
+                             "SECTOR LIST & SYNERGY AUDIT:",
+                             color = Color.White,
+                             fontSize = 11.sp,
+                             fontWeight = FontWeight.Bold
+                         )
+                         if (activeGridItems.isEmpty()) {
+                             Text(
+                                 "No plants sown in this blueprint workspace. Tap plots on grid planner to sow seeds first.",
+                                 color = Color.Gray,
+                                 fontSize = 10.sp,
+                                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                             )
+                         } else {
+                             activeGridItems.forEach { item ->
+                                 val synergy = hasNeighborSynergy(item.x, item.y, activeGridItems)
+                                 val synergyDetails = if (synergy) " ✅ [COMPANION SYNERGY ACTIVE]" else ""
+                                 Text(
+                                     "-> PLOT [${item.x + 1}, ${item.y + 1}]: ${item.plantName} ${getEmojiForPlantName(item.plantName)} $synergyDetails",
+                                     color = if (synergy) Color(0xFFFFD54F) else Color(0xFFE8F5E9),
+                                     fontSize = 10.sp,
+                                     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                 )
+                             }
+                         }
+                     }
+
+                     Spacer(modifier = Modifier.height(6.dp))
+
+                     var isSimulatingSave by remember { mutableStateOf(false) }
+                     val currentContext = androidx.compose.ui.platform.LocalContext.current
+
+                     Button(
+                         onClick = {
+                             isSimulatingSave = true
+                         },
+                         modifier = Modifier.fillMaxWidth(),
+                         colors = ButtonDefaults.buttonColors(
+                             containerColor = Color(0xFF4CAF50),
+                             contentColor = Color.Black
+                         ),
+                         shape = RoundedCornerShape(10.dp)
+                     ) {
+                         if (isSimulatingSave) {
+                             CircularProgressIndicator(color = Color.Black, modifier = Modifier.size(18.dp))
+                             LaunchedEffect(Unit) {
+                                 kotlinx.coroutines.delay(1500)
+                                 isSimulatingSave = false
+                                 android.widget.Toast.makeText(currentContext, "Blueprint saved as FloraFlow_Blueprint.cad 📂✨", android.widget.Toast.LENGTH_SHORT).show()
+                                 showBlueprintDialog = false
+                             }
+                         } else {
+                             Icon(Icons.Default.Download, contentDescription = "Download")
+                             Spacer(modifier = Modifier.width(8.dp))
+                             Text(
+                                 "DOWNLOAD VECTOR BLUEPRINT 💾",
+                                 fontWeight = FontWeight.ExtraBold,
+                                 fontSize = 11.sp
+                             )
+                         }
+                     }
+                 }
+             }
+         }
+     }
 }
 
 // Utility to assign emojis based on plant name keywords
 fun getEmojiForPlantName(name: String): String {
     val low = name.lowercase()
     return when {
-        low.contains("rose") -> "🌹"
-        low.contains("cact") || low.contains("aloe") -> "🌵"
-        low.contains("marigold") || low.contains("aster") -> "🌼"
-        low.contains("lavender") -> "🪻"
-        low.contains("orchid") -> "🌸"
-        low.contains("hibiscus") || low.contains("bougainvillea") -> "🌺"
-        low.contains("tomato") -> "🍅"
-        low.contains("sweet potato") || low.contains("yam") -> "🍠"
-        low.contains("fig") -> "🍋"
-        low.contains("olive") || low.contains("maple") || low.contains("tree") -> "🌳"
-        low.contains("fern") || low.contains("monstera") || low.contains("shoot") -> "🌿"
-        low.contains("basil") || low.contains("rosemary") || low.contains("herb") || low.contains("thyme") -> "🌱"
-        else -> "🌱"
+         low.contains("rose") -> "🌹"
+         low.contains("cact") || low.contains("aloe") -> "🌵"
+         low.contains("marigold") || low.contains("aster") -> "🌼"
+         low.contains("lavender") -> "🪻"
+         low.contains("orchid") -> "🌸"
+         low.contains("hibiscus") || low.contains("bougainvillea") -> "🌺"
+         low.contains("tomato") -> "🍅"
+         low.contains("sweet potato") || low.contains("yam") -> "🍠"
+         low.contains("fig") -> "🍋"
+         low.contains("olive") || low.contains("maple") || low.contains("tree") -> "🌳"
+         low.contains("fern") || low.contains("monstera") || low.contains("shoot") -> "🌿"
+         low.contains("basil") || low.contains("rosemary") || low.contains("herb") || low.contains("thyme") -> "🌱"
+         else -> "🌱"
     }
 }
-
-// Placeholder icon mapping to avoid extended icons compilation errors if any
-fun imageVectorIcons(name: String) = when (name) {
-    "leaf" -> Icons.Default.Eco
-    else -> Icons.Default.Terrain
-}
-
-// End of Planner Screen

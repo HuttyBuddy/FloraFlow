@@ -68,16 +68,22 @@ fun ArLensScreen(
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
     val arPlacedPlants by viewModel.arPlacedPlants.collectAsStateWithLifecycle()
 
+    // Positions are synchronized directly against the ViewModel state
+
     var selectedPlacementId by remember { mutableStateOf<Int?>(null) }
     var selectedBackgroundPreset by remember { mutableStateOf("Lawn Garden Grid") }
 
-    val bgGradient = when (selectedBackgroundPreset) {
-        "Sunny Patio" -> Brush.verticalGradient(listOf(Color(0xFF81C784), Color(0xFFFFD54F), Color(0xFFFFB74D)))
-        "Balcony Deck" -> Brush.verticalGradient(listOf(Color(0xFF90A4AE), Color(0xFFCFD8DC), Color(0xFF78909C)))
-        else -> Brush.verticalGradient(listOf(Color(0xFF386641), Color(0xFF6A994E), Color(0xFFA7C957)))
+    val bgGradient = remember(selectedBackgroundPreset) {
+        when (selectedBackgroundPreset) {
+            "Sunny Patio" -> Brush.verticalGradient(listOf(Color(0xFF81C784), Color(0xFFFFD54F), Color(0xFFFFB74D)))
+            "Balcony Deck" -> Brush.verticalGradient(listOf(Color(0xFF90A4AE), Color(0xFFCFD8DC), Color(0xFF78909C)))
+            else -> Brush.verticalGradient(listOf(Color(0xFF386641), Color(0xFF6A994E), Color(0xFFA7C957)))
+        }
     }
 
-    val selectedPlacement = arPlacedPlants.firstOrNull { it.id == selectedPlacementId }
+    val selectedPlacement = remember(arPlacedPlants, selectedPlacementId) {
+        arPlacedPlants.firstOrNull { it.id == selectedPlacementId }
+    }
 
     Column(
         modifier = modifier
@@ -231,28 +237,48 @@ fun ArLensScreen(
             arPlacedPlants.forEach { placement ->
                 key(placement.id) {
                     val isSelected = selectedPlacementId == placement.id
+                    val currentPlacement by rememberUpdatedState(placement)
+                    
+                    var localOffsetX by remember(placement.id) { mutableStateOf(placement.offsetX) }
+                    var localOffsetY by remember(placement.id) { mutableStateOf(placement.offsetY) }
+                    
+                    LaunchedEffect(placement.offsetX, placement.offsetY) {
+                        localOffsetX = placement.offsetX
+                        localOffsetY = placement.offsetY
+                    }
                     
                     Box(
                         modifier = Modifier
-                            .offset {
-                                IntOffset(
-                                    placement.offsetX.toInt(),
-                                    placement.offsetY.toInt()
-                                )
-                            }
                             .pointerInput(placement.id) {
                                 detectDragGestures(
                                     onDragStart = {
-                                        selectedPlacementId = placement.id
+                                        selectedPlacementId = currentPlacement.id
                                     },
                                     onDrag = { change, dragAmount ->
                                         change.consume()
+                                        localOffsetX += dragAmount.x
+                                        localOffsetY += dragAmount.y
+                                    },
+                                    onDragEnd = {
                                         viewModel.updateArPlantPosition(
-                                            placement.id,
-                                            dragAmount.x,
-                                            dragAmount.y
+                                            currentPlacement.id,
+                                            localOffsetX - currentPlacement.offsetX,
+                                            localOffsetY - currentPlacement.offsetY
+                                        )
+                                    },
+                                    onDragCancel = {
+                                        viewModel.updateArPlantPosition(
+                                            currentPlacement.id,
+                                            localOffsetX - currentPlacement.offsetX,
+                                            localOffsetY - currentPlacement.offsetY
                                         )
                                     }
+                                )
+                            }
+                            .offset {
+                                IntOffset(
+                                    localOffsetX.toInt(),
+                                    localOffsetY.toInt()
                                 )
                             }
                             .scale(placement.scale)
@@ -317,11 +343,13 @@ fun ArLensScreen(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                val templates = ClimatePlants.getTemplatesForClimate(activeLayout?.climate ?: "Temperate")
-                val availableAssetList = if (activePlants.isNotEmpty()) {
-                    activePlants.map { it.name to getEmojiForPlantName(it.name) }
-                } else {
-                    templates.map { it.name to it.iconEmoji }
+                val availableAssetList = remember(activePlants, activeLayout) {
+                    val templates = ClimatePlants.getTemplatesForClimate(activeLayout?.climate ?: "Temperate")
+                    if (activePlants.isNotEmpty()) {
+                        activePlants.map { it.name to getEmojiForPlantName(it.name) }
+                    } else {
+                        templates.map { it.name to it.iconEmoji }
+                    }
                 }
 
                 LazyRow(
@@ -360,6 +388,16 @@ fun ArLensScreen(
 
         // GESTURE PANEL WIDGETS
         if (selectedPlacement != null) {
+            var localScale by remember(selectedPlacement.id) { mutableStateOf(selectedPlacement.scale) }
+            var localRotation by remember(selectedPlacement.id) { mutableStateOf(selectedPlacement.rotationDegrees) }
+
+            LaunchedEffect(selectedPlacement.scale) {
+                localScale = selectedPlacement.scale
+            }
+            LaunchedEffect(selectedPlacement.rotationDegrees) {
+                localRotation = selectedPlacement.rotationDegrees
+            }
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -397,28 +435,34 @@ fun ArLensScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Scale:", fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(48.dp))
                         Slider(
-                            value = selectedPlacement.scale,
+                            value = localScale,
                             onValueChange = {
-                                viewModel.updateArPlantScaling(selectedPlacement.id, it)
+                                localScale = it
+                            },
+                            onValueChangeFinished = {
+                                viewModel.updateArPlantScaling(selectedPlacement.id, localScale)
                             },
                             valueRange = 0.3f..3.0f,
                             modifier = Modifier.weight(1f)
                         )
-                        Text(String.format("%.1fx", selectedPlacement.scale), fontSize = 11.sp, modifier = Modifier.width(36.dp))
+                        Text(String.format("%.1fx", localScale), fontSize = 11.sp, modifier = Modifier.width(36.dp))
                     }
 
                     // Rotation slider
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Rotate:", fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(48.dp))
                         Slider(
-                            value = selectedPlacement.rotationDegrees,
+                            value = localRotation,
                             onValueChange = {
-                                viewModel.updateArPlantRotation(selectedPlacement.id, it)
+                                localRotation = it
+                            },
+                            onValueChangeFinished = {
+                                viewModel.updateArPlantRotation(selectedPlacement.id, localRotation)
                             },
                             valueRange = 0f..360f,
                             modifier = Modifier.weight(1f)
                         )
-                        Text("${selectedPlacement.rotationDegrees.toInt()}°", fontSize = 11.sp, modifier = Modifier.width(36.dp))
+                        Text("${localRotation.toInt()}°", fontSize = 11.sp, modifier = Modifier.width(36.dp))
                     }
                 }
             }
