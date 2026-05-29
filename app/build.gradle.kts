@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.compose)
@@ -22,17 +24,22 @@ android {
 
   signingConfigs {
     create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+      val properties = Properties()
+      val localPropertiesFile = rootProject.file("local.properties")
+      if (localPropertiesFile.exists()) {
+        val inputStream = localPropertiesFile.inputStream()
+        properties.load(inputStream)
+        inputStream.close()
+      }
+
+      val keystorePath = properties.getProperty("release.keystore.path")
+        ?: System.getenv("KEYSTORE_PATH")
+        ?: "${rootDir}/my-upload-key.jks"
       storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
-    }
-    create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
+
+      storePassword = properties.getProperty("release.keystore.password") ?: System.getenv("STORE_PASSWORD")
+      keyAlias = properties.getProperty("release.key.alias") ?: System.getenv("KEY_ALIAS") ?: "upload"
+      keyPassword = properties.getProperty("release.key.password") ?: System.getenv("KEY_PASSWORD")
     }
   }
 
