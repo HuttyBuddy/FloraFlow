@@ -11,7 +11,7 @@
     <radialGradient id="sunGlow" cx="20%" cy="30%" r="70%">
       <stop offset="0%" stop-color="#FFE2C4" stop-opacity="0.18" />
       <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0" />
-     radialGradient>
+    </radialGradient>
 
     <!-- Glowing moonlight sage gradients for foliage highlights -->
     <linearGradient id="foliageSageGrad" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -74,7 +74,7 @@
     
     <!-- Stylized Top Mini Logo Icon -->
     <g transform="translate(0, -110) scale(0.18)">
-      <circle cx="0" cy="0" r="236" fill="url(#bgGrad)" />
+      <circle cx="0" cy="0" r="236" fill="url(#mainBgGrad)" />
       <!-- Left Leaf -->
       <path d="M0,80 C0,80 -105,23 -105,-72 C-105,-138 -39,-129 -20,-100 C-15,-93 -10,-82 -10,-72 C-10,-34 0,4 0,80 Z" fill="#ACCFC6" />
       <!-- Right Leaf -->

@@ -128,7 +128,6 @@ fun BillingDialog(
             // Finish purchase action
             viewModel.processPurchase(
                 tier = activePlan.name,
-                price = activePlan.price,
                 isAnnual = activePlan.isAnnual
             )
             currentStep = 5

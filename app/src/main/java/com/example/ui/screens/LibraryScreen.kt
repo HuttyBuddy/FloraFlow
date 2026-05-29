@@ -760,17 +760,40 @@ fun PlantCareTrackerCard(
                         ) {
                             Icon(Icons.Default.DeleteOutline, contentDescription = "Delete", modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Delete Plant", fontSize = 12.sp)
+                            Text("Delete", fontSize = 12.sp)
                         }
 
-                        Button(
-                            onClick = onConsultAi,
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                            shape = RoundedCornerShape(8.dp)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(Icons.Default.SmartToy, contentDescription = "AI icon", modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("AI Guidance", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+                            Button(
+                                onClick = {
+                                    val query = java.net.URLEncoder.encode("${plant.name} seeds starter organic", "UTF-8")
+                                    uriHandler.openUri("https://www.amazon.com/s?k=$query&tag=floraflow-20")
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Icon(Icons.Default.ShoppingCart, contentDescription = "Buy Seeds", modifier = Modifier.size(14.dp), tint = Color.White)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Buy Seeds", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+
+                            Button(
+                                onClick = onConsultAi,
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Icon(Icons.Default.SmartToy, contentDescription = "AI icon", modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("AI Help", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
@@ -944,43 +967,76 @@ fun SpeciesEncyclopediaCard(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     // planting control
-                    if (isPlanted) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
-                                .padding(12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Celebration, contentDescription = "Planted success icon", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (isPlanted) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1.2f)
+                                    .height(44.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                    .padding(horizontal = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        Icons.Default.Celebration,
+                                        contentDescription = "Planted success icon",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        "Planted & Growing!",
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        } else {
+                            Button(
+                                onClick = {
+                                    if (activeLayoutAvailable) {
+                                        onSowPlant()
+                                    }
+                                },
+                                enabled = activeLayoutAvailable,
+                                modifier = Modifier.weight(1.2f).height(44.dp),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(Icons.Default.LocalFlorist, contentDescription = "Cultivate icons", modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    "Planted & Growing in Greenhouse Layout!",
-                                    color = MaterialTheme.colorScheme.primary,
+                                    if (activeLayoutAvailable) "Sow in Garden" else "Choose Layout First",
+                                    fontWeight = FontWeight.Bold,
                                     fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold
+                                    maxLines = 1
                                 )
                             }
                         }
-                    } else {
+
+                        val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
                         Button(
                             onClick = {
-                                if (activeLayoutAvailable) {
-                                    onSowPlant()
-                                }
+                                val query = java.net.URLEncoder.encode("${template.name} seeds starter plant", "UTF-8")
+                                uriHandler.openUri("https://www.amazon.com/s?k=$query&tag=floraflow-20")
                             },
-                            enabled = activeLayoutAvailable,
-                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                            modifier = Modifier.weight(0.8f).height(44.dp),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Icon(Icons.Default.LocalFlorist, contentDescription = "Cultivate icons", modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Icon(Icons.Default.ShoppingCart, contentDescription = "Buy Seeds", modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                if (activeLayoutAvailable) "Sow in My Active Garden" else "Choose primary layout in Dashboard first",
+                                "Buy Seeds",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 12.sp
+                                fontSize = 11.sp,
+                                maxLines = 1
                             )
                         }
                     }
