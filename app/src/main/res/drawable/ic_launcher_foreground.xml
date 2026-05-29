@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Left Small Budding Leaf (Moonlight Sage Soft Glow) -->
+    <path
+        android:pathData="M54,80 C54,80 32,68 32,48 C32,34 46,36 50,42 C51,43.5 52,46 52,48 C52,56 54,64 54,80 Z"
+        android:fillType="nonZero">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="32"
+                android:startY="36"
+                android:endX="54"
+                android:endY="80">
+                <item
+                    android:color="#88ACCFC6"
+                    android:offset="0.0" />
+                <item
+                    android:color="#ACCFC6"
+                    android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Right Major Aesthetic Leaf (Wicker Oak Bright Glow) -->
+    <path
+        android:pathData="M54,80 C54,80 50,58 64,42 C74,30 84,34 80,50 C76,64 62,74 54,80 Z"
+        android:fillType="nonZero">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="50"
+                android:startY="30"
+                android:endX="80"
+                android:endY="80">
+                <item
+                    android:color="#FFE2C4A2"
+                    android:offset="0.0" />
+                <item
+                    android:color="#EADFCD"
+                    android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Elegant Center Sproutine Vein Core Accent -->
+    <path
+        android:pathData="M54,80 L54,46"
+        android:strokeColor="#1F483E"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round" />
+</vector>
