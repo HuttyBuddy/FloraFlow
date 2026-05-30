@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient: Crisp deep therapeutic forest green -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#122A24" />
+      <stop offset="50%" stop-color="#1F483E" />
+      <stop offset="100%" stop-color="#2D5446" />
+    </linearGradient>
+    
+    <!-- Left Leaf Gradient: Soft glowing moonlit sage -->
+    <linearGradient id="leftLeafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ACCFC6" />
+      <stop offset="100%" stop-color="#739B91" />
+    </linearGradient>
+
+    <!-- Right Leaf Gradient: Warm wicker oak glow -->
+    <linearGradient id="rightLeafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE2C4" />
+      <stop offset="100%" stop-color="#E2C4A2" />
+    </linearGradient>
+
+    <!-- Ring Gradient: Sophisticated golden border frame -->
+    <linearGradient id="ringGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#E2C4A2" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#ACCFC6" />
+    </linearGradient>
+
+    <!-- Shadow filter for premium visual volume and depth -->
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#091411" flood-opacity="0.5" />
+    </filter>
+  </defs>
+
+  <!-- 1. Deep solid forest gradient background circle -->
+  <circle cx="256" cy="256" r="236" fill="url(#bgGrad)" />
+
+  <!-- 2. Sophisticated delicate circular border frame -->
+  <circle cx="256" cy="256" r="212" fill="none" stroke="url(#ringGrad)" stroke-width="6" stroke-dasharray="14 10" opacity="0.85" />
+  <circle cx="256" cy="256" r="222" fill="none" stroke="url(#ringGrad)" stroke-width="2" opacity="0.4" />
+
+  <!-- 3. MAIN LOGO GRAPHIC GROUP (With Drop Shadow Filter) -->
+  <g filter="url(#dropShadow)">
+    <!-- Elegant Center Sprouting Stem -->
+    <path d="M256,380 C256,380 254,260 254,180" stroke="#122A24" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.3" />
+    <path d="M256,380 C256,380 256,260 256,180" stroke="#E2C4A2" stroke-width="4" stroke-linecap="round" fill="none" />
+
+    <!-- Left Small Budding Leaf (Glow Accent) -->
+    <path d="M256,380 C256,380 151,323 151,228 C151,162 217,171 236,200 C241,207 246,218 246,228 C246,266 256,304 256,380 Z" 
+          fill="url(#leftLeafGrad)" />
+
+    <!-- Right Major Premium Aesthetic Leaf -->
+    <path d="M256,380 C256,380 237,276 303,200 C350,143 398,162 380,238 C361,304 294,351 256,380 Z" 
+          fill="url(#rightLeafGrad)" />
+
+    <!-- Pure White Central Highlights defining botanical micro-details -->
+    <path d="M256,380 Q220,310 196,260" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.35" />
+    <path d="M256,380 Q296,305 330,250" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.4" />
+  </g>
+
+  <!-- 4. Top Glow Filter Overlay -->
+  <circle cx="256" cy="120" r="140" fill="#FFFFFF" opacity="0.04" />
+</svg>
