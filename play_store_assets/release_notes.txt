@@ -1,0 +1,8 @@
+FloraFlow - Version 2 Release Notes
+
+What's New:
+- 🌿 Garden Library: Introduced our botanical database featuring soil pH, sunlight needs, and companion planting insights.
+- 💳 Premium Billing: Added support for unlocking advanced garden design features.
+- 🔒 Privacy Updates: Enhanced privacy policy and updated support contact information.
+- 🛠️ Performance & Stability: Cleaned up project structure and optimized performance for initial closed testing.
+- ✨ Visuals: Improved AR Climate Simulator with interactive filters including "Cherry Blossoms" and "Fireflies."

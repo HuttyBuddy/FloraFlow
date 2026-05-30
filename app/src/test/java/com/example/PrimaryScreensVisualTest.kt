@@ -3,6 +3,8 @@ package com.example
 import android.app.Application
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import com.example.ui.screens.*
 import com.example.ui.theme.MyApplicationTheme
@@ -42,6 +44,18 @@ class PrimaryScreensVisualTest {
         }
         composeTestRule.waitForIdle()
         composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/onboarding_screen.png")
+    }
+
+    @Test
+    @Config(qualifiers = "w1280dp-h800dp-land-xhdpi")
+    fun testOnboardingScreenTabletLandscapeVisual() {
+        composeTestRule.setContent {
+            MyApplicationTheme {
+                OnboardingScreen(viewModel = viewModel)
+            }
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/onboarding_screen_tablet_landscape.png")
     }
 
     @Test
@@ -103,5 +117,89 @@ class PrimaryScreensVisualTest {
         }
         composeTestRule.waitForIdle()
         composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/ar_lens_screen.png")
+    }
+
+    @Test
+    fun testArLensScreenWithSelectionVisual() {
+        viewModel.completeOnboarding()
+        viewModel.restorePurchases()
+        viewModel.addArPlant("Bonsai Cherry", "🌳", 10f, 15f)
+        composeTestRule.setContent {
+            MyApplicationTheme {
+                ArLensScreen(viewModel = viewModel)
+            }
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithTag("ar_placement_1").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/ar_lens_screen_selected.png")
+    }
+
+    @Test
+    @Config(qualifiers = "w1280dp-h800dp-land-xhdpi")
+    fun testArLensScreenTabletLandscapeVisual() {
+        viewModel.completeOnboarding()
+        viewModel.restorePurchases()
+        viewModel.addArPlant("Japanese Maple", "🍁", 5f, 10f)
+        composeTestRule.setContent {
+            MyApplicationTheme {
+                ArLensScreen(viewModel = viewModel)
+            }
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/ar_lens_screen_tablet_landscape.png")
+    }
+
+    @Test
+    fun testPremiumUpsellScreenVisual() {
+        composeTestRule.setContent {
+            MyApplicationTheme {
+                PremiumUpsellScreen(onUpgradeClick = {}, onRestoreClick = {})
+            }
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/premium_upsell_screen.png")
+    }
+
+    @Test
+    @Config(qualifiers = "w1280dp-h800dp-land-xhdpi")
+    fun testPremiumUpsellScreenTabletLandscapeVisual() {
+        composeTestRule.setContent {
+            MyApplicationTheme {
+                PremiumUpsellScreen(onUpgradeClick = {}, onRestoreClick = {})
+            }
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/premium_upsell_screen_tablet_landscape.png")
+    }
+
+    @Test
+    fun testSubscriptionManagementDialogVisual() {
+        viewModel.completeOnboarding()
+        viewModel.restorePurchases() // Ensure user is pro
+        composeTestRule.setContent {
+            MyApplicationTheme {
+                SubscriptionManagementDialog(
+                    visible = true,
+                    onDismiss = {},
+                    viewModel = viewModel
+                )
+            }
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/subscription_management_dialog.png")
+    }
+
+    @Test
+    fun testBillingDialogVisual() {
+        viewModel.completeOnboarding()
+        viewModel.setBillingDialogVisible(true) // Open billing console
+        composeTestRule.setContent {
+            MyApplicationTheme {
+                BillingDialog(viewModel = viewModel)
+            }
+        }
+        composeTestRule.waitForIdle()
+        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/billing_dialog.png")
     }
 }

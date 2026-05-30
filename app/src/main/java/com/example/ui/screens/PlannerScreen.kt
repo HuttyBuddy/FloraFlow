@@ -98,6 +98,11 @@ fun PlannerScreen(
     var highlightedPlantName by remember { mutableStateOf<String?>(null) }
     var showBlueprintDialog by remember { mutableStateOf(value = false) }
 
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val isTablet = configuration.smallestScreenWidthDp >= 600
+    val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
+
     val soilThemes = listOf(
         SoilTheme(
             name = "Loam 🟫",
@@ -159,15 +164,7 @@ fun PlannerScreen(
             )
         }
     } else {
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Layout Info Card
+        val layoutInfoContent = @Composable {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -219,8 +216,9 @@ fun PlannerScreen(
                     )
                 }
             }
+        }
 
-            // Quick AI Architect Controls
+        val aiArchitectControlsContent = @Composable {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -259,8 +257,9 @@ fun PlannerScreen(
                     )
                 }
             }
+        }
 
-            // Theme Preset Selector Row
+        val substrateSelectorContent = @Composable {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -310,13 +309,13 @@ fun PlannerScreen(
                     )
                 }
             }
+        }
 
-            // Interactive Actions Panel
+        val actionsPanelContent = @Composable {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Auto-Sow Seeds Button
                 Button(
                     onClick = {
                         viewModel.autoSowClimateSeeds()
@@ -333,7 +332,6 @@ fun PlannerScreen(
                     Text("Auto-Sow Seeds 🌱", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
 
-                // Uproot All Seeds Button
                 FilledTonalButton(
                     onClick = {
                         viewModel.clearLayoutGrid()
@@ -350,8 +348,9 @@ fun PlannerScreen(
                     Text("Uproot All 🧹", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
+        }
 
-            // Interactive 5x5 Grid Planner Card
+        val gridPlannerContent = @Composable {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -396,7 +395,6 @@ fun PlannerScreen(
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
 
-                    // 5x5 Matrix implementation using standard nested Columns and Rows
                     Column(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
@@ -412,7 +410,6 @@ fun PlannerScreen(
                                     val isHighlighted = highlightedPlantName != null && item?.plantName == highlightedPlantName
                                     val hasSynergy = item != null && hasNeighborSynergy(r, c, activeGridItems)
 
-                                    // Custom scale dynamic feedback
                                     val scaleVal by animateFloatAsState(
                                         targetValue = if (isHighlighted) 1.08f else 1f,
                                         animationSpec = spring(
@@ -517,7 +514,6 @@ fun PlannerScreen(
 
                     Spacer(modifier = Modifier.height(14.dp))
 
-                    // Interactive Filters Legend Row
                     Text(
                         "Legend (Tap to highlight on layout):",
                         style = MaterialTheme.typography.labelSmall,
@@ -570,8 +566,9 @@ fun PlannerScreen(
                     }
                 }
             }
+        }
 
-            // Coverage Density Gauge Card
+        val progressDensityContent = @Composable {
             val countPlanted = activeGridItems.size
             val densityPercentage = (countPlanted * 100) / 25
             Card(
@@ -610,8 +607,9 @@ fun PlannerScreen(
                      )
                 }
             }
+        }
 
-            // CAD Blueprint Export Action
+        val cadBlueprintExportContent = @Composable {
             Button(
                 onClick = { showBlueprintDialog = true },
                 colors = ButtonDefaults.buttonColors(
@@ -625,8 +623,60 @@ fun PlannerScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("RENDER ARCHITECT CAD BLUEPRINT 📐", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
             }
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
+        if (!isWideScreen) {
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                layoutInfoContent()
+                aiArchitectControlsContent()
+                substrateSelectorContent()
+                actionsPanelContent()
+                gridPlannerContent()
+                progressDensityContent()
+                cadBlueprintExportContent()
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        } else {
+            Row(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(0.55f)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    gridPlannerContent()
+                    progressDensityContent()
+                    cadBlueprintExportContent()
+                    Spacer(modifier = Modifier.height(80.dp))
+                }
+
+                Column(
+                    modifier = Modifier
+                        .weight(0.45f)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    layoutInfoContent()
+                    aiArchitectControlsContent()
+                    substrateSelectorContent()
+                    actionsPanelContent()
+                    Spacer(modifier = Modifier.height(80.dp))
+                }
+            }
         }
     }
 
@@ -964,7 +1014,19 @@ fun PlannerScreen(
 // Utility to assign emojis based on plant name keywords
 fun getEmojiForPlantName(name: String): String {
     val low = name.lowercase()
+    
+    // First, look for exact or substring matches in ClimatePlants.ALL_TEMPLATES
+    val exactMatch = ClimatePlants.ALL_TEMPLATES.find { it.name.equals(name, ignoreCase = true) }
+    if (exactMatch != null) return exactMatch.iconEmoji
+    
+    val substringMatch = ClimatePlants.ALL_TEMPLATES.find {
+        name.contains(it.name, ignoreCase = true) || it.name.contains(name, ignoreCase = true)
+    }
+    if (substringMatch != null) return substringMatch.iconEmoji
+
     return when {
+         low.contains("bonsai") -> "🪴"
+         low.contains("cherry") -> "🌸"
          low.contains("rose") -> "🌹"
          low.contains("cact") || low.contains("aloe") -> "🌵"
          low.contains("marigold") || low.contains("aster") -> "🌼"

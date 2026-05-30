@@ -38,6 +38,8 @@ import com.example.data.model.MoodLog
 import com.example.ui.viewmodel.GardenViewModel
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.graphics.Path
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,404 +57,450 @@ fun DashboardScreen(
     var showLogMoodDialog by remember { mutableStateOf(false) }
     var showLayoutSelector by remember { mutableStateOf(false) }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 80.dp)
-    ) {
-        // --- Header Section ---
-        item {
-            val darkTheme = isSystemInDarkTheme()
-            val gradientColors = if (darkTheme) {
-                listOf(
-                    Color(0xFF19251D), // Deep botanical moss
-                    Color(0xFF0D1410)  // Dark soil forest
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val isTablet = configuration.smallestScreenWidthDp >= 600
+    val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
+
+    val headerContent = @Composable {
+        val darkTheme = isSystemInDarkTheme()
+        val gradientColors = if (darkTheme) {
+            listOf(
+                Color(0xFF19251D), // Deep botanical moss
+                Color(0xFF0D1410)  // Dark soil forest
+            )
+        } else {
+            listOf(
+                Color(0xFFE6F3EC), // Dewy morning mint
+                Color(0xFFF6FAF7)  // Pale spring leaf mist
+            )
+        }
+        
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("welcome_card")
+                .clip(RoundedCornerShape(24.dp))
+                .background(Brush.linearGradient(gradientColors))
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
+                    shape = RoundedCornerShape(24.dp)
                 )
-            } else {
-                listOf(
-                    Color(0xFFE6F3EC), // Dewy morning mint
-                    Color(0xFFF6FAF7)  // Pale spring leaf mist
-                )
-            }
-            
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("welcome_card")
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(Brush.linearGradient(gradientColors))
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
-                        shape = RoundedCornerShape(24.dp)
-                    )
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(24.dp)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "My Dream Garden",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 0.5.sp
-                            )
-                            Text(
-                                text = "Therapeutic Botanical Design",
-                                style = MaterialTheme.typography.displaySmall.copy(fontSize = 25.sp),
-                                fontWeight = FontWeight.Black,
-                                color = if (darkTheme) Color(0xFFE5E2D9) else Color(0xFF1B1C17),
-                                modifier = Modifier.padding(top = 2.dp)
-                            )
-                        }
-                        
-                        if (isPremium) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFFFFF8E1))
-                                    .clickable { viewModel.setSubscriptionManagementVisible(true) }
-                                    .padding(4.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.WorkspacePremium,
-                                    contentDescription = "Pro Member - Tap to Manage Subscription",
-                                    tint = Color(0xFFFFB300),
-                                    modifier = Modifier.size(28.dp)
-                                )
-                            }
-                        } else {
-                            Button(
-                                onClick = { viewModel.upgradeToPremium() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF4C7B60),
-                                    contentColor = Color.White
-                                ),
-                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.height(34.dp)
-                            ) {
-                                Text("GO PRO ✨", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    val currentLayout = activeLayout
-                    if (currentLayout != null) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Currently Cultivating: ${currentLayout.name}",
-                            style = MaterialTheme.typography.bodyLarge,
+                            text = "My Dream Garden",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
+                            letterSpacing = 0.5.sp
                         )
-                        Row(
-                            modifier = Modifier.padding(top = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        Text(
+                            text = "Therapeutic Botanical Design",
+                            style = MaterialTheme.typography.displaySmall.copy(fontSize = 25.sp),
+                            fontWeight = FontWeight.Black,
+                            color = if (darkTheme) Color(0xFFE5E2D9) else Color(0xFF1B1C17),
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+                    
+                    if (isPremium) {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFFFF8E1))
+                                .clickable { viewModel.setSubscriptionManagementVisible(true) }
+                                .padding(4.dp),
+                            contentAlignment = Alignment.Center
                         ) {
-                            SuggestionChip(
-                                onClick = {},
-                                label = { Text(currentLayout.style, fontWeight = FontWeight.Medium) },
-                                colors = SuggestionChipDefaults.suggestionChipColors(
-                                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
-                                ),
-                                border = SuggestionChipDefaults.suggestionChipBorder(
-                                    enabled = true,
-                                    borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                )
-                            )
-                            SuggestionChip(
-                                onClick = {},
-                                label = { Text(currentLayout.climate, fontWeight = FontWeight.Medium) },
-                                colors = SuggestionChipDefaults.suggestionChipColors(
-                                    containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
-                                ),
-                                border = SuggestionChipDefaults.suggestionChipBorder(
-                                    enabled = true,
-                                    borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
-                                )
+                            Icon(
+                                Icons.Default.WorkspacePremium,
+                                contentDescription = "Pro Member - Tap to Manage Subscription",
+                                tint = Color(0xFFFFB300),
+                                modifier = Modifier.size(28.dp)
                             )
                         }
                     } else {
-                        Text(
-                            text = "Choose or create a themed garden layout template below to get started with your layout generated design!",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        Button(
+                            onClick = { viewModel.upgradeToPremium() },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF4C7B60),
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) {
+                            Text("GO PRO ✨", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                val currentLayout = activeLayout
+                if (currentLayout != null) {
+                    Text(
+                        text = "Currently Cultivating: ${currentLayout.name}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Row(
+                        modifier = Modifier.padding(top = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        SuggestionChip(
+                            onClick = {},
+                            label = { Text(currentLayout.style, fontWeight = FontWeight.Medium) },
+                            colors = SuggestionChipDefaults.suggestionChipColors(
+                                containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
+                            ),
+                            border = SuggestionChipDefaults.suggestionChipBorder(
+                                enabled = true,
+                                borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                            )
+                        )
+                        SuggestionChip(
+                            onClick = {},
+                            label = { Text(currentLayout.climate, fontWeight = FontWeight.Medium) },
+                            colors = SuggestionChipDefaults.suggestionChipColors(
+                                containerColor = MaterialTheme.colorScheme.background.copy(alpha = 0.8f)
+                            ),
+                            border = SuggestionChipDefaults.suggestionChipBorder(
+                                enabled = true,
+                                borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                            )
                         )
                     }
+                } else {
+                    Text(
+                        text = "Choose or create a themed garden layout template below to get started with your layout generated design!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
+    }
 
-        // --- Quick Actions ---
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+    val quickActionsContent = @Composable {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Button(
+                onClick = { showCreateDialog = true },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(54.dp)
+                    .testTag("create_layout_button"),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
-                Button(
-                    onClick = { showCreateDialog = true },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(54.dp)
-                        .testTag("create_layout_button"),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                    ),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("New Garden", fontWeight = FontWeight.Bold)
-                }
-
-                Button(
-                    onClick = { showLayoutSelector = true },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(54.dp)
-                        .testTag("switch_layout_button"),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                    ),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-                ) {
-                    Icon(Icons.Default.SwapHoriz, contentDescription = "Switch")
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Switch Style", fontWeight = FontWeight.Bold)
-                }
+                Icon(Icons.Default.Add, contentDescription = "Add")
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("New Garden", fontWeight = FontWeight.Bold)
             }
-        }
 
-        // --- Quick Statistics Row ---
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            Button(
+                onClick = { showLayoutSelector = true },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(54.dp)
+                    .testTag("switch_layout_button"),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
-                // Card for total minutes gardening
-                val totalMinutes = moodLogs.sumOf { it.activityMinutes }
-                Card(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(Icons.Default.Timer, contentDescription = "Time", tint = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = if (totalMinutes >= 60) "${totalMinutes / 60}h ${totalMinutes % 60}m" else "${totalMinutes}m",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Text(
-                            text = "Outdoor Sesh",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                }
-
-                // Card for average well-being mood score
-                val avgMood = if (moodLogs.isNotEmpty()) moodLogs.map { it.moodScore }.average() else 0.0
-                Card(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(Icons.Default.Favorite, contentDescription = "Wellness", tint = MaterialTheme.colorScheme.error)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = if (avgMood > 0) String.format("%.1f", avgMood) + " / 5" else "N/A",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Text(
-                            text = "Wellness Rating",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                }
-
-                // Card for cultivated plants count
-                Card(
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(Icons.Default.Spa, contentDescription = "Plants", tint = MaterialTheme.colorScheme.tertiary)
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text(
-                            text = "${activePlants.size} active",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                        Text(
-                            text = "Cared Items",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                }
+                Icon(Icons.Default.SwapHoriz, contentDescription = "Switch")
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Switch Style", fontWeight = FontWeight.Bold)
             }
         }
+    }
 
-        // --- Custom Canvas Visual Graph (The therapeutic wellness correlation) ---
-        item {
+    val statisticsContent = @Composable {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Card for total minutes gardening
+            val totalMinutes = moodLogs.sumOf { it.activityMinutes }
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Therapeutic Growth Sync",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "Outdoor Gardening Time vs. Personal Well-being",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        }
-                        IconButton(onClick = { showLogMoodDialog = true }) {
-                            Icon(
-                                Icons.Default.EditCalendar,
-                                contentDescription = "Log Session",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                    Icon(Icons.Default.Timer, contentDescription = "Time", tint = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = if (totalMinutes >= 60) "${totalMinutes / 60}h ${totalMinutes % 60}m" else "${totalMinutes}m",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                    Text(
+                        text = "Outdoor Sesh",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
+
+            // Card for average well-being mood score
+            val avgMood = if (moodLogs.isNotEmpty()) moodLogs.map { it.moodScore }.average() else 0.0
+            Card(
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(Icons.Default.Favorite, contentDescription = "Wellness", tint = MaterialTheme.colorScheme.error)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = if (avgMood > 0) String.format("%.1f", avgMood) + " / 5" else "N/A",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                    Text(
+                        text = "Wellness Rating",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
+
+            // Card for cultivated plants count
+            Card(
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(Icons.Default.Spa, contentDescription = "Plants", tint = MaterialTheme.colorScheme.tertiary)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "${activePlants.size} active",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                    Text(
+                        text = "Cared Items",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
+        }
+    }
+
+    val canvasChartContent = @Composable {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "Therapeutic Growth Sync",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Outdoor Gardening Time vs. Personal Well-being",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
                     }
+                    IconButton(onClick = { showLogMoodDialog = true }) {
+                        Icon(
+                            Icons.Default.EditCalendar,
+                            contentDescription = "Log Session",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                    if (moodLogs.size >= 2) {
-                        InteractiveTherapyChart(logs = moodLogs.take(8).reversed())
-                    } else {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(160.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.background,
-                                    shape = RoundedCornerShape(12.dp)
-                                ),
-                            contentAlignment = Alignment.Center
+                if (moodLogs.size >= 2) {
+                    InteractiveTherapyChart(logs = moodLogs.take(8).reversed())
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(160.dp)
+                            .background(
+                                MaterialTheme.colorScheme.background,
+                                shape = RoundedCornerShape(12.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(16.dp)
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.padding(16.dp)
+                            Text(
+                                "✨ First insights require at least two logs",
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center
+                            )
+                            Text(
+                                "Log therapeutic session minutes and mood ratings while gardening daily to correlate variables.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.secondary,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { showLogMoodDialog = true },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                             ) {
-                                Text(
-                                    "✨ First insights require at least two logs",
-                                    fontWeight = FontWeight.Medium,
-                                    textAlign = TextAlign.Center
-                                )
-                                Text(
-                                    "Log therapeutic session minutes and mood ratings while gardening daily to correlate variables.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Button(
-                                    onClick = { showLogMoodDialog = true },
-                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                                ) {
-                                    Text("Log Session Now")
-                                }
+                                Text("Log Session Now")
                             }
                         }
                     }
                 }
             }
         }
+    }
 
-        // --- Recent Mood Logs List ---
-        item {
-            Text(
-                text = "Gardening & Mental Well-being Logs",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
+    val logsHeaderContent = @Composable {
+        Text(
+            text = "Gardening & Mental Well-being Logs",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+    }
 
+    val logsListContent = @Composable {
         if (moodLogs.isEmpty()) {
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Spa,
-                            contentDescription = "Empty Log",
-                            modifier = Modifier.size(48.dp),
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "No Mood & Garden Logs Yet",
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "Record how you feel after spending time outdoors styling plants. Your botanic health directly syncs with mental release!",
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
+                    Icon(
+                        Icons.Default.Spa,
+                        contentDescription = "Empty Log",
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "No Mood & Garden Logs Yet",
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Record how you feel after spending time outdoors styling plants. Your botanic health directly syncs with mental release!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
                 }
             }
         } else {
-            items(moodLogs) { log ->
-                MoodLogItemCard(log = log, onDelete = { viewModel.deleteMoodLog(log.id) })
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                moodLogs.forEach { log ->
+                    MoodLogItemCard(log = log, onDelete = { viewModel.deleteMoodLog(log.id) })
+                }
+            }
+        }
+    }
+
+    if (!isWideScreen) {
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 80.dp)
+        ) {
+            item { headerContent() }
+            item { quickActionsContent() }
+            item { statisticsContent() }
+            item { canvasChartContent() }
+            item { logsHeaderContent() }
+            item { logsListContent() }
+        }
+    } else {
+        Row(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .weight(0.5f)
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                headerContent()
+                quickActionsContent()
+                statisticsContent()
+                Spacer(modifier = Modifier.height(80.dp))
+            }
+
+            Column(
+                modifier = Modifier
+                    .weight(0.5f)
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                canvasChartContent()
+                logsHeaderContent()
+                logsListContent()
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }

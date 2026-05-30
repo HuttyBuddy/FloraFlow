@@ -10,6 +10,8 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -29,6 +31,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +46,18 @@ import kotlinx.coroutines.isActive
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
+
+// Imports for Camera permission and CameraX integration
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+
 
 // Local state class for tracking enhanced property overrides per sticker locally
 data class PlantExtraProps(
@@ -74,7 +89,7 @@ data class ArParticle(
     var driftAngle: Float
 )
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun ArLensScreen(
     viewModel: GardenViewModel,
@@ -109,20 +124,108 @@ fun ArLensScreen(
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
     val arPlacedPlants by viewModel.arPlacedPlants.collectAsStateWithLifecycle()
 
+    // Bulletproof Emulator Detection
+    val isEmulator = remember {
+        val model = android.os.Build.MODEL.lowercase()
+        val hardware = android.os.Build.HARDWARE.lowercase()
+        val brand = android.os.Build.BRAND.lowercase()
+        val device = android.os.Build.DEVICE.lowercase()
+        val product = android.os.Build.PRODUCT.lowercase()
+        val finger = android.os.Build.FINGERPRINT.lowercase()
+        val board = android.os.Build.BOARD.lowercase()
+        val manufacturer = android.os.Build.MANUFACTURER.lowercase()
+        
+        model.contains("emulator") ||
+        model.contains("simulator") ||
+        model.contains("virtual") ||
+        model.contains("gphone") ||
+        model.contains("vbox") ||
+        model.contains("sdk") ||
+        brand.contains("generic") ||
+        brand.startsWith("generic") ||
+        (brand.contains("google") && (device.startsWith("emu") || device.contains("gphone") || device.contains("pixel_gphone") || product.contains("emu") || product.contains("sdk"))) ||
+        device.contains("generic") ||
+        device.contains("emu") ||
+        device.contains("vbox") ||
+        device.contains("nox") ||
+        product.contains("sdk_gphone") ||
+        product.contains("gphone") ||
+        product.contains("ranchu") ||
+        product.contains("goldfish") ||
+        product.contains("vbox") ||
+        product.contains("simulator") ||
+        product.contains("virtual") ||
+        product.contains("sdk") ||
+        finger.startsWith("generic") ||
+        finger.startsWith("unknown") ||
+        finger.contains("vbox") ||
+        finger.contains("test-keys") ||
+        hardware.contains("goldfish") ||
+        hardware.contains("ranchu") ||
+        hardware.contains("nox") ||
+        hardware.contains("vbox") ||
+        hardware.contains("cutf_cvm") ||
+        hardware.contains("kvm") ||
+        hardware.contains("virtio") ||
+        hardware.contains("qemu") ||
+        board.contains("goldfish") ||
+        board.contains("ranchu") ||
+        board.contains("vbox") ||
+        board.contains("qemu") ||
+        manufacturer.contains("genymotion") ||
+        manufacturer.contains("nox") ||
+        manufacturer.contains("vbox") ||
+        manufacturer.contains("google_sdk") ||
+        (manufacturer.contains("google") && (model.contains("gphone") || device.startsWith("emu") || product.contains("gphone") || product.contains("sdk")))
+    }
+
+    var viewportSize by remember { mutableStateOf(androidx.compose.ui.unit.IntSize.Zero) }
+
+    // Camera Permission State
+    val cameraPermissionState = rememberPermissionState(
+        android.Manifest.permission.CAMERA
+    )
+
     // ENHANCED AR CONTROLS STATE
     var selectedPlacementId by remember { mutableStateOf<Int?>(null) }
-    var selectedBackgroundPreset by remember { mutableStateOf("Lawn Garden Grid") }
     
+    // ENHANCEMENT 2: Dynamic Weather with real-time particle rendering loop
+    var activeWeather by remember { mutableStateOf("Clear Sky") }
+
+    var selectedBackgroundPreset by remember {
+        mutableStateOf(
+            if (isEmulator) "Simulated Live Yard"
+            else if (cameraPermissionState.status.isGranted) "Live Camera"
+            else "Lawn Garden Grid"
+        )
+    }
+
+    var useGyroscope by remember { mutableStateOf(!isEmulator) }
+
+    val useVirtualBackdrop = remember(selectedBackgroundPreset) {
+        selectedBackgroundPreset != "Live Camera" && selectedBackgroundPreset != "Simulated Live Yard"
+    }
+
     // Theme backdrops
-    val bgGradient = remember(selectedBackgroundPreset) {
+    val bgGradient = remember(selectedBackgroundPreset, activeWeather) {
         when (selectedBackgroundPreset) {
             "Sunny Patio" -> Brush.verticalGradient(listOf(Color(0xFFFFD54F), Color(0xFFFFB74D), Color(0xFFD84315)))
             "Balcony Deck" -> Brush.verticalGradient(listOf(Color(0xFF90A4AE), Color(0xFF546E7A), Color(0xFF263238)))
             "Cyber Greenhouse" -> Brush.verticalGradient(listOf(Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0A0F1D)))
             "English Estate" -> Brush.verticalGradient(listOf(Color(0xFF2E7D32), Color(0xFF1B5E20), Color(0xFF0D5316)))
+            "Simulated Live Yard" -> {
+                when (activeWeather) {
+                    "Gentle Rain" -> Brush.verticalGradient(listOf(Color(0xFF37474F), Color(0xFF263238), Color(0xFF1A237E)))
+                    "Cherry Blossoms" -> Brush.verticalGradient(listOf(Color(0xFFF8BBD0), Color(0xFFE1BEE7), Color(0xFFD1C4E9)))
+                    "Fireflies Spark" -> Brush.verticalGradient(listOf(Color(0xFF0D1B2A), Color(0xFF1B263B), Color(0xFF000814)))
+                    else -> Brush.verticalGradient(listOf(Color(0xFF29B6F6), Color(0xFF26A69A), Color(0xFF1B5E20))) // Clear Sky / sunny yard
+                }
+            }
+            "Live Camera" -> Brush.verticalGradient(listOf(Color.Transparent, Color.Transparent))
             else -> Brush.verticalGradient(listOf(Color(0xFF386641), Color(0xFF6A994E), Color(0xFFA7C957)))
         }
     }
+
 
     // Dynamic property overrides map helper
     val localOverrides = remember { mutableStateMapOf<Int, PlantExtraProps>() }
@@ -148,8 +251,7 @@ fun ArLensScreen(
         }
     }
 
-    // ENHANCEMENT 2: Dynamic Weather with real-time particle rendering loop
-    var activeWeather by remember { mutableStateOf("Clear Sky") }
+
 
     // Local snapshot sandbox collection
     val savedSnapshots = remember { mutableStateListOf<DesignSnapshot>() }
@@ -195,6 +297,17 @@ fun ArLensScreen(
         label = "radar_sweep"
     )
 
+    // Holographic laser sweep animation
+    val laserProgress by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "laser_sweep"
+    )
+
     // Infinite transition ticker to drive simulated climate movements smoothly on the canvas draw stage (saves 95% CPU, 0 recompositions)
     val climateTransition = rememberInfiniteTransition(label = "climate_ticker")
     val climateTimeFactor by climateTransition.animateFloat(
@@ -228,14 +341,7 @@ fun ArLensScreen(
         }
     }
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        
-        // 1. SMART ADAPTIVE AR STEWARDS HEADER CARD
+    val headerBlock = @Composable {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -275,7 +381,7 @@ fun ArLensScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            "Tweak time, filters, and plant properties local variables in 50x Holo Mode.",
+                            "Tweak time, filters, and plant properties in 50x Holo Spatial Mode.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                             fontSize = 11.sp
@@ -306,8 +412,9 @@ fun ArLensScreen(
                 }
             }
         }
+    }
 
-        // 2. ENHANCED SIMULATOR SELECTORS ROW
+    val selectorsBlock = @Composable {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -317,7 +424,133 @@ fun ArLensScreen(
                 modifier = Modifier.padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Background & Climate presets
+                // Tracking Row (as seen in premium designs)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        "Tracking:",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.width(82.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    
+                    // Gyro Button
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                if (useGyroscope) MaterialTheme.colorScheme.secondary
+                                else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                            .clickable { useGyroscope = !useGyroscope }
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Text(
+                            if (useGyroscope) "📡 Gyro ON" else "📴 Gyro OFF",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (useGyroscope) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    
+                    // Live Camera Button
+                    val isLiveCameraSelected = selectedBackgroundPreset == "Live Camera" || selectedBackgroundPreset == "Simulated Live Yard"
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                if (isLiveCameraSelected) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                            .clickable { 
+                                selectedBackgroundPreset = if (isEmulator) "Simulated Live Yard" else "Live Camera"
+                            }
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Text(
+                            "📷 Live Camera Active",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isLiveCameraSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    // Use Backdrop Button
+                    val isVirtualSelected = !isLiveCameraSelected
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(
+                                if (isVirtualSelected) MaterialTheme.colorScheme.secondary
+                                else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                            .clickable { 
+                                if (isLiveCameraSelected) {
+                                    selectedBackgroundPreset = "Lawn Garden Grid"
+                                }
+                            }
+                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) {
+                        Text(
+                            "Use Backdrop",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isVirtualSelected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                // Atmosphere Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        "Atmosphere:",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.width(82.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        items(listOf("Clear Sky", "Gentle Rain", "Cherry Blossoms", "Fireflies Spark")) { weather ->
+                            val isSelected = activeWeather == weather
+                            val icon = when (weather) {
+                                "Gentle Rain" -> "🌧️"
+                                "Cherry Blossoms" -> "🌸"
+                                "Fireflies Spark" -> "✨"
+                                else -> "☀️"
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(
+                                        if (isSelected) MaterialTheme.colorScheme.secondary
+                                        else MaterialTheme.colorScheme.surfaceVariant
+                                    )
+                                    .clickable { activeWeather = weather }
+                                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
+                                Text(
+                                    "$icon $weather",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Backdrop Presets Row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -334,7 +567,7 @@ fun ArLensScreen(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        items(listOf("Lawn Garden Grid", "Sunny Patio", "Balcony Deck", "Cyber Greenhouse", "English Estate")) { preset ->
+                        items(listOf("Simulated Live Yard", "Lawn Garden Grid", "Sunny Patio", "Balcony Deck", "Cyber Greenhouse", "English Estate", "Live Camera")) { preset ->
                             val isSelected = selectedBackgroundPreset == preset
                             Box(
                                 modifier = Modifier
@@ -356,60 +589,196 @@ fun ArLensScreen(
                         }
                     }
                 }
+            }
+        }
+    }
 
-                // Weather and Climate Particles Preset Selector
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        "Atmosphere:",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.width(82.dp),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    listOf("Clear Sky", "Gentle Rain", "Cherry Blossoms", "Fireflies Spark").forEach { weather ->
-                        val isSelected = activeWeather == weather
-                        val icon = when (weather) {
-                            "Gentle Rain" -> "🌧️"
-                            "Cherry Blossoms" -> "🌸"
-                            "Fireflies Spark" -> "✨"
-                            else -> "☀️"
-                        }
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.secondary
-                                    else MaterialTheme.colorScheme.surfaceVariant
-                                )
-                                .clickable { activeWeather = weather }
-                                .padding(horizontal = 10.dp, vertical = 5.dp)
-                        ) {
-                            Text(
-                                "$icon $weather",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isSelected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurfaceVariant
+    val viewportBlock = @Composable { viewportModifier: Modifier ->
+        Box(
+            modifier = viewportModifier
+                .clip(RoundedCornerShape(20.dp))
+                .background(bgGradient)
+                .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
+                .onGloballyPositioned { viewportSize = it.size }
+                .testTag("ar_viewport")
+        ) {
+            // Background Layer: Camera Preview or Simulated Live Yard
+            val drawSimulatedYard = selectedBackgroundPreset == "Simulated Live Yard" || (selectedBackgroundPreset == "Live Camera" && isEmulator)
+            if (selectedBackgroundPreset == "Live Camera" && !isEmulator) {
+                if (cameraPermissionState.status.isGranted) {
+                    CameraPreview(modifier = Modifier.fillMaxSize())
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.8f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                Icons.Default.PhotoCamera,
+                                contentDescription = "Camera Permission Required",
+                                tint = Color.White,
+                                modifier = Modifier.size(48.dp)
                             )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text(
+                                "Camera Permission Required",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { cameraPermissionState.launchPermissionRequest() }
+                            ) {
+                                Text("Grant Permission")
+                            }
+                        }
+                    }
+                }
+            } else if (drawSimulatedYard) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    clipRect {
+                        val factor = climateTimeFactor
+                        
+                        // Sun or moon based on activeWeather
+                        if (activeWeather == "Fireflies Spark") {
+                            // Crescent moon
+                            drawCircle(
+                                color = Color(0xFFFFFDE7).copy(alpha = 0.15f),
+                                radius = 45f,
+                                center = Offset(size.width * 0.8f, size.height * 0.2f)
+                            )
+                            drawCircle(
+                                color = Color(0xFFFFFDE7),
+                                radius = 30f,
+                                center = Offset(size.width * 0.8f, size.height * 0.2f)
+                            )
+                            // Moon bite shadow to form crescent
+                            drawCircle(
+                                color = Color(0xFF0D1B2A), // matches sky base dark blue color
+                                radius = 28f,
+                                center = Offset(size.width * 0.77f, size.height * 0.18f)
+                            )
+                        } else {
+                            // Sun
+                            val sunColor = when (activeWeather) {
+                                "Gentle Rain" -> Color(0xFFECEFF1).copy(alpha = 0.6f)
+                                "Cherry Blossoms" -> Color(0xFFFFD54F).copy(alpha = 0.8f)
+                                else -> Color(0xFFFFEB3B) // Clear Sky
+                            }
+                            // Sun aura glow
+                            drawCircle(
+                                color = sunColor.copy(alpha = 0.25f),
+                                radius = 70f + (sin(factor * 0.05f) * 5f),
+                                center = Offset(size.width * 0.75f, size.height * 0.25f)
+                            )
+                            drawCircle(
+                                color = sunColor,
+                                radius = 40f,
+                                center = Offset(size.width * 0.75f, size.height * 0.25f)
+                            )
+                        }
+
+                        // Draw Cedar Fence
+                        val fenceColor = when (activeWeather) {
+                            "Gentle Rain" -> Color(0xFF3E2723) // Wet dark mahogany
+                            "Cherry Blossoms" -> Color(0xFF8D6E63).copy(alpha = 0.7f) // Pale cedar
+                            "Fireflies Spark" -> Color(0xFF1A120B) // Silhouetted fence
+                            else -> Color(0xFFA1887F) // Warm cedar wood privacy fence
+                        }
+                        val fenceY = size.height * 0.6f
+                        val fenceHeight = size.height * 0.25f
+                        val plankWidth = 45f
+                        val plankGap = 4f
+                        
+                        var currentPlankX = 0f
+                        while (currentPlankX < size.width) {
+                            drawRect(
+                                color = fenceColor,
+                                topLeft = Offset(currentPlankX, fenceY),
+                                size = Size(plankWidth, fenceHeight)
+                            )
+                            // Draw fence plank tips
+                            val path = androidx.compose.ui.graphics.Path().apply {
+                                moveTo(currentPlankX, fenceY)
+                                lineTo(currentPlankX + plankWidth / 2, fenceY - 12f)
+                                lineTo(currentPlankX + plankWidth, fenceY)
+                                close()
+                            }
+                            drawPath(path = path, color = fenceColor)
+                            currentPlankX += plankWidth + plankGap
+                        }
+                        
+                        // Horizontal support beams
+                        drawRect(
+                            color = fenceColor.copy(alpha = 0.85f),
+                            topLeft = Offset(0f, fenceY + fenceHeight * 0.2f),
+                            size = Size(size.width, 12f)
+                        )
+                        drawRect(
+                            color = fenceColor.copy(alpha = 0.85f),
+                            topLeft = Offset(0f, fenceY + fenceHeight * 0.7f),
+                            size = Size(size.width, 12f)
+                        )
+
+                        // Draw Grass / Lawn
+                        val grassColor = when (activeWeather) {
+                            "Gentle Rain" -> Color(0xFF1B5E20) // Deep wet-green
+                            "Cherry Blossoms" -> Color(0xFF81C784).copy(alpha = 0.8f) // Pastel mossy
+                            "Fireflies Spark" -> Color(0xFF0F2C11) // Silhouetted dark green
+                            else -> Color(0xFF4CAF50) // Vibrant rich green
+                        }
+                        drawRect(
+                            color = grassColor,
+                            topLeft = Offset(0f, fenceY + fenceHeight),
+                            size = Size(size.width, size.height - (fenceY + fenceHeight))
+                        )
+
+                        // Draw Bush Clusters with Flowers
+                        val bushColor = when (activeWeather) {
+                            "Gentle Rain" -> Color(0xFF0D5316)
+                            "Cherry Blossoms" -> Color(0xFF4CAF50).copy(alpha = 0.75f)
+                            "Fireflies Spark" -> Color(0xFF051C06)
+                            else -> Color(0xFF2E7D32)
+                        }
+                        val bushY = fenceY + fenceHeight - 15f
+                        val bushRadius1 = 55f
+                        val bushRadius2 = 70f
+                        val bushRadius3 = 50f
+                        
+                        // Bush cluster left
+                        drawCircle(color = bushColor, radius = bushRadius1, center = Offset(size.width * 0.15f, bushY))
+                        drawCircle(color = bushColor, radius = bushRadius2, center = Offset(size.width * 0.22f, bushY - 10f))
+                        drawCircle(color = bushColor, radius = bushRadius3, center = Offset(size.width * 0.3f, bushY))
+
+                        // Bush cluster right
+                        drawCircle(color = bushColor, radius = bushRadius3, center = Offset(size.width * 0.7f, bushY))
+                        drawCircle(color = bushColor, radius = bushRadius2, center = Offset(size.width * 0.78f, bushY - 15f))
+                        drawCircle(color = bushColor, radius = bushRadius1, center = Offset(size.width * 0.85f, bushY))
+
+                        // Decorative flower clusters
+                        if (activeWeather != "Fireflies Spark") {
+                            val flowerColor1 = Color(0xFFEC407A) // Pink
+                            val flowerColor2 = Color(0xFFFFCA28) // Yellow
+                            
+                            // Left flowers
+                            drawCircle(color = flowerColor1, radius = 5f, center = Offset(size.width * 0.15f, bushY - 15f))
+                            drawCircle(color = flowerColor2, radius = 4f, center = Offset(size.width * 0.18f, bushY + 5f))
+                            drawCircle(color = flowerColor1, radius = 6f, center = Offset(size.width * 0.23f, bushY - 25f))
+                            drawCircle(color = flowerColor2, radius = 5f, center = Offset(size.width * 0.26f, bushY))
+                            drawCircle(color = flowerColor1, radius = 4f, center = Offset(size.width * 0.29f, bushY - 10f))
+
+                            // Right flowers
+                            drawCircle(color = flowerColor2, radius = 5f, center = Offset(size.width * 0.72f, bushY - 5f))
+                            drawCircle(color = flowerColor1, radius = 6f, center = Offset(size.width * 0.77f, bushY - 30f))
+                            drawCircle(color = flowerColor2, radius = 4f, center = Offset(size.width * 0.81f, bushY - 10f))
+                            drawCircle(color = flowerColor1, radius = 5f, center = Offset(size.width * 0.85f, bushY + 10f))
                         }
                     }
                 }
             }
-        }
-
-        // 3. THE 50x INTERACTIVE AR VIEWPORT CONTAINER
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .clip(RoundedCornerShape(20.dp))
-                .background(bgGradient)
-                .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
-                .testTag("ar_viewport")
-        ) {
             
             // RENDERING BASE CLIMATE ATMOSPHERE GRAPHICS
             if (activeWeather != "Clear Sky" && particlesList.isNotEmpty()) {
@@ -434,8 +803,7 @@ fun ArLensScreen(
                                 // Draw soft pink cherry blossom drifting petals
                                 val rawY = (particle.y + particle.speed * 0.6f * factor) % 1000f
                                 val currentY = if (rawY < 0) rawY + 1000f else rawY
-                                val currentDriftAngle = particle.driftAngle + 0.04f * factor
-                                val rawX = (particle.x + sin(currentDriftAngle) * 35f) % 1000f
+                                val rawX = (particle.x + 0.8f * factor) % 1000f
                                 val currentX = if (rawX < 0) rawX + 1000f else rawX
 
                                 drawCircle(
@@ -444,23 +812,21 @@ fun ArLensScreen(
                                     center = Offset(currentX, currentY)
                                 )
                             } else if (activeWeather == "Fireflies Spark") {
-                                // Draw high glow fireflies circular indicators
-                                val rawY = (particle.y - particle.speed * 0.3f * factor) % 1000f
+                                // Draw glowing yellow magical fireflies pulsing
+                                val rawY = (particle.y + sin(factor * 0.05f + particle.driftAngle) * 50f) % 1000f
                                 val currentY = if (rawY < 0) rawY + 1000f else rawY
-                                val currentDriftAngle = particle.driftAngle + 0.05f * factor
-                                val rawX = (particle.x + cos(currentDriftAngle) * 25f) % 1000f
+                                val rawX = (particle.x + cos(factor * 0.05f + particle.driftAngle) * 50f) % 1000f
                                 val currentX = if (rawX < 0) rawX + 1000f else rawX
-                                val pulsedAlpha = (0.23f + (sin(currentDriftAngle) * 0.45f + 0.45f) * particle.alpha).coerceIn(0.1f, 1.0f)
+                                val pulseAlpha = particle.alpha * (0.4f + 0.6f * sin(factor * 0.1f + particle.driftAngle))
 
                                 drawCircle(
-                                    color = Color(0xFFFFF176).copy(alpha = pulsedAlpha),
-                                    radius = particle.size,
+                                    color = Color(0xFFCCFF00).copy(alpha = pulseAlpha * 0.3f),
+                                    radius = particle.size * 2.2f,
                                     center = Offset(currentX, currentY)
                                 )
-                                // Soft core indicator
                                 drawCircle(
-                                    color = Color.White.copy(alpha = (pulsedAlpha + 0.2f).coerceIn(0f, 1f)),
-                                    radius = particle.size * 0.4f,
+                                    color = Color(0xFFEEFF41).copy(alpha = pulseAlpha),
+                                    radius = particle.size * 0.8f,
                                     center = Offset(currentX, currentY)
                                 )
                             }
@@ -576,10 +942,16 @@ fun ArLensScreen(
                             .align(Alignment.Center)
                     )
                     
-                    // Floating Level Bubble (Simulates Gyroscopic movement flawlessly)
+                    // Floating Level Bubble (Simulates Gyroscopic movement flawlessly if enabled)
                     Box(
                         modifier = Modifier
-                            .offset { IntOffset(hudDriftX.dp.roundToPx(), hudDriftY.dp.roundToPx()) }
+                            .offset {
+                                if (useGyroscope) {
+                                    IntOffset(hudDriftX.dp.roundToPx(), hudDriftY.dp.roundToPx())
+                                } else {
+                                    IntOffset(0, 0)
+                                }
+                            }
                             .size(16.dp)
                             .border(1.5.dp, Color.Green.copy(alpha = 0.75f), CircleShape)
                             .align(Alignment.Center)
@@ -594,7 +966,7 @@ fun ArLensScreen(
                     }
                 }
 
-                // ENHANCEMENT 3: REAL-TIME SCANNING SONAR/RADAR MINI-WIDGET
+                // SCANNING SONAR/RADAR MINI-WIDGET
                 Card(
                     modifier = Modifier
                         .size(64.dp)
@@ -613,15 +985,21 @@ fun ArLensScreen(
 
                             // Draw central sweeping line
                             val sweepAngleRad = Math.toRadians(radarSweepAngle.toDouble())
-                            val endX = (center.x + radius * cos(sweepAngleRad)).toFloat()
-                            val endY = (center.y + radius * sin(sweepAngleRad)).toFloat()
+                            val endX = center.x + radius * cos(sweepAngleRad).toFloat()
+                            val endY = center.y + radius * sin(sweepAngleRad).toFloat()
 
-                            // Outer radar rings
-                            drawCircle(color = Color(0xFF00FF66).copy(alpha = 0.15f), radius = radius)
-                            drawCircle(color = Color(0xFF00FF66).copy(alpha = 0.3f), radius = radius, style = Stroke(width = 1f))
-                            drawCircle(color = Color(0xFF00FF66).copy(alpha = 0.2f), radius = radius * 0.6f, style = Stroke(width = 1f))
-
-                            // Rad Sweep path
+                            drawCircle(
+                                color = Color(0xFF00FF66).copy(alpha = 0.1f),
+                                radius = radius,
+                                center = center,
+                                style = Stroke(1.5f)
+                            )
+                            drawCircle(
+                                color = Color(0xFF00FF66).copy(alpha = 0.05f),
+                                radius = radius * 0.6f,
+                                center = center,
+                                style = Stroke(1f)
+                            )
                             drawLine(
                                 color = Color(0xFF00FF66).copy(alpha = 0.8f),
                                 start = center,
@@ -679,14 +1057,6 @@ fun ArLensScreen(
                     val isSelected = selectedPlacementId == placement.id
                     val currentPlacement by rememberUpdatedState(placement)
                     
-                    var localOffsetX by remember(placement.id) { mutableStateOf(placement.offsetX) }
-                    var localOffsetY by remember(placement.id) { mutableStateOf(placement.offsetY) }
-                    
-                    LaunchedEffect(placement.offsetX, placement.offsetY) {
-                        localOffsetX = placement.offsetX
-                        localOffsetY = placement.offsetY
-                    }
-
                     // Get this decal's growth overrides and wetness
                     val decalOverride = localOverrides[placement.id] ?: PlantExtraProps(id = placement.id)
 
@@ -708,6 +1078,12 @@ fun ArLensScreen(
                     
                     Box(
                         modifier = Modifier
+                            .offset {
+                                IntOffset(
+                                    placement.offsetX.toInt(),
+                                    placement.offsetY.toInt()
+                                )
+                            }
                             .pointerInput(placement.id) {
                                 detectDragGestures(
                                     onDragStart = {
@@ -715,29 +1091,12 @@ fun ArLensScreen(
                                     },
                                     onDrag = { change, dragAmount ->
                                         change.consume()
-                                        localOffsetX += dragAmount.x
-                                        localOffsetY += dragAmount.y
-                                    },
-                                    onDragEnd = {
                                         viewModel.updateArPlantPosition(
                                             currentPlacement.id,
-                                            localOffsetX - currentPlacement.offsetX,
-                                            localOffsetY - currentPlacement.offsetY
-                                        )
-                                    },
-                                    onDragCancel = {
-                                        viewModel.updateArPlantPosition(
-                                            currentPlacement.id,
-                                            localOffsetX - currentPlacement.offsetX,
-                                            localOffsetY - currentPlacement.offsetY
+                                            dragAmount.x,
+                                            dragAmount.y
                                         )
                                     }
-                                )
-                            }
-                            .offset {
-                                IntOffset(
-                                    localOffsetX.toInt(),
-                                    localOffsetY.toInt()
                                 )
                             }
                             .scale(finalScale)
@@ -745,7 +1104,46 @@ fun ArLensScreen(
                             .testTag("ar_placement_${placement.id}"),
                         contentAlignment = Alignment.Center
                     ) {
-                        
+                        // Holographic Target Scanner Overlay
+                        if (isSelected) {
+                            Canvas(modifier = Modifier.matchParentSize()) {
+                                val w = size.width
+                                val h = size.height
+                                val cornerLength = minOf(w, h) * 0.18f
+                                val strokeWidth = 3.dp.toPx()
+                                val glowColor = Color(0xFF00FFCC) // Neon Cyan
+                                
+                                // Top-Left
+                                drawLine(color = glowColor, start = Offset(0f, 0f), end = Offset(cornerLength, 0f), strokeWidth = strokeWidth)
+                                drawLine(color = glowColor, start = Offset(0f, 0f), end = Offset(0f, cornerLength), strokeWidth = strokeWidth)
+                                // Top-Right
+                                drawLine(color = glowColor, start = Offset(w, 0f), end = Offset(w - cornerLength, 0f), strokeWidth = strokeWidth)
+                                drawLine(color = glowColor, start = Offset(w, 0f), end = Offset(w, cornerLength), strokeWidth = strokeWidth)
+                                // Bottom-Left
+                                drawLine(color = glowColor, start = Offset(0f, h), end = Offset(cornerLength, h), strokeWidth = strokeWidth)
+                                drawLine(color = glowColor, start = Offset(0f, h), end = Offset(0f, h - cornerLength), strokeWidth = strokeWidth)
+                                // Bottom-Right
+                                drawLine(color = glowColor, start = Offset(w, h), end = Offset(w - cornerLength, h), strokeWidth = strokeWidth)
+                                drawLine(color = glowColor, start = Offset(w, h), end = Offset(w, h - cornerLength), strokeWidth = strokeWidth)
+
+                                // Sweeping Laser Line
+                                val laserY = h * laserProgress
+                                drawLine(
+                                    color = Color(0xFF00FF66), // Laser Green
+                                    start = Offset(0f, laserY),
+                                    end = Offset(w, laserY),
+                                    strokeWidth = 2.dp.toPx()
+                                )
+                                drawRect(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(Color(0xFF00FF66).copy(alpha = 0.25f), Color.Transparent)
+                                    ),
+                                    topLeft = Offset(0f, laserY),
+                                    size = Size(w, minOf(20f, h - laserY))
+                                )
+                            }
+                        }
+
                         // Decal elements block
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -776,14 +1174,12 @@ fun ArLensScreen(
                         ) {
                             
                             // HYDRATION RING INDICATOR (Enhancement 4)
-                            // perspective ellipse representing raw health/watering underneath plant
                             Box(
                                 modifier = Modifier
                                     .padding(vertical = 4.dp)
                                     .size(width = 38.dp, height = 8.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        // moisture level determines ring color scheme
                                         when {
                                             decalOverride.moisture > 0.7f -> Color(0xFF29B6F6).copy(alpha = 0.6f) // highly watered
                                             decalOverride.moisture < 0.3f -> Color(0xFF8D6E63).copy(alpha = 0.6f) // sandy arid soil
@@ -827,6 +1223,38 @@ fun ArLensScreen(
                                         fontSize = 8.sp, 
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF2E7D32)
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Column(
+                                    horizontalAlignment = Alignment.Start,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(Color.Black.copy(alpha = 0.85f))
+                                        .border(0.5.dp, Color(0xFF00FF66), RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 6.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        "🔐 INTEGRATION LOCK: 98%",
+                                        color = Color(0xFF00FF66),
+                                        fontSize = 7.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                    )
+                                    Text(
+                                        "💚 HEALTH STATUS: ACTIVE",
+                                        color = Color(0xFF00E5FF),
+                                        fontSize = 7.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                    )
+                                    Text(
+                                        "📡 LIDAR DIST: 1.25m",
+                                        color = Color(0xFFFFB300),
+                                        fontSize = 7.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                                     )
                                 }
                             }
@@ -895,7 +1323,7 @@ fun ArLensScreen(
                         }
                     }
 
-                    // CENTRAL INTERACTIVE HIGH-SPEED CAMERA SHUTTER (Enhancement 5 - Captured Snaps)
+                    // CAMERA SHUTTER Button
                     IconButton(
                         onClick = {
                             triggeringFlash = true
@@ -944,8 +1372,9 @@ fun ArLensScreen(
                 }
             }
         }
+    }
 
-        // 4. THE INVENTORY TRAY SELECTOR
+    val inventoryBlock = @Composable { isLandscapeGrid: Boolean ->
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -978,41 +1407,107 @@ fun ArLensScreen(
                     }
                 }
 
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(availableAssetList) { asset ->
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .clickable {
-                                    viewModel.addArPlant(asset.first, asset.second)
-                                }
-                                .padding(2.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(52.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)),
-                                contentAlignment = Alignment.Center
+                if (isLandscapeGrid) {
+                    val chunkedAssets = remember(availableAssetList) { availableAssetList.chunked(5) }
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        chunkedAssets.forEach { rowItems ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Text(asset.second, fontSize = 26.sp)
+                                rowItems.forEach { asset ->
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clickable {
+                                                val count = arPlacedPlants.size
+                                                val centerX = if (viewportSize.width > 0) viewportSize.width / 2f else 300f
+                                                val centerY = if (viewportSize.height > 0) viewportSize.height / 2f else 200f
+                                                val staggerX = ((count % 3) - 1) * 80f
+                                                val staggerY = ((count / 3) % 3 - 1) * 80f
+                                                val finalX = centerX + staggerX - 100f
+                                                val finalY = centerY + staggerY - 100f
+                                                viewModel.addArPlant(asset.first, asset.second, finalX, finalY)
+                                            }
+                                            .padding(2.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .aspectRatio(1f)
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(asset.second, fontSize = 24.sp)
+                                        }
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = asset.first.take(9),
+                                            fontSize = 8.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1,
+                                            textAlign = TextAlign.Center
+                                        )
+                                    }
+                                }
+                                if (rowItems.size < 5) {
+                                    repeat(5 - rowItems.size) {
+                                        Spacer(modifier = Modifier.weight(1f))
+                                    }
+                                }
                             }
-                            Spacer(modifier = Modifier.height(1.dp))
-                            Text(
-                                text = asset.first.take(9),
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1
-                            )
+                        }
+                    }
+                } else {
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(availableAssetList) { asset ->
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier
+                                    .clickable {
+                                        val count = arPlacedPlants.size
+                                        val centerX = if (viewportSize.width > 0) viewportSize.width / 2f else 300f
+                                        val centerY = if (viewportSize.height > 0) viewportSize.height / 2f else 200f
+                                        val staggerX = ((count % 3) - 1) * 80f
+                                        val staggerY = ((count / 3) % 3 - 1) * 80f
+                                        val finalX = centerX + staggerX - 100f
+                                        val finalY = centerY + staggerY - 100f
+                                        viewModel.addArPlant(asset.first, asset.second, finalX, finalY)
+                                    }
+                                    .padding(2.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(52.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(asset.second, fontSize = 26.sp)
+                                }
+                                Spacer(modifier = Modifier.height(1.dp))
+                                Text(
+                                    text = asset.first.take(9),
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+    }
 
-        // 5. GESTURE AND STICKER TUNING STATION (50x PRO VARIABLES OVERRIDES)
+    val tuningBlock = @Composable {
         AnimatedVisibility(
             visible = selectedPlacement != null && selectedOverride != null,
             enter = fadeIn() + expandVertically(),
@@ -1060,14 +1555,14 @@ fun ArLensScreen(
                                 modifier = Modifier
                                     .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f), CircleShape)
                                     .size(26.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Default.DeleteSweep,
-                                        contentDescription = "Trash placement",
-                                        tint = MaterialTheme.colorScheme.error,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.DeleteSweep,
+                                    contentDescription = "Trash placement",
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
 
                         // Property override 1: Simulated Growth Stage
@@ -1106,7 +1601,7 @@ fun ArLensScreen(
                             }
                         }
 
-                        // Property override 2: Irrigation Slider (updates local dehydration ring color)
+                        // Property override 2: Irrigation Slider
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
@@ -1194,6 +1689,45 @@ fun ArLensScreen(
                     }
                 }
             }
+        }
+    }
+
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+
+    if (isLandscape) {
+        Row(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 14.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            viewportBlock(Modifier.weight(1.3f).fillMaxHeight())
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                headerBlock()
+                selectorsBlock()
+                inventoryBlock(true)
+                tuningBlock()
+            }
+        }
+    } else {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 14.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            headerBlock()
+            selectorsBlock()
+            viewportBlock(Modifier.fillMaxWidth().weight(1f))
+            inventoryBlock(false)
+            tuningBlock()
         }
     }
 
@@ -1310,3 +1844,40 @@ fun ArLensScreen(
 // Utility to create a border stroke
 private fun borderStroke(width: androidx.compose.ui.unit.Dp, color: Color) = 
     androidx.compose.foundation.BorderStroke(width, color)
+
+@Composable
+fun CameraPreview(
+    modifier: Modifier = Modifier
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+
+    AndroidView(
+        factory = { ctx ->
+            PreviewView(ctx).apply {
+                scaleType = PreviewView.ScaleType.FILL_CENTER
+            }
+        },
+        modifier = modifier,
+        update = { previewView ->
+            cameraProviderFuture.addListener({
+                val cameraProvider = cameraProviderFuture.get()
+                val preview = Preview.Builder().build().also {
+                    it.surfaceProvider = previewView.surfaceProvider
+                }
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                try {
+                    cameraProvider.unbindAll()
+                    cameraProvider.bindToLifecycle(
+                        lifecycleOwner,
+                        cameraSelector,
+                        preview
+                    )
+                } catch (exc: Exception) {
+                    android.util.Log.e("ArLensScreen", "Use camera binding failed", exc)
+                }
+            }, ContextCompat.getMainExecutor(context))
+        }
+    )
+}

@@ -4,8 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Explore
@@ -216,16 +220,13 @@ fun SplashWarmUpScreen() {
             verticalArrangement = Arrangement.Center
         ) {
             // Elegant pulsing organic icon container
-            Surface(
-                modifier = Modifier.size(110.dp),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                tonalElevation = 4.dp
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(text = "🌿", fontSize = 54.sp)
-                }
-            }
+            Image(
+                painter = painterResource(id = R.drawable.ic_logo_heart),
+                contentDescription = "FloraFlow Logo",
+                modifier = Modifier
+                    .size(110.dp)
+                    .clip(RoundedCornerShape(28.dp))
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 

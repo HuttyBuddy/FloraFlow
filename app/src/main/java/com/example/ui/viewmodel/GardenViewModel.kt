@@ -680,16 +680,24 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     // --- AR Preview Control Methods ---
-    fun addArPlant(name: String, emoji: String) {
+    fun addArPlant(name: String, emoji: String, customX: Float? = null, customY: Float? = null) {
         val list = _arPlacedPlants.value.toMutableList()
         val nextId = (list.maxOfOrNull { it.id } ?: 0) + 1
+        
+        // Use custom coordinates if provided; otherwise, calculate a fallback
+        val count = list.size
+        val spawnX = customX ?: (380f + (count % 3) * 60f)
+        val spawnY = customY ?: (100f + (count / 3) * 60f)
+
+        android.util.Log.d("FloraFlow", "addArPlant called: name=$name, emoji=$emoji, nextId=$nextId, x=$spawnX, y=$spawnY")
+
         list.add(
             ArPlantPlacement(
                 id = nextId,
                 name = name,
                 emoji = emoji,
-                offsetX = 0f,
-                offsetY = 0f,
+                offsetX = spawnX,
+                offsetY = spawnY,
                 scale = 1.0f,
                 rotationDegrees = 0f
             )

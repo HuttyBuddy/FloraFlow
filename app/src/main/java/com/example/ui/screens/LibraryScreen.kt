@@ -4,6 +4,8 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -75,225 +77,220 @@ fun LibraryScreen(
         }
     }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 80.dp)
-    ) {
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val isTablet = configuration.smallestScreenWidthDp >= 600
+    val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
+
+    // ----------------------------------------------------
+    // LOCAL COMPOSABLES (extracted layout segments)
+    // ----------------------------------------------------
+    val tabBarContent = @Composable {
         // Aesthetic Natural Pill Tab Bar
-        item {
-            Row(
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f), RoundedCornerShape(24.dp))
+                .padding(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f), RoundedCornerShape(24.dp))
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    .weight(1f)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (selectedTabState == 0) MaterialTheme.colorScheme.primary else Color.Transparent)
+                    .clickable { selectedTabState = 0 }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(if (selectedTabState == 0) MaterialTheme.colorScheme.primary else Color.Transparent)
-                        .clickable { selectedTabState = 0 }
-                        .padding(vertical = 10.dp),
-                    contentAlignment = Alignment.Center
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Spa,
-                            contentDescription = "My Garden",
-                            tint = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            "My Garden Care", 
-                            color = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        )
-                    }
+                    Icon(
+                        Icons.Default.Spa,
+                        contentDescription = "My Garden",
+                        tint = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        "My Garden Care", 
+                        color = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
                 }
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(if (selectedTabState == 1) MaterialTheme.colorScheme.primary else Color.Transparent)
-                        .clickable { selectedTabState = 1 }
-                        .padding(vertical = 10.dp),
-                    contentAlignment = Alignment.Center
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(if (selectedTabState == 1) MaterialTheme.colorScheme.primary else Color.Transparent)
+                    .clickable { selectedTabState = 1 }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.MenuBook,
-                            contentDescription = "Encyclopedia",
-                            tint = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            "Species Encyclopedia", 
-                            color = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        )
-                    }
+                    Icon(
+                        Icons.AutoMirrored.Filled.MenuBook,
+                        contentDescription = "Encyclopedia",
+                        tint = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        "Species Encyclopedia", 
+                        color = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
                 }
             }
         }
+    }
 
-        if (selectedTabState == 0) {
-            // ================= MY GARDEN TAB =================
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Climate Recommendations",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Compatible plant templates for your $climateName climate. Tap a recommendation to plant it in your active garden layout.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                }
+    val climateRecommendationsContent = @Composable {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Climate Recommendations",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Compatible plant templates for your $climateName climate. Tap a recommendation to plant it in your active garden layout.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
+        }
+    }
 
-            // Horizontal list of recommendations
-            item {
-                LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(companionTemplates) { tpl ->
-                        val isCultivated = activePlants.any { it.name.lowercase() == tpl.name.lowercase() }
-                        
-                        InputChip(
-                            selected = isCultivated,
-                            onClick = {
-                                if (!isCultivated) {
-                                    viewModel.addPlant(tpl.name, tpl.type, tpl)
-                                }
-                            },
-                            label = { Text(tpl.name, fontSize = 11.sp, fontWeight = FontWeight.Bold) },
-                            leadingIcon = { Text(tpl.iconEmoji, fontSize = 14.sp) },
-                            trailingIcon = {
-                                if (isCultivated) {
-                                    Icon(Icons.Default.Check, contentDescription = "Cultivated", modifier = Modifier.size(12.dp))
-                                } else {
-                                    Icon(Icons.Default.Add, contentDescription = "Add", modifier = Modifier.size(12.dp))
-                                }
-                            }
-                        )
-                    }
-                }
-            }
-
-            // Section header for active plants
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "Cultivated Vegetation Hub",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "Seasonal care trackers and growth indices",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                    
-                    IconButton(
-                        onClick = { showAddPlantDialog = true },
-                        modifier = Modifier.testTag("add_custom_plant_fab")
-                    ) {
-                        Icon(
-                            Icons.Default.AddCircle,
-                            contentDescription = "Add plant",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
-            }
-
-            if (activeLayout == null) {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp).fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                "Choose a Garden First",
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                "Select or create a new garden project in the Dashboard to list and manage your plants.",
-                                style = MaterialTheme.typography.bodySmall,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
+    val companionTemplatesContent = @Composable {
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(companionTemplates) { tpl ->
+                val isCultivated = activePlants.any { it.name.lowercase() == tpl.name.lowercase() }
+                
+                InputChip(
+                    selected = isCultivated,
+                    onClick = {
+                        if (!isCultivated) {
+                            viewModel.addPlant(tpl.name, tpl.type, tpl)
+                        }
+                    },
+                    label = { Text(tpl.name, fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+                    leadingIcon = { Text(tpl.iconEmoji, fontSize = 14.sp) },
+                    trailingIcon = {
+                        if (isCultivated) {
+                            Icon(Icons.Default.Check, contentDescription = "Cultivated", modifier = Modifier.size(12.dp))
+                        } else {
+                            Icon(Icons.Default.Add, contentDescription = "Add", modifier = Modifier.size(12.dp))
                         }
                     }
+                )
+            }
+        }
+    }
+
+    val activePlantsHeaderContent = @Composable {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text(
+                    text = "Cultivated Vegetation Hub",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Seasonal care trackers and growth indices",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+            }
+            
+            IconButton(
+                onClick = { showAddPlantDialog = true },
+                modifier = Modifier.testTag("add_custom_plant_fab")
+            ) {
+                Icon(
+                    Icons.Default.AddCircle,
+                    contentDescription = "Add plant",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+    }
+
+    val activePlantsListContent = @Composable {
+        if (activeLayout == null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp).fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "Choose a Garden First",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        "Select or create a new garden project in the Dashboard to list and manage your plants.",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
                 }
-            } else if (activePlants.isEmpty()) {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp).fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                "Your Greenhouse is Empty",
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                "Plant one of the $climateName recommendations above, place them on the grid canvas, or click the add button to insert custom vegetation.",
-                                style = MaterialTheme.typography.bodySmall,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        }
-                    }
+            }
+        } else if (activePlants.isEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp).fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "Your Greenhouse is Empty",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        "Plant one of the $climateName recommendations above, place them on the grid canvas, or click the add button to insert custom vegetation.",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
                 }
-            } else {
-                items(activePlants, key = { it.id }) { plant ->
+            }
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                activePlants.forEach { plant ->
                     val isExpanded = expandedPlantId == plant.id
                     PlantCareTrackerCard(
                         plant = plant,
@@ -314,213 +311,210 @@ fun LibraryScreen(
                     )
                 }
             }
+        }
+    }
 
-        } else {
-            // ================= COMPREHENSIVE BOTANICAL ENCYCLOPEDIA =================
-            item {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
+    val encyclopediaHeaderContent = @Composable {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                "Botanical Encyclopedia",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                "Explore specific mature dimensions, watering schedules, bloom cycles, and ideal soil categories.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            
+            Spacer(modifier = Modifier.height(6.dp))
+
+            // Real-Time Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Search 23+ species, pests, or soils...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search icon") },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Clear search input")
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("species_search_input"),
+                shape = RoundedCornerShape(14.dp),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                )
+            )
+        }
+    }
+
+    val encyclopediaFiltersContent = @Composable {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f), RoundedCornerShape(16.dp))
+                .padding(12.dp)
+        ) {
+            // Category Type Filter
+            Column {
+                Text("Plant Group Type:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(4.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    val types = listOf("All", "Flower", "Shrub", "Succulent", "Herb", "Veggie", "Tree", "Fern")
+                    items(types) { t ->
+                        FilterChip(
+                            selected = selectedTypeFilter == t,
+                            onClick = { selectedTypeFilter = t },
+                            label = { Text(t, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    }
+                }
+            }
+
+            // Climate Compatibility Filter
+            Column {
+                Text("Climate Compatibility:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(4.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    val climates = listOf("All", "Temperate", "Arid", "Tropical", "Mediterranean", "Mountainous")
+                    items(climates) { c ->
+                        FilterChip(
+                            selected = selectedClimateFilter == c,
+                            onClick = { selectedClimateFilter = c },
+                            label = { Text(c, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    }
+                }
+            }
+
+            // Watering Profile Filter
+            Column {
+                Text("Watering Intensity:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(4.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    val waterFilters = listOf("All", "Low", "Moderate", "High")
+                    items(waterFilters) { w ->
+                        FilterChip(
+                            selected = selectedWaterFilter == w,
+                            onClick = { selectedWaterFilter = w },
+                            label = { Text(w, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    }
+                }
+            }
+            
+            // Bloom Time Filter
+            Column {
+                Text("Bloom Season:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(4.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    val bloomFilters = listOf("All", "Spring", "Summer", "Autumn", "Winter", "Year-round")
+                    items(bloomFilters) { b ->
+                        FilterChip(
+                            selected = selectedBloomFilter == b,
+                            onClick = { selectedBloomFilter = b },
+                            label = { Text(b, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    }
+                }
+            }
+            
+            // Clear filters helper
+            if (selectedTypeFilter != "All" || selectedClimateFilter != "All" || selectedWaterFilter != "All" || selectedBloomFilter != "All" || searchQuery.isNotEmpty()) {
+                TextButton(
+                    onClick = {
+                        searchQuery = ""
+                        selectedTypeFilter = "All"
+                        selectedClimateFilter = "All"
+                        selectedWaterFilter = "All"
+                        selectedBloomFilter = "All"
+                    },
+                    modifier = Modifier.align(Alignment.End)
                 ) {
-                    Text(
-                        "Botanical Encyclopedia",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
+                    Icon(Icons.Default.RestartAlt, contentDescription = "Reset filter", modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Reset All Filters", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+
+    val encyclopediaResultsCountContent = @Composable {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "${filteredTemplates.size} species catalogued",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            
+            if (searchQuery.isNotEmpty() || selectedTypeFilter != "All" || selectedClimateFilter != "All" || selectedWaterFilter != "All" || selectedBloomFilter != "All") {
+                SuggestionChip(
+                    onClick = {},
+                    label = { Text("Filtered", fontSize = 9.sp) },
+                    icon = { Icon(Icons.Default.FilterList, contentDescription = "Filtered info", modifier = Modifier.size(10.dp)) }
+                )
+            }
+        }
+    }
+
+    val encyclopediaListContent = @Composable {
+        if (filteredTemplates.isEmpty()) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp).fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        Icons.Default.SearchOff,
+                        contentDescription = "No results",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(48.dp)
                     )
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        "Explore specific mature dimensions, watering schedules, bloom cycles, and ideal soil categories.",
+                        "No Botanicals Match Your Filter",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        "Try adjusting your search keywords or switching filter chips to find compatible varieties.",
                         style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.secondary
                     )
-                    
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    // Real-Time Search Bar
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        placeholder = { Text("Search 23+ species, pests, or soils...") },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search icon") },
-                        trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Default.Clear, contentDescription = "Clear search input")
-                                }
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("species_search_input"),
-                        shape = RoundedCornerShape(14.dp),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                        )
-                    )
                 }
             }
-
-            // MULTI-DIMENSIONAL FILTERS ZONE
-            item {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f), RoundedCornerShape(16.dp))
-                        .padding(12.dp)
-                ) {
-                    // Category Type Filter
-                    Column {
-                        Text("Plant Group Type:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            val types = listOf("All", "Flower", "Shrub", "Succulent", "Herb", "Veggie", "Tree", "Fern")
-                            items(types) { t ->
-                                FilterChip(
-                                    selected = selectedTypeFilter == t,
-                                    onClick = { selectedTypeFilter = t },
-                                    label = { Text(t, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    // Climate Compatibility Filter
-                    Column {
-                        Text("Climate Compatibility:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            val climates = listOf("All", "Temperate", "Arid", "Tropical", "Mediterranean", "Mountainous")
-                            items(climates) { c ->
-                                FilterChip(
-                                    selected = selectedClimateFilter == c,
-                                    onClick = { selectedClimateFilter = c },
-                                    label = { Text(c, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    // Watering Profile Filter
-                    Column {
-                        Text("Watering Intensity:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            val waterFilters = listOf("All", "Low", "Moderate", "High")
-                            items(waterFilters) { w ->
-                                FilterChip(
-                                    selected = selectedWaterFilter == w,
-                                    onClick = { selectedWaterFilter = w },
-                                    label = { Text(w, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                            }
-                        }
-                    }
-                    
-                    // Bloom Time Filter
-                    Column {
-                        Text("Bloom Season:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            val bloomFilters = listOf("All", "Spring", "Summer", "Autumn", "Winter", "Year-round")
-                            items(bloomFilters) { b ->
-                                FilterChip(
-                                    selected = selectedBloomFilter == b,
-                                    onClick = { selectedBloomFilter = b },
-                                    label = { Text(b, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                            }
-                        }
-                    }
-                    
-                    // Clear filters helper
-                    if (selectedTypeFilter != "All" || selectedClimateFilter != "All" || selectedWaterFilter != "All" || selectedBloomFilter != "All" || searchQuery.isNotEmpty()) {
-                        TextButton(
-                            onClick = {
-                                searchQuery = ""
-                                selectedTypeFilter = "All"
-                                selectedClimateFilter = "All"
-                                selectedWaterFilter = "All"
-                                selectedBloomFilter = "All"
-                            },
-                            modifier = Modifier.align(Alignment.End)
-                        ) {
-                            Icon(Icons.Default.RestartAlt, contentDescription = "Reset filter", modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Reset All Filters", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-            }
-
-            // Results count
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "${filteredTemplates.size} species catalogued",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    
-                    if (searchQuery.isNotEmpty() || selectedTypeFilter != "All" || selectedClimateFilter != "All" || selectedWaterFilter != "All" || selectedBloomFilter != "All") {
-                        SuggestionChip(
-                            onClick = {},
-                            label = { Text("Filtered", fontSize = 9.sp) },
-                            icon = { Icon(Icons.Default.FilterList, contentDescription = "Filtered info", modifier = Modifier.size(10.dp)) }
-                        )
-                    }
-                }
-            }
-
-            // Empty state for Encyclopedia Search
-            if (filteredTemplates.isEmpty()) {
-                item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp).fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                Icons.Default.SearchOff,
-                                contentDescription = "No results",
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                "No Botanicals Match Your Filter",
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                "Try adjusting your search keywords or switching filter chips to find compatible varieties.",
-                                style = MaterialTheme.typography.bodySmall,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.secondary
-                            )
-                        }
-                    }
-                }
-            } else {
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 // List of filtered species templates
-                items(filteredTemplates, key = { it.name }) { tpl ->
+                filteredTemplates.forEach { tpl ->
                     val isExpanded = expandedSpeciesName == tpl.name
                     val isPlanted = activePlants.any { it.name.lowercase() == tpl.name.lowercase() }
 
@@ -537,6 +531,78 @@ fun LibraryScreen(
                         }
                     )
                 }
+            }
+        }
+    }
+
+    if (!isWideScreen) {
+        LazyColumn(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 80.dp)
+        ) {
+            item { tabBarContent() }
+            if (selectedTabState == 0) {
+                item { climateRecommendationsContent() }
+                item { companionTemplatesContent() }
+                item { activePlantsHeaderContent() }
+                item { activePlantsListContent() }
+            } else {
+                item { encyclopediaHeaderContent() }
+                item { encyclopediaFiltersContent() }
+                item { encyclopediaResultsCountContent() }
+                item { encyclopediaListContent() }
+            }
+        }
+    } else {
+        Row(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            // Left Pane (Filters, selectors, tabs): Weight 0.38f
+            Column(
+                modifier = Modifier
+                    .weight(0.38f)
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                tabBarContent()
+                if (selectedTabState == 0) {
+                    climateRecommendationsContent()
+                    companionTemplatesContent()
+                    activePlantsHeaderContent()
+                } else {
+                    encyclopediaHeaderContent()
+                    encyclopediaFiltersContent()
+                }
+            }
+
+            // Right Pane (The List/Results area): Weight 0.62f
+            Column(
+                modifier = Modifier
+                    .weight(0.62f)
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                if (selectedTabState == 0) {
+                    Text(
+                        "Cultivated Sandboxes",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    activePlantsListContent()
+                } else {
+                    encyclopediaResultsCountContent()
+                    encyclopediaListContent()
+                }
+                Spacer(modifier = Modifier.height(80.dp)) // Padding for bottom/navigation bar
             }
         }
     }
