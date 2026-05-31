@@ -124,6 +124,23 @@ fun ArLensScreen(
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
     val arPlacedPlants by viewModel.arPlacedPlants.collectAsStateWithLifecycle()
 
+    val synergyPairs = remember(arPlacedPlants) {
+        val pairs = mutableListOf<Pair<Int, Int>>()
+        for (i in arPlacedPlants.indices) {
+            for (j in i + 1 until arPlacedPlants.size) {
+                val p1 = arPlacedPlants[i]
+                val p2 = arPlacedPlants[j]
+                val dx = p1.offsetX - p2.offsetX
+                val dy = p1.offsetY - p2.offsetY
+                val dist = kotlin.math.sqrt(dx * dx + dy * dy)
+                if (dist <= 180f && checkPlantSynergy(p1.name, p2.name)) {
+                    pairs.add(Pair(p1.id, p2.id))
+                }
+            }
+        }
+        pairs
+    }
+
     // Bulletproof Emulator Detection
     val isEmulator = remember {
         val model = android.os.Build.MODEL.lowercase()
@@ -835,6 +852,87 @@ fun ArLensScreen(
                 }
             }
 
+            // BOTANICAL SYNERGY GRAPHICS (Lines, Particles, Auras)
+            if (synergyPairs.isNotEmpty()) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    clipRect {
+                        val synergizedIds = synergyPairs.flatMap { listOf(it.first, it.second) }.toSet()
+                        
+                        // 1. Draw glowing green visual aura beneath synergized decals
+                        arPlacedPlants.forEach { placement ->
+                            if (synergizedIds.contains(placement.id)) {
+                                val pulse = 0.85f + 0.15f * sin(climateTimeFactor * 0.2f + placement.id.hashCode() * 0.1f)
+                                val auraCenter = Offset(placement.offsetX + 75f, placement.offsetY + 80f)
+                                val scale = finalScaleFactor(placement, localOverrides[placement.id])
+                                val radius = 100f * scale * pulse
+                                drawCircle(
+                                    brush = Brush.radialGradient(
+                                        colors = listOf(
+                                            Color(0xFF00FF66).copy(alpha = 0.35f * pulse),
+                                            Color(0xFF00FF66).copy(alpha = 0.08f * pulse),
+                                            Color.Transparent
+                                        ),
+                                        center = auraCenter,
+                                        radius = radius
+                                    ),
+                                    radius = radius,
+                                    center = auraCenter
+                                )
+                            }
+                        }
+
+                        // 2. Draw pulsing neon-green laser connection lines with flowing yellow particle dots
+                        synergyPairs.forEach { pair ->
+                            val p1 = arPlacedPlants.firstOrNull { it.id == pair.first }
+                            val p2 = arPlacedPlants.firstOrNull { it.id == pair.second }
+                            if (p1 != null && p2 != null) {
+                                val start = Offset(p1.offsetX + 75f, p1.offsetY + 80f)
+                                val end = Offset(p2.offsetX + 75f, p2.offsetY + 80f)
+
+                                val pulse = 0.8f + 0.2f * sin(climateTimeFactor * 0.3f)
+                                val laserColor = Color(0xFF00FF66).copy(alpha = 0.85f * pulse)
+                                
+                                // Glowing background thicker line
+                                drawLine(
+                                    color = Color(0xFF00FF66).copy(alpha = 0.22f * pulse),
+                                    start = start,
+                                    end = end,
+                                    strokeWidth = 9f * pulse
+                                )
+                                // Sharp foreground core line
+                                drawLine(
+                                    color = laserColor,
+                                    start = start,
+                                    end = end,
+                                    strokeWidth = 3f
+                                )
+
+                                // Glowing yellow particle flow dots along the vectors
+                                val particleCount = 3
+                                for (k in 0 until particleCount) {
+                                    val baseProgress = (climateTimeFactor * 0.005f + k.toFloat() / particleCount) % 1f
+                                    val progress = if (baseProgress < 0f) baseProgress + 1f else baseProgress
+                                    
+                                    val px = start.x + (end.x - start.x) * progress
+                                    val py = start.y + (end.y - start.y) * progress
+                                    
+                                    drawCircle(
+                                        color = Color(0xFFEEFF41).copy(alpha = 0.4f * pulse),
+                                        radius = 9f,
+                                        center = Offset(px, py)
+                                    )
+                                    drawCircle(
+                                        color = Color(0xFFFFD54F),
+                                        radius = 4.5f,
+                                        center = Offset(px, py)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // FILTER SPECIFIC SCREEN OVERLAYS (Scanlines & Colors)
             if (currentFilter != "Standard RGB") {
                 Box(
@@ -1188,6 +1286,30 @@ fun ArLensScreen(
                                     )
                             )
                             
+                            val isSynergized = synergyPairs.any { it.first == placement.id || it.second == placement.id }
+                            if (isSynergized) {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(bottom = 4.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(
+                                            Brush.horizontalGradient(
+                                                colors = listOf(Color(0xFF00FF66).copy(alpha = 0.85f), Color(0xFF00E5FF).copy(alpha = 0.85f))
+                                            )
+                                        )
+                                        .border(0.5.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = "✨ SYNERGY ACTIVE",
+                                        color = Color.Black,
+                                        fontSize = 7.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        letterSpacing = 0.5.sp
+                                    )
+                                }
+                            }
+
                             Text(
                                 text = finalEmoji, 
                                 fontSize = if (decalOverride.growthStage == "Colossal") 56.sp else 46.sp,
@@ -1686,6 +1808,171 @@ fun ArLensScreen(
                                 textAlign = TextAlign.End
                             )
                         }
+
+                        // Botanical Synergy Section in Variables Tuning Panel
+                        Spacer(modifier = Modifier.height(4.dp))
+                        val activeSynergies = synergyPairs
+                            .filter { it.first == selectedPlacement.id || it.second == selectedPlacement.id }
+                            .map { pair ->
+                                val otherId = if (pair.first == selectedPlacement.id) pair.second else pair.first
+                                arPlacedPlants.firstOrNull { it.id == otherId }
+                            }
+                            .filterNotNull()
+
+                        if (activeSynergies.isNotEmpty()) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .border(1.dp, Color(0xFF00FF66).copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFFE8F5E9).copy(alpha = 0.15f)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(10.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text("✨", fontSize = 12.sp)
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                "ACTIVE BOTANICAL SYNERGY",
+                                                fontWeight = FontWeight.ExtraBold,
+                                                fontSize = 9.sp,
+                                                color = Color(0xFF00FF66),
+                                                letterSpacing = 0.5.sp
+                                            )
+                                        }
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(Color(0xFF00FF66).copy(alpha = 0.2f))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                "PROXIMITY SYNERGY MATCH",
+                                                fontSize = 7.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF00FF66)
+                                            )
+                                        }
+                                    }
+                                    
+                                    Text(
+                                        text = "Connecting vectors indicate perfect companion proximity (<180px) and compatibility.",
+                                        fontSize = 9.sp,
+                                        color = Color.White.copy(alpha = 0.7f)
+                                    )
+                                    
+                                    activeSynergies.forEach { companion ->
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(Color.Black.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+                                                .padding(6.dp)
+                                        ) {
+                                            Text(
+                                                text = getEmojiForPlantName(companion.name),
+                                                fontSize = 18.sp
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Column {
+                                                Text(
+                                                    text = companion.name,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 10.sp,
+                                                    color = Color.White
+                                                )
+                                                val synergyEffect = when {
+                                                    selectedPlacement.name.lowercase().contains("rose") -> "Provides natural scent and attracts pollinators"
+                                                    selectedPlacement.name.lowercase().contains("lavender") -> "Repels mosquitoes and flies, boosts beneficial insect activity"
+                                                    selectedPlacement.name.lowercase().contains("marigold") -> "Deters nematodes and garden pests with root secretions"
+                                                    selectedPlacement.name.lowercase().contains("tomato") -> "Stimulates soil biological health and mutual root shading"
+                                                    else -> "Improves soil biodiversity and nutrient extraction synergy"
+                                                }
+                                                Text(
+                                                    text = "Effect: $synergyEffect",
+                                                    fontSize = 8.sp,
+                                                    color = Color(0xFF00FF66).copy(alpha = 0.9f)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            val recommendations = getCompanionRecommendations(selectedPlacement.name)
+                            if (recommendations.isNotEmpty()) {
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .border(1.dp, Color(0xFF00E5FF).copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color(0xFFE0F7FA).copy(alpha = 0.1f)
+                                    ),
+                                    shape = RoundedCornerShape(12.dp)
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(10.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text("💡", fontSize = 12.sp)
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                "COMPANION RECOMMENDATION",
+                                                fontWeight = FontWeight.ExtraBold,
+                                                fontSize = 9.sp,
+                                                color = Color(0xFF00E5FF),
+                                                letterSpacing = 0.5.sp
+                                            )
+                                        }
+                                        
+                                        Text(
+                                            text = "Place these companion plants within 180 pixels to trigger active companion synergies:",
+                                            fontSize = 9.sp,
+                                            color = Color.White.copy(alpha = 0.7f)
+                                        )
+                                        
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            recommendations.forEach { recName ->
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    modifier = Modifier
+                                                        .background(Color.Black.copy(alpha = 0.25f), RoundedCornerShape(6.dp))
+                                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                                ) {
+                                                    Text(
+                                                        text = getEmojiForPlantName(recName),
+                                                        fontSize = 12.sp
+                                                    )
+                                                    Spacer(modifier = Modifier.width(4.dp))
+                                                    Text(
+                                                        text = recName,
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontSize = 8.sp,
+                                                        color = Color.White
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1880,4 +2167,66 @@ fun CameraPreview(
             }, ContextCompat.getMainExecutor(context))
         }
     )
+}
+
+private fun finalScaleFactor(placement: ArPlantPlacement, override: PlantExtraProps?): Float {
+    val stageScaleMultiplier = when (override?.growthStage) {
+        "Sprout" -> 0.65f
+        "Young" -> 0.85f
+        "Colossal" -> 1.45f
+        else -> 1.0f
+    }
+    return placement.scale * stageScaleMultiplier
+}
+
+private fun getCompanionRecommendations(plantName: String): List<String> {
+    val name = plantName.lowercase()
+    val companions = mutableListOf<String>()
+    if (name.contains("rose") && !name.contains("rosemary")) {
+        companions.add("Maple Tree")
+        companions.add("Lavender")
+    }
+    if (name.contains("maple")) {
+        companions.add("Rose Bush")
+    }
+    if (name.contains("lavender")) {
+        companions.add("Rose Bush")
+        companions.add("Cherry Blossom")
+        companions.add("Rosemary")
+    }
+    if (name.contains("cherry")) {
+        companions.add("Lavender")
+    }
+    if (name.contains("cactus") || name.contains("aloe")) {
+        if (name.contains("cactus")) companions.add("Aloe Vera")
+        if (name.contains("aloe")) companions.add("Cactus")
+    }
+    if (name.contains("marigold")) {
+        companions.add("Tomato")
+    }
+    if (name.contains("tomato")) {
+        companions.add("Marigold")
+        companions.add("Sweet Potato")
+    }
+    if (name.contains("potato")) {
+        companions.add("Tomato")
+    }
+    if (name.contains("aster")) {
+        companions.add("Thyme")
+    }
+    if (name.contains("thyme")) {
+        companions.add("Aster")
+        companions.add("Rosemary")
+    }
+    if (name.contains("columbine")) {
+        companions.add("Fern")
+    }
+    if (name.contains("fern")) {
+        companions.add("Columbine")
+    }
+    if (name.contains("rosemary")) {
+        companions.add("Lavender")
+        companions.add("Thyme")
+    }
+    return companions
 }
