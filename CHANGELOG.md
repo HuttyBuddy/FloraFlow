@@ -2,7 +2,7 @@
 
 All notable changes to the FloraFlow project will be documented in this file.
 
-## [4] - 2026-05-29
+## [5] - 2026-05-29
 
 ### Added
 - **Garden Library**: Botanical database with detailed requirements for pH, sunlight, and companion planting.
