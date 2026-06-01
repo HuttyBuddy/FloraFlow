@@ -12,6 +12,9 @@ import com.example.data.repository.GardenRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 class GardenViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -67,6 +70,16 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _showSubscriptionManagement = MutableStateFlow(false)
     val showSubscriptionManagement: StateFlow<Boolean> = _showSubscriptionManagement.asStateFlow()
+
+    // Feedback State Streams
+    private val _feedbackSubmissions = MutableStateFlow<List<FeedbackSubmission>>(emptyList())
+    val feedbackSubmissions: StateFlow<List<FeedbackSubmission>> = _feedbackSubmissions.asStateFlow()
+
+    private val _isSubmittingFeedback = MutableStateFlow(false)
+    val isSubmittingFeedback: StateFlow<Boolean> = _isSubmittingFeedback.asStateFlow()
+
+    private val _feedbackSuccess = MutableStateFlow(false)
+    val feedbackSuccess: StateFlow<Boolean> = _feedbackSuccess.asStateFlow()
 
     private val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", android.content.Context.MODE_PRIVATE)
 
@@ -187,6 +200,12 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         _subscriptionTier.value = sharedPrefs.getString("subscription_tier", null)
         _subscriptionTransactionId.value = sharedPrefs.getString("subscription_transaction_id", null)
         _subscriptionBillingDate.value = sharedPrefs.getString("subscription_billing_date", null)
+
+        val savedFeedback = sharedPrefs.getString("feedback_submissions_list", null)
+        if (savedFeedback != null) {
+            val list = savedFeedback.split("###").mapNotNull { FeedbackSubmission.fromSerializedString(it) }
+            _feedbackSubmissions.value = list
+        }
 
         val database = GardenDatabase.getDatabase(application)
         repository = GardenRepository(database.gardenDao())
@@ -741,6 +760,63 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     fun clearArPlants() {
         _arPlacedPlants.value = emptyList()
     }
+
+    // --- Feedback Operations ---
+    fun submitFeedback(category: String, rating: Int, comments: String, email: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _isSubmittingFeedback.value = true
+            _feedbackSuccess.value = false
+            
+            // 1. Construct local data & save immediately (Offline-First local cache resilience)
+            val newSubmission = FeedbackSubmission(
+                category = category,
+                rating = rating,
+                comments = comments,
+                email = email
+            )
+            val updatedList = _feedbackSubmissions.value + newSubmission
+            _feedbackSubmissions.value = updatedList
+            
+            val serialized = updatedList.joinToString("###") { it.toSerializedString() }
+            sharedPrefs.edit().putString("feedback_submissions_list", serialized).apply()
+            
+            // 2. Transmit to Google Form programmatically in the background
+            val formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSd7fkPwyJnIshmYdUNxtXwE8MjKawHs7mnGCZeQTB8qzcAHsg/formResponse"
+            val formBody = FormBody.Builder()
+                .add("entry.1554273446", category)    // Programmatic Category entry ID
+                .add("entry.1466017635", rating.toString()) // Programmatic Rating entry ID
+                .add("entry.870888423", comments)     // Programmatic Comments entry ID
+                .add("entry.1025727786", email)       // Programmatic Email entry ID
+                .build()
+            
+            val request = Request.Builder()
+                .url(formUrl)
+                .post(formBody)
+                .build()
+            
+            try {
+                // Instantiating OkHttpClient to submit feedback. In production, this can also use a shared singleton client.
+                val client = OkHttpClient()
+                val response = client.newCall(request).execute()
+                
+                if (response.isSuccessful) {
+                    android.util.Log.d("FloraFlow", "Feedback successfully synced with Google Forms CRM!")
+                } else {
+                    android.util.Log.e("FloraFlow", "Google Forms Sync returned non-success code: ${response.code}. Saved locally.")
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("FloraFlow", "Google Forms Sync failed: ${e.message}. Saved locally as offline fallback.", e)
+            } finally {
+                // Ensure UI transitions to success state even if network call failed (offline-first design principle)
+                _isSubmittingFeedback.value = false
+                _feedbackSuccess.value = true
+            }
+        }
+    }
+
+    fun resetFeedbackSuccess() {
+        _feedbackSuccess.value = false
+    }
 }
 
 // Data holder for mock AR positioning. Allows drag-and-drop scaling of elements in camera mode
@@ -753,3 +829,34 @@ data class ArPlantPlacement(
     val scale: Float,
     val rotationDegrees: Float
 )
+
+// Themed User Feedback Submission Entity
+data class FeedbackSubmission(
+    val category: String,
+    val rating: Int,
+    val comments: String,
+    val email: String,
+    val timestamp: Long = System.currentTimeMillis()
+) {
+    fun toSerializedString(): String {
+        val safeCategory = category.replace("|", "\\pipe")
+        val safeComments = comments.replace("|", "\\pipe").replace("\n", "\\newline")
+        val safeEmail = email.replace("|", "\\pipe")
+        return "$safeCategory|$rating|$safeComments|$safeEmail|$timestamp"
+    }
+
+    companion object {
+        fun fromSerializedString(str: String): FeedbackSubmission? {
+            val parts = str.split("|")
+            if (parts.size >= 5) {
+                val category = parts[0].replace("\\pipe", "|")
+                val rating = parts[1].toIntOrNull() ?: 3
+                val comments = parts[2].replace("\\pipe", "|").replace("\\newline", "\n")
+                val email = parts[3].replace("\\pipe", "|")
+                val timestamp = parts[4].toLongOrNull() ?: System.currentTimeMillis()
+                return FeedbackSubmission(category, rating, comments, email, timestamp)
+            }
+            return null
+        }
+    }
+}

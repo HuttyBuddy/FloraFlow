@@ -180,7 +180,7 @@ fun PlannerScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = "Design Blueprint Workspace",
                                 style = MaterialTheme.typography.titleSmall,
@@ -190,9 +190,12 @@ fun PlannerScreen(
                             Text(
                                 text = currentLayout.name,
                                 style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.Black
+                                fontWeight = FontWeight.Black,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
                         }
+                        Spacer(modifier = Modifier.width(8.dp))
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
@@ -203,7 +206,8 @@ fun PlannerScreen(
                                 text = "${currentLayout.style} | 5x5",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1
                             )
                         }
                     }
@@ -224,18 +228,19 @@ fun PlannerScreen(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
             ) {
-                Row(
+                FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterHorizontally),
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Text(
                         "AI Assistant:",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.align(Alignment.CenterVertically)
                     )
 
                     AssistChip(
@@ -243,7 +248,7 @@ fun PlannerScreen(
                             viewModel.askAiForLayoutAdvice()
                             switchToChatTab()
                         },
-                        label = { Text("Layout Review") },
+                        label = { Text("Layout Review", maxLines = 1) },
                         leadingIcon = { Icon(Icons.Default.AutoAwesome, contentDescription = "AI", modifier = Modifier.size(16.dp)) }
                     )
 
@@ -252,7 +257,7 @@ fun PlannerScreen(
                             viewModel.generateAILayoutSuggestion()
                             switchToChatTab()
                         },
-                        label = { Text("Blueprint Suggestion") },
+                        label = { Text("Blueprint Suggestion", maxLines = 1) },
                         leadingIcon = { Icon(Icons.Default.Spa, contentDescription = "Sow", modifier = Modifier.size(16.dp)) }
                     )
                 }

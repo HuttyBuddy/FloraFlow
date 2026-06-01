@@ -252,7 +252,8 @@ fun AiStudioScreen(
                                 ) {
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                        verticalAlignment = Alignment.Top
+                                        verticalAlignment = Alignment.Top,
+                                        modifier = Modifier.fillMaxWidth()
                                     ) {
                                         if (!isUser) {
                                             Text("🍃", fontSize = 12.sp)
@@ -261,7 +262,8 @@ fun AiStudioScreen(
                                             text = text,
                                             fontSize = 13.sp,
                                             color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
-                                            style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp)
+                                            style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
+                                            modifier = Modifier.weight(1f)
                                         )
                                     }
                                 }
@@ -535,7 +537,8 @@ fun AiStudioScreen(
                                     ) {
                                         Row(
                                             horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            verticalAlignment = Alignment.Top
+                                            verticalAlignment = Alignment.Top,
+                                            modifier = Modifier.fillMaxWidth()
                                         ) {
                                             if (!isUser) {
                                                 Text("🍃", fontSize = 12.sp)
@@ -544,7 +547,8 @@ fun AiStudioScreen(
                                                 text = text,
                                                 fontSize = 13.sp,
                                                 color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
-                                                style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp)
+                                                style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
+                                                modifier = Modifier.weight(1f)
                                             )
                                         }
                                     }

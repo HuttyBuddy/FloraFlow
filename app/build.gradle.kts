@@ -10,15 +10,15 @@ plugins {
 
 android {
   namespace = "com.example"
-  compileSdk { version = release(36) { minorApiLevel = 1 } }
+  compileSdk = 35
   ndkVersion = "26.1.10909125"
 
   defaultConfig {
     applicationId = "com.aistudio.dreamgardendesigner.fhqpvw"
     minSdk = 24
-    targetSdk = 36
-    versionCode = 5
-    versionName = "5.0"
+    targetSdk = 35
+    versionCode = 6
+    versionName = "6.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

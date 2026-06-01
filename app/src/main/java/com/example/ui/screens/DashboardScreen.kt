@@ -109,9 +109,12 @@ fun DashboardScreen(
                             style = MaterialTheme.typography.displaySmall.copy(fontSize = 25.sp),
                             fontWeight = FontWeight.Black,
                             color = if (darkTheme) Color(0xFFE5E2D9) else Color(0xFF1B1C17),
-                            modifier = Modifier.padding(top = 2.dp)
+                            modifier = Modifier.padding(top = 2.dp),
+                            maxLines = 2,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
+                    Spacer(modifier = Modifier.width(8.dp))
                     
                     if (isPremium) {
                         Box(

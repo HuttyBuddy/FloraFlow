@@ -2,6 +2,12 @@
 
 All notable changes to the FloraFlow project will be documented in this file.
 
+## [6] - 2026-05-30
+
+### Changed
+- **SDK Compatibility**: Downgraded target SDK and compile SDK to 35 for broader stability on the current Google Play Store track.
+- **Version Increment**: Updated version to 6 (6.0) for new Play Store submission.
+
 ## [5] - 2026-05-29
 
 ### Added

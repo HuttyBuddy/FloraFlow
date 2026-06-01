@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.WorkspacePremium
+import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.*
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +30,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.screens.*
+import com.example.ui.screens.feedback.FeedbackDialog
 import androidx.activity.viewModels
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.GardenViewModel
@@ -62,6 +64,7 @@ class MainActivity : ComponentActivity() {
                         OnboardingScreen(viewModel = viewModel)
                     } else {
                     var currentTab by remember { mutableIntStateOf(0) }
+                    var showFeedbackDialog by remember { mutableStateOf(false) }
                     val isPremium by viewModel.isPremium.collectAsState()
 
                     // Universal sandbox Billing & Subscription Management Checkout Dialog
@@ -74,8 +77,31 @@ class MainActivity : ComponentActivity() {
                         viewModel = viewModel,
                     )
 
+                    FeedbackDialog(
+                        visible = showFeedbackDialog,
+                        onDismiss = { showFeedbackDialog = false },
+                        viewModel = viewModel
+                    )
+
                     Scaffold(
                         modifier = Modifier.fillMaxSize(),
+                        floatingActionButton = {
+                            if (currentTab < 4) {
+                                FloatingActionButton(
+                                    onClick = { showFeedbackDialog = true },
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier
+                                        .padding(bottom = 12.dp, end = 4.dp)
+                                        .testTag("floating_feedback_button")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Feedback,
+                                        contentDescription = "Share App Feedback"
+                                    )
+                                }
+                            }
+                        },
                         topBar = {
                             @OptIn(ExperimentalMaterial3Api::class)
                             CenterAlignedTopAppBar(
@@ -129,29 +155,33 @@ class MainActivity : ComponentActivity() {
                                     selected = currentTab == 0,
                                     onClick = { currentTab = 0 },
                                     icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
-                                    label = { Text("Dashboard", style = MaterialTheme.typography.bodySmall) },
-                                    modifier = Modifier.testTag("nav_tab_dashboard")
+                                    label = { Text("Dashboard", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                    modifier = Modifier.testTag("nav_tab_dashboard"),
+                                    alwaysShowLabel = false
                                 )
                                 NavigationBarItem(
                                     selected = currentTab == 1,
                                     onClick = { currentTab = 1 },
                                     icon = { Icon(Icons.Default.Explore, contentDescription = "2D Planner") },
-                                    label = { Text("2D Planner", style = MaterialTheme.typography.bodySmall) },
-                                    modifier = Modifier.testTag("nav_tab_planner")
+                                    label = { Text("2D Planner", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                    modifier = Modifier.testTag("nav_tab_planner"),
+                                    alwaysShowLabel = false
                                 )
                                 NavigationBarItem(
                                     selected = currentTab == 2,
                                     onClick = { currentTab = 2 },
                                     icon = { Icon(Icons.Default.Spa, contentDescription = "Greenhouse") },
-                                    label = { Text("Greenhouse", style = MaterialTheme.typography.bodySmall) },
-                                    modifier = Modifier.testTag("nav_tab_greenhouse")
+                                    label = { Text("Greenhouse", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                    modifier = Modifier.testTag("nav_tab_greenhouse"),
+                                    alwaysShowLabel = false
                                 )
                                 NavigationBarItem(
                                     selected = currentTab == 3,
                                     onClick = { currentTab = 3 },
                                     icon = { Icon(Icons.Default.SmartToy, contentDescription = "AI Advisor") },
-                                    label = { Text("AI Advisor", style = MaterialTheme.typography.bodySmall) },
-                                    modifier = Modifier.testTag("nav_tab_ai")
+                                    label = { Text("AI Advisor", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                    modifier = Modifier.testTag("nav_tab_ai"),
+                                    alwaysShowLabel = false
                                 )
                                 NavigationBarItem(
                                     selected = currentTab == 4,
@@ -162,8 +192,9 @@ class MainActivity : ComponentActivity() {
                                         }
                                     },
                                     icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Lens") },
-                                    label = { Text("AR Lens", style = MaterialTheme.typography.bodySmall) },
-                                    modifier = Modifier.testTag("nav_tab_ar")
+                                    label = { Text("AR Lens", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                    modifier = Modifier.testTag("nav_tab_ar"),
+                                    alwaysShowLabel = false
                                 )
                             }
                         }
