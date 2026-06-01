@@ -30,6 +30,21 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.testTag
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.Preview
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import coil.compose.AsyncImage
+import java.io.File
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
@@ -61,7 +76,8 @@ data class DesignSnapshot(
     val weather: String,
     val totalPlants: Int,
     val summary: String,
-    val thumbnailEmoji: String
+    val thumbnailEmoji: String,
+    val localImagePath: String? = null
 )
 
 // Particle object for local 60fps weather system rendering
@@ -74,7 +90,7 @@ data class ArParticle(
     var driftAngle: Float
 )
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalPermissionsApi::class)
 @Composable
 fun ArLensScreen(
     viewModel: GardenViewModel,
@@ -110,8 +126,10 @@ fun ArLensScreen(
     val arPlacedPlants by viewModel.arPlacedPlants.collectAsStateWithLifecycle()
 
     // ENHANCED AR CONTROLS STATE
+    val cameraPermissionState = rememberPermissionState(android.Manifest.permission.CAMERA)
+    var activeImageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     var selectedPlacementId by remember { mutableStateOf<Int?>(null) }
-    var selectedBackgroundPreset by remember { mutableStateOf("Lawn Garden Grid") }
+    var selectedBackgroundPreset by remember { mutableStateOf("Live Device Camera") }
     
     // Theme backdrops
     val bgGradient = remember(selectedBackgroundPreset) {
@@ -334,7 +352,7 @@ fun ArLensScreen(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                         modifier = Modifier.weight(1f)
                     ) {
-                        items(listOf("Lawn Garden Grid", "Sunny Patio", "Balcony Deck", "Cyber Greenhouse", "English Estate")) { preset ->
+                        items(listOf("Live Device Camera", "Lawn Garden Grid", "Sunny Patio", "Balcony Deck", "Cyber Greenhouse", "English Estate")) { preset ->
                             val isSelected = selectedBackgroundPreset == preset
                             Box(
                                 modifier = Modifier
@@ -411,6 +429,63 @@ fun ArLensScreen(
                 .testTag("ar_viewport")
         ) {
             
+            // 1. LIVE CAMERA PREVIEW OR SIMULATION BACKDROP
+            if (selectedBackgroundPreset == "Live Device Camera") {
+                if (cameraPermissionState.status.isGranted) {
+                    CameraPreview(
+                        modifier = Modifier.fillMaxSize(),
+                        onCaptureCreated = { activeImageCapture = it }
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF0F172A)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CameraAlt,
+                                contentDescription = "Camera Permission Required",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "Camera Access Required",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "To view your designed garden templates overlaid in real 3D AR, please grant the camera permission.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White.copy(alpha = 0.8f),
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Button(
+                                onClick = { cameraPermissionState.launchPermissionRequest() },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(Icons.Default.VpnKey, contentDescription = "Grant")
+                                    Text("Grant Permission", fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // RENDERING BASE CLIMATE ATMOSPHERE GRAPHICS
             if (activeWeather != "Clear Sky" && particlesList.isNotEmpty()) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
@@ -899,19 +974,78 @@ fun ArLensScreen(
                     IconButton(
                         onClick = {
                             triggeringFlash = true
-                            // Capture details
-                            val description = "Backdrop: $selectedBackgroundPreset, Plants count: ${arPlacedPlants.size}, Filter: $currentFilter, Weather: $activeWeather"
-                            val snap = DesignSnapshot(
-                                id = "SNAP_${System.currentTimeMillis() % 10000}",
-                                timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
-                                backdrop = selectedBackgroundPreset,
-                                filter = currentFilter,
-                                weather = activeWeather,
-                                totalPlants = arPlacedPlants.size,
-                                summary = description,
-                                thumbnailEmoji = arPlacedPlants.firstOrNull()?.emoji ?: "🌳"
-                            )
-                            savedSnapshots.add(0, snap)
+                            val baseDescription = "Backdrop: $selectedBackgroundPreset, Plants count: ${arPlacedPlants.size}, Filter: $currentFilter, Weather: $activeWeather"
+                            val capture = activeImageCapture
+                            if (selectedBackgroundPreset == "Live Device Camera" && capture != null && cameraPermissionState.status.isGranted) {
+                                try {
+                                    val photoFile = File(
+                                        context.cacheDir,
+                                        "photo_${System.currentTimeMillis()}.jpg"
+                                    )
+                                    val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+                                    capture.takePicture(
+                                        outputOptions,
+                                        ContextCompat.getMainExecutor(context),
+                                        object : ImageCapture.OnImageSavedCallback {
+                                            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                                val snap = DesignSnapshot(
+                                                    id = "SNAP_${System.currentTimeMillis() % 10000}",
+                                                    timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
+                                                    backdrop = selectedBackgroundPreset,
+                                                    filter = currentFilter,
+                                                    weather = activeWeather,
+                                                    totalPlants = arPlacedPlants.size,
+                                                    summary = "$baseDescription (Device photo captured)",
+                                                    thumbnailEmoji = arPlacedPlants.firstOrNull()?.emoji ?: "🌳",
+                                                    localImagePath = photoFile.absolutePath
+                                                )
+                                                savedSnapshots.add(0, snap)
+                                            }
+
+                                            override fun onError(exception: ImageCaptureException) {
+                                                exception.printStackTrace()
+                                                val snap = DesignSnapshot(
+                                                    id = "SNAP_${System.currentTimeMillis() % 10000}",
+                                                    timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
+                                                    backdrop = selectedBackgroundPreset,
+                                                    filter = currentFilter,
+                                                    weather = activeWeather,
+                                                    totalPlants = arPlacedPlants.size,
+                                                    summary = "$baseDescription (Sensor fail setup fallback: ${exception.localizedMessage})",
+                                                    thumbnailEmoji = arPlacedPlants.firstOrNull()?.emoji ?: "🌳"
+                                                )
+                                                savedSnapshots.add(0, snap)
+                                            }
+                                        }
+                                    )
+                                } catch (exc: Exception) {
+                                    exc.printStackTrace()
+                                    val snap = DesignSnapshot(
+                                        id = "SNAP_${System.currentTimeMillis() % 10000}",
+                                        timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
+                                        backdrop = selectedBackgroundPreset,
+                                        filter = currentFilter,
+                                        weather = activeWeather,
+                                        totalPlants = arPlacedPlants.size,
+                                        summary = "$baseDescription (Init capture error: ${exc.localizedMessage})",
+                                        thumbnailEmoji = arPlacedPlants.firstOrNull()?.emoji ?: "🌳"
+                                    )
+                                    savedSnapshots.add(0, snap)
+                                }
+                            } else {
+                                // Simulated backdrop fallback or preview mode
+                                val snap = DesignSnapshot(
+                                    id = "SNAP_${System.currentTimeMillis() % 10000}",
+                                    timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
+                                    backdrop = selectedBackgroundPreset,
+                                    filter = currentFilter,
+                                    weather = activeWeather,
+                                    totalPlants = arPlacedPlants.size,
+                                    summary = baseDescription,
+                                    thumbnailEmoji = arPlacedPlants.firstOrNull()?.emoji ?: "🌳"
+                                )
+                                savedSnapshots.add(0, snap)
+                            }
                         },
                         modifier = Modifier
                             .size(54.dp)
@@ -1261,14 +1395,36 @@ fun ArLensScreen(
                                             ),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Text(snap.thumbnailEmoji, fontSize = 28.sp)
-                                            Text(
-                                                "Filter: ${snap.filter}", 
-                                                fontSize = 8.sp, 
-                                                color = Color.Green, 
-                                                fontWeight = FontWeight.Bold
-                                            )
+                                        if (snap.localImagePath != null) {
+                                            Box(modifier = Modifier.fillMaxSize()) {
+                                                AsyncImage(
+                                                    model = File(snap.localImagePath),
+                                                    contentDescription = "Captured Snap",
+                                                    modifier = Modifier.fillMaxSize(),
+                                                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                                )
+                                                // Floating badge overlay in bottom right
+                                                Box(
+                                                    modifier = Modifier
+                                                        .align(Alignment.BottomEnd)
+                                                        .padding(4.dp)
+                                                        .size(24.dp)
+                                                        .background(Color.Black.copy(alpha = 0.61f), CircleShape),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(snap.thumbnailEmoji, fontSize = 12.sp)
+                                                }
+                                            }
+                                        } else {
+                                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                                Text(snap.thumbnailEmoji, fontSize = 28.sp)
+                                                Text(
+                                                    "Filter: ${snap.filter}", 
+                                                    fontSize = 8.sp, 
+                                                    color = Color.Green, 
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
                                         }
                                     }
 
@@ -1310,3 +1466,52 @@ fun ArLensScreen(
 // Utility to create a border stroke
 private fun borderStroke(width: androidx.compose.ui.unit.Dp, color: Color) = 
     androidx.compose.foundation.BorderStroke(width, color)
+
+@Composable
+fun CameraPreview(
+    modifier: Modifier = Modifier,
+    onCaptureCreated: (ImageCapture) -> Unit
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+
+    AndroidView(
+        factory = { ctx ->
+            PreviewView(ctx).apply {
+                scaleType = PreviewView.ScaleType.FILL_CENTER
+            }
+        },
+        modifier = modifier,
+        update = { previewView ->
+            cameraProviderFuture.addListener({
+                val cameraProvider = cameraProviderFuture.get()
+                val preview = Preview.Builder().build().also {
+                    it.setSurfaceProvider(previewView.surfaceProvider)
+                }
+
+                val imageCapture = ImageCapture.Builder()
+                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                    .build()
+
+                onCaptureCreated(imageCapture)
+
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+                try {
+                    cameraProvider.unbindAll()
+                    cameraProvider.bindToLifecycle(
+                        lifecycleOwner,
+                        cameraSelector,
+                        preview,
+                        imageCapture
+                    )
+                } catch (exc: Exception) {
+                    exc.printStackTrace()
+                }
+            }, ContextCompat.getMainExecutor(context))
+        }
+    )
+}
+
