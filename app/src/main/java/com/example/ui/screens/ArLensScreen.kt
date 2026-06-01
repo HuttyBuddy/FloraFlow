@@ -49,6 +49,8 @@ import kotlinx.coroutines.launch
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.text.TextStyle
 
 // Imports for Camera permission and CameraX integration
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -67,7 +69,9 @@ data class PlantExtraProps(
     val id: Int,
     val growthStage: String = "Mature", // Sprout 🌱, Young 🌿, Mature 🌸, Colossal 🌳
     val moisture: Float = 0.7f,        // 0f (Dry) to 1f (Wet)
-    val highlightColor: Color? = null   // Cyber highlights
+    val highlightColor: Color? = null,  // Cyber highlights
+    val vitalityCondition: String = "Perfect Hydration",
+    val customLabel: String = ""
 )
 
 // Data class for saving mock snapshots taken in the simulator
@@ -215,6 +219,11 @@ fun ArLensScreen(
     // ENHANCED AR CONTROLS STATE
     var selectedPlacementId by remember { mutableStateOf<Int?>(null) }
     
+    // Retraction states for full screen UI
+    var isSettingsExpanded by remember { mutableStateOf(false) }
+    var isInventoryExpanded by remember { mutableStateOf(false) }
+    var isTuningExpanded by remember { mutableStateOf(true) }
+    
     // ENHANCEMENT 2: Dynamic Weather with real-time particle rendering loop
     var activeWeather by remember { mutableStateOf("Clear Sky") }
 
@@ -269,6 +278,15 @@ fun ArLensScreen(
 
     // Dynamic property overrides map helper
     val localOverrides = remember { mutableStateMapOf<Int, PlantExtraProps>() }
+
+    val updateArOverride = { id: Int, transform: (PlantExtraProps) -> PlantExtraProps ->
+        localOverrides[id] = transform(localOverrides[id] ?: PlantExtraProps(id = id))
+    }
+
+    val updateArPlantTransform = { id: Int, scale: Float, rotationDegrees: Float ->
+        viewModel.updateArPlantScaling(id, scale)
+        viewModel.updateArPlantRotation(id, rotationDegrees)
+    }
 
     // Enhanced Selection details
     val selectedPlacement = remember(arPlacedPlants, selectedPlacementId) {
@@ -626,9 +644,7 @@ fun ArLensScreen(
     val viewportBlock = @Composable { viewportModifier: Modifier ->
         Box(
             modifier = viewportModifier
-                .clip(RoundedCornerShape(20.dp))
                 .background(bgGradient)
-                .border(2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
                 .onGloballyPositioned { viewportSize = it.size }
                 .testTag("ar_viewport")
         ) {
@@ -1722,14 +1738,31 @@ fun ArLensScreen(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
-            Column(modifier = Modifier.padding(10.dp)) {
-                Text(
-                    "Placeable Decal Inventory (Tap to spawn)",
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
+            Column(modifier = Modifier.padding(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Placeable Decal Inventory (Tap to spawn)",
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    IconButton(
+                        onClick = { isInventoryExpanded = false },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Collapse Inventory",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
 
                 // Render active plant templates
                 val availableAssetList = remember(activePlants, activeLayout) {
@@ -1866,178 +1899,240 @@ fun ArLensScreen(
                     localRotation = selectedPlacement.rotationDegrees
                 }
 
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f))
-                ) {
-                    Column(
-                        modifier = Modifier.padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                if (isTuningExpanded) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f))
                     ) {
-                        // Title line with quick controls
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    "${selectedPlacement.emoji} ${selectedPlacement.name} Variables Tuning",
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                            IconButton(
-                                onClick = {
-                                    viewModel.removeArPlant(selectedPlacement.id)
-                                    selectedPlacementId = null
-                                },
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f), CircleShape)
-                                    .size(26.dp)
+                            // Title line with quick controls
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
-                                    Icons.Default.DeleteSweep,
-                                    contentDescription = "Trash placement",
-                                    tint = MaterialTheme.colorScheme.error,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-
-                        // Property override 1: Simulated Growth Stage
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Text(
-                                "Growth Age:",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.width(68.dp)
-                            )
-                            listOf("Sprout", "Young", "Mature", "Colossal").forEach { stage ->
-                                val isCurrent = selectedOverride.growthStage == stage
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(
-                                            if (isCurrent) MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.surfaceVariant
-                                        )
-                                        .clickable {
-                                            localOverrides[selectedPlacement.id] = selectedOverride.copy(growthStage = stage)
-                                        }
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        stage,
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isCurrent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        "${selectedPlacement.emoji} ${selectedPlacement.name} Variables Tuning",
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    // Collapse button
+                                    IconButton(
+                                        onClick = { isTuningExpanded = false },
+                                        modifier = Modifier
+                                            .background(MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                                            .size(26.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.KeyboardArrowDown,
+                                            contentDescription = "Collapse Tuning",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            viewModel.removeArPlant(selectedPlacement.id)
+                                            selectedPlacementId = null
+                                        },
+                                        modifier = Modifier
+                                            .background(MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f), CircleShape)
+                                            .size(26.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.DeleteSweep,
+                                            contentDescription = "Trash placement",
+                                            tint = MaterialTheme.colorScheme.error,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
                             }
-                        }
 
-                        // Property override 2: Irrigation Slider
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "Moisture Variable:",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.width(110.dp)
-                            )
-                            Slider(
-                                value = selectedOverride.moisture,
-                                onValueChange = {
-                                    localOverrides[selectedPlacement.id] = selectedOverride.copy(moisture = it)
-                                },
-                                valueRange = 0f..1f,
-                                modifier = Modifier.weight(1f).height(24.dp)
-                            )
-                            Text(
-                                "${(selectedOverride.moisture * 100).toInt()}%",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.width(36.dp),
-                                textAlign = TextAlign.End
-                            )
-                        }
-
-                        // Basic scale control slider
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "Base Sticker Scale:",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.width(110.dp)
-                            )
-                            Slider(
-                                value = localScale,
-                                onValueChange = { localScale = it },
-                                onValueChangeFinished = {
-                                    viewModel.updateArPlantScaling(selectedPlacement.id, localScale)
-                                },
-                                valueRange = 0.3f..3.0f,
-                                modifier = Modifier.weight(1f).height(24.dp)
-                            )
-                            Text(
-                                String.format("%.1fx", localScale),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.width(36.dp),
-                                textAlign = TextAlign.End
-                            )
-                        }
-
-                        // Basic rotation control slider
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "Base Rotation:",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.width(110.dp)
-                            )
-                            Slider(
-                                value = localRotation,
-                                onValueChange = { localRotation = it },
-                                onValueChangeFinished = {
-                                    viewModel.updateArPlantRotation(selectedPlacement.id, localRotation)
-                                },
-                                valueRange = 0f..360f,
-                                modifier = Modifier.weight(1f).height(24.dp)
-                            )
-                            Text(
-                                "${localRotation.toInt()}°",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.width(36.dp),
-                                textAlign = TextAlign.End
-                            )
-                        }
-
-                        // Botanical Synergy Section in Variables Tuning Panel
-                        Spacer(modifier = Modifier.height(4.dp))
-                        val activeSynergies = synergyPairs
-                            .filter { it.first == selectedPlacement.id || it.second == selectedPlacement.id }
-                            .map { pair ->
-                                val otherId = if (pair.first == selectedPlacement.id) pair.second else pair.first
-                                arPlacedPlants.firstOrNull { it.id == otherId }
+                            // Property override 1: Simulated Growth Stage
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    "Growth Age:",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(68.dp)
+                                )
+                                listOf("Sprout", "Young", "Mature", "Colossal").forEach { stage ->
+                                    val isCurrent = selectedOverride.growthStage == stage
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(
+                                                if (isCurrent) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.surfaceVariant
+                                            )
+                                            .clickable {
+                                                updateArOverride(selectedPlacement.id) {
+                                                    it.copy(growthStage = stage)
+                                                }
+                                            }
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = stage,
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isCurrent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
                             }
-                            .filterNotNull()
+
+                            // Property override 2: Vitality override
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    "Vitality:",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(68.dp)
+                                )
+                                listOf("Slightly Dry", "Perfect Hydration", "Hyper Blooming").forEach { cond ->
+                                    val isCurrent = selectedOverride.vitalityCondition == cond
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(
+                                                if (isCurrent) MaterialTheme.colorScheme.primary
+                                                else MaterialTheme.colorScheme.surfaceVariant
+                                            )
+                                            .clickable {
+                                                updateArOverride(selectedPlacement.id) {
+                                                    it.copy(vitalityCondition = cond)
+                                                }
+                                            }
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = cond,
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isCurrent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Property override 3: Custom label override
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    "Tag Note:",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(68.dp)
+                                )
+                                BasicTextField(
+                                    value = selectedOverride.customLabel,
+                                    onValueChange = { newLabel ->
+                                        updateArOverride(selectedPlacement.id) {
+                                            it.copy(customLabel = newLabel)
+                                        }
+                                    },
+                                    textStyle = TextStyle(
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(4.dp))
+                                        .padding(horizontal = 6.dp, vertical = 4.dp)
+                                )
+                            }
+
+                            // Scale slider
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    "Scaling:",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(68.dp)
+                                )
+                                Slider(
+                                    value = localScale,
+                                    onValueChange = {
+                                        localScale = it
+                                        updateArPlantTransform(selectedPlacement.id, it, localRotation)
+                                    },
+                                    valueRange = 0.3f..3.0f,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = String.format("%.1fx", localScale),
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    modifier = Modifier.width(32.dp)
+                                )
+                            }
+
+                            // Rotation slider
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    "Rotation:",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.width(68.dp)
+                                )
+                                Slider(
+                                    value = localRotation,
+                                    onValueChange = {
+                                        localRotation = it
+                                        updateArPlantTransform(selectedPlacement.id, localScale, it)
+                                    },
+                                    valueRange = 0f..360f,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = "${localRotation.toInt()}°",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    modifier = Modifier.width(32.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                            val activeSynergies = synergyPairs
+                                .filter { it.first == selectedPlacement.id || it.second == selectedPlacement.id }
+                                .map { pair ->
+                                    val otherId = if (pair.first == selectedPlacement.id) pair.second else pair.first
+                                    arPlacedPlants.firstOrNull { it.id == otherId }
+                                }
+                                .filterNotNull()
 
                         if (activeSynergies.isNotEmpty()) {
                             Card(
@@ -2195,6 +2290,34 @@ fun ArLensScreen(
                         }
                     }
                 }
+            } else {
+                Card(
+                        modifier = Modifier
+                            .wrapContentSize()
+                            .clickable { isTuningExpanded = true },
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f))
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "⚙️ Tweak: ${selectedPlacement.emoji} ${selectedPlacement.name}",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowUp,
+                                contentDescription = "Expand Tuning",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -2202,39 +2325,140 @@ fun ArLensScreen(
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
 
-    if (isLandscape) {
-        Row(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(horizontal = 14.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+    Box(modifier = modifier.fillMaxSize()) {
+        // 1. Root Viewport occupies the entire edge-to-edge area!
+        viewportBlock(Modifier.fillMaxSize())
+
+        // 2. Floating Top Overlay for Settings / Backdrop Header
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth(if (isLandscape) 0.65f else 1.0f)
+                .padding(14.dp)
         ) {
-            viewportBlock(Modifier.weight(1.3f).fillMaxHeight())
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                headerBlock()
-                selectorsBlock()
-                inventoryBlock(true)
-                tuningBlock()
+            if (isSettingsExpanded) {
+                // Expanded Glassy Card containing header & selectors
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "🌱 FloraFlow Options",
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            IconButton(
+                                onClick = { isSettingsExpanded = false },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(Icons.Default.Close, contentDescription = "Close Options", tint = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
+                        headerBlock()
+                        selectorsBlock()
+                    }
+                }
+            } else {
+                // Collapsed minimal pill
+                Card(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .clickable { isSettingsExpanded = true },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            "🌱 FloraFlow AR Lens",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                                .clickable { isSettingsExpanded = true }
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                "⚙️ Options",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 9.sp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                    }
+                }
             }
         }
-    } else {
+
+        // 3. Floating Bottom Overlay Stack
         Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(horizontal = 14.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth(if (isLandscape) 0.65f else 1.0f)
+                .padding(horizontal = 14.dp)
+                .padding(bottom = 76.dp), // Leaves room for system navigation / main app navigation if any
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            headerBlock()
-            selectorsBlock()
-            viewportBlock(Modifier.fillMaxWidth().weight(1f))
-            inventoryBlock(false)
+            // First render the tuning Block overlay (placed above the inventory drawer)
             tuningBlock()
+
+            // Then render the inventory Block
+            if (isInventoryExpanded) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    inventoryBlock(isLandscape)
+                }
+            } else {
+                Card(
+                    modifier = Modifier
+                        .wrapContentSize()
+                        .clickable { isInventoryExpanded = true },
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            "🌱 Spawn Plant Decals",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowUp,
+                            contentDescription = "Expand Inventory",
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
         }
     }
 
