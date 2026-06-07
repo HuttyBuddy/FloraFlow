@@ -69,6 +69,12 @@ android {
   testOptions { unitTests { isIncludeAndroidResources = true } }
 }
 
+// Ensure the SQLite temp directory exists for Room compiler on Windows
+val sqliteTmpDir = layout.buildDirectory.dir("tmp/sqlite").get().asFile
+if (!sqliteTmpDir.exists()) {
+    sqliteTmpDir.mkdirs()
+}
+
 // Configure the Secrets Gradle Plugin to use .env and .env.example files
 // to match the convention used in Web projects.
 secrets {

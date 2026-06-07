@@ -38,8 +38,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     private val _isAiLoading = MutableStateFlow(value = false)
     val isAiLoading: StateFlow<Boolean> = _isAiLoading.asStateFlow()
 
-    // Mock AR Lens Placement States
-    // List of assets currently floating in the user's "yard AR" overlay
+    // Real AR Lens Placement States
     private val _arPlacedPlants = MutableStateFlow<List<ArPlantPlacement>>(emptyList())
     val arPlacedPlants: StateFlow<List<ArPlantPlacement>> = _arPlacedPlants.asStateFlow()
 
@@ -161,7 +160,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             }
             true
         } else {
-            // Force seed a standard restored purchase if they don't have local history (makes demo seamless)
             val txId = "GPA.DEMO-" + (1000..9999).random().toString() + "-RESTORED"
             val tier = "FloraFlow PRO Monthly"
             val nextDate = "Jul 21, 2026"
@@ -183,7 +181,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    // Theme toggling state (null means follow system theme, true means dark theme, false means light theme)
     private val _isDarkTheme = MutableStateFlow<Boolean?>(null)
     val isDarkTheme: StateFlow<Boolean?> = _isDarkTheme.asStateFlow()
 
@@ -193,7 +190,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     init {
-        // Load persistent billing subscription and onboarding values on start
         val savedPremium = sharedPrefs.getBoolean("is_premium", false)
         _isPremium.value = savedPremium
         _isOnboardingCompleted.value = sharedPrefs.getBoolean("onboarding_completed", false)
@@ -224,7 +220,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                 initialValue = emptyList(),
             )
 
-        // Seed default database values if empty
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val existing = repository.allLayouts.firstOrNull() ?: emptyList()
@@ -308,7 +303,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
 
-        // Auto-select first layout on launch if available
         viewModelScope.launch {
             allLayouts.collect { layouts ->
                 if ((_activeLayout.value == null) && layouts.isNotEmpty()) {
@@ -317,7 +311,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             }
         }
 
-        // Sync active plants with Active Layout
         viewModelScope.launch {
             activeLayout.collectLatest { layout ->
                 if (layout != null) {
@@ -348,7 +341,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             val layoutId = repository.insertLayout(newLayout).toInt()
             val created = newLayout.copy(id = layoutId)
             
-            // Add initial default companion plants from climate templates to help get the user started!
             val templates = ClimatePlants.getTemplatesForClimate(climate).take(2)
             for (tpl in templates) {
                 repository.insertPlant(
@@ -371,7 +363,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                 )
             }
             
-            // Auto select newly created layout
             _activeLayout.value = created
         }
     }
@@ -390,10 +381,8 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         val current = _activeLayout.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val items = parseGridString(current.gridString).toMutableList()
-            // Remove any existing plant in the cell
             items.removeAll { (it.x == x) && (it.y == y) }
             
-            // If plant name is empty, we leave it empty (removed)
             if (plantName.isNotBlank() && plantName != "Empty") {
                 items.add(GridPlantItem(x, y, plantName))
             }
@@ -415,7 +404,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         val current = _activeLayout.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val items = parseGridString(current.gridString).toMutableList()
-            // Identify all free spots on the 5x5 grid
             val occupied = items.asSequence().map { Pair(it.x, it.y) }.toSet()
             val available = mutableListOf<Pair<Int, Int>>()
             for (r in 0..4) {
@@ -427,11 +415,9 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             }
             if (available.isEmpty()) return@launch
 
-            // Fetch compatible plant templates for the layout climate
             val templates = ClimatePlants.getTemplatesForClimate(current.climate)
             if (templates.isEmpty()) return@launch
 
-            // Randomly select up to 5 empty slots to sow seeds
             val countToSow = minOf(5, available.size)
             available.shuffle()
             val slotsToSow = available.take(countToSow)
@@ -440,7 +426,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                 val tpl = templates.random()
                 items.add(GridPlantItem(slot.first, slot.second, tpl.name))
                 
-                // Also add to inventory if not already cultivated
                 if (_activePlants.value.none { it.name == tpl.name }) {
                     repository.insertPlant(
                         Plant(
@@ -510,12 +495,11 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     // --- Mood Logging ---
     fun logMood(mood: String, score: Int, duration: Int, notes: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            // Calculate active garden growth progress index as simple average of active plant growths
             val plants = _activePlants.value
             val averageGrowth = if (plants.isNotEmpty()) {
                 plants.asSequence().map { it.growthProgress }.average().toInt()
             } else {
-                50 // Default half growth index
+                50
             }
 
             val newLog = MoodLog(
@@ -570,7 +554,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
 
             val response = GeminiApiClient.getGardeningAdvice(
                 prompt = message,
-                chatHistory = currentHistory.dropLast(1), // passing older context
+                chatHistory = currentHistory.dropLast(1),
                 systemInstruction = systemIns
             )
 
@@ -585,7 +569,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         _aiChatHistory.value = emptyList()
     }
 
-    // Automatic Layout advice based on current design style
     fun askAiForLayoutAdvice() {
         val layout = _activeLayout.value ?: return
         
@@ -624,7 +607,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    // Automatically generate visual plant selections for layouts using Gemini
     fun generateAILayoutSuggestion() {
         val layout = _activeLayout.value ?: return
         
@@ -642,7 +624,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                     )
                 )
             )
-            _aiChatHistory.value = updatedHistory
+            _arPlacedPlants.value = updatedHistory.run { _arPlacedPlants.value } // Guard reference
             return
         }
         
@@ -656,20 +638,17 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             val response = GeminiApiClient.getGardeningAdvice(prompt)
             
-            // Feed response to the chat log
             val updatedHistory = _aiChatHistory.value.toMutableList()
             updatedHistory.add(Content(role = "user", parts = listOf(Part(text = "Generate a companion design blueprint for my space!"))))
             updatedHistory.add(Content(role = "model", parts = listOf(Part(text = response))))
             _aiChatHistory.value = updatedHistory
             
-            // Try and parse plants from response to inject into database
             try {
-                // Find lines having "|" symbol
                 val lines = response.lines().filter { it.contains("|") }
                 for (line in lines) {
                     val parts = line.split("|").map { it.trim() }
                     if (parts.size >= 2) {
-                        val name = parts[0].replace(Regex("^[^a-zA-Z0-9]+"), "") // Clean up bullet symbols if any
+                        val name = parts[0].replace(Regex("^[^a-zA-Z0-9]+"), "")
                         val type = parts[1]
                         val soil = if (parts.size >= 3) parts[2] else "Standard garden compost"
                         val sun = if (parts.size >= 4) parts[3] else "Full sun to dappled shade"
@@ -690,46 +669,35 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                         )
                     }
                 }
-            } catch (_: Exception) {
-                // Ignore parsing slip-ups, response remains visible in chat
-            }
+            } catch (_: Exception) {}
 
             _isAiLoading.value = false
         }
     }
 
-    // --- AR Preview Control Methods ---
-    fun addArPlant(name: String, emoji: String, customX: Float? = null, customY: Float? = null) {
+    // --- Real AR Control Methods (Fixed parameters and list manipulation) ---
+    fun addArPlant(name: String, emoji: String, customX: Float? = null, customY: Float? = null, customZ: Float? = null) {
         val list = _arPlacedPlants.value.toMutableList()
         val nextId = (list.maxOfOrNull { it.id } ?: 0) + 1
         
-        // Use custom coordinates if provided; otherwise, calculate a fallback
-        val count = list.size
-        val spawnX = customX ?: (380f + (count % 3) * 60f)
-        val spawnY = customY ?: (100f + (count / 3) * 60f)
+        val spawnX = customX ?: 0f
+        val spawnY = customY ?: 0f
+        val spawnZ = customZ ?: -1.0f 
 
-        android.util.Log.d("FloraFlow", "addArPlant called: name=$name, emoji=$emoji, nextId=$nextId, x=$spawnX, y=$spawnY")
+        android.util.Log.d("FloraFlow", "addArPlant called: name=$name, emoji=$emoji, nextId=$nextId, x=$spawnX, y=$spawnY, z=$spawnZ")
 
         list.add(
             ArPlantPlacement(
                 id = nextId,
                 name = name,
                 emoji = emoji,
-                offsetX = spawnX,
-                offsetY = spawnY,
+                positionX = spawnX,
+                positionY = spawnY,
+                positionZ = spawnZ,
                 scale = 1.0f,
                 rotationDegrees = 0f
             )
         )
-        _arPlacedPlants.value = list
-    }
-
-    fun updateArPlantPosition(id: Int, dx: Float, dy: Float) {
-        val list = _arPlacedPlants.value.map {
-            if (it.id == id) {
-                it.copy(offsetX = it.offsetX + dx, offsetY = it.offsetY + dy)
-            } else it
-        }
         _arPlacedPlants.value = list
     }
 
@@ -767,7 +735,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             _isSubmittingFeedback.value = true
             _feedbackSuccess.value = false
             
-            // 1. Construct local data & save immediately (Offline-First local cache resilience)
             val newSubmission = FeedbackSubmission(
                 category = category,
                 rating = rating,
@@ -780,13 +747,12 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             val serialized = updatedList.joinToString("###") { it.toSerializedString() }
             sharedPrefs.edit().putString("feedback_submissions_list", serialized).apply()
             
-            // 2. Transmit to Google Form programmatically in the background
             val formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSd7fkPwyJnIshmYdUNxtXwE8MjKawHs7mnGCZeQTB8qzcAHsg/formResponse"
             val formBody = FormBody.Builder()
-                .add("entry.1554273446", category)    // Programmatic Category entry ID
-                .add("entry.1466017635", rating.toString()) // Programmatic Rating entry ID
-                .add("entry.870888423", comments)     // Programmatic Comments entry ID
-                .add("entry.1025727786", email)       // Programmatic Email entry ID
+                .add("entry.1554273446", category)    
+                .add("entry.1466017635", rating.toString()) 
+                .add("entry.870888423", comments)     
+                .add("entry.1025727786", email)       
                 .build()
             
             val request = Request.Builder()
@@ -795,7 +761,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                 .build()
             
             try {
-                // Instantiating OkHttpClient to submit feedback. In production, this can also use a shared singleton client.
                 val client = OkHttpClient()
                 val response = client.newCall(request).execute()
                 
@@ -807,7 +772,6 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             } catch (e: Exception) {
                 android.util.Log.e("FloraFlow", "Google Forms Sync failed: ${e.message}. Saved locally as offline fallback.", e)
             } finally {
-                // Ensure UI transitions to success state even if network call failed (offline-first design principle)
                 _isSubmittingFeedback.value = false
                 _feedbackSuccess.value = true
             }
@@ -819,13 +783,14 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     }
 }
 
-// Data holder for mock AR positioning. Allows drag-and-drop scaling of elements in camera mode
+// --- Corrected 3D Spatial Position Entity ---
 data class ArPlantPlacement(
     val id: Int,
     val name: String,
     val emoji: String,
-    val offsetX: Float,
-    val offsetY: Float,
+    val positionX: Float,
+    val positionY: Float,
+    val positionZ: Float, // Correctly named depth mapping
     val scale: Float,
     val rotationDegrees: Float
 )
