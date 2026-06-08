@@ -7,7 +7,10 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import com.example.ui.screens.*
+import com.example.ui.screens.arlens.ArLensScreen
+import com.example.ui.screens.dashboard.DashboardScreen
 import com.example.ui.theme.MyApplicationTheme
+
 import com.example.ui.viewmodel.GardenViewModel
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage

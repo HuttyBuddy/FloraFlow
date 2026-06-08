@@ -30,7 +30,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.screens.*
+import com.example.ui.screens.arlens.ArLensScreen
+import com.example.ui.screens.dashboard.DashboardScreen
 import com.example.ui.screens.feedback.FeedbackDialog
+
 import androidx.activity.viewModels
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.GardenViewModel

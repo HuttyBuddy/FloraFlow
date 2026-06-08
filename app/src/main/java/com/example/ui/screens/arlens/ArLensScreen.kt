@@ -1,5 +1,4 @@
-package com.example.ui.screens
-
+package com.example.ui.screens.arlens
 
 import io.github.sceneview.ar.ARSceneView
 import com.google.ar.core.HitResult
@@ -68,6 +67,10 @@ import androidx.camera.view.PreviewView
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 
+// Imports from the original package namespace
+import com.example.ui.screens.checkPlantSynergy
+import com.example.ui.screens.getEmojiForPlantName
+import com.example.ui.screens.PremiumUpsellScreen
 
 // Local state class for tracking enhanced property overrides per sticker locally
 data class PlantExtraProps(
@@ -90,16 +93,6 @@ data class DesignSnapshot(
     val summary: String,
     val thumbnailEmoji: String,
     val plantPlacements: List<Pair<String, androidx.compose.ui.geometry.Offset>> = emptyList()
-)
-
-// Particle object for local 60fps weather system rendering
-data class ArParticle(
-    var x: Float,
-    var y: Float,
-    val speed: Float,
-    val size: Float,
-    var alpha: Float,
-    var driftAngle: Float
 )
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalPermissionsApi::class, ExperimentalLayoutApi::class)
@@ -281,7 +274,6 @@ fun ArLensScreen(
         }
     }
 
-
     // Dynamic property overrides map helper
     val localOverrides = remember { mutableStateMapOf<Int, PlantExtraProps>() }
 
@@ -314,8 +306,6 @@ fun ArLensScreen(
             else -> Color.Transparent
         }
     }
-
-
 
     // Local snapshot sandbox collection
     val savedSnapshots = remember { mutableStateListOf<DesignSnapshot>() }
@@ -873,62 +863,16 @@ fun ArLensScreen(
                 }
             }
             
-            // RENDERING BASE CLIMATE ATMOSPHERE GRAPHICS
+            // RENDERING BASE CLIMATE ATMOSPHERE GRAPHICS (Refactored to ArWeatherSystem helper)
             if (activeWeather != "Clear Sky" && particlesList.isNotEmpty()) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     clipRect {
-                        val factor = climateTimeFactor
-                        particlesList.forEach { particle ->
-                            if (activeWeather == "Gentle Rain") {
-                                // Draw thin slanted raindrop lines
-                                val rawY = (particle.y + particle.speed * factor) % 1000f
-                                val currentY = if (rawY < 0) rawY + 1000f else rawY
-                                val rawX = (particle.x + 1.5f * factor) % 1000f
-                                val currentX = if (rawX < 0) rawX + 1000f else rawX
-
-                                drawLine(
-                                    color = Color.White.copy(alpha = particle.alpha),
-                                    start = Offset(currentX, currentY),
-                                    end = Offset(currentX + 2f, currentY + 14f),
-                                    strokeWidth = particle.size
-                                )
-                            } else if (activeWeather == "Cherry Blossoms") {
-                                // Draw soft pink cherry blossom drifting petals
-                                val rawY = (particle.y + particle.speed * 0.6f * factor) % 1000f
-                                val currentY = if (rawY < 0) rawY + 1000f else rawY
-                                val rawX = (particle.x + 0.8f * factor) % 1000f
-                                val currentX = if (rawX < 0) rawX + 1000f else rawX
-
-                                drawCircle(
-                                    color = Color(0xFFFFC0CB).copy(alpha = particle.alpha),
-                                    radius = particle.size,
-                                    center = Offset(currentX, currentY)
-                                )
-                            } else if (activeWeather == "Fireflies Spark") {
-                                // Draw glowing yellow magical fireflies pulsing
-                                val rawY = (particle.y + sin(factor * 0.05f + particle.driftAngle) * 50f) % 1000f
-                                val currentY = if (rawY < 0) rawY + 1000f else rawY
-                                val rawX = (particle.x + cos(factor * 0.05f + particle.driftAngle) * 50f) % 1000f
-                                val currentX = if (rawX < 0) rawX + 1000f else rawX
-                                val pulseAlpha = particle.alpha * (0.4f + 0.6f * sin(factor * 0.1f + particle.driftAngle))
-
-                                drawCircle(
-                                    color = Color(0xFFCCFF00).copy(alpha = pulseAlpha * 0.3f),
-                                    radius = particle.size * 2.2f,
-                                    center = Offset(currentX, currentY)
-                                )
-                                drawCircle(
-                                    color = Color(0xFFEEFF41).copy(alpha = pulseAlpha),
-                                    radius = particle.size * 0.8f,
-                                    center = Offset(currentX, currentY)
-                                )
-                            }
-                        }
+                        drawWeatherParticles(activeWeather, particlesList, climateTimeFactor)
                     }
                 }
             }
 
-            // BOTANICAL SYNERGY GRAPHICS (Lines, Particles, Auras)
+            // BOTANICAL SYNERGY GRAPHICS (Refactored to ArHoloScanner helper)
             if (synergyPairs.isNotEmpty()) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     clipRect {
@@ -939,7 +883,8 @@ fun ArLensScreen(
                             if (synergizedIds.contains(placement.id)) {
                                 val pulse = 0.85f + 0.15f * sin(climateTimeFactor * 0.2f + placement.id.hashCode() * 0.1f)
                                 val auraCenter = Offset(placement.positionX + 75f, placement.positionY + 80f)
-                                val scale = finalScaleFactor(placement, localOverrides[placement.id])
+                                val visuals = getBotanicalVisuals(localOverrides[placement.id]?.moisture ?: 0.7f, localOverrides[placement.id]?.growthStage ?: "Mature")
+                                val scale = placement.scale * visuals.scale
                                 val radius = 100f * scale * pulse
                                 drawCircle(
                                     brush = Brush.radialGradient(
@@ -964,45 +909,7 @@ fun ArLensScreen(
                             if (p1 != null && p2 != null) {
                                 val start = Offset(p1.positionX + 75f, p1.positionY + 80f)
                                 val end = Offset(p2.positionX + 75f, p2.positionY + 80f)
-
-                                val pulse = 0.8f + 0.2f * sin(climateTimeFactor * 0.3f)
-                                val laserColor = Color(0xFF00FF66).copy(alpha = 0.85f * pulse)
-                                
-                                // Glowing background thicker line
-                                drawLine(
-                                    color = Color(0xFF00FF66).copy(alpha = 0.22f * pulse),
-                                    start = start,
-                                    end = end,
-                                    strokeWidth = 9f * pulse
-                                )
-                                // Sharp foreground core line
-                                drawLine(
-                                    color = laserColor,
-                                    start = start,
-                                    end = end,
-                                    strokeWidth = 3f
-                                )
-
-                                // Glowing yellow particle flow dots along the vectors
-                                val particleCount = 3
-                                for (k in 0 until particleCount) {
-                                    val baseProgress = (climateTimeFactor * 0.005f + k.toFloat() / particleCount) % 1f
-                                    val progress = if (baseProgress < 0f) baseProgress + 1f else baseProgress
-                                    
-                                    val px = start.x + (end.x - start.x) * progress
-                                    val py = start.y + (end.y - start.y) * progress
-                                    
-                                    drawCircle(
-                                        color = Color(0xFFEEFF41).copy(alpha = 0.4f * pulse),
-                                        radius = 9f,
-                                        center = Offset(px, py)
-                                    )
-                                    drawCircle(
-                                        color = Color(0xFFFFD54F),
-                                        radius = 4.5f,
-                                        center = Offset(px, py)
-                                    )
-                                }
+                                drawVitalityFlow(start, end, climateTimeFactor, Color(0xFF00FF66))
                             }
                         }
                     }
@@ -1033,33 +940,11 @@ fun ArLensScreen(
                 }
             }
 
-            // DYNAMIC PERSPECTIVE GROUND GRID LINES (Draft Blueprint)
+            // DYNAMIC PERSPECTIVE GROUND GRID LINES (Refactored to ArHoloScanner helper)
             if (currentFilter == "Blueprint Draft" || selectedBackgroundPreset == "Lawn Garden Grid") {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     val lineColor = if (currentFilter == "Blueprint Draft") Color(0x6600E5FF) else Color(0x22FFFFFF)
-                    val columns = 6
-                    val rows = 8
-                    
-                    // Draw vertical perspective grid
-                    for (i in 0..columns) {
-                        val x = size.width / columns * i
-                        drawLine(
-                            color = lineColor,
-                            start = Offset(x, 0f),
-                            end = Offset(x, size.height),
-                            strokeWidth = 1.2.dp.toPx()
-                        )
-                    }
-                    // Draw horizontal perspective grid
-                    for (i in 0..rows) {
-                        val y = size.height / rows * i
-                        drawLine(
-                            color = lineColor,
-                            start = Offset(0f, y),
-                            end = Offset(size.width, y),
-                            strokeWidth = 1.2.dp.toPx()
-                        )
-                    }
+                    drawPerspectiveGrid(lineColor, climateTimeFactor)
                 }
             }
 
@@ -1148,7 +1033,7 @@ fun ArLensScreen(
                         .offset(y = 20.dp),
                     shape = CircleShape,
                     colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.7f)),
-                    border = borderStroke(0.8.dp, Color(0xFF00FF66))
+                    border = BorderStroke(0.8.dp, Color(0xFF00FF66))
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
                         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -1234,21 +1119,17 @@ fun ArLensScreen(
                     // Get this decal's growth overrides and wetness
                     val decalOverride = localOverrides[placement.id] ?: PlantExtraProps(id = placement.id)
 
-                    // Growth Stage Modifiers: Sprout 🌱, Young 🌿, Mature 🌸, Colossal 🌳
-                    val (stageEmoji, stageScaleMultiplier) = remember(decalOverride.growthStage) {
-                        when (decalOverride.growthStage) {
-                            "Sprout" -> "🌱" to 0.65f
-                            "Young" -> "🌿" to 0.85f
-                            "Colossal" -> "🌳" to 1.45f
-                            else -> "" to 1.0f
-                        }
+                    // Get visual overlays and filters using the new ArPlantVisuals helper
+                    val visuals = getBotanicalVisuals(decalOverride.moisture, decalOverride.growthStage)
+
+                    val finalEmoji = remember(placement.emoji, decalOverride.growthStage) {
+                        if (decalOverride.growthStage == "Sprout") "🌱"
+                        else if (decalOverride.growthStage == "Young") "🌿"
+                        else if (decalOverride.growthStage == "Colossal") "🌳"
+                        else placement.emoji
                     }
 
-                    val finalEmoji = remember(placement.emoji, stageEmoji) {
-                        if (stageEmoji.isNotEmpty()) stageEmoji else placement.emoji
-                    }
-
-                    val finalScale = placement.scale * stageScaleMultiplier
+                    val finalScale = placement.scale * visuals.scale
                     
                     Box(
                         modifier = Modifier
@@ -1274,46 +1155,18 @@ fun ArLensScreen(
                                 )
                             }
                             .scale(finalScale)
-                            .rotate(placement.rotationDegrees)
+                            .rotate(placement.rotationDegrees + visuals.rotationOffset)
                             .testTag("ar_placement_${placement.id}"),
                         contentAlignment = Alignment.Center
                     ) {
-                        // Holographic Target Scanner Overlay
+                        // Holographic Target Scanner Overlay (Refactored to ArHoloScanner helper)
                         if (isSelected) {
                             Canvas(modifier = Modifier.matchParentSize()) {
-                                val w = size.width
-                                val h = size.height
-                                val cornerLength = minOf(w, h) * 0.18f
-                                val strokeWidth = 3.dp.toPx()
-                                val glowColor = Color(0xFF00FFCC) // Neon Cyan
-                                
-                                // Top-Left
-                                drawLine(color = glowColor, start = Offset(0f, 0f), end = Offset(cornerLength, 0f), strokeWidth = strokeWidth)
-                                drawLine(color = glowColor, start = Offset(0f, 0f), end = Offset(0f, cornerLength), strokeWidth = strokeWidth)
-                                // Top-Right
-                                drawLine(color = glowColor, start = Offset(w, 0f), end = Offset(w - cornerLength, 0f), strokeWidth = strokeWidth)
-                                drawLine(color = glowColor, start = Offset(w, 0f), end = Offset(w, cornerLength), strokeWidth = strokeWidth)
-                                // Bottom-Left
-                                drawLine(color = glowColor, start = Offset(0f, h), end = Offset(cornerLength, h), strokeWidth = strokeWidth)
-                                drawLine(color = glowColor, start = Offset(0f, h), end = Offset(0f, h - cornerLength), strokeWidth = strokeWidth)
-                                // Bottom-Right
-                                drawLine(color = glowColor, start = Offset(w, h), end = Offset(w - cornerLength, h), strokeWidth = strokeWidth)
-                                drawLine(color = glowColor, start = Offset(w, h), end = Offset(w, h - cornerLength), strokeWidth = strokeWidth)
-
-                                // Sweeping Laser Line
-                                val laserY = h * laserProgress
-                                drawLine(
-                                    color = Color(0xFF00FF66), // Laser Green
-                                    start = Offset(0f, laserY),
-                                    end = Offset(w, laserY),
-                                    strokeWidth = 2.dp.toPx()
-                                )
-                                drawRect(
-                                    brush = Brush.verticalGradient(
-                                        colors = listOf(Color(0xFF00FF66).copy(alpha = 0.25f), Color.Transparent)
-                                    ),
-                                    topLeft = Offset(0f, laserY),
-                                    size = Size(w, minOf(20f, h - laserY))
+                                drawHoloReticle(
+                                    center = Offset(size.width / 2f, size.height / 2f),
+                                    radius = size.width * 0.7f,
+                                    rotationAngle = radarSweepAngle * 1.5f,
+                                    glowColor = Color(0xFF00FFCC)
                                 )
                             }
                         }
@@ -1386,11 +1239,35 @@ fun ArLensScreen(
                                 }
                             }
 
-                            Text(
-                                text = finalEmoji, 
-                                fontSize = if (decalOverride.growthStage == "Colossal") 56.sp else 46.sp,
-                                modifier = Modifier.animateContentSize()
-                            )
+                            // Render Emoji with ColorFilter applied
+                            Box {
+                                Text(
+                                    text = finalEmoji, 
+                                    fontSize = if (decalOverride.growthStage == "Colossal") 56.sp else 46.sp,
+                                    modifier = Modifier.animateContentSize()
+                                )
+                                // Render moisture water droplet animations if overwatered
+                                if (visuals.showWaterParticles) {
+                                    val dropletPulse by infiniteTransition.animateFloat(
+                                        initialValue = 0.3f,
+                                        targetValue = 1f,
+                                        animationSpec = infiniteRepeatable(
+                                            animation = tween(1200, easing = FastOutLinearInEasing),
+                                            repeatMode = RepeatMode.Reverse
+                                        ),
+                                        label = "droplet_pulse"
+                                    )
+                                    Text(
+                                        text = "💧",
+                                        fontSize = 12.sp,
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .alpha(dropletPulse)
+                                            .offset(x = 6.dp, y = (-4).dp)
+                                    )
+                                }
+                            }
+
                             Text(
                                 text = placement.name,
                                 fontWeight = FontWeight.ExtraBold,
@@ -1434,14 +1311,14 @@ fun ArLensScreen(
                                         .padding(horizontal = 6.dp, vertical = 4.dp)
                                 ) {
                                     Text(
-                                        "🔐 INTEGRATION LOCK: 98%",
-                                        color = Color(0xFF00FF66),
+                                        "🔐 VITALITY: ${visuals.healthStatus}",
+                                        color = visuals.healthColor,
                                         fontSize = 7.sp,
                                         fontWeight = FontWeight.Bold,
                                         fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                                     )
                                     Text(
-                                        "💚 HEALTH STATUS: ACTIVE",
+                                        "💚 HEALTH SCORE: ${if (visuals.healthStatus.contains("OPTIMAL")) "98%" else "45%"}",
                                         color = Color(0xFF00E5FF),
                                         fontSize = 7.sp,
                                         fontWeight = FontWeight.Bold,
@@ -1543,6 +1420,7 @@ fun ArLensScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier.scale(pulseScale)
                             ) {
+                                // Monospace typeface using standard Kotlin font mapping
                                 Text(
                                     text = "${(generationProgress * 100).toInt()}%",
                                     color = Color.White,
@@ -2045,42 +1923,34 @@ fun ArLensScreen(
                                 }
                             }
 
-                            // Property override 2: Vitality override
+                            // Property override 2: Moisture slider (Enhancement 2)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Text(
-                                    "Vitality:",
+                                    "Moisture:",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.width(68.dp)
                                 )
-                                listOf("Slightly Dry", "Perfect Hydration", "Hyper Blooming").forEach { cond ->
-                                    val isCurrent = selectedOverride.vitalityCondition == cond
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(6.dp))
-                                            .background(
-                                                if (isCurrent) MaterialTheme.colorScheme.primary
-                                                else MaterialTheme.colorScheme.surfaceVariant
-                                            )
-                                            .clickable {
-                                                updateArOverride(selectedPlacement.id) {
-                                                    it.copy(vitalityCondition = cond)
-                                                }
-                                            }
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                                    ) {
-                                        Text(
-                                            text = cond,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (isCurrent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
+                                Slider(
+                                    value = selectedOverride.moisture,
+                                    onValueChange = { newMoisture ->
+                                        updateArOverride(selectedPlacement.id) {
+                                            it.copy(moisture = newMoisture)
+                                        }
+                                    },
+                                    valueRange = 0f..1f,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(
+                                    text = "${(selectedOverride.moisture * 100).toInt()}%",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    modifier = Modifier.width(32.dp)
+                                )
                             }
 
                             // Property override 3: Custom label override
@@ -2693,16 +2563,6 @@ fun CameraPreview(
             }, ContextCompat.getMainExecutor(context))
         }
     )
-}
-
-private fun finalScaleFactor(placement: ArPlantPlacement, override: PlantExtraProps?): Float {
-    val stageScaleMultiplier = when (override?.growthStage) {
-        "Sprout" -> 0.65f
-        "Young" -> 0.85f
-        "Colossal" -> 1.45f
-        else -> 1.0f
-    }
-    return placement.scale * stageScaleMultiplier
 }
 
 private fun getCompanionRecommendations(plantName: String): List<String> {

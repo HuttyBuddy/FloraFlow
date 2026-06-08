@@ -701,6 +701,15 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         _arPlacedPlants.value = list
     }
 
+    fun updateArPlantPosition(id: Int, dx: Float, dy: Float) {
+        val list = _arPlacedPlants.value.map {
+            if (it.id == id) {
+                it.copy(positionX = it.positionX + dx, positionY = it.positionY + dy)
+            } else it
+        }
+        _arPlacedPlants.value = list
+    }
+
     fun updateArPlantScaling(id: Int, scale: Float) {
         val list = _arPlacedPlants.value.map {
             if (it.id == id) {
