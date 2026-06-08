@@ -1,5 +1,10 @@
 package com.example.ui.screens
 
+
+import io.github.sceneview.ar.ARSceneView
+import com.google.ar.core.HitResult
+import android.view.MotionEvent
+
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -143,8 +148,8 @@ fun ArLensScreen(
             for (j in i + 1 until arPlacedPlants.size) {
                 val p1 = arPlacedPlants[i]
                 val p2 = arPlacedPlants[j]
-                val dx = p1.offsetX - p2.offsetX
-                val dy = p1.offsetY - p2.offsetY
+                val dx = p1.positionX - p2.positionX
+                val dy = p1.positionY - p2.positionY
                 val dist = kotlin.math.sqrt(dx * dx + dy * dy)
                 if (dist <= 180f && checkPlantSynergy(p1.name, p2.name)) {
                     pairs.add(Pair(p1.id, p2.id))
@@ -226,6 +231,7 @@ fun ArLensScreen(
     
     // ENHANCEMENT 2: Dynamic Weather with real-time particle rendering loop
     var activeWeather by remember { mutableStateOf("Clear Sky") }
+    var arFrame by remember { mutableStateOf<com.google.ar.core.Frame?>(null) }
 
     val isRunningInTest = remember {
         try {
@@ -652,7 +658,48 @@ fun ArLensScreen(
             val drawSimulatedYard = selectedBackgroundPreset == "Simulated Live Yard" || (selectedBackgroundPreset == "Live Camera" && isRunningInTest)
             if (selectedBackgroundPreset == "Live Camera" && !isRunningInTest) {
                 if (cameraPermissionState.status.isGranted) {
-                    CameraPreview(modifier = Modifier.fillMaxSize())
+                    ARSceneView(
+                        modifier = Modifier.fillMaxSize().testTag("real_ar_lens_view"),
+                        onSessionUpdated = { _, frame ->
+                            arFrame = frame
+                        },
+                        onTouchEvent = { motionEvent, _ ->
+                            if (motionEvent.action == android.view.MotionEvent.ACTION_UP) {
+                                val frame = arFrame
+                                if (frame != null) {
+                                    val hits = frame.hitTest(motionEvent.x, motionEvent.y)
+                                    val planeHit = hits.firstOrNull { hit ->
+                                        hit.trackable is com.google.ar.core.Plane && (hit.trackable as com.google.ar.core.Plane).isPoseInPolygon(hit.hitPose)
+                                    } ?: hits.firstOrNull()
+                                    planeHit?.let { hit ->
+                                        val pose = hit.hitPose
+
+                                        val plantName: String
+                                        val plantEmoji: String
+                                        when (activeLayout?.style) {
+                                            "Zen Garden" -> {
+                                                plantName = "Bonsai Cherry"
+                                                plantEmoji = "🌸"
+                                            }
+                                            else -> {
+                                                plantName = "English Lavender"
+                                                plantEmoji = "🪻"
+                                            }
+                                        }
+
+                                        viewModel.addArPlant(
+                                            name = plantName,
+                                            emoji = plantEmoji,
+                                            customX = pose.tx(),
+                                            customY = pose.ty(),
+                                            customZ = pose.tz()
+                                        )
+                                    }
+                                }
+                            }
+                            true
+                        }
+                    )
                 } else {
                     Box(
                         modifier = Modifier
@@ -891,7 +938,7 @@ fun ArLensScreen(
                         arPlacedPlants.forEach { placement ->
                             if (synergizedIds.contains(placement.id)) {
                                 val pulse = 0.85f + 0.15f * sin(climateTimeFactor * 0.2f + placement.id.hashCode() * 0.1f)
-                                val auraCenter = Offset(placement.offsetX + 75f, placement.offsetY + 80f)
+                                val auraCenter = Offset(placement.positionX + 75f, placement.positionY + 80f)
                                 val scale = finalScaleFactor(placement, localOverrides[placement.id])
                                 val radius = 100f * scale * pulse
                                 drawCircle(
@@ -915,8 +962,8 @@ fun ArLensScreen(
                             val p1 = arPlacedPlants.firstOrNull { it.id == pair.first }
                             val p2 = arPlacedPlants.firstOrNull { it.id == pair.second }
                             if (p1 != null && p2 != null) {
-                                val start = Offset(p1.offsetX + 75f, p1.offsetY + 80f)
-                                val end = Offset(p2.offsetX + 75f, p2.offsetY + 80f)
+                                val start = Offset(p1.positionX + 75f, p1.positionY + 80f)
+                                val end = Offset(p2.positionX + 75f, p2.positionY + 80f)
 
                                 val pulse = 0.8f + 0.2f * sin(climateTimeFactor * 0.3f)
                                 val laserColor = Color(0xFF00FF66).copy(alpha = 0.85f * pulse)
@@ -1137,8 +1184,8 @@ fun ArLensScreen(
                             // Render little blips for all placed stickers!
                             arPlacedPlants.forEach { place ->
                                 // Map placing coordinates values inside radar box
-                                val boundedX = center.x + (place.offsetX / 400f) * radius
-                                val boundedY = center.y + (place.offsetY / 400f) * radius
+                                val boundedX = center.x + (place.positionX / 400f) * radius
+                                val boundedY = center.y + (place.positionY / 400f) * radius
                                 drawCircle(
                                     color = Color.Yellow,
                                     radius = 3f,
@@ -1207,8 +1254,8 @@ fun ArLensScreen(
                         modifier = Modifier
                             .offset {
                                 IntOffset(
-                                    placement.offsetX.toInt(),
-                                    placement.offsetY.toInt()
+                                    placement.positionX.toInt(),
+                                    placement.positionY.toInt()
                                 )
                             }
                             .pointerInput(placement.id) {
@@ -1678,7 +1725,7 @@ fun ArLensScreen(
                                     val w = if (viewportSize.width > 0) viewportSize.width.toFloat() else 1f
                                     val h = if (viewportSize.height > 0) viewportSize.height.toFloat() else 1f
                                     val placements = arPlacedPlants.map {
-                                        Pair(it.emoji, Offset(it.offsetX / w, it.offsetY / h))
+                                        Pair(it.emoji, Offset(it.positionX / w, it.positionY / h))
                                     }
                                     val description = "Backdrop: $selectedBackgroundPreset, Plants count: ${arPlacedPlants.size}, Filter: $currentFilter, Weather: $activeWeather"
                                     val snap = DesignSnapshot(
