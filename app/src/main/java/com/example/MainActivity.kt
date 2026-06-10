@@ -20,7 +20,10 @@ import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material.icons.filled.Feedback
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.Color
+import com.example.ui.screens.settings.SettingsDialog
+import com.example.ui.screens.walkthrough.WalkthroughOverlay
 import androidx.compose.material3.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.runtime.*
@@ -68,6 +71,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                     var currentTab by remember { mutableIntStateOf(0) }
                     var showFeedbackDialog by remember { mutableStateOf(false) }
+                    var showSettingsDialog by remember { mutableStateOf(false) }
                     val isPremium by viewModel.isPremium.collectAsState()
 
                     // Universal sandbox Billing & Subscription Management Checkout Dialog
@@ -134,12 +138,12 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                     IconButton(
-                                        onClick = { viewModel.toggleTheme(systemDark) },
-                                        modifier = Modifier.testTag("theme_toggle_button")
+                                        onClick = { showSettingsDialog = true },
+                                        modifier = Modifier.testTag("settings_button")
                                     ) {
                                         Icon(
-                                            imageVector = if (useDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                                            contentDescription = "Toggle Light/Dark Theme"
+                                            imageVector = Icons.Default.Settings,
+                                            contentDescription = "Settings"
                                         )
                                     }
                                 },
@@ -234,6 +238,18 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
+
+                    SettingsDialog(
+                        visible = showSettingsDialog,
+                        onDismiss = { showSettingsDialog = false },
+                        viewModel = viewModel
+                    )
+
+                    WalkthroughOverlay(
+                        viewModel = viewModel,
+                        currentTab = currentTab,
+                        onTabChange = { currentTab = it }
+                    )
                 }
             }
         }

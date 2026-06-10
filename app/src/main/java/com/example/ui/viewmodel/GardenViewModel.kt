@@ -16,6 +16,19 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
+enum class ThemeMode {
+    SYSTEM, LIGHT, DARK
+}
+
+enum class WalkthroughStep {
+    WELCOME,
+    DASHBOARD_GARDEN,
+    DASHBOARD_STATS,
+    PLANNER_TAB,
+    AI_ADVISOR_TAB,
+    AR_LENS_TAB
+}
+
 class GardenViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository: GardenRepository
@@ -49,9 +62,34 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     private val _isOnboardingCompleted = MutableStateFlow(false)
     val isOnboardingCompleted: StateFlow<Boolean> = _isOnboardingCompleted.asStateFlow()
 
+    private val _currentWalkthroughStep = MutableStateFlow<WalkthroughStep?>(null)
+    val currentWalkthroughStep: StateFlow<WalkthroughStep?> = _currentWalkthroughStep.asStateFlow()
+
+    fun startWalkthrough() {
+        _currentWalkthroughStep.value = WalkthroughStep.WELCOME
+    }
+
+    fun nextWalkthroughStep() {
+        val current = _currentWalkthroughStep.value ?: return
+        val next = when (current) {
+            WalkthroughStep.WELCOME -> WalkthroughStep.DASHBOARD_GARDEN
+            WalkthroughStep.DASHBOARD_GARDEN -> WalkthroughStep.DASHBOARD_STATS
+            WalkthroughStep.DASHBOARD_STATS -> WalkthroughStep.PLANNER_TAB
+            WalkthroughStep.PLANNER_TAB -> WalkthroughStep.AI_ADVISOR_TAB
+            WalkthroughStep.AI_ADVISOR_TAB -> WalkthroughStep.AR_LENS_TAB
+            WalkthroughStep.AR_LENS_TAB -> null
+        }
+        _currentWalkthroughStep.value = next
+    }
+
+    fun skipWalkthrough() {
+        _currentWalkthroughStep.value = null
+    }
+
     fun completeOnboarding() {
         _isOnboardingCompleted.value = true
         sharedPrefs.edit().putBoolean("onboarding_completed", true).apply()
+        startWalkthrough()
     }
 
     // Advanced Billing State Properties
@@ -184,9 +222,23 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     private val _isDarkTheme = MutableStateFlow<Boolean?>(null)
     val isDarkTheme: StateFlow<Boolean?> = _isDarkTheme.asStateFlow()
 
+    private val _themeMode = MutableStateFlow(ThemeMode.SYSTEM)
+    val themeMode: StateFlow<ThemeMode> = _themeMode.asStateFlow()
+
     fun toggleTheme(isSystemDark: Boolean) {
         val current = _isDarkTheme.value ?: isSystemDark
-        _isDarkTheme.value = !current
+        val nextIsDark = !current
+        setThemeMode(if (nextIsDark) ThemeMode.DARK else ThemeMode.LIGHT)
+    }
+
+    fun setThemeMode(mode: ThemeMode) {
+        _themeMode.value = mode
+        sharedPrefs.edit().putString("theme_mode", mode.name).apply()
+        _isDarkTheme.value = when (mode) {
+            ThemeMode.LIGHT -> false
+            ThemeMode.DARK -> true
+            ThemeMode.SYSTEM -> null
+        }
     }
 
     init {
@@ -196,6 +248,15 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         _subscriptionTier.value = sharedPrefs.getString("subscription_tier", null)
         _subscriptionTransactionId.value = sharedPrefs.getString("subscription_transaction_id", null)
         _subscriptionBillingDate.value = sharedPrefs.getString("subscription_billing_date", null)
+
+        val savedThemeMode = sharedPrefs.getString("theme_mode", ThemeMode.SYSTEM.name) ?: ThemeMode.SYSTEM.name
+        val mode = try { ThemeMode.valueOf(savedThemeMode) } catch (_: Exception) { ThemeMode.SYSTEM }
+        _themeMode.value = mode
+        _isDarkTheme.value = when (mode) {
+            ThemeMode.LIGHT -> false
+            ThemeMode.DARK -> true
+            ThemeMode.SYSTEM -> null
+        }
 
         val savedFeedback = sharedPrefs.getString("feedback_submissions_list", null)
         if (savedFeedback != null) {
