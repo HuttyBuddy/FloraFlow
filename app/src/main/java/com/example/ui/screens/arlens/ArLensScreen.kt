@@ -33,7 +33,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.geometry.Offset
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -249,6 +255,63 @@ fun ArLensScreen(
     }
 
     var useGyroscope by remember { mutableStateOf(!isEmulator) }
+    var sensorOffsetX by remember { mutableStateOf(0f) }
+    var sensorOffsetY by remember { mutableStateOf(0f) }
+    var initialPitch by remember { mutableStateOf<Float?>(null) }
+    var initialYaw by remember { mutableStateOf<Float?>(null) }
+
+    DisposableEffect(useGyroscope) {
+        if (useGyroscope) {
+            val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+            val rotationSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+            val listener = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    if (event == null) return
+                    if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR) {
+                        val rotationMatrix = FloatArray(9)
+                        SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+                        val orientation = FloatArray(3)
+                        SensorManager.getOrientation(rotationMatrix, orientation)
+                        val yaw = orientation[0]
+                        val pitch = orientation[1]
+                        
+                        if (initialPitch == null) {
+                            initialPitch = pitch
+                            initialYaw = yaw
+                        }
+                        
+                        var diffYaw = yaw - (initialYaw ?: yaw)
+                        if (diffYaw > Math.PI) diffYaw -= (2 * Math.PI).toFloat()
+                        if (diffYaw < -Math.PI) diffYaw += (2 * Math.PI).toFloat()
+                        
+                        val diffPitch = pitch - (initialPitch ?: pitch)
+                        
+                        val targetX = -diffYaw * 1000f
+                        val targetY = diffPitch * 1000f
+                        
+                        sensorOffsetX = sensorOffsetX * 0.85f + targetX * 0.15f
+                        sensorOffsetY = sensorOffsetY * 0.85f + targetY * 0.15f
+                    }
+                }
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+            }
+            if (rotationSensor != null) {
+                sensorManager.registerListener(listener, rotationSensor, SensorManager.SENSOR_DELAY_GAME)
+            }
+            onDispose {
+                if (sensorManager != null && rotationSensor != null) {
+                    sensorManager.unregisterListener(listener)
+                }
+            }
+        } else {
+            sensorOffsetX = 0f
+            sensorOffsetY = 0f
+            initialPitch = null
+            initialYaw = null
+            onDispose {}
+        }
+    }
+
 
     val useVirtualBackdrop = remember(selectedBackgroundPreset) {
         selectedBackgroundPreset != "Live Camera" && selectedBackgroundPreset != "Simulated Live Yard"
@@ -339,6 +402,19 @@ fun ArLensScreen(
         ),
         label = "drift_y"
     )
+
+    val activeOffsetX = if (useGyroscope) {
+        if (sensorOffsetX != 0f) sensorOffsetX else hudDriftX * 4f
+    } else {
+        0f
+    }
+
+    val activeOffsetY = if (useGyroscope) {
+        if (sensorOffsetY != 0f) sensorOffsetY else hudDriftY * 4f
+    } else {
+        0f
+    }
+
 
     // Sweep simulation angle for high-tech radar mini-map widget
     val radarSweepAngle by infiniteTransition.animateFloat(
@@ -644,8 +720,38 @@ fun ArLensScreen(
                 .onGloballyPositioned { viewportSize = it.size }
                 .testTag("ar_viewport")
         ) {
+            val resolvedPositions = remember(arPlacedPlants, selectedBackgroundPreset, arFrame, viewportSize, activeOffsetX, activeOffsetY) {
+                arPlacedPlants.associate { placement ->
+                    val projected = if (selectedBackgroundPreset == "Live Camera" && !isRunningInTest && arFrame != null) {
+                        val frame = arFrame
+                        if (frame != null) {
+                            val camera = frame.camera
+                            val viewMatrix = FloatArray(16)
+                            camera.getViewMatrix(viewMatrix, 0)
+                            val projMatrix = FloatArray(16)
+                            camera.getProjectionMatrix(projMatrix, 0, 0.1f, 100f)
+                            projectWorldToScreen(
+                                worldX = placement.positionX,
+                                worldY = placement.positionY,
+                                worldZ = placement.positionZ,
+                                viewMatrix = viewMatrix,
+                                projectionMatrix = projMatrix,
+                                width = viewportSize.width.toFloat(),
+                                height = viewportSize.height.toFloat()
+                            )
+                        } else null
+                    } else null
+                    
+                    placement.id to Offset(
+                        x = projected?.x ?: (placement.positionX - activeOffsetX),
+                        y = projected?.y ?: (placement.positionY - activeOffsetY)
+                    )
+                }
+            }
+
             // Background Layer: Camera Preview or Simulated Live Yard
             val drawSimulatedYard = selectedBackgroundPreset == "Simulated Live Yard" || (selectedBackgroundPreset == "Live Camera" && isRunningInTest)
+
             if (selectedBackgroundPreset == "Live Camera" && !isRunningInTest) {
                 if (cameraPermissionState.status.isGranted) {
                     ARSceneView(
@@ -723,141 +829,143 @@ fun ArLensScreen(
             } else if (drawSimulatedYard) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     clipRect {
-                        val factor = climateTimeFactor
-                        
-                        // Sun or moon based on activeWeather
-                        if (activeWeather == "Fireflies Spark") {
-                            // Crescent moon
-                            drawCircle(
-                                color = Color(0xFFFFFDE7).copy(alpha = 0.15f),
-                                radius = 45f,
-                                center = Offset(size.width * 0.8f, size.height * 0.2f)
-                            )
-                            drawCircle(
-                                color = Color(0xFFFFFDE7),
-                                radius = 30f,
-                                center = Offset(size.width * 0.8f, size.height * 0.2f)
-                            )
-                            // Moon bite shadow to form crescent
-                            drawCircle(
-                                color = Color(0xFF0D1B2A), // matches sky base dark blue color
-                                radius = 28f,
-                                center = Offset(size.width * 0.77f, size.height * 0.18f)
-                            )
-                        } else {
-                            // Sun
-                            val sunColor = when (activeWeather) {
-                                "Gentle Rain" -> Color(0xFFECEFF1).copy(alpha = 0.6f)
-                                "Cherry Blossoms" -> Color(0xFFFFD54F).copy(alpha = 0.8f)
-                                else -> Color(0xFFFFEB3B) // Clear Sky
-                            }
-                            // Sun aura glow
-                            drawCircle(
-                                color = sunColor.copy(alpha = 0.25f),
-                                radius = 70f + (sin(factor * 0.05f) * 5f),
-                                center = Offset(size.width * 0.75f, size.height * 0.25f)
-                            )
-                            drawCircle(
-                                color = sunColor,
-                                radius = 40f,
-                                center = Offset(size.width * 0.75f, size.height * 0.25f)
-                            )
-                        }
-
-                        // Draw Cedar Fence
-                        val fenceColor = when (activeWeather) {
-                            "Gentle Rain" -> Color(0xFF3E2723) // Wet dark mahogany
-                            "Cherry Blossoms" -> Color(0xFF8D6E63).copy(alpha = 0.7f) // Pale cedar
-                            "Fireflies Spark" -> Color(0xFF1A120B) // Silhouetted fence
-                            else -> Color(0xFFA1887F) // Warm cedar wood privacy fence
-                        }
-                        val fenceY = size.height * 0.6f
-                        val fenceHeight = size.height * 0.25f
-                        val plankWidth = 45f
-                        val plankGap = 4f
-                        
-                        var currentPlankX = 0f
-                        while (currentPlankX < size.width) {
-                            drawRect(
-                                color = fenceColor,
-                                topLeft = Offset(currentPlankX, fenceY),
-                                size = Size(plankWidth, fenceHeight)
-                            )
-                            // Draw fence plank tips
-                            val path = androidx.compose.ui.graphics.Path().apply {
-                                moveTo(currentPlankX, fenceY)
-                                lineTo(currentPlankX + plankWidth / 2, fenceY - 12f)
-                                lineTo(currentPlankX + plankWidth, fenceY)
-                                close()
-                            }
-                            drawPath(path = path, color = fenceColor)
-                            currentPlankX += plankWidth + plankGap
-                        }
-                        
-                        // Horizontal support beams
-                        drawRect(
-                            color = fenceColor.copy(alpha = 0.85f),
-                            topLeft = Offset(0f, fenceY + fenceHeight * 0.2f),
-                            size = Size(size.width, 12f)
-                        )
-                        drawRect(
-                            color = fenceColor.copy(alpha = 0.85f),
-                            topLeft = Offset(0f, fenceY + fenceHeight * 0.7f),
-                            size = Size(size.width, 12f)
-                        )
-
-                        // Draw Grass / Lawn
-                        val grassColor = when (activeWeather) {
-                            "Gentle Rain" -> Color(0xFF1B5E20) // Deep wet-green
-                            "Cherry Blossoms" -> Color(0xFF81C784).copy(alpha = 0.8f) // Pastel mossy
-                            "Fireflies Spark" -> Color(0xFF0F2C11) // Silhouetted dark green
-                            else -> Color(0xFF4CAF50) // Vibrant rich green
-                        }
-                        drawRect(
-                            color = grassColor,
-                            topLeft = Offset(0f, fenceY + fenceHeight),
-                            size = Size(size.width, size.height - (fenceY + fenceHeight))
-                        )
-
-                        // Draw Bush Clusters with Flowers
-                        val bushColor = when (activeWeather) {
-                            "Gentle Rain" -> Color(0xFF0D5316)
-                            "Cherry Blossoms" -> Color(0xFF4CAF50).copy(alpha = 0.75f)
-                            "Fireflies Spark" -> Color(0xFF051C06)
-                            else -> Color(0xFF2E7D32)
-                        }
-                        val bushY = fenceY + fenceHeight - 15f
-                        val bushRadius1 = 55f
-                        val bushRadius2 = 70f
-                        val bushRadius3 = 50f
-                        
-                        // Bush cluster left
-                        drawCircle(color = bushColor, radius = bushRadius1, center = Offset(size.width * 0.15f, bushY))
-                        drawCircle(color = bushColor, radius = bushRadius2, center = Offset(size.width * 0.22f, bushY - 10f))
-                        drawCircle(color = bushColor, radius = bushRadius3, center = Offset(size.width * 0.3f, bushY))
-
-                        // Bush cluster right
-                        drawCircle(color = bushColor, radius = bushRadius3, center = Offset(size.width * 0.7f, bushY))
-                        drawCircle(color = bushColor, radius = bushRadius2, center = Offset(size.width * 0.78f, bushY - 15f))
-                        drawCircle(color = bushColor, radius = bushRadius1, center = Offset(size.width * 0.85f, bushY))
-
-                        // Decorative flower clusters
-                        if (activeWeather != "Fireflies Spark") {
-                            val flowerColor1 = Color(0xFFEC407A) // Pink
-                            val flowerColor2 = Color(0xFFFFCA28) // Yellow
+                        translate(left = -activeOffsetX * 0.5f, top = -activeOffsetY * 0.5f) {
+                            val factor = climateTimeFactor
                             
-                            // Left flowers
-                            drawCircle(color = flowerColor1, radius = 5f, center = Offset(size.width * 0.15f, bushY - 15f))
-                            drawCircle(color = flowerColor2, radius = 4f, center = Offset(size.width * 0.18f, bushY + 5f))
-                            drawCircle(color = flowerColor1, radius = 6f, center = Offset(size.width * 0.23f, bushY - 25f))
-                            drawCircle(color = flowerColor2, radius = 5f, center = Offset(size.width * 0.26f, bushY))
-                            drawCircle(color = flowerColor1, radius = 4f, center = Offset(size.width * 0.29f, bushY - 10f))
+                            // Sun or moon based on activeWeather
+                            if (activeWeather == "Fireflies Spark") {
+                                // Crescent moon
+                                drawCircle(
+                                    color = Color(0xFFFFFDE7).copy(alpha = 0.15f),
+                                    radius = 45f,
+                                    center = Offset(size.width * 0.8f, size.height * 0.2f)
+                                )
+                                drawCircle(
+                                    color = Color(0xFFFFFDE7),
+                                    radius = 30f,
+                                    center = Offset(size.width * 0.8f, size.height * 0.2f)
+                                )
+                                // Moon bite shadow to form crescent
+                                drawCircle(
+                                    color = Color(0xFF0D1B2A), // matches sky base dark blue color
+                                    radius = 28f,
+                                    center = Offset(size.width * 0.77f, size.height * 0.18f)
+                                )
+                            } else {
+                                // Sun
+                                val sunColor = when (activeWeather) {
+                                    "Gentle Rain" -> Color(0xFFECEFF1).copy(alpha = 0.6f)
+                                    "Cherry Blossoms" -> Color(0xFFFFD54F).copy(alpha = 0.8f)
+                                    else -> Color(0xFFFFEB3B) // Clear Sky
+                                }
+                                // Sun aura glow
+                                drawCircle(
+                                    color = sunColor.copy(alpha = 0.25f),
+                                    radius = 70f + (sin(factor * 0.05f) * 5f),
+                                    center = Offset(size.width * 0.75f, size.height * 0.25f)
+                                )
+                                drawCircle(
+                                    color = sunColor,
+                                    radius = 40f,
+                                    center = Offset(size.width * 0.75f, size.height * 0.25f)
+                                )
+                            }
 
-                            // Right flowers
-                            drawCircle(color = flowerColor2, radius = 5f, center = Offset(size.width * 0.72f, bushY - 5f))
-                            drawCircle(color = flowerColor1, radius = 6f, center = Offset(size.width * 0.77f, bushY - 30f))
-                            drawCircle(color = flowerColor2, radius = 4f, center = Offset(size.width * 0.81f, bushY - 10f))
-                            drawCircle(color = flowerColor1, radius = 5f, center = Offset(size.width * 0.85f, bushY + 10f))
+                            // Draw Cedar Fence
+                            val fenceColor = when (activeWeather) {
+                                "Gentle Rain" -> Color(0xFF3E2723) // Wet dark mahogany
+                                "Cherry Blossoms" -> Color(0xFF8D6E63).copy(alpha = 0.7f) // Pale cedar
+                                "Fireflies Spark" -> Color(0xFF1A120B) // Silhouetted fence
+                                else -> Color(0xFFA1887F) // Warm cedar wood privacy fence
+                            }
+                            val fenceY = size.height * 0.6f
+                            val fenceHeight = size.height * 0.25f
+                            val plankWidth = 45f
+                            val plankGap = 4f
+                            
+                            var currentPlankX = 0f
+                            while (currentPlankX < size.width) {
+                                drawRect(
+                                    color = fenceColor,
+                                    topLeft = Offset(currentPlankX, fenceY),
+                                    size = Size(plankWidth, fenceHeight)
+                                )
+                                // Draw fence plank tips
+                                val path = androidx.compose.ui.graphics.Path().apply {
+                                    moveTo(currentPlankX, fenceY)
+                                    lineTo(currentPlankX + plankWidth / 2, fenceY - 12f)
+                                    lineTo(currentPlankX + plankWidth, fenceY)
+                                    close()
+                                }
+                                drawPath(path = path, color = fenceColor)
+                                currentPlankX += plankWidth + plankGap
+                            }
+                            
+                            // Horizontal support beams
+                            drawRect(
+                                color = fenceColor.copy(alpha = 0.85f),
+                                topLeft = Offset(0f, fenceY + fenceHeight * 0.2f),
+                                size = Size(size.width, 12f)
+                            )
+                            drawRect(
+                                color = fenceColor.copy(alpha = 0.85f),
+                                topLeft = Offset(0f, fenceY + fenceHeight * 0.7f),
+                                size = Size(size.width, 12f)
+                            )
+
+                            // Draw Grass / Lawn
+                            val grassColor = when (activeWeather) {
+                                "Gentle Rain" -> Color(0xFF1B5E20) // Deep wet-green
+                                "Cherry Blossoms" -> Color(0xFF81C784).copy(alpha = 0.8f) // Pastel mossy
+                                "Fireflies Spark" -> Color(0xFF0F2C11) // Silhouetted dark green
+                                else -> Color(0xFF4CAF50) // Vibrant rich green
+                            }
+                            drawRect(
+                                color = grassColor,
+                                topLeft = Offset(0f, fenceY + fenceHeight),
+                                size = Size(size.width, size.height - (fenceY + fenceHeight))
+                            )
+
+                            // Draw Bush Clusters with Flowers
+                            val bushColor = when (activeWeather) {
+                                "Gentle Rain" -> Color(0xFF0D5316)
+                                "Cherry Blossoms" -> Color(0xFF4CAF50).copy(alpha = 0.75f)
+                                "Fireflies Spark" -> Color(0xFF051C06)
+                                else -> Color(0xFF2E7D32)
+                            }
+                            val bushY = fenceY + fenceHeight - 15f
+                            val bushRadius1 = 55f
+                            val bushRadius2 = 70f
+                            val bushRadius3 = 50f
+                            
+                            // Bush cluster left
+                            drawCircle(color = bushColor, radius = bushRadius1, center = Offset(size.width * 0.15f, bushY))
+                            drawCircle(color = bushColor, radius = bushRadius2, center = Offset(size.width * 0.22f, bushY - 10f))
+                            drawCircle(color = bushColor, radius = bushRadius3, center = Offset(size.width * 0.3f, bushY))
+
+                            // Bush cluster right
+                            drawCircle(color = bushColor, radius = bushRadius3, center = Offset(size.width * 0.7f, bushY))
+                            drawCircle(color = bushColor, radius = bushRadius2, center = Offset(size.width * 0.78f, bushY - 15f))
+                            drawCircle(color = bushColor, radius = bushRadius1, center = Offset(size.width * 0.85f, bushY))
+
+                            // Decorative flower clusters
+                            if (activeWeather != "Fireflies Spark") {
+                                val flowerColor1 = Color(0xFFEC407A) // Pink
+                                val flowerColor2 = Color(0xFFFFCA28) // Yellow
+                                
+                                // Left flowers
+                                drawCircle(color = flowerColor1, radius = 5f, center = Offset(size.width * 0.15f, bushY - 15f))
+                                drawCircle(color = flowerColor2, radius = 4f, center = Offset(size.width * 0.18f, bushY + 5f))
+                                drawCircle(color = flowerColor1, radius = 6f, center = Offset(size.width * 0.23f, bushY - 25f))
+                                drawCircle(color = flowerColor2, radius = 5f, center = Offset(size.width * 0.26f, bushY))
+                                drawCircle(color = flowerColor1, radius = 4f, center = Offset(size.width * 0.29f, bushY - 10f))
+
+                                // Right flowers
+                                drawCircle(color = flowerColor2, radius = 5f, center = Offset(size.width * 0.72f, bushY - 5f))
+                                drawCircle(color = flowerColor1, radius = 6f, center = Offset(size.width * 0.77f, bushY - 30f))
+                                drawCircle(color = flowerColor2, radius = 4f, center = Offset(size.width * 0.81f, bushY - 10f))
+                                drawCircle(color = flowerColor1, radius = 5f, center = Offset(size.width * 0.85f, bushY + 10f))
+                            }
                         }
                     }
                 }
@@ -867,7 +975,9 @@ fun ArLensScreen(
             if (activeWeather != "Clear Sky" && particlesList.isNotEmpty()) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     clipRect {
-                        drawWeatherParticles(activeWeather, particlesList, climateTimeFactor)
+                        translate(left = -activeOffsetX * 0.3f, top = -activeOffsetY * 0.3f) {
+                            drawWeatherParticles(activeWeather, particlesList, climateTimeFactor)
+                        }
                     }
                 }
             }
@@ -882,7 +992,8 @@ fun ArLensScreen(
                         arPlacedPlants.forEach { placement ->
                             if (synergizedIds.contains(placement.id)) {
                                 val pulse = 0.85f + 0.15f * sin(climateTimeFactor * 0.2f + placement.id.hashCode() * 0.1f)
-                                val auraCenter = Offset(placement.positionX + 75f, placement.positionY + 80f)
+                                val pos = resolvedPositions[placement.id] ?: Offset(placement.positionX - activeOffsetX, placement.positionY - activeOffsetY)
+                                val auraCenter = Offset(pos.x + 75f, pos.y + 80f)
                                 val visuals = getBotanicalVisuals(localOverrides[placement.id]?.moisture ?: 0.7f, localOverrides[placement.id]?.growthStage ?: "Mature")
                                 val scale = placement.scale * visuals.scale
                                 val radius = 100f * scale * pulse
@@ -904,11 +1015,11 @@ fun ArLensScreen(
 
                         // 2. Draw pulsing neon-green laser connection lines with flowing yellow particle dots
                         synergyPairs.forEach { pair ->
-                            val p1 = arPlacedPlants.firstOrNull { it.id == pair.first }
-                            val p2 = arPlacedPlants.firstOrNull { it.id == pair.second }
-                            if (p1 != null && p2 != null) {
-                                val start = Offset(p1.positionX + 75f, p1.positionY + 80f)
-                                val end = Offset(p2.positionX + 75f, p2.positionY + 80f)
+                            val pos1 = resolvedPositions[pair.first]
+                            val pos2 = resolvedPositions[pair.second]
+                            if (pos1 != null && pos2 != null) {
+                                val start = Offset(pos1.x + 75f, pos1.y + 80f)
+                                val end = Offset(pos2.x + 75f, pos2.y + 80f)
                                 drawVitalityFlow(start, end, climateTimeFactor, Color(0xFF00FF66))
                             }
                         }
@@ -943,8 +1054,10 @@ fun ArLensScreen(
             // DYNAMIC PERSPECTIVE GROUND GRID LINES (Refactored to ArHoloScanner helper)
             if (currentFilter == "Blueprint Draft" || selectedBackgroundPreset == "Lawn Garden Grid") {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    val lineColor = if (currentFilter == "Blueprint Draft") Color(0x6600E5FF) else Color(0x22FFFFFF)
-                    drawPerspectiveGrid(lineColor, climateTimeFactor)
+                    translate(left = -activeOffsetX * 0.8f, top = -activeOffsetY * 0.8f) {
+                        val lineColor = if (currentFilter == "Blueprint Draft") Color(0x6600E5FF) else Color(0x22FFFFFF)
+                        drawPerspectiveGrid(lineColor, climateTimeFactor)
+                    }
                 }
             }
 
@@ -1069,8 +1182,10 @@ fun ArLensScreen(
                             // Render little blips for all placed stickers!
                             arPlacedPlants.forEach { place ->
                                 // Map placing coordinates values inside radar box
-                                val boundedX = center.x + (place.positionX / 400f) * radius
-                                val boundedY = center.y + (place.positionY / 400f) * radius
+                                val xVal = if (place.positionZ != -1.0f) place.positionX * 0.25f else place.positionX / 400f
+                                val yVal = if (place.positionZ != -1.0f) place.positionY * 0.25f else place.positionY / 400f
+                                val boundedX = center.x + xVal * radius
+                                val boundedY = center.y + yVal * radius
                                 drawCircle(
                                     color = Color.Yellow,
                                     radius = 3f,
@@ -1131,12 +1246,13 @@ fun ArLensScreen(
 
                     val finalScale = placement.scale * visuals.scale
                     
+                    val resolvedOffset = resolvedPositions[placement.id] ?: Offset(placement.positionX - activeOffsetX, placement.positionY - activeOffsetY)
                     Box(
                         modifier = Modifier
                             .offset {
                                 IntOffset(
-                                    placement.positionX.toInt(),
-                                    placement.positionY.toInt()
+                                    resolvedOffset.x.toInt(),
+                                    resolvedOffset.y.toInt()
                                 )
                             }
                             .pointerInput(placement.id) {
@@ -1146,11 +1262,20 @@ fun ArLensScreen(
                                     },
                                     onDrag = { change, dragAmount ->
                                         change.consume()
-                                        viewModel.updateArPlantPosition(
-                                            currentPlacement.id,
-                                            dragAmount.x,
-                                            dragAmount.y
-                                        )
+                                        if (currentPlacement.positionZ != -1.0f) {
+                                            // Scale drag amount to meters for 3D placement
+                                            viewModel.updateArPlantPosition(
+                                                currentPlacement.id,
+                                                dragAmount.x * 0.003f,
+                                                -dragAmount.y * 0.003f
+                                            )
+                                        } else {
+                                            viewModel.updateArPlantPosition(
+                                                currentPlacement.id,
+                                                dragAmount.x,
+                                                dragAmount.y
+                                            )
+                                        }
                                     }
                                 )
                             }
@@ -2616,3 +2741,32 @@ private fun getCompanionRecommendations(plantName: String): List<String> {
     }
     return companions
 }
+
+private fun projectWorldToScreen(
+    worldX: Float,
+    worldY: Float,
+    worldZ: Float,
+    viewMatrix: FloatArray,
+    projectionMatrix: FloatArray,
+    width: Float,
+    height: Float
+): Offset? {
+    val pv = FloatArray(16)
+    android.opengl.Matrix.multiplyMM(pv, 0, projectionMatrix, 0, viewMatrix, 0)
+    
+    val worldVec = floatArrayOf(worldX, worldY, worldZ, 1.0f)
+    val clipVec = FloatArray(4)
+    android.opengl.Matrix.multiplyMV(clipVec, 0, pv, 0, worldVec, 0)
+    
+    val w = clipVec[3]
+    if (w <= 0f) return null // behind camera
+    
+    val ndcX = clipVec[0] / w
+    val ndcY = clipVec[1] / w
+    
+    val screenX = (ndcX + 1.0f) / 2.0f * width
+    val screenY = (1.0f - ndcY) / 2.0f * height
+    
+    return Offset(screenX, screenY)
+}
+
