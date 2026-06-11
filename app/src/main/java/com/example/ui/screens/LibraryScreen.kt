@@ -59,19 +59,30 @@ fun LibraryScreen(
     var expandedSpeciesName by remember { mutableStateOf<String?>(null) }
 
     val filteredTemplates = remember(searchQuery, selectedTypeFilter, selectedClimateFilter, selectedWaterFilter, selectedBloomFilter) {
+        // ⚡ Bolt Optimization: Converted multi-condition filter to early returns.
+        // This avoids running expensive String contains() checks for search terms
+        // if an item is already disqualified by a simple property check (like climate).
         ClimatePlants.ALL_TEMPLATES.filter { tpl ->
-            val matchesSearch = tpl.name.contains(searchQuery, ignoreCase = true) ||
+            val matchesType = selectedTypeFilter == "All" || tpl.type.equals(selectedTypeFilter, ignoreCase = true)
+            if (!matchesType) return@filter false
+            
+            val matchesClimate = selectedClimateFilter == "All" || tpl.compatibleClimate.contains(selectedClimateFilter, ignoreCase = true)
+            if (!matchesClimate) return@filter false
+
+            val matchesWater = selectedWaterFilter == "All" || tpl.wateringNeeds.contains(selectedWaterFilter, ignoreCase = true)
+            if (!matchesWater) return@filter false
+
+            val matchesBloom = selectedBloomFilter == "All" || tpl.bloomTime.contains(selectedBloomFilter, ignoreCase = true)
+            if (!matchesBloom) return@filter false
+
+            val matchesSearch = searchQuery.isEmpty() ||
+                    tpl.name.contains(searchQuery, ignoreCase = true) ||
                     tpl.type.contains(searchQuery, ignoreCase = true) ||
                     tpl.soilType.contains(searchQuery, ignoreCase = true) ||
                     tpl.sunlight.contains(searchQuery, ignoreCase = true) ||
                     tpl.pestsDiseases.contains(searchQuery, ignoreCase = true)
             
-            val matchesType = selectedTypeFilter == "All" || tpl.type.lowercase() == selectedTypeFilter.lowercase()
-            val matchesClimate = selectedClimateFilter == "All" || tpl.compatibleClimate.contains(selectedClimateFilter, ignoreCase = true)
-            val matchesWater = selectedWaterFilter == "All" || tpl.wateringNeeds.contains(selectedWaterFilter, ignoreCase = true)
-            val matchesBloom = selectedBloomFilter == "All" || tpl.bloomTime.contains(selectedBloomFilter, ignoreCase = true)
-            
-            matchesSearch && matchesType && matchesClimate && matchesWater && matchesBloom
+            matchesSearch
         }
     }
 

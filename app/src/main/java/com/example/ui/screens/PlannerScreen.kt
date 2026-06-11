@@ -35,25 +35,28 @@ import com.example.data.model.*
 import com.example.ui.viewmodel.GardenViewModel
 
 // Companion Planting Synergy Checking Logic
+// ⚡ Bolt Optimization: Hoisted COMPANION_RULES out of the function body.
+// This avoids allocating a list of 10 Sets on every call, drastically improving
+// performance during grid layout checks which occur frequently per frame.
+val COMPANION_RULES = listOf(
+    setOf("rose", "maple"),
+    setOf("rose", "lavender"),
+    setOf("lavender", "cherry"),
+    setOf("cactus", "aloe"),
+    setOf("marigold", "tomato"),
+    setOf("tomato", "potato"),
+    setOf("aster", "thyme"),
+    setOf("columbine", "fern"),
+    setOf("rosemary", "lavender"),
+    setOf("rosemary", "thyme")
+)
+
 fun checkPlantSynergy(plant1: String, plant2: String): Boolean {
     val p1 = plant1.lowercase()
     val p2 = plant2.lowercase()
     if (p1 == p2) return false // diversity is key
     
-    val companionRules = listOf(
-        setOf("rose", "maple"),
-        setOf("rose", "lavender"),
-        setOf("lavender", "cherry"),
-        setOf("cactus", "aloe"),
-        setOf("marigold", "tomato"),
-        setOf("tomato", "potato"),
-        setOf("aster", "thyme"),
-        setOf("columbine", "fern"),
-        setOf("rosemary", "lavender"),
-        setOf("rosemary", "thyme")
-    )
-    
-    return companionRules.any { rule ->
+    return COMPANION_RULES.any { rule ->
         rule.any { r -> p1.contains(r) } && rule.any { r -> p2.contains(r) }
     }
 }
