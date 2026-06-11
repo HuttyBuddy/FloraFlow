@@ -58,6 +58,11 @@ fun LibraryScreen(
     var selectedBloomFilter by remember { mutableStateOf("All") }
     var expandedSpeciesName by remember { mutableStateOf<String?>(null) }
 
+    // O(1) Lookup optimization for active plants
+    val activePlantNamesLower = remember(activePlants) {
+        activePlants.map { it.name.lowercase() }.toSet()
+    }
+
     val filteredTemplates = remember(searchQuery, selectedTypeFilter, selectedClimateFilter, selectedWaterFilter, selectedBloomFilter) {
         ClimatePlants.ALL_TEMPLATES.filter { tpl ->
             val matchesSearch = tpl.name.contains(searchQuery, ignoreCase = true) ||
@@ -182,7 +187,7 @@ fun LibraryScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(companionTemplates) { tpl ->
-                        val isCultivated = activePlants.any { it.name.lowercase() == tpl.name.lowercase() }
+                        val isCultivated = activePlantNamesLower.contains(tpl.name.lowercase())
                         
                         InputChip(
                             selected = isCultivated,
@@ -522,7 +527,7 @@ fun LibraryScreen(
                 // List of filtered species templates
                 items(filteredTemplates, key = { it.name }) { tpl ->
                     val isExpanded = expandedSpeciesName == tpl.name
-                    val isPlanted = activePlants.any { it.name.lowercase() == tpl.name.lowercase() }
+                    val isPlanted = activePlantNamesLower.contains(tpl.name.lowercase())
 
                     SpeciesEncyclopediaCard(
                         template = tpl,
