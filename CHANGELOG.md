@@ -2,6 +2,13 @@
 
 All notable changes to the FloraFlow project will be documented in this file.
 
+## [7] - 2026-06-02
+
+### Changed
+- **Kotlin Update**: Upgraded to Kotlin 2.3.10 and KSP 2.3.6 for improved build performance and modern language features.
+- **Build System**: Optimized Room compiler configuration for better stability on Windows development environments.
+- **Version Increment**: Updated version to 7 (7.0) for Play Console Closed testing.
+
 ## [6] - 2026-05-30
 
 ### Changed

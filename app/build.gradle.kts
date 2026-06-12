@@ -10,17 +10,21 @@ plugins {
 
 android {
   namespace = "com.example"
-  compileSdk = 36
+  compileSdk = 35
   ndkVersion = "26.1.10909125"
 
   defaultConfig {
     applicationId = "com.aistudio.dreamgardendesigner.fhqpvw"
     minSdk = 24
     targetSdk = 35
-    versionCode = 6
-    versionName = "6.0"
+    versionCode = 16
+    versionName = "7.9"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    ndk {
+      abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+      debugSymbolLevel = "FULL"
+    }
   }
 
   signingConfigs {
@@ -66,6 +70,7 @@ android {
     compose = true
     buildConfig = true
   }
+  experimentalProperties["android.nativeLibraryAlignmentPageSize"] = "4k"
   testOptions { unitTests { isIncludeAndroidResources = true } }
 }
 
@@ -135,5 +140,8 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.tooling)
   "ksp"(libs.androidx.room.compiler)
   "ksp"(libs.moshi.kotlin.codegen)
-  implementation(libs.arsceneview)
+  implementation(libs.arsceneview) {
+      exclude(group = "androidx.core", module = "core")
+      exclude(group = "androidx.core", module = "core-ktx")
+  }
 }
