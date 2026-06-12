@@ -34,40 +34,79 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.*
 import com.example.ui.viewmodel.GardenViewModel
 
+// PERFORMANCE OPTIMIZATION:
+// Extracted static configurations out of PlannerScreen composable and check functions
+// to avoid object instantiation on every recomposition or synergy check loop.
+private val COMPANION_RULES = listOf(
+    setOf("rose", "maple"),
+    setOf("rose", "lavender"),
+    setOf("lavender", "cherry"),
+    setOf("cactus", "aloe"),
+    setOf("marigold", "tomato"),
+    setOf("tomato", "potato"),
+    setOf("aster", "thyme"),
+    setOf("columbine", "fern"),
+    setOf("rosemary", "lavender"),
+    setOf("rosemary", "thyme")
+)
+
+private val NEIGHBOR_OFFSETS = arrayOf(
+    -1 to 0,
+    1 to 0,
+    0 to -1,
+    0 to 1
+)
+
+data class SoilTheme(
+    val name: String,
+    val bgColors: List<Color>,
+    val outlineColor: Color,
+    val slotBgColor: Color,
+    val description: String
+)
+
+private val SOIL_THEMES = listOf(
+    SoilTheme(
+        name = "Loam 🟫",
+        bgColors = listOf(Color(0xFFEFEBE9), Color(0xFFD7CCC8)),
+        outlineColor = Color(0xFF8D6E63),
+        slotBgColor = Color(0xFF5D4037).copy(alpha = 0.08f),
+        description = "Rich organic tilled loam soil with excellent moisture absorption."
+    ),
+    SoilTheme(
+        name = "Sand 🟧",
+        bgColors = listOf(Color(0xFFFFF8E1), Color(0xFFFFECB3)),
+        outlineColor = Color(0xFFFFB74D),
+        slotBgColor = Color(0xFFE65100).copy(alpha = 0.08f),
+        description = "Coarse gritty sand. Extremely well draining workspace."
+    ),
+    SoilTheme(
+        name = "Pebbles ⬜",
+        bgColors = listOf(Color(0xFFECEFF1), Color(0xFFCFD8DC)),
+        outlineColor = Color(0xFF78909C),
+        slotBgColor = Color(0xFF37474F).copy(alpha = 0.08f),
+        description = "Smoothed stones. Best suited for raked Zen spaces."
+    )
+)
+
 // Companion Planting Synergy Checking Logic
 fun checkPlantSynergy(plant1: String, plant2: String): Boolean {
     val p1 = plant1.lowercase()
     val p2 = plant2.lowercase()
     if (p1 == p2) return false // diversity is key
     
-    val companionRules = listOf(
-        setOf("rose", "maple"),
-        setOf("rose", "lavender"),
-        setOf("lavender", "cherry"),
-        setOf("cactus", "aloe"),
-        setOf("marigold", "tomato"),
-        setOf("tomato", "potato"),
-        setOf("aster", "thyme"),
-        setOf("columbine", "fern"),
-        setOf("rosemary", "lavender"),
-        setOf("rosemary", "thyme")
-    )
-    
-    return companionRules.any { rule ->
+    return COMPANION_RULES.any { rule ->
         rule.any { r -> p1.contains(r) } && rule.any { r -> p2.contains(r) }
     }
 }
 
 fun hasNeighborSynergy(row: Int, col: Int, gridItems: List<GridPlantItem>): Boolean {
     val currentLoc = gridItems.firstOrNull { it.x == row && it.y == col } ?: return false
-    val neighbors = listOf(
-        Pair(row - 1, col),
-        Pair(row + 1, col),
-        Pair(row, col - 1),
-        Pair(row, col + 1)
-    )
-    for (n in neighbors) {
-        val neighborItem = gridItems.firstOrNull { it.x == n.first && it.y == n.second }
+
+    for ((dx, dy) in NEIGHBOR_OFFSETS) {
+        val nx = row + dx
+        val ny = col + dy
+        val neighborItem = gridItems.firstOrNull { it.x == nx && it.y == ny }
         if (neighborItem != null) {
             if (checkPlantSynergy(currentLoc.plantName, neighborItem.plantName)) {
                 return true
@@ -77,13 +116,6 @@ fun hasNeighborSynergy(row: Int, col: Int, gridItems: List<GridPlantItem>): Bool
     return false
 }
 
-data class SoilTheme(
-    val name: String,
-    val bgColors: List<Color>,
-    val outlineColor: Color,
-    val slotBgColor: Color,
-    val description: String
-)
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -100,31 +132,8 @@ fun PlannerScreen(
     var highlightedPlantName by remember { mutableStateOf<String?>(null) }
     var showBlueprintDialog by remember { mutableStateOf(false) }
 
-    val soilThemes = listOf(
-        SoilTheme(
-            name = "Loam 🟫",
-            bgColors = listOf(Color(0xFFEFEBE9), Color(0xFFD7CCC8)),
-            outlineColor = Color(0xFF8D6E63),
-            slotBgColor = Color(0xFF5D4037).copy(alpha = 0.08f),
-            description = "Rich organic tilled loam soil with excellent moisture absorption."
-        ),
-        SoilTheme(
-            name = "Sand 🟧",
-            bgColors = listOf(Color(0xFFFFF8E1), Color(0xFFFFECB3)),
-            outlineColor = Color(0xFFFFB74D),
-            slotBgColor = Color(0xFFE65100).copy(alpha = 0.08f),
-            description = "Coarse gritty sand. Extremely well draining workspace."
-        ),
-        SoilTheme(
-            name = "Pebbles ⬜",
-            bgColors = listOf(Color(0xFFECEFF1), Color(0xFFCFD8DC)),
-            outlineColor = Color(0xFF78909C),
-            slotBgColor = Color(0xFF37474F).copy(alpha = 0.08f),
-            description = "Smoothed stones. Best suited for raked Zen spaces."
-        )
-    )
     var selectedSoilIdx by remember { mutableStateOf(0) }
-    val currentSoilTheme = soilThemes[selectedSoilIdx]
+    val currentSoilTheme = SOIL_THEMES[selectedSoilIdx]
 
     val currentLayout = activeLayout
     val activeGridItems = remember(currentLayout?.gridString) {
@@ -279,7 +288,7 @@ fun PlannerScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        soilThemes.forEachIndexed { index, theme ->
+                        SOIL_THEMES.forEachIndexed { index, theme ->
                             val isSelected = selectedSoilIdx == index
                             Box(
                                 modifier = Modifier
