@@ -447,6 +447,14 @@ fun DashboardScreen(
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.secondary
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { showLogMoodDialog = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Log First Session")
+                        }
                     }
                 }
             }
@@ -498,13 +506,28 @@ fun DashboardScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (layouts.isEmpty()) {
-                        Text(
-                            text = "No custom designs created. Create a new garden above!",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.secondary,
-                            modifier = Modifier.padding(vertical = 24.dp),
-                            textAlign = TextAlign.Center
-                        )
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "No custom designs created. Create a new garden to get started!",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.secondary,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = {
+                                    showLayoutSelector = false
+                                    showCreateDialog = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("Create New Garden")
+                            }
+                        }
                     } else {
                         LazyColumn(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
