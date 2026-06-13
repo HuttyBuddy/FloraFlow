@@ -181,7 +181,8 @@ fun LibraryScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(companionTemplates) { tpl ->
+                    // Bolt: Added stable key to optimize LazyRow rendering and prevent unnecessary re-renders
+                    items(companionTemplates, key = { it.name }) { tpl ->
                         val isCultivated = activePlants.any { it.name.lowercase() == tpl.name.lowercase() }
                         
                         InputChip(
