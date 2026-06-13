@@ -38,3 +38,17 @@ higgsfield generate create \
   --wait \
   --prompt "$Model: \text{kling3\_0} \cdot Camera: \text{Macro close-up, smooth camera pan} \cdot Subject: \text{A drooping, brown-edged peace lily plant next to a Google Pixel phone} \cdot Look: \text{Natural indoor lighting, high contrast} \cdot Action: \text{The app scans the plant, a clean green boundary rings the leaf, and it dynamically transitions into a blooming green state as a checkmark pops up.}$"
 ```
+
+#### Option B: The Paid Meta Performance Ad ("Unboxing / Reveal")
+* Platform Target: Meta Advantage+ / Square or Story Placement
+* Engine Allocation: Seedance 2.0 (`seedance_2_0`)
+* DTC Preset Mode: `--preset ugc_unboxing`
+* Sizing Matrix: `--aspect-ratio 9:16`
+```bash
+higgsfield generate create \
+  --model seedance_2_0 \
+  --preset ugc_unboxing \
+  --aspect-ratio 9:16 \
+  --wait \
+  --prompt "$Model: \text{seedance\_2\_0} \cdot Camera: \text{First-person FPV drone perspective, subtle dolly zoom} \cdot Subject: \text{An AI-rendered presenter holding a new plant subscription box} \cdot Look: \text{Bright, hyper-commercial, color-consistent brand greens} \cdot Action: \text{They open the box, pick up an Android phone running FloraFlow, and micro-expressions of pure excitement flash in their eyes as a stylized text overlay rolls over the screen.}$"
+```
