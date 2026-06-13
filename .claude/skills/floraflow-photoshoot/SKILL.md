@@ -39,3 +39,21 @@ higgsfield product-photoshoot create \
   --count 1 \
   --prompt "An Android smartphone floating neatly on a clean, soft pastel sage-green background. The screen displays the FloraFlow app UI cleanly tracking a vibrant monstera plant. Bright, diffused studio lighting highlighting crisp phone textures and edge ergonomics."
 ```
+
+#### Option B: The Social Proof Shot (Instagram/Pinterest Organic)
+```bash
+higgsfield product-photoshoot create \
+  --mode lifestyle_scene \
+  --aspect_ratio 2:3 \
+  --count 1 \
+  --prompt "A young woman's hands naturally holding an Android phone inside a bright, sunlit modern apartment kitchen filled with potted plants. The phone screen shows the FloraFlow watering reminder notification cleanly. Soft organic lighting, warm ambient depth, realistic plant leaves casting gentle shadows in the background."
+```
+
+#### Option C: The Website Header (High Negative Space)
+```bash
+higgsfield product-photoshoot create \
+  --mode hero_banner \
+  --aspect_ratio 16:9 \
+  --count 1 \
+  --prompt "A wide-format landing page header composition. An elegant Android smartphone angled cleanly on the right third of the frame. The left two-thirds remain clean, minimal, and open with soft volumetric negative space for website copy. The background features clean marble and soft green eucalyptus tones."
+```
