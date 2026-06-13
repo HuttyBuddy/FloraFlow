@@ -25,6 +25,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -447,7 +448,13 @@ fun PlannerScreen(
                                                 else currentSoilTheme.outlineColor.copy(alpha = 0.4f),
                                                 shape = RoundedCornerShape(16.dp)
                                             )
-                                            .clickable { showCellConfigDialog = Pair(r, c) }
+                                            .semantics(mergeDescendants = true) {
+                                                contentDescription = if (item != null) "Plot row ${r + 1}, column ${c + 1}, contains ${item.plantName}" else "Plot row ${r + 1}, column ${c + 1}, empty"
+                                            }
+                                            .clickable(
+                                                onClickLabel = if (item != null) "Edit plot" else "Add plant to plot",
+                                                onClick = { showCellConfigDialog = Pair(r, c) }
+                                            )
                                             .testTag("grid_cell_${r}_${c}"),
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -505,7 +512,7 @@ fun PlannerScreen(
                                              ) {
                                                  Icon(
                                                      Icons.Default.Add,
-                                                     contentDescription = "Empty Plot",
+                                                     contentDescription = null,
                                                      tint = currentSoilTheme.outlineColor.copy(alpha = 0.5f),
                                                      modifier = Modifier.size(12.dp)
                                                  )

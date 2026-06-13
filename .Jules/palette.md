@@ -1,0 +1,3 @@
+## 2024-06-13 - Interactive Grid Accessibility
+**Learning:** Screen readers struggle to comprehend raw interactive grid structures in Compose (like `Box` grids) unless each clickable cell is given coordinate-aware `contentDescription` attributes via `semantics` and context-specific `onClickLabel`s.
+**Action:** When building interactive 2D maps or grid builders, always wrap the cell in `semantics(mergeDescendants = true) { contentDescription = "..." }` to describe the coordinate location and state, and provide `onClickLabel` in the `clickable` modifier. Additionally, nullify the `contentDescription` of internal icons to prevent redundant speech.
