@@ -21,9 +21,18 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.ui.graphics.Color
 import com.example.ui.screens.settings.SettingsDialog
+import com.example.ui.screens.community.CommunityDialog
+import com.example.ui.screens.settings.InAppRatePromptDialog
 import com.example.ui.screens.walkthrough.WalkthroughOverlay
+import com.example.ui.screens.help.HelpDialog
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInRoot
+import com.example.ui.viewmodel.WalkthroughStep
+import com.example.ui.viewmodel.ScreenRect
 import androidx.compose.material3.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.runtime.*
@@ -72,11 +81,14 @@ class MainActivity : ComponentActivity() {
                     var currentTab by remember { mutableIntStateOf(0) }
                     var showFeedbackDialog by remember { mutableStateOf(false) }
                     var showSettingsDialog by remember { mutableStateOf(false) }
+                    var showCommunityDialog by remember { mutableStateOf(false) }
+                    var showHelpDialog by remember { mutableStateOf(false) }
                     val isPremium by viewModel.isPremium.collectAsState()
 
                     // Universal sandbox Billing & Subscription Management Checkout Dialog
                     BillingDialog(viewModel = viewModel)
 
+                    val showInAppRatePrompt by viewModel.showInAppRatePrompt.collectAsState()
                     val showSubscriptionManagement by viewModel.showSubscriptionManagement.collectAsState()
                     SubscriptionManagementDialog(
                         visible = showSubscriptionManagement,
@@ -138,6 +150,24 @@ class MainActivity : ComponentActivity() {
                                         )
                                     }
                                     IconButton(
+                                        onClick = { showCommunityDialog = true },
+                                        modifier = Modifier.testTag("community_button")
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Forum,
+                                            contentDescription = "Community Forum"
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = { showHelpDialog = true },
+                                        modifier = Modifier.testTag("help_button")
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.HelpOutline,
+                                            contentDescription = "Help & Support"
+                                        )
+                                    }
+                                    IconButton(
                                         onClick = { showSettingsDialog = true },
                                         modifier = Modifier.testTag("settings_button")
                                     ) {
@@ -171,7 +201,15 @@ class MainActivity : ComponentActivity() {
                                     onClick = { currentTab = 1 },
                                     icon = { Icon(Icons.Default.Explore, contentDescription = "2D Planner") },
                                     label = { Text("2D Planner", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
-                                    modifier = Modifier.testTag("nav_tab_planner"),
+                                    modifier = Modifier
+                                        .testTag("nav_tab_planner")
+                                        .onGloballyPositioned { coordinates ->
+                                            val rect = coordinates.boundsInRoot()
+                                            viewModel.updateWalkthroughTarget(
+                                                WalkthroughStep.PLANNER_TAB,
+                                                ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
+                                            )
+                                        },
                                     alwaysShowLabel = false
                                 )
                                 NavigationBarItem(
@@ -187,7 +225,15 @@ class MainActivity : ComponentActivity() {
                                     onClick = { currentTab = 3 },
                                     icon = { Icon(Icons.Default.SmartToy, contentDescription = "AI Advisor") },
                                     label = { Text("AI Advisor", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
-                                    modifier = Modifier.testTag("nav_tab_ai"),
+                                    modifier = Modifier
+                                        .testTag("nav_tab_ai")
+                                        .onGloballyPositioned { coordinates ->
+                                            val rect = coordinates.boundsInRoot()
+                                            viewModel.updateWalkthroughTarget(
+                                                WalkthroughStep.AI_ADVISOR_TAB,
+                                                ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
+                                            )
+                                        },
                                     alwaysShowLabel = false
                                 )
                                 NavigationBarItem(
@@ -200,7 +246,15 @@ class MainActivity : ComponentActivity() {
                                     },
                                     icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Lens") },
                                     label = { Text("AR Lens", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
-                                    modifier = Modifier.testTag("nav_tab_ar"),
+                                    modifier = Modifier
+                                        .testTag("nav_tab_ar")
+                                        .onGloballyPositioned { coordinates ->
+                                            val rect = coordinates.boundsInRoot()
+                                            viewModel.updateWalkthroughTarget(
+                                                WalkthroughStep.AR_LENS_TAB,
+                                                ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
+                                            )
+                                        },
                                     alwaysShowLabel = false
                                 )
                             }
@@ -220,6 +274,7 @@ class MainActivity : ComponentActivity() {
                             when (currentTab) {
                                 0 -> DashboardScreen(
                                     viewModel = viewModel,
+                                    onCommunityClick = { showCommunityDialog = true }
                                 )
                                 1 -> PlannerScreen(
                                     viewModel = viewModel,
@@ -242,6 +297,31 @@ class MainActivity : ComponentActivity() {
                     SettingsDialog(
                         visible = showSettingsDialog,
                         onDismiss = { showSettingsDialog = false },
+                        onFeedbackClick = {
+                            showSettingsDialog = false
+                            showFeedbackDialog = true
+                        },
+                        onHelpClick = {
+                            showHelpDialog = true
+                        },
+                        viewModel = viewModel
+                    )
+
+                    HelpDialog(
+                        visible = showHelpDialog,
+                        onDismiss = { showHelpDialog = false },
+                        viewModel = viewModel
+                    )
+
+                    CommunityDialog(
+                        visible = showCommunityDialog,
+                        onDismiss = { showCommunityDialog = false },
+                        viewModel = viewModel
+                    )
+
+                    InAppRatePromptDialog(
+                        visible = showInAppRatePrompt,
+                        onDismiss = { viewModel.dismissRatePrompt() },
                         viewModel = viewModel
                     )
 

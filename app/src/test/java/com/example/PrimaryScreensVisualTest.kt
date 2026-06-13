@@ -66,7 +66,7 @@ class PrimaryScreensVisualTest {
         viewModel.completeOnboarding()
         composeTestRule.setContent {
             MyApplicationTheme {
-                DashboardScreen(viewModel = viewModel)
+                DashboardScreen(viewModel = viewModel, onCommunityClick = {})
             }
         }
         composeTestRule.waitForIdle()

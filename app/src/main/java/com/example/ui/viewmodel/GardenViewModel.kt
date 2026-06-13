@@ -9,6 +9,9 @@ import com.example.data.api.Part
 import com.example.data.database.GardenDatabase
 import com.example.data.model.*
 import com.example.data.repository.GardenRepository
+import com.example.ui.screens.community.CommunityPost
+import com.example.ui.screens.community.CommunityComment
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -29,13 +32,30 @@ enum class WalkthroughStep {
     AR_LENS_TAB
 }
 
-class GardenViewModel(application: Application) : AndroidViewModel(application) {
+data class ScreenRect(
+    val left: Float,
+    val top: Float,
+    val right: Float,
+    val bottom: Float
+) {
+    val width: Float get() = right - left
+    val height: Float get() = bottom - top
+    val centerX: Float get() = left + width / 2
+    val centerY: Float get() = top + height / 2
+}
+
+class GardenViewModel @JvmOverloads constructor(
+    application: Application,
+    database: GardenDatabase? = null,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+) : AndroidViewModel(application) {
 
     private val repository: GardenRepository
 
     // Reactive database streams
     val allLayouts: StateFlow<List<GardenLayout>>
     val allMoodLogs: StateFlow<List<MoodLog>>
+    val allCommunityPosts: StateFlow<List<CommunityPost>>
 
     // Active selection states
     private val _activeLayout = MutableStateFlow<GardenLayout?>(null)
@@ -65,7 +85,19 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     private val _currentWalkthroughStep = MutableStateFlow<WalkthroughStep?>(null)
     val currentWalkthroughStep: StateFlow<WalkthroughStep?> = _currentWalkthroughStep.asStateFlow()
 
+    private val _walkthroughTargets = MutableStateFlow<Map<WalkthroughStep, ScreenRect>>(emptyMap())
+    val walkthroughTargets: StateFlow<Map<WalkthroughStep, ScreenRect>> = _walkthroughTargets.asStateFlow()
+
+    fun updateWalkthroughTarget(step: WalkthroughStep, rect: ScreenRect) {
+        _walkthroughTargets.value = _walkthroughTargets.value + (step to rect)
+    }
+
+    fun clearWalkthroughTargets() {
+        _walkthroughTargets.value = emptyMap()
+    }
+
     fun startWalkthrough() {
+        clearWalkthroughTargets()
         _currentWalkthroughStep.value = WalkthroughStep.WELCOME
     }
 
@@ -80,10 +112,15 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             WalkthroughStep.AR_LENS_TAB -> null
         }
         _currentWalkthroughStep.value = next
+        if (next == null) {
+            clearWalkthroughTargets()
+            recordPositiveInteraction()
+        }
     }
 
     fun skipWalkthrough() {
         _currentWalkthroughStep.value = null
+        clearWalkthroughTargets()
     }
 
     fun completeOnboarding() {
@@ -117,6 +154,9 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _feedbackSuccess = MutableStateFlow(false)
     val feedbackSuccess: StateFlow<Boolean> = _feedbackSuccess.asStateFlow()
+
+    private val _showInAppRatePrompt = MutableStateFlow(false)
+    val showInAppRatePrompt: StateFlow<Boolean> = _showInAppRatePrompt.asStateFlow()
 
     private val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", android.content.Context.MODE_PRIVATE)
 
@@ -264,8 +304,8 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             _feedbackSubmissions.value = list
         }
 
-        val database = GardenDatabase.getDatabase(application)
-        repository = GardenRepository(database.gardenDao())
+        val db = database ?: GardenDatabase.getDatabase(application)
+        repository = GardenRepository(db.gardenDao())
 
         allLayouts = repository.allLayouts
             .stateIn(
@@ -281,8 +321,64 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                 initialValue = emptyList(),
             )
 
-        viewModelScope.launch(Dispatchers.IO) {
+        allCommunityPosts = repository.allPosts
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList(),
+            )
+
+        viewModelScope.launch(ioDispatcher) {
             try {
+                val existingPosts = repository.allPosts.firstOrNull() ?: emptyList()
+                if (existingPosts.isEmpty()) {
+                    val p1Id = repository.insertPost(
+                        CommunityPost(
+                            title = "The Golden Rule of Watering Succulents",
+                            content = "Always wait until the soil is bone dry before watering again. Stick a wooden skewer or your finger about 2 inches deep. If it's damp, hold off! Overwatering is the #1 killer of succulents.",
+                            category = "Tips",
+                            author = "GardenGuru",
+                            likes = 12
+                        )
+                    ).toInt()
+                    repository.insertComment(CommunityComment(postId = p1Id, author = "CactusJack", content = "Totally agree. In winter, I only water mine once a month and they thrive!", likes = 5))
+                    repository.insertComment(CommunityComment(postId = p1Id, author = "MonsteraMom", content = "I learned this the hard way after losing my first zebra plant. Great advice!", likes = 3))
+
+                    val p2Id = repository.insertPost(
+                        CommunityPost(
+                            title = "My Monstera Deliciosa got its first fenestration!",
+                            content = "I've been keeping it in bright, indirect light near my east-facing window and feeding it dilute fertilizer once a month. The leaf just uncurled this morning and it's perfect! Don't lose hope if yours takes a while; consistency is key.",
+                            category = "Experiences",
+                            author = "MonsteraMom",
+                            likes = 24
+                        )
+                    ).toInt()
+                    repository.insertComment(CommunityComment(postId = p2Id, author = "PlantBae", content = "Congratulations! It's the best feeling ever. Can't wait for my propagation to fenestrate.", likes = 6))
+
+                    val p3Id = repository.insertPost(
+                        CommunityPost(
+                            title = "White spots on Rose leaves - help?",
+                            content = "My miniature rose bush has developed a dusty white coating on its lower leaves. Is this powdery mildew? I'm watering it from the top daily. Any tips to treat it organically would be super appreciated!",
+                            category = "Questions",
+                            author = "GreenNoob",
+                            likes = 5
+                        )
+                    ).toInt()
+                    repository.insertComment(CommunityComment(postId = p3Id, author = "RoseLover", content = "Definitely powdery mildew! Try to water the soil directly, not the leaves. Wet leaves invite spores.", likes = 8))
+                    repository.insertComment(CommunityComment(postId = p3Id, author = "OrganicGardener", content = "You can spray it with a mixture of milk and water (40/60 ratio) in direct sunlight. It works as a natural fungicide!", likes = 10))
+                    repository.insertComment(CommunityComment(postId = p3Id, author = "ZenMaster", content = "Remember to prune the affected leaves and dispose of them (don't compost them) so the spores don't spread.", likes = 4))
+
+                    val p4Id = repository.insertPost(
+                        CommunityPost(
+                            title = "Mindful Pruning: How to Connect with Your Plants",
+                            content = "Pruning isn't just about maintenance; it's a form of meditation. Approach your plant with quiet focus. Use clean shears, and as you cut dead stems, take a slow breath. Visualize making space for new, healthy growth in your own life.",
+                            category = "Tips",
+                            author = "ZenMaster",
+                            likes = 18
+                        )
+                    ).toInt()
+                }
+
                 val existing = repository.allLayouts.firstOrNull() ?: emptyList()
                 if (existing.isEmpty()) {
                     val defaultLayout = GardenLayout(
@@ -360,6 +456,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                     )
                 }
             } catch (e: Exception) {
+                println("SEEDING DEBUG ERROR: ${e.message}")
                 e.printStackTrace()
             }
         }
@@ -425,6 +522,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             }
             
             _activeLayout.value = created
+            recordPositiveInteraction()
         }
     }
 
@@ -446,6 +544,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             
             if (plantName.isNotBlank() && plantName != "Empty") {
                 items.add(GridPlantItem(x, y, plantName))
+                recordPositiveInteraction()
             }
             val newGridString = toGridString(items)
             repository.updateLayoutGrid(current.id, newGridString)
@@ -571,6 +670,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                 growthIndex = averageGrowth
             )
             repository.insertMoodLog(newLog)
+            recordPositiveInteraction()
         }
     }
 
@@ -760,6 +860,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             )
         )
         _arPlacedPlants.value = list
+        recordPositiveInteraction()
     }
 
     fun updateArPlantPosition(id: Int, dx: Float, dy: Float) {
@@ -850,6 +951,80 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
 
     fun resetFeedbackSuccess() {
         _feedbackSuccess.value = false
+    }
+
+    fun recordPositiveInteraction() {
+        if (sharedPrefs.getBoolean("has_rated_or_declined", false)) return
+        val currentCount = sharedPrefs.getInt("positive_interaction_count", 0) + 1
+        sharedPrefs.edit().putInt("positive_interaction_count", currentCount).apply()
+        if (currentCount >= 2) {
+            _showInAppRatePrompt.value = true
+        }
+    }
+
+    fun dismissRatePrompt() {
+        _showInAppRatePrompt.value = false
+        sharedPrefs.edit().putInt("positive_interaction_count", 0).apply()
+    }
+
+    fun declineRatePrompt() {
+        _showInAppRatePrompt.value = false
+        sharedPrefs.edit().putBoolean("has_rated_or_declined", true).apply()
+    }
+
+    fun acceptRatePrompt() {
+        _showInAppRatePrompt.value = false
+        sharedPrefs.edit().putBoolean("has_rated_or_declined", true).apply()
+    }
+
+    // --- Community Actions ---
+    fun createPost(title: String, content: String, category: String, author: String) {
+        viewModelScope.launch(ioDispatcher) {
+            val post = CommunityPost(
+                title = title,
+                content = content,
+                category = category,
+                author = author.ifBlank { "Anonymous Gardener" }
+            )
+            repository.insertPost(post)
+        }
+    }
+
+    fun toggleLikePost(postId: Int, currentLikes: Int, currentIsLiked: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            val newIsLiked = !currentIsLiked
+            val newLikes = if (newIsLiked) currentLikes + 1 else (currentLikes - 1).coerceAtLeast(0)
+            repository.updatePostLikes(postId, newLikes, newIsLiked)
+        }
+    }
+
+    fun deletePost(postId: Int) {
+        viewModelScope.launch(ioDispatcher) {
+            repository.deletePost(postId)
+        }
+    }
+
+    fun getCommentsForPost(postId: Int): Flow<List<CommunityComment>> {
+        return repository.getCommentsForPost(postId)
+    }
+
+    fun addComment(postId: Int, author: String, content: String) {
+        viewModelScope.launch(ioDispatcher) {
+            val comment = CommunityComment(
+                postId = postId,
+                author = author.ifBlank { "Anonymous Gardener" },
+                content = content
+            )
+            repository.insertComment(comment)
+        }
+    }
+
+    fun toggleLikeComment(commentId: Int, currentLikes: Int, currentIsLiked: Boolean) {
+        viewModelScope.launch(ioDispatcher) {
+            val newIsLiked = !currentIsLiked
+            val newLikes = if (newIsLiked) currentLikes + 1 else (currentLikes - 1).coerceAtLeast(0)
+            repository.updateCommentLikes(commentId, newLikes, newIsLiked)
+        }
     }
 }
 

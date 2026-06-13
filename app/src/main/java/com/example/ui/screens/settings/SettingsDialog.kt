@@ -26,12 +26,15 @@ import com.example.ui.viewmodel.ThemeMode
 fun SettingsDialog(
     visible: Boolean,
     onDismiss: () -> Unit,
+    onFeedbackClick: () -> Unit,
+    onHelpClick: () -> Unit,
     viewModel: GardenViewModel,
     modifier: Modifier = Modifier
 ) {
     if (!visible) return
 
     val currentThemeMode by viewModel.themeMode.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     var showRateDialog by remember { mutableStateOf(false) }
     var showPrivacy by remember { mutableStateOf(false) }
@@ -128,11 +131,32 @@ fun SettingsDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     SettingsActionRow(
-                        title = "Rate FloraFlow",
+                        title = "Rate Your App",
                         subtitle = "Help us grow with a store review",
                         icon = Icons.Default.Star,
                         iconTint = Color(0xFFFFB300),
-                        onClick = { showRateDialog = true }
+                        onClick = {
+                            val packageName = context.packageName
+                            val marketIntent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=$packageName")).apply {
+                                addFlags(android.content.Intent.FLAG_ACTIVITY_NO_HISTORY or android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT or android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                            }
+                            val webIntent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+                            try {
+                                context.startActivity(marketIntent)
+                            } catch (e: Exception) {
+                                context.startActivity(webIntent)
+                            }
+                            viewModel.acceptRatePrompt()
+                        }
+                    )
+
+                    SettingsActionRow(
+                        title = "Share Feedback",
+                        subtitle = "Suggest features or report issues directly",
+                        icon = Icons.Default.Feedback,
+                        onClick = {
+                            onFeedbackClick()
+                        }
                     )
 
                     SettingsActionRow(
@@ -142,6 +166,16 @@ fun SettingsDialog(
                         onClick = {
                             onDismiss()
                             viewModel.startWalkthrough()
+                        }
+                    )
+
+                    SettingsActionRow(
+                        title = "Help & FAQs",
+                        subtitle = "Browse tutorials and troubleshooting guides",
+                        icon = Icons.Default.Help,
+                        onClick = {
+                            onDismiss()
+                            onHelpClick()
                         }
                     )
 
@@ -168,7 +202,7 @@ fun SettingsDialog(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "FloraFlow: Dream Garden Designer",
+                        text = "FloraFlow: Cultivating Calm through Mindful Gardening",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

@@ -71,7 +71,17 @@ android {
     buildConfig = true
   }
   experimentalProperties["android.nativeLibraryAlignmentPageSize"] = "4k"
-  testOptions { unitTests { isIncludeAndroidResources = true } }
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+      all {
+        it.jvmArgs(
+          "--add-opens=java.base/java.lang=ALL-UNNAMED",
+          "--add-opens=java.base/java.util=ALL-UNNAMED"
+        )
+      }
+    }
+  }
 }
 
 // Ensure the SQLite temp directory exists for Room compiler on Windows

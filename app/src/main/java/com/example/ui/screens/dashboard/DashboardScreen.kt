@@ -1,5 +1,6 @@
 package com.example.ui.screens.dashboard
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -28,10 +29,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.GardenLayout
 import com.example.data.model.MoodLog
 import com.example.ui.viewmodel.GardenViewModel
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInRoot
+import com.example.ui.viewmodel.WalkthroughStep
+import com.example.ui.viewmodel.ScreenRect
 
 @Composable
 fun DashboardScreen(
     viewModel: GardenViewModel,
+    onCommunityClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val layouts by viewModel.allLayouts.collectAsStateWithLifecycle()
@@ -95,7 +101,15 @@ fun DashboardScreen(
 
     val quickActionsContent = @Composable {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    val rect = coordinates.boundsInRoot()
+                    viewModel.updateWalkthroughTarget(
+                        WalkthroughStep.DASHBOARD_GARDEN,
+                        ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
+                    )
+                },
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Button(
@@ -210,9 +224,73 @@ fun DashboardScreen(
         }
     }
 
+    val communityPromoContent = @Composable {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onCommunityClick() }
+                .testTag("dashboard_community_promo_card"),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Forum,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "FloraFlow Community Circle",
+                        fontWeight = FontWeight.ExtraBold,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = "Share tips, swap stories, and learn from others!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Icon(
+                    Icons.Default.ArrowForward,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+        }
+    }
+
     val canvasChartContent = @Composable {
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coordinates ->
+                    val rect = coordinates.boundsInRoot()
+                    viewModel.updateWalkthroughTarget(
+                        WalkthroughStep.DASHBOARD_STATS,
+                        ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
+                    )
+                },
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
@@ -353,6 +431,7 @@ fun DashboardScreen(
         ) {
             item { headerContent() }
             item { quickActionsContent() }
+            item { communityPromoContent() }
             item { statisticsContent() }
             item { canvasChartContent() }
             item { logsHeaderContent() }
@@ -374,10 +453,10 @@ fun DashboardScreen(
             ) {
                 headerContent()
                 quickActionsContent()
+                communityPromoContent()
                 statisticsContent()
                 Spacer(modifier = Modifier.height(80.dp))
             }
-
             Column(
                 modifier = Modifier
                     .weight(0.5f)

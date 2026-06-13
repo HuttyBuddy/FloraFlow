@@ -87,7 +87,7 @@
     
     <!-- Subtitle (Tracking spaced-out uppercase sans-serif) -->
     <text y="35" font-family="'Montserrat', 'Space Grotesk', 'Helvetica Neue', sans-serif" 
-          font-size="18" font-weight="900" fill="#ACCFC6" letter-spacing="9">DREAM GARDEN DESIGNER</text>
+          font-size="18" font-weight="900" fill="#ACCFC6" letter-spacing="4">CULTIVATING CALM THROUGH MINDFUL GARDENING</text>
 
     <!-- Core Tagline Bullet -->
     <text y="75" font-family="'Space Grotesk', 'Inter', 'Segoe UI', sans-serif" 
