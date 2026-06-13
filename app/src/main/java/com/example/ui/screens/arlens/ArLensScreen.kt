@@ -39,6 +39,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -218,9 +219,8 @@ fun ArLensScreen(
     var selectedPlacementId by remember { mutableStateOf<Int?>(null) }
     
     // Retraction states for full screen UI
-    var isSettingsExpanded by remember { mutableStateOf(false) }
-    var isInventoryExpanded by remember { mutableStateOf(false) }
     var isTuningExpanded by remember { mutableStateOf(true) }
+    var activePanel by remember { mutableStateOf<String?>(null) } // null, "backdrop", "atmosphere", "filter", "inventory"
     
     // ENHANCEMENT 2: Dynamic Weather with real-time particle rendering loop
     var activeWeather by remember { mutableStateOf("Clear Sky") }
@@ -1143,6 +1143,7 @@ fun ArLensScreen(
                                 detectDragGestures(
                                     onDragStart = {
                                         selectedPlacementId = currentPlacement.id
+                                        activePanel = null
                                     },
                                     onDrag = { change, dragAmount ->
                                         change.consume()
@@ -1171,169 +1172,17 @@ fun ArLensScreen(
                             }
                         }
 
-                        // Decal elements block
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(
-                                    when {
-                                        isSelected -> Color.White.copy(alpha = 0.9f)
-                                        currentFilter == "Blueprint Draft" -> Color(0xFF00E5FF).copy(alpha = 0.15f)
-                                        currentFilter == "Night Vision Matrix" -> Color(0xFF00FF55).copy(alpha = 0.15f)
-                                        else -> Color.Black.copy(alpha = 0.25f)
-                                    }
-                                )
-                                .border(
-                                    width = if (isSelected) 3.dp else 1.2.dp,
-                                    color = when {
-                                        isSelected -> MaterialTheme.colorScheme.primary
-                                        currentFilter == "Blueprint Draft" -> Color(0xFF00E5FF).copy(alpha = 0.7f)
-                                        currentFilter == "Night Vision Matrix" -> Color(0xFF00FF55).copy(alpha = 0.7f)
-                                        decalOverride.highlightColor != null -> decalOverride.highlightColor
-                                        else -> Color.White.copy(alpha = 0.3f)
-                                    },
-                                    shape = RoundedCornerShape(16.dp)
-                                )
-                                .padding(horizontal = 14.dp, vertical = 10.dp)
-                        ) {
-                            
-                            // HYDRATION RING INDICATOR (Enhancement 4)
-                            Box(
-                                modifier = Modifier
-                                    .padding(vertical = 4.dp)
-                                    .size(width = 38.dp, height = 8.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        when {
-                                            decalOverride.moisture > 0.7f -> Color(0xFF29B6F6).copy(alpha = 0.6f) // highly watered
-                                            decalOverride.moisture < 0.3f -> Color(0xFF8D6E63).copy(alpha = 0.6f) // sandy arid soil
-                                            else -> Color(0xFF66BB6A).copy(alpha = 0.6f) // pristine damp mulch
-                                        }
-                                    )
-                            )
-                            
-                            val isSynergized = synergyPairs.any { it.first == placement.id || it.second == placement.id }
-                            if (isSynergized) {
-                                Box(
-                                    modifier = Modifier
-                                        .padding(bottom = 4.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(
-                                            Brush.horizontalGradient(
-                                                colors = listOf(Color(0xFF00FF66).copy(alpha = 0.85f), Color(0xFF00E5FF).copy(alpha = 0.85f))
-                                            )
-                                        )
-                                        .border(0.5.dp, Color.White.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Text(
-                                        text = "✨ SYNERGY ACTIVE",
-                                        color = Color.Black,
-                                        fontSize = 7.sp,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        letterSpacing = 0.5.sp
-                                    )
-                                }
+                        ProceduralArPlant(
+                            decalOverride = decalOverride,
+                            emoji = finalEmoji,
+                            name = placement.name,
+                            isSelected = isSelected,
+                            climateTimeFactor = climateTimeFactor,
+                            onClick = {
+                                selectedPlacementId = currentPlacement.id
+                                activePanel = null
                             }
-
-                            // Render Emoji with ColorFilter applied
-                            Box {
-                                Text(
-                                    text = finalEmoji, 
-                                    fontSize = if (decalOverride.growthStage == "Colossal") 56.sp else 46.sp,
-                                    modifier = Modifier.animateContentSize()
-                                )
-                                // Render moisture water droplet animations if overwatered
-                                if (visuals.showWaterParticles) {
-                                    val dropletPulse by infiniteTransition.animateFloat(
-                                        initialValue = 0.3f,
-                                        targetValue = 1f,
-                                        animationSpec = infiniteRepeatable(
-                                            animation = tween(1200, easing = FastOutLinearInEasing),
-                                            repeatMode = RepeatMode.Reverse
-                                        ),
-                                        label = "droplet_pulse"
-                                    )
-                                    Text(
-                                        text = "💧",
-                                        fontSize = 12.sp,
-                                        modifier = Modifier
-                                            .align(Alignment.TopEnd)
-                                            .alpha(dropletPulse)
-                                            .offset(x = 6.dp, y = (-4).dp)
-                                    )
-                                }
-                            }
-
-                            Text(
-                                text = placement.name,
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 10.sp,
-                                color = if (isSelected) Color.Black else Color.White
-                            )
-
-                            // Mini HUD specifications inside sticker card
-                            if (isSelected) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(top = 2.dp)
-                                ) {
-                                    Text(
-                                        "💧 ${(decalOverride.moisture * 100).toInt()}%", 
-                                        fontSize = 8.sp, 
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF0091EA)
-                                    )
-                                    Text(
-                                        "|", 
-                                        fontSize = 8.sp, 
-                                        color = Color.Gray
-                                    )
-                                    Text(
-                                        decalOverride.growthStage.uppercase(), 
-                                        fontSize = 8.sp, 
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF2E7D32)
-                                    )
-                                }
-                                
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Column(
-                                    horizontalAlignment = Alignment.Start,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(Color.Black.copy(alpha = 0.85f))
-                                        .border(0.5.dp, Color(0xFF00FF66), RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 6.dp, vertical = 4.dp)
-                                ) {
-                                    Text(
-                                        "🔐 VITALITY: ${visuals.healthStatus}",
-                                        color = visuals.healthColor,
-                                        fontSize = 7.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                                    )
-                                    Text(
-                                        "💚 HEALTH SCORE: ${if (visuals.healthStatus.contains("OPTIMAL")) "98%" else "45%"}",
-                                        color = Color(0xFF00E5FF),
-                                        fontSize = 7.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                                    )
-                                    Text(
-                                        "📡 LIDAR DIST: 1.25m",
-                                        color = Color(0xFFFFB300),
-                                        fontSize = 7.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                                    )
-                                }
-                            }
-                        }
+                        )
                     }
                 }
             }
@@ -1677,7 +1526,7 @@ fun ArLensScreen(
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
                     IconButton(
-                        onClick = { isInventoryExpanded = false },
+                        onClick = { activePanel = null },
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
@@ -2246,134 +2095,409 @@ fun ArLensScreen(
         // 1. Root Viewport occupies the entire edge-to-edge area!
         viewportBlock(Modifier.fillMaxSize())
 
-        // 2. Floating Top Overlay for Settings / Backdrop Header
-        Box(
+        // 2. Sleek Minimalist Top HUD Bar
+        Card(
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .fillMaxWidth(if (isLandscape) 0.65f else 1.0f)
-                .padding(14.dp)
+                .fillMaxWidth()
+                .padding(14.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.5f)),
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
         ) {
-            if (isSettingsExpanded) {
-                // Expanded Glassy Card containing header & selectors
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
-                ) {
-                    Column(
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
                         modifier = Modifier
-                            .padding(12.dp)
-                            .verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "🌱 FloraFlow Options",
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            IconButton(
-                                onClick = { isSettingsExpanded = false },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(Icons.Default.Close, contentDescription = "Close Options", tint = MaterialTheme.colorScheme.onSurface)
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFF00FF66))
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "FLORAFLOW HOLOGRAPHIC HUD",
+                        color = Color.White,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                }
+
+                Text(
+                    text = "TRACKING: ${if (useGyroscope) "GYRO" else "STATIC"} | WEATHER: ${activeWeather.uppercase()}",
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 8.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+        }
+
+        // 3. Floating Right-side Collapsible Options Panel
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // Backdrop Presets selector trigger
+            FloatingActionButton(
+                onClick = {
+                    activePanel = if (activePanel == "backdrop") null else "backdrop"
+                    selectedPlacementId = null
+                },
+                containerColor = if (activePanel == "backdrop") MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.7f),
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier.size(46.dp)
+            ) {
+                Text("🌄", fontSize = 18.sp)
+            }
+
+            // Weather/Atmosphere selector trigger
+            FloatingActionButton(
+                onClick = {
+                    activePanel = if (activePanel == "atmosphere") null else "atmosphere"
+                    selectedPlacementId = null
+                },
+                containerColor = if (activePanel == "atmosphere") MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.7f),
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier.size(46.dp)
+            ) {
+                Text("⛈️", fontSize = 18.sp)
+            }
+
+            // Camera Filter selector trigger
+            FloatingActionButton(
+                onClick = {
+                    activePanel = if (activePanel == "filter") null else "filter"
+                    selectedPlacementId = null
+                },
+                containerColor = if (activePanel == "filter") MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.7f),
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier.size(46.dp)
+            ) {
+                Text("🎨", fontSize = 18.sp)
+            }
+
+            // Gyroscope toggle button
+            FloatingActionButton(
+                onClick = { useGyroscope = !useGyroscope },
+                containerColor = if (useGyroscope) MaterialTheme.colorScheme.secondary else Color.Black.copy(alpha = 0.7f),
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier.size(46.dp)
+            ) {
+                Text(if (useGyroscope) "📡" else "📴", fontSize = 18.sp)
+            }
+
+            // Snapshots Gallery button
+            FloatingActionButton(
+                onClick = { showSnapshotsDialog = true },
+                containerColor = Color.Black.copy(alpha = 0.7f),
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier.size(46.dp)
+            ) {
+                BadgedBox(
+                    badge = {
+                        if (savedSnapshots.isNotEmpty()) {
+                            Badge(containerColor = MaterialTheme.colorScheme.error) {
+                                Text("${savedSnapshots.size}", color = Color.White, fontSize = 9.sp)
                             }
                         }
-                        headerBlock()
-                        selectorsBlock()
                     }
-                }
-            } else {
-                // Collapsed minimal pill
-                Card(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .clickable { isSettingsExpanded = true },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)),
-                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            "🌱 FloraFlow AR Lens",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(MaterialTheme.colorScheme.primary)
-                                .clickable { isSettingsExpanded = true }
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                "⚙️ Options",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 9.sp,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
-                    }
+                    Icon(
+                        imageVector = Icons.Default.PhotoLibrary,
+                        contentDescription = "Stored Snaps",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
         }
 
-        // 3. Floating Bottom Overlay Stack
+        // 4. Floating Bottom Collapsible Sheet Container & Action Controls
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth(if (isLandscape) 0.65f else 1.0f)
                 .padding(horizontal = 14.dp)
-                .padding(bottom = 76.dp), // Leaves room for system navigation / main app navigation if any
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(bottom = 76.dp)
+                .animateContentSize(),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // First render the tuning Block overlay (placed above the inventory drawer)
-            tuningBlock()
+            // Collapsible active selection parameters configuration panel
+            if (selectedPlacement != null && selectedOverride != null) {
+                tuningBlock()
+            }
 
-            // Then render the inventory Block
-            if (isInventoryExpanded) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    inventoryBlock(isLandscape)
-                }
-            } else {
+            // Collapsible assets inventory selection panel
+            if (activePanel == "inventory") {
+                inventoryBlock(isLandscape)
+            }
+
+            // Collapsible backdrop preset selection panel
+            if (activePanel == "backdrop") {
                 Card(
-                    modifier = Modifier
-                        .wrapContentSize()
-                        .clickable { isInventoryExpanded = true },
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f)),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
                 ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            "🌱 Spawn Plant Decals",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = "Expand Inventory",
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(16.dp)
-                        )
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🌄 Select Backdrop Preset", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                            IconButton(onClick = { activePanel = null }, modifier = Modifier.size(24.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(14.dp))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            listOf("Simulated Live Yard", "Lawn Garden Grid", "Sunny Patio", "Balcony Deck", "Cyber Greenhouse", "English Estate", "Live Camera").forEach { preset ->
+                                val isSelected = selectedBackgroundPreset == preset
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                                        .clickable { selectedBackgroundPreset = preset }
+                                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    Text(preset, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        }
                     }
+                }
+            }
+
+            // Collapsible weather climate parameter selection panel
+            if (activePanel == "atmosphere") {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("⛈️ Environmental Atmosphere", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                            IconButton(onClick = { activePanel = null }, modifier = Modifier.size(24.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(14.dp))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            listOf("Clear Sky", "Gentle Rain", "Cherry Blossoms", "Fireflies Spark").forEach { weather ->
+                                val isSelected = activeWeather == weather
+                                val icon = when (weather) {
+                                    "Gentle Rain" -> "🌧️"
+                                    "Cherry Blossoms" -> "🌸"
+                                    "Fireflies Spark" -> "✨"
+                                    else -> "☀️"
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (isSelected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.surfaceVariant)
+                                        .clickable { activeWeather = weather }
+                                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    Text("$icon $weather", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isSelected) MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Collapsible camera view overlay HUD filter parameter selection panel
+            if (activePanel == "filter") {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("🎨 Camera HUD Filters", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                            IconButton(onClick = { activePanel = null }, modifier = Modifier.size(24.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(14.dp))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            listOf("Standard RGB", "Night Vision Matrix", "Blueprint Draft", "Thermal Heatmap", "Golden Lume").forEach { filt ->
+                                val isSelected = currentFilter == filt
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                                        .clickable { currentFilter = filt }
+                                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                                ) {
+                                    Text(filt, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Bottom camera shutter and action toolbar row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Left: clean canvas reset button
+                IconButton(
+                    onClick = {
+                        viewModel.clearArPlants()
+                        selectedPlacementId = null
+                        activePanel = null
+                    },
+                    modifier = Modifier
+                        .size(46.dp)
+                        .background(Color.Black.copy(alpha = 0.7f), CircleShape)
+                        .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Reset Canvas",
+                        tint = Color.White
+                    )
+                }
+
+                // Center: camera capture snapshot shutter button
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clickable {
+                            if (!generatingArImage) {
+                                coroutineScope.launch {
+                                    generatingArImage = true
+                                    generationProgress = 0f
+                                    generationStatusText = "Initializing Neural AR Engine..."
+                                    
+                                    delay(300)
+                                    generationProgress = 0.25f
+                                    generationStatusText = "Analyzing Spatial Depth & Geometry..."
+                                    
+                                    delay(300)
+                                    generationProgress = 0.50f
+                                    generationStatusText = "Mapping Light Angles & Shadows..."
+                                    
+                                    delay(300)
+                                    generationProgress = 0.75f
+                                    generationStatusText = "Synthesizing Companion Synergy Aesthetics..."
+                                    
+                                    delay(300)
+                                    generationProgress = 0.90f
+                                    generationStatusText = "Rendering Final Neural AR Image..."
+                                    
+                                    delay(300)
+                                    generationProgress = 1.0f
+                                    generationStatusText = "AR Snapshot Generated!"
+                                    
+                                    // Trigger camera flash
+                                    triggeringFlash = true
+                                    
+                                    // Capture coordinates normalized by viewport size
+                                    val w = if (viewportSize.width > 0) viewportSize.width.toFloat() else 1f
+                                    val h = if (viewportSize.height > 0) viewportSize.height.toFloat() else 1f
+                                    val placements = arPlacedPlants.map {
+                                        Pair(it.emoji, Offset(it.positionX / w, it.positionY / h))
+                                    }
+                                    val description = "Backdrop: $selectedBackgroundPreset, Plants count: ${arPlacedPlants.size}, Filter: $currentFilter, Weather: $activeWeather"
+                                    val snap = DesignSnapshot(
+                                        id = "SNAP_${System.currentTimeMillis() % 10000}",
+                                        timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
+                                        backdrop = selectedBackgroundPreset,
+                                        filter = currentFilter,
+                                        weather = activeWeather,
+                                        totalPlants = arPlacedPlants.size,
+                                        summary = description,
+                                        thumbnailEmoji = arPlacedPlants.firstOrNull()?.emoji ?: "🌳",
+                                        plantPlacements = placements
+                                    )
+                                    savedSnapshots.add(0, snap)
+                                    
+                                    delay(200)
+                                    generatingArImage = false
+                                }
+                            }
+                        }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .border(4.dp, Color.White, CircleShape)
+                            .background(Color.Transparent, CircleShape)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Color.White)
+                    )
+                }
+
+                // Right: add plant decal selection trigger button
+                IconButton(
+                    onClick = {
+                        activePanel = if (activePanel == "inventory") null else "inventory"
+                        selectedPlacementId = null
+                    },
+                    modifier = Modifier
+                        .size(46.dp)
+                        .background(Color.Black.copy(alpha = 0.7f), CircleShape)
+                        .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Plant Decal",
+                        tint = Color.White
+                    )
                 }
             }
         }
