@@ -10,13 +10,13 @@ plugins {
 
 android {
   namespace = "com.example"
-  compileSdk = 35
+  compileSdk = 37
   ndkVersion = "26.1.10909125"
 
   defaultConfig {
     applicationId = "com.aistudio.dreamgardendesigner.fhqpvw"
     minSdk = 24
-    targetSdk = 35
+    targetSdk = 37
     versionCode = 17
     versionName = "8.0"
 
