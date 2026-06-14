@@ -2,6 +2,19 @@
 
 All notable changes to the FloraFlow project will be documented in this file.
 
+## [9.0.0.0] - 2026-06-11
+
+### Added
+- **Modern Build Stack**: Upgraded Gradle to 9.5.1 and migrated all dependencies (Retrofit 3, OkHttp 5, Firebase 34.14, etc.) to the latest stable versions.
+- **Android 37 Support**: Updated compile and target SDK to API Level 37 (Android 15+) for long-term compatibility.
+- **Project Governance**: Added `AGENTS.md` with skill routing and health stack rules for AI-assisted development.
+
+### Changed
+- **UI Architecture**: Migrated deprecated components to modern Jetpack Compose standards (HorizontalDivider, BasicAlertDialog, Icons.AutoMirrored).
+- **Performance Optimizations**: Implemented primitive state holders (`mutableIntStateOf`, `mutableFloatStateOf`) across all interactive screens to reduce autoboxing overhead.
+- **Code Hygiene**: Resolved 40+ high-priority lint warnings, including observable locale checks and SharedPreferences KTX migration.
+- **Internal Tooling**: Integrated automated content pipeline scripts and specialized developer skills.
+
 ## [8] - 2026-06-11
 
 ### Added
