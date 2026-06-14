@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.SmartToy
@@ -163,7 +164,7 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.testTag("help_button")
                                     ) {
                                         Icon(
-                                            imageVector = Icons.Default.HelpOutline,
+                                            imageVector = Icons.AutoMirrored.Filled.HelpOutline,
                                             contentDescription = "Help & Support"
                                         )
                                     }

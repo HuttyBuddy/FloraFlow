@@ -1,6 +1,7 @@
 package com.example.ui.screens.dashboard
 
 import androidx.compose.foundation.BorderStroke
+import java.util.Locale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -49,7 +51,7 @@ fun DashboardScreen(
     var showLayoutSelector by remember { mutableStateOf(false) }
     var showLogMoodDialog by remember { mutableStateOf(false) }
 
-    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val configuration = LocalConfiguration.current
     val isWideScreen = configuration.screenWidthDp >= 600
 
     val headerContent = @Composable {
@@ -185,8 +187,9 @@ fun DashboardScreen(
                 ) {
                     Icon(Icons.Default.FavoriteBorder, contentDescription = "Wellness", tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.height(6.dp))
+                    val locale = LocalConfiguration.current.locales[0]
                     Text(
-                        text = String.format("%.1f/5", avgMood),
+                        text = String.format(locale, "%.1f/5", avgMood),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.ExtraBold
                     )

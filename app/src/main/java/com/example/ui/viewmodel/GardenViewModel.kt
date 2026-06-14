@@ -1,6 +1,7 @@
 package com.example.ui.viewmodel
 
 import android.app.Application
+import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.api.Content
@@ -125,7 +126,7 @@ class GardenViewModel @JvmOverloads constructor(
 
     fun completeOnboarding() {
         _isOnboardingCompleted.value = true
-        sharedPrefs.edit().putBoolean("onboarding_completed", true).apply()
+        sharedPrefs.edit { putBoolean("onboarding_completed", true) }
         startWalkthrough()
     }
 
@@ -192,13 +193,12 @@ class GardenViewModel @JvmOverloads constructor(
         _subscriptionTransactionId.value = txId
         _subscriptionBillingDate.value = nextBillingDate
 
-        sharedPrefs.edit().apply {
+        sharedPrefs.edit {
             putBoolean("is_premium", true)
             putString("subscription_tier", tier)
             putString("subscription_transaction_id", txId)
             putString("subscription_billing_date", nextBillingDate)
             putBoolean("purchased_historically", true)
-            apply()
         }
     }
 
@@ -208,12 +208,11 @@ class GardenViewModel @JvmOverloads constructor(
         _subscriptionTransactionId.value = null
         _subscriptionBillingDate.value = null
 
-        sharedPrefs.edit().apply {
+        sharedPrefs.edit {
             putBoolean("is_premium", false)
             putString("subscription_tier", null)
             putString("subscription_transaction_id", null)
             putString("subscription_billing_date", null)
-            apply()
         }
     }
 
@@ -229,12 +228,11 @@ class GardenViewModel @JvmOverloads constructor(
             _subscriptionTransactionId.value = txId
             _subscriptionBillingDate.value = nextDate
 
-            sharedPrefs.edit().apply {
+            sharedPrefs.edit {
                 putBoolean("is_premium", true)
                 putString("subscription_tier", tier)
                 putString("subscription_transaction_id", txId)
                 putString("subscription_billing_date", nextDate)
-                apply()
             }
             true
         } else {
@@ -247,13 +245,12 @@ class GardenViewModel @JvmOverloads constructor(
             _subscriptionTransactionId.value = txId
             _subscriptionBillingDate.value = nextDate
 
-            sharedPrefs.edit().apply {
+            sharedPrefs.edit {
                 putBoolean("is_premium", true)
                 putString("subscription_tier", tier)
                 putString("subscription_transaction_id", txId)
                 putString("subscription_billing_date", nextDate)
                 putBoolean("purchased_historically", true)
-                apply()
             }
             true
         }
@@ -273,7 +270,7 @@ class GardenViewModel @JvmOverloads constructor(
 
     fun setThemeMode(mode: ThemeMode) {
         _themeMode.value = mode
-        sharedPrefs.edit().putString("theme_mode", mode.name).apply()
+        sharedPrefs.edit { putString("theme_mode", mode.name) }
         _isDarkTheme.value = when (mode) {
             ThemeMode.LIGHT -> false
             ThemeMode.DARK -> true
@@ -916,7 +913,7 @@ class GardenViewModel @JvmOverloads constructor(
             _feedbackSubmissions.value = updatedList
             
             val serialized = updatedList.joinToString("###") { it.toSerializedString() }
-            sharedPrefs.edit().putString("feedback_submissions_list", serialized).apply()
+            sharedPrefs.edit { putString("feedback_submissions_list", serialized) }
             
             val formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSd7fkPwyJnIshmYdUNxtXwE8MjKawHs7mnGCZeQTB8qzcAHsg/formResponse"
             val formBody = FormBody.Builder()
@@ -956,7 +953,7 @@ class GardenViewModel @JvmOverloads constructor(
     fun recordPositiveInteraction() {
         if (sharedPrefs.getBoolean("has_rated_or_declined", false)) return
         val currentCount = sharedPrefs.getInt("positive_interaction_count", 0) + 1
-        sharedPrefs.edit().putInt("positive_interaction_count", currentCount).apply()
+        sharedPrefs.edit { putInt("positive_interaction_count", currentCount) }
         if (currentCount >= 2) {
             _showInAppRatePrompt.value = true
         }
@@ -964,17 +961,17 @@ class GardenViewModel @JvmOverloads constructor(
 
     fun dismissRatePrompt() {
         _showInAppRatePrompt.value = false
-        sharedPrefs.edit().putInt("positive_interaction_count", 0).apply()
+        sharedPrefs.edit { putInt("positive_interaction_count", 0) }
     }
 
     fun declineRatePrompt() {
         _showInAppRatePrompt.value = false
-        sharedPrefs.edit().putBoolean("has_rated_or_declined", true).apply()
+        sharedPrefs.edit { putBoolean("has_rated_or_declined", true) }
     }
 
     fun acceptRatePrompt() {
         _showInAppRatePrompt.value = false
-        sharedPrefs.edit().putBoolean("has_rated_or_declined", true).apply()
+        sharedPrefs.edit { putBoolean("has_rated_or_declined", true) }
     }
 
     // --- Community Actions ---

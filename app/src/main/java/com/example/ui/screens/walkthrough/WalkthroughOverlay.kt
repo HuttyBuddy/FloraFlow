@@ -150,8 +150,8 @@ fun WalkthroughOverlay(
             }
 
             // 2. Position Tooltip Card Dynamically
-            var cardWidth by remember { mutableStateOf(0) }
-            var cardHeight by remember { mutableStateOf(0) }
+            var cardWidth by remember { mutableIntStateOf(0) }
+            var cardHeight by remember { mutableIntStateOf(0) }
 
             val cardY = if (currentStep == WalkthroughStep.WELCOME || target == null) {
                 // Centered fallback

@@ -45,7 +45,7 @@ fun LibraryScreen(
 
     var showAddPlantDialog by remember { mutableStateOf(false) }
     var expandedPlantId by remember { mutableStateOf<Int?>(null) }
-    var selectedTabState by remember { mutableStateOf(0) } // 0 = My Garden, 1 = Species Encyclopedia
+    var selectedTabState by remember { mutableIntStateOf(0) } // 0 = My Garden, 1 = Species Encyclopedia
 
     val climateName = activeLayout?.climate ?: "Temperate"
     val companionTemplates = remember(climateName) {
@@ -630,7 +630,7 @@ fun PlantCareTrackerCard(
     onConsultAi: () -> Unit
 ) {
     val emoji = getEmojiForPlantName(plant.name)
-    var localGrowthProgress by remember(plant.growthProgress) { mutableStateOf(plant.growthProgress.toFloat()) }
+    var localGrowthProgress by remember(plant.growthProgress) { mutableFloatStateOf(plant.growthProgress.toFloat()) }
 
     Card(
         modifier = Modifier

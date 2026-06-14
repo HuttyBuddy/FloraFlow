@@ -9,7 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -89,9 +90,9 @@ fun CommunityDialog(
                     targetState = viewState,
                     transitionSpec = {
                         if (targetState == CommunityViewState.FEED) {
-                            (slideInHorizontally { -it } + fadeIn()) with (slideOutHorizontally { it } + fadeOut())
+                            (slideInHorizontally { -it } + fadeIn()) togetherWith (slideOutHorizontally { it } + fadeOut())
                         } else {
-                            (slideInHorizontally { it } + fadeIn()) with (slideOutHorizontally { -it } + fadeOut())
+                            (slideInHorizontally { it } + fadeIn()) togetherWith (slideOutHorizontally { -it } + fadeOut())
                         }
                     },
                     label = "community_state_transition"
@@ -446,7 +447,7 @@ fun CommunityPostCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Comment,
+                        imageVector = Icons.AutoMirrored.Filled.Comment,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
@@ -506,7 +507,7 @@ fun CommunityDetailView(
                 onClick = onBackClick,
                 modifier = Modifier.testTag("community_detail_back_button")
             ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back to Feed")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Feed")
             }
             Text(
                 text = "Post Details",
@@ -695,7 +696,7 @@ fun CommunityDetailView(
                             enabled = isCommentValid,
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text("Post Comment", fontWeight = FontWeight.Bold)
                         }
@@ -803,7 +804,7 @@ fun CommunityCreatePostView(
                 onClick = onBackClick,
                 modifier = Modifier.testTag("community_create_back_button")
             ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back to Feed")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Feed")
             }
             Text(
                 text = "Plant a Post",

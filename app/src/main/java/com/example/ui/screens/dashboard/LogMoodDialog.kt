@@ -31,7 +31,7 @@ fun LogMoodDialog(
     onLog: (mood: String, score: Int, duration: Int, notes: String) -> Unit
 ) {
     var mood by remember { mutableStateOf("Peaceful") }
-    var moodScore by remember { mutableStateOf(5) }
+    var moodScore by remember { mutableIntStateOf(5) }
     var activityMinutes by remember { mutableStateOf("30") }
     var notes by remember { mutableStateOf("") }
 

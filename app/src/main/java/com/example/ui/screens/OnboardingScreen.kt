@@ -48,7 +48,7 @@ fun OnboardingScreen(
     viewModel: GardenViewModel,
     modifier: Modifier = Modifier
 ) {
-    var currentStepIdx by remember { mutableStateOf(0) }
+    var currentStepIdx by remember { mutableIntStateOf(0) }
 
     val steps = listOf(
         OnboardingStep(

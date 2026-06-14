@@ -1,6 +1,7 @@
 package com.example.ui.screens.help
 
 import android.net.Uri
+import androidx.core.net.toUri
 import android.widget.MediaController
 import android.widget.VideoView
 import androidx.compose.animation.*
@@ -19,6 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -170,7 +173,7 @@ fun HelpDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.HelpOutline,
+                        imageVector = Icons.AutoMirrored.Filled.HelpOutline,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(32.dp)
@@ -315,7 +318,7 @@ fun FaqTabContent() {
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
-                        imageVector = Icons.Default.HelpCenter,
+                        imageVector = Icons.AutoMirrored.Filled.HelpCenter,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
@@ -399,7 +402,7 @@ fun FAQCard(
             ) {
                 Column {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = faq.answer,
@@ -579,7 +582,7 @@ fun VideoPlayerDialog(
                                 mediaController.setAnchorView(this)
                                 setMediaController(mediaController)
 
-                                setVideoURI(Uri.parse(video.videoUrl))
+                                setVideoURI(video.videoUrl.toUri())
                                 setOnPreparedListener { mp ->
                                     isLoading = false
                                     start()

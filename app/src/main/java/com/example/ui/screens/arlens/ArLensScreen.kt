@@ -5,6 +5,7 @@ import com.google.ar.core.HitResult
 import android.view.MotionEvent
 
 import androidx.compose.animation.*
+import java.util.Locale
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -37,6 +38,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
@@ -129,7 +131,7 @@ fun ArLensScreen(
 
     val coroutineScope = rememberCoroutineScope()
     var generatingArImage by remember { mutableStateOf(false) }
-    var generationProgress by remember { mutableStateOf(0f) }
+    var generationProgress by remember { mutableFloatStateOf(0f) }
     var generationStatusText by remember { mutableStateOf("") }
 
     val activePlants by viewModel.activePlants.collectAsStateWithLifecycle()
@@ -1252,7 +1254,7 @@ fun ArLensScreen(
                             modifier = Modifier.size(140.dp)
                         ) {
                             CircularProgressIndicator(
-                                progress = generationProgress,
+                                progress = { generationProgress },
                                 strokeWidth = 6.dp,
                                 color = Color(0xFF00FF66),
                                 trackColor = Color(0xFF00FF66).copy(alpha = 0.15f),
@@ -1663,8 +1665,8 @@ fun ArLensScreen(
             exit = fadeOut() + shrinkVertically()
         ) {
             if (selectedPlacement != null && selectedOverride != null) {
-                var localScale by remember(selectedPlacement.id) { mutableStateOf(selectedPlacement.scale) }
-                var localRotation by remember(selectedPlacement.id) { mutableStateOf(selectedPlacement.rotationDegrees) }
+                var localScale by remember(selectedPlacement.id) { mutableFloatStateOf(selectedPlacement.scale) }
+                var localRotation by remember(selectedPlacement.id) { mutableFloatStateOf(selectedPlacement.rotationDegrees) }
 
                 LaunchedEffect(selectedPlacement.scale) {
                     localScale = selectedPlacement.scale
@@ -1854,8 +1856,9 @@ fun ArLensScreen(
                                     valueRange = 0.3f..3.0f,
                                     modifier = Modifier.weight(1f)
                                 )
+                                val locale = LocalConfiguration.current.locales[0]
                                 Text(
-                                    text = String.format("%.1fx", localScale),
+                                    text = String.format(locale, "%.1fx", localScale),
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.ExtraBold,
                                     modifier = Modifier.width(32.dp)
