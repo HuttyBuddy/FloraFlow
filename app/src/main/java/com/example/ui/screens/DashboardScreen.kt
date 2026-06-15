@@ -451,7 +451,8 @@ fun DashboardScreen(
                 }
             }
         } else {
-            items(moodLogs) { log ->
+            // ⚡ Bolt: Adding `key` to `items` helps Compose smartly reuse elements, avoiding full list re-rendering when items are added/deleted.
+            items(moodLogs, key = { it.id }) { log ->
                 MoodLogItemCard(log = log, onDelete = { viewModel.deleteMoodLog(log.id) })
             }
         }
@@ -510,7 +511,8 @@ fun DashboardScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.heightIn(max = 300.dp)
                         ) {
-                            items(layouts) { lay ->
+                            // ⚡ Bolt: Provide a unique key to prevent unnecessary recompositions in dynamic layout list.
+                            items(layouts, key = { it.id }) { lay ->
                                 val isSelected = activeLayout?.id == lay.id
                                 Card(
                                     modifier = Modifier
