@@ -28,6 +28,11 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -447,7 +452,13 @@ fun PlannerScreen(
                                                 else currentSoilTheme.outlineColor.copy(alpha = 0.4f),
                                                 shape = RoundedCornerShape(16.dp)
                                             )
-                                            .clickable { showCellConfigDialog = Pair(r, c) }
+                                            .semantics(mergeDescendants = true) {
+                                                contentDescription = if (item != null) "Grid cell containing ${item.plantName}" else "Empty grid cell"
+                                            }
+                                            .clickable(
+                                                onClickLabel = if (item != null) "Edit plant" else "Add plant",
+                                                role = Role.Button
+                                            ) { showCellConfigDialog = Pair(r, c) }
                                             .testTag("grid_cell_${r}_${c}"),
                                         contentAlignment = Alignment.Center
                                     ) {
@@ -505,7 +516,7 @@ fun PlannerScreen(
                                              ) {
                                                  Icon(
                                                      Icons.Default.Add,
-                                                     contentDescription = "Empty Plot",
+                                                     contentDescription = null,
                                                      tint = currentSoilTheme.outlineColor.copy(alpha = 0.5f),
                                                      modifier = Modifier.size(12.dp)
                                                  )

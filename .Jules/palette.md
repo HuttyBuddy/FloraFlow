@@ -1,0 +1,3 @@
+## 2024-06-15 - Improve interactive grid cells with semantics mergeDescendants
+**Learning:** In Compose, when building custom interactive grid elements (like a `Box` wrapping an `Icon` and `Text`), screen readers might read out each child element individually. Furthermore, generic standard modifiers like `clickable` without explicit semantic labels make interactive parts hard to navigate for accessible users.
+**Action:** Always use `.semantics(mergeDescendants = true)` with a context-aware `contentDescription` and `onClickLabel` for interactive composite elements. In these cases, make sure to set internal `Icon` `contentDescription`s to `null` to prevent redundant screen reader announcements.
