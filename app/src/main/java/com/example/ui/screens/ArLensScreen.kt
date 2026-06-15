@@ -1375,7 +1375,8 @@ fun ArLensScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(savedSnapshots) { snap ->
+                        // ⚡ Bolt: Adding `key` parameter to `items` helps Compose smartly reuse elements when new snapshots are taken.
+                        items(savedSnapshots, key = { it.id }) { snap ->
                             Card(
                                 modifier = Modifier
                                     .width(180.dp)
