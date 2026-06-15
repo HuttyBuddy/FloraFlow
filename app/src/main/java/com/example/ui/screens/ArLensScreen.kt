@@ -1375,7 +1375,8 @@ fun ArLensScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(savedSnapshots) { snap ->
+                        // ⚡ Bolt: Adding unique key to items prevents unnecessary re-renders of the entire snapshot list when changes occur
+                        items(savedSnapshots, key = { it.id }) { snap ->
                             Card(
                                 modifier = Modifier
                                     .width(180.dp)
