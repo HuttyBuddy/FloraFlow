@@ -451,7 +451,8 @@ fun DashboardScreen(
                 }
             }
         } else {
-            items(moodLogs) { log ->
+            // ⚡ Bolt: Adding unique key to items to prevent unnecessary full-list re-renders when data changes
+            items(moodLogs, key = { it.id }) { log ->
                 MoodLogItemCard(log = log, onDelete = { viewModel.deleteMoodLog(log.id) })
             }
         }
@@ -510,7 +511,8 @@ fun DashboardScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.heightIn(max = 300.dp)
                         ) {
-                            items(layouts) { lay ->
+                            // ⚡ Bolt: Provide a unique key to allow smart recomposition caching
+                            items(layouts, key = { it.id }) { lay ->
                                 val isSelected = activeLayout?.id == lay.id
                                 Card(
                                     modifier = Modifier
