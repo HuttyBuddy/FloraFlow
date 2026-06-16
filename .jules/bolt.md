@@ -1,0 +1,3 @@
+## 2024-05-18 - Missing Stable Keys in Jetpack Compose Lazy Lists
+**Learning:** Found multiple instances where `LazyColumn` and `LazyRow` loops using `items()` did not provide stable `key` parameters for dynamic data models (`moodLogs`, `layouts`). In Compose, this causes unnecessary re-rendering of all subsequent items if an item is inserted, deleted, or reordered, leading to poor scrolling performance and dropped frames.
+**Action:** Always provide a stable, unique identifier to the `key` parameter (e.g., `key = { it.id }`) when iterating over dynamic lists in Jetpack Compose to allow smart element reuse.
