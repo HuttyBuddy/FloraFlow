@@ -31,6 +31,13 @@ import com.example.data.model.Plant
 import com.example.data.model.PlantTemplate
 import com.example.ui.viewmodel.GardenViewModel
 
+// ⚡ Bolt Performance Constants: Prevent object reallocation during renders
+private val FILTER_TYPES = listOf("All", "Flower", "Shrub", "Succulent", "Herb", "Veggie", "Tree", "Fern")
+private val FILTER_CLIMATES = listOf("All", "Temperate", "Arid", "Tropical", "Mediterranean", "Mountainous")
+private val FILTER_WATER = listOf("All", "Low", "Moderate", "High")
+private val FILTER_BLOOMS = listOf("All", "Spring", "Summer", "Autumn", "Winter", "Year-round")
+private val ADD_PLANT_TYPES = listOf("Flower", "Shrub", "Succulent", "Herb", "Veggie", "Tree")
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryScreen(
@@ -181,7 +188,8 @@ fun LibraryScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(companionTemplates) { tpl ->
+                    // ⚡ Bolt Optimization: Added stable key to prevent re-renders
+                    items(companionTemplates, key = { it.name }) { tpl ->
                         val isCultivated = activePlants.any { it.name.lowercase() == tpl.name.lowercase() }
                         
                         InputChip(
@@ -375,8 +383,9 @@ fun LibraryScreen(
                         Text("Plant Group Type:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(4.dp))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            val types = listOf("All", "Flower", "Shrub", "Succulent", "Herb", "Veggie", "Tree", "Fern")
-                            items(types) { t ->
+                            // ⚡ Bolt Optimization: Moved constant list allocation outside Composable
+                            // ⚡ Bolt Optimization: Added stable key to prevent re-renders
+                            items(FILTER_TYPES, key = { it }) { t ->
                                 FilterChip(
                                     selected = selectedTypeFilter == t,
                                     onClick = { selectedTypeFilter = t },
@@ -392,8 +401,9 @@ fun LibraryScreen(
                         Text("Climate Compatibility:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(4.dp))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            val climates = listOf("All", "Temperate", "Arid", "Tropical", "Mediterranean", "Mountainous")
-                            items(climates) { c ->
+                            // ⚡ Bolt Optimization: Moved constant list allocation outside Composable
+                            // ⚡ Bolt Optimization: Added stable key to prevent re-renders
+                            items(FILTER_CLIMATES, key = { it }) { c ->
                                 FilterChip(
                                     selected = selectedClimateFilter == c,
                                     onClick = { selectedClimateFilter = c },
@@ -409,8 +419,9 @@ fun LibraryScreen(
                         Text("Watering Intensity:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(4.dp))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            val waterFilters = listOf("All", "Low", "Moderate", "High")
-                            items(waterFilters) { w ->
+                            // ⚡ Bolt Optimization: Moved constant list allocation outside Composable
+                            // ⚡ Bolt Optimization: Added stable key to prevent re-renders
+                            items(FILTER_WATER, key = { it }) { w ->
                                 FilterChip(
                                     selected = selectedWaterFilter == w,
                                     onClick = { selectedWaterFilter = w },
@@ -426,8 +437,9 @@ fun LibraryScreen(
                         Text("Bloom Season:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(4.dp))
                         LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            val bloomFilters = listOf("All", "Spring", "Summer", "Autumn", "Winter", "Year-round")
-                            items(bloomFilters) { b ->
+                            // ⚡ Bolt Optimization: Moved constant list allocation outside Composable
+                            // ⚡ Bolt Optimization: Added stable key to prevent re-renders
+                            items(FILTER_BLOOMS, key = { it }) { b ->
                                 FilterChip(
                                     selected = selectedBloomFilter == b,
                                     onClick = { selectedBloomFilter = b },
@@ -1037,8 +1049,6 @@ fun AddCustomPlantDialog(
     var name by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("Flower") }
 
-    val typeOptions = listOf("Flower", "Shrub", "Succulent", "Herb", "Veggie", "Tree")
-
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(24.dp),
@@ -1074,7 +1084,9 @@ fun AddCustomPlantDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    items(typeOptions) { opt ->
+                    // ⚡ Bolt Optimization: Moved constant list allocation outside Composable
+                    // ⚡ Bolt Optimization: Added stable key to prevent re-renders
+                    items(ADD_PLANT_TYPES, key = { it }) { opt ->
                         val isSelected = type == opt
                         FilterChip(
                             selected = isSelected,
