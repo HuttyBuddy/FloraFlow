@@ -1,0 +1,3 @@
+## 2024-05-24 - Missing unique identifier in dynamic LazyRow/LazyColumn lists in LibraryScreen
+**Learning:** Found multiple instances where dynamic lists in Jetpack Compose's LazyRow and LazyColumn are missing a stable, unique `key` parameter. This causes unnecessary full-list re-renders when the list data changes, degrading performance, especially in the LibraryScreen where filter chips and template items are rendered.
+**Action:** When creating dynamic lists with Jetpack Compose using LazyRow or LazyColumn, always provide a stable, unique identifier to the `key` parameter inside the `items` block (e.g., `items(list, key = { it.id })`) to enable smart reuse of elements and optimize rendering.
