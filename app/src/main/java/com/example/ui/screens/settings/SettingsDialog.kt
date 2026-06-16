@@ -6,6 +6,8 @@ import androidx.core.net.toUri
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -52,11 +54,14 @@ fun SettingsDialog(
         Card(
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.85f) // Constrain height to force scrolling if needed
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
                     .padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
@@ -185,6 +190,7 @@ fun SettingsDialog(
                         title = "Privacy Policy",
                         subtitle = "Data storage and Gemini AI details",
                         icon = Icons.Default.Lock,
+                        iconTint = MaterialTheme.colorScheme.secondary,
                         onClick = { showPrivacy = true }
                     )
 
@@ -192,9 +198,12 @@ fun SettingsDialog(
                         title = "Terms of Service",
                         subtitle = "Billing terms and app usage licensing",
                         icon = Icons.Default.Gavel,
+                        iconTint = MaterialTheme.colorScheme.tertiary,
                         onClick = { showTerms = true }
                     )
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 

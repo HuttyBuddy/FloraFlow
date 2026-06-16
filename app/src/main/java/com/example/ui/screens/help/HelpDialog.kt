@@ -1,9 +1,5 @@
 package com.example.ui.screens.help
 
-import android.net.Uri
-import androidx.core.net.toUri
-import android.widget.MediaController
-import android.widget.VideoView
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
@@ -38,7 +34,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import coil.compose.AsyncImage
 import com.example.ui.viewmodel.GardenViewModel
 
 data class FAQItem(
@@ -46,15 +41,6 @@ data class FAQItem(
     val question: String,
     val answer: String,
     val category: String
-)
-
-data class TutorialVideo(
-    val id: Int,
-    val title: String,
-    val description: String,
-    val videoUrl: String,
-    val thumbnailUrl: String,
-    val duration: String
 )
 
 // Static FAQ Data
@@ -103,34 +89,6 @@ val faqs = listOf(
     )
 )
 
-// Static Video Tutorials
-val tutorials = listOf(
-    TutorialVideo(
-        id = 1,
-        title = "Intro to 2D Garden Design",
-        description = "Learn the basics of placing plants, adjusting dimensions, and planning your first therapeutic layout.",
-        videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-        thumbnailUrl = "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?q=80&w=600",
-        duration = "0:15"
-    ),
-    TutorialVideo(
-        id = 2,
-        title = "Mastering the AR Lens",
-        description = "Step-by-step guide on scanning surfaces and placing 3D interactive plant models in your real room.",
-        videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-        thumbnailUrl = "https://images.unsplash.com/photo-1598902108854-10e335adac99?q=80&w=600",
-        duration = "0:15"
-    ),
-    TutorialVideo(
-        id = 3,
-        title = "Consulting the AI Advisor",
-        description = "Discover how to ask advanced care questions, diagnose leaf yellowing, and optimize soil companion mixes.",
-        videoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4",
-        thumbnailUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600",
-        duration = "0:15"
-    )
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelpDialog(
@@ -140,9 +98,6 @@ fun HelpDialog(
     modifier: Modifier = Modifier
 ) {
     if (!visible) return
-
-    var activeTab by remember { mutableIntStateOf(0) } // 0 = FAQs, 1 = Video Tutorials
-    var selectedVideo by remember { mutableStateOf<TutorialVideo?>(null) }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -200,49 +155,14 @@ fun HelpDialog(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Tabs
-                TabRow(
-                    selectedTabIndex = activeTab,
-                    containerColor = Color.Transparent,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Tab(
-                        selected = activeTab == 0,
-                        onClick = { activeTab = 0 },
-                        text = { Text("FAQs", fontWeight = FontWeight.Bold) },
-                        modifier = Modifier.testTag("help_tab_faqs")
-                    )
-                    Tab(
-                        selected = activeTab == 1,
-                        onClick = { activeTab = 1 },
-                        text = { Text("Video Tutorials", fontWeight = FontWeight.Bold) },
-                        modifier = Modifier.testTag("help_tab_tutorials")
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Tab Content
+                // Content
                 Box(modifier = Modifier.weight(1f)) {
-                    if (activeTab == 0) {
-                        FaqTabContent()
-                    } else {
-                        TutorialsTabContent(onVideoClick = { selectedVideo = it })
-                    }
+                    FaqTabContent()
                 }
             }
         }
-    }
-
-    // Video Player Modal
-    selectedVideo?.let { video ->
-        VideoPlayerDialog(
-            video = video,
-            onDismiss = { selectedVideo = null }
-        )
     }
 }
 
@@ -410,206 +330,6 @@ fun FAQCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun TutorialsTabContent(
-    onVideoClick: (TutorialVideo) -> Unit
-) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(tutorials) { video ->
-            TutorialVideoCard(
-                video = video,
-                onClick = { onVideoClick(video) }
-            )
-        }
-    }
-}
-
-@Composable
-fun TutorialVideoCard(
-    video: TutorialVideo,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .testTag("video_card_${video.id}"),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-        ),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-    ) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .background(Color.Black)
-            ) {
-                AsyncImage(
-                    model = video.thumbnailUrl,
-                    contentDescription = video.title,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)),
-                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
-                )
-
-                // Play Button Overlay
-                Box(
-                    modifier = Modifier
-                        .size(56.dp)
-                        .clip(CircleShape)
-                        .background(Color.Black.copy(alpha = 0.6f))
-                        .align(Alignment.Center)
-                        .border(1.5f.dp, Color.White, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Play",
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-
-                // Duration Badge
-                Box(
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(Color.Black.copy(alpha = 0.8f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                        .align(Alignment.BottomEnd)
-                ) {
-                    Text(
-                        text = video.duration,
-                        color = Color.White,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = video.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = video.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun VideoPlayerDialog(
-    video: TutorialVideo,
-    onDismiss: () -> Unit
-) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            usePlatformDefaultWidth = false
-        )
-    ) {
-        var isLoading by remember { mutableStateOf(true) }
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(0.96f)
-                .wrapContentHeight()
-                .testTag("video_player_dialog"),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.Black)
-        ) {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                // Video Header
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = video.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White,
-                        modifier = Modifier.weight(1f)
-                    )
-                    IconButton(
-                        onClick = onDismiss,
-                        modifier = Modifier.testTag("video_player_close")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close Player",
-                            tint = Color.White
-                        )
-                    }
-                }
-
-                // Video View Area
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
-                        .background(Color.Black)
-                ) {
-                    AndroidView(
-                        factory = { ctx ->
-                            VideoView(ctx).apply {
-                                val mediaController = MediaController(ctx)
-                                mediaController.setAnchorView(this)
-                                setMediaController(mediaController)
-
-                                setVideoURI(video.videoUrl.toUri())
-                                setOnPreparedListener { mp ->
-                                    isLoading = false
-                                    start()
-                                }
-                                setOnErrorListener { _, _, _ ->
-                                    isLoading = false
-                                    true
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxSize(),
-                        update = { videoView ->
-                            // Update logic if videoUrl changes
-                        }
-                    )
-
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .testTag("video_player_loader")
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }

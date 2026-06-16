@@ -956,37 +956,6 @@ fun ArLensScreen(
                     .fillMaxSize()
                     .padding(14.dp)
             ) {
-                // HUD Top Telemetry Info
-                Row(
-                    modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(7.dp)
-                                .clip(CircleShape)
-                                .background(if (activeWeather == "Gentle Rain") Color.Cyan else Color.Red)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "ARGB MATRIX ${currentFilter.uppercase()}",
-                            color = Color.White,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                    }
-
-                    // Dynamic simulated telemetries
-                    Text(
-                        text = "LIGHT LUME: ${if (activeWeather=="Gentle Rain") "340" else "1280"} PAR | ALT: 1.4m | GRID: ENGAGED",
-                        color = Color.White.copy(alpha = 0.85f),
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
                 // HUD CENTRAL CROSSHAIR RETICLE WITH FLOATING GYROSCOPE BUBBLE
                 Box(
                     modifier = Modifier
@@ -1027,89 +996,7 @@ fun ArLensScreen(
                     }
                 }
 
-                // SCANNING SONAR/RADAR MINI-WIDGET
-                Card(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .align(Alignment.TopStart)
-                        .offset(y = 20.dp),
-                    shape = CircleShape,
-                    colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.7f)),
-                    border = BorderStroke(0.8.dp, Color(0xFF00FF66))
-                ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        Canvas(modifier = Modifier.fillMaxSize()) {
-                            val rWidth = size.width
-                            val rHeight = size.height
-                            val center = Offset(rWidth / 2, rHeight / 2)
-                            val radius = rWidth * 0.45f
 
-                            // Draw central sweeping line
-                            val sweepAngleRad = Math.toRadians(radarSweepAngle.toDouble())
-                            val endX = center.x + radius * cos(sweepAngleRad).toFloat()
-                            val endY = center.y + radius * sin(sweepAngleRad).toFloat()
-
-                            drawCircle(
-                                color = Color(0xFF00FF66).copy(alpha = 0.1f),
-                                radius = radius,
-                                center = center,
-                                style = Stroke(1.5f)
-                            )
-                            drawCircle(
-                                color = Color(0xFF00FF66).copy(alpha = 0.05f),
-                                radius = radius * 0.6f,
-                                center = center,
-                                style = Stroke(1f)
-                            )
-                            drawLine(
-                                color = Color(0xFF00FF66).copy(alpha = 0.8f),
-                                start = center,
-                                end = Offset(endX, endY),
-                                strokeWidth = 2f
-                            )
-
-                            // Render little blips for all placed stickers!
-                            arPlacedPlants.forEach { place ->
-                                // Map placing coordinates values inside radar box
-                                val boundedX = center.x + (place.positionX / 400f) * radius
-                                val boundedY = center.y + (place.positionY / 400f) * radius
-                                drawCircle(
-                                    color = Color.Yellow,
-                                    radius = 3f,
-                                    center = Offset(boundedX, boundedY)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                // HUD Telemetry bottom box
-                Card(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 60.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.65f))
-                ) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "COORDINATE MATCH: ${selectedBackgroundPreset} | WEATHER PREDICT: ${activeWeather}",
-                            color = Color.White,
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "TOTAL PLACEMENTS: ${arPlacedPlants.size} | HIGHEST INTEGRATION: ${if (arPlacedPlants.size > 2) "98%" else "62%"}",
-                            color = Color(0xFF00E5FF),
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
-                    }
-                }
             }
 
             // THE SEAMLESS FLOATING PLACED DECAL CANVASES
@@ -2192,6 +2079,20 @@ fun ArLensScreen(
                 Text("🎨", fontSize = 18.sp)
             }
 
+            // Inventory / Add Decal selector trigger
+            FloatingActionButton(
+                onClick = {
+                    activePanel = if (activePanel == "inventory") null else "inventory"
+                    selectedPlacementId = null
+                },
+                containerColor = if (activePanel == "inventory") MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.7f),
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier.size(46.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Inventory", tint = Color.White)
+            }
+
             // Gyroscope toggle button
             FloatingActionButton(
                 onClick = { useGyroscope = !useGyroscope },
@@ -2380,127 +2281,6 @@ fun ArLensScreen(
                             }
                         }
                     }
-                }
-            }
-
-            // Bottom camera shutter and action toolbar row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Left: clean canvas reset button
-                IconButton(
-                    onClick = {
-                        viewModel.clearArPlants()
-                        selectedPlacementId = null
-                        activePanel = null
-                    },
-                    modifier = Modifier
-                        .size(46.dp)
-                        .background(Color.Black.copy(alpha = 0.7f), CircleShape)
-                        .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "Reset Canvas",
-                        tint = Color.White
-                    )
-                }
-
-                // Center: camera capture snapshot shutter button
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clickable {
-                            if (!generatingArImage) {
-                                coroutineScope.launch {
-                                    generatingArImage = true
-                                    generationProgress = 0f
-                                    generationStatusText = "Initializing Neural AR Engine..."
-                                    
-                                    delay(300)
-                                    generationProgress = 0.25f
-                                    generationStatusText = "Analyzing Spatial Depth & Geometry..."
-                                    
-                                    delay(300)
-                                    generationProgress = 0.50f
-                                    generationStatusText = "Mapping Light Angles & Shadows..."
-                                    
-                                    delay(300)
-                                    generationProgress = 0.75f
-                                    generationStatusText = "Synthesizing Companion Synergy Aesthetics..."
-                                    
-                                    delay(300)
-                                    generationProgress = 0.90f
-                                    generationStatusText = "Rendering Final Neural AR Image..."
-                                    
-                                    delay(300)
-                                    generationProgress = 1.0f
-                                    generationStatusText = "AR Snapshot Generated!"
-                                    
-                                    // Trigger camera flash
-                                    triggeringFlash = true
-                                    
-                                    // Capture coordinates normalized by viewport size
-                                    val w = if (viewportSize.width > 0) viewportSize.width.toFloat() else 1f
-                                    val h = if (viewportSize.height > 0) viewportSize.height.toFloat() else 1f
-                                    val placements = arPlacedPlants.map {
-                                        Pair(it.emoji, Offset(it.positionX / w, it.positionY / h))
-                                    }
-                                    val description = "Backdrop: $selectedBackgroundPreset, Plants count: ${arPlacedPlants.size}, Filter: $currentFilter, Weather: $activeWeather"
-                                    val snap = DesignSnapshot(
-                                        id = "SNAP_${System.currentTimeMillis() % 10000}",
-                                        timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
-                                        backdrop = selectedBackgroundPreset,
-                                        filter = currentFilter,
-                                        weather = activeWeather,
-                                        totalPlants = arPlacedPlants.size,
-                                        summary = description,
-                                        thumbnailEmoji = arPlacedPlants.firstOrNull()?.emoji ?: "🌳",
-                                        plantPlacements = placements
-                                    )
-                                    savedSnapshots.add(0, snap)
-                                    
-                                    delay(200)
-                                    generatingArImage = false
-                                }
-                            }
-                        }
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(64.dp)
-                            .border(4.dp, Color.White, CircleShape)
-                            .background(Color.Transparent, CircleShape)
-                    )
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(Color.White)
-                    )
-                }
-
-                // Right: add plant decal selection trigger button
-                IconButton(
-                    onClick = {
-                        activePanel = if (activePanel == "inventory") null else "inventory"
-                        selectedPlacementId = null
-                    },
-                    modifier = Modifier
-                        .size(46.dp)
-                        .background(Color.Black.copy(alpha = 0.7f), CircleShape)
-                        .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Add Plant Decal",
-                        tint = Color.White
-                    )
                 }
             }
         }

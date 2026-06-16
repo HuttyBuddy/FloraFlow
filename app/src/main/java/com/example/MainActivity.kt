@@ -105,23 +105,6 @@ class MainActivity : ComponentActivity() {
 
                     Scaffold(
                         modifier = Modifier.fillMaxSize(),
-                        floatingActionButton = {
-                            if (currentTab < 4) {
-                                FloatingActionButton(
-                                    onClick = { showFeedbackDialog = true },
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier
-                                        .padding(bottom = 12.dp, end = 4.dp)
-                                        .testTag("floating_feedback_button")
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Feedback,
-                                        contentDescription = "Share App Feedback"
-                                    )
-                                }
-                            }
-                        },
                         topBar = {
                             @OptIn(ExperimentalMaterial3Api::class)
                             CenterAlignedTopAppBar(
@@ -134,6 +117,15 @@ class MainActivity : ComponentActivity() {
                                     )
                                 },
                                 actions = {
+                                    IconButton(
+                                        onClick = { showFeedbackDialog = true },
+                                        modifier = Modifier.testTag("feedback_button")
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Feedback,
+                                            contentDescription = "Share App Feedback"
+                                        )
+                                    }
                                     IconButton(
                                         onClick = {
                                             if (isPremium) {

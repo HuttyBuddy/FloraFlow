@@ -34,7 +34,7 @@ class HelpTest {
     }
 
     @Test
-    fun testHelpDialogRenderingAndTabs() {
+    fun testHelpDialogRendering() {
         composeTestRule.setContent {
             MyApplicationTheme {
                 HelpDialog(
@@ -54,17 +54,6 @@ class HelpTest {
 
         // Check if search exists
         composeTestRule.onNodeWithTag("faq_search_input").assertExists()
-
-        // Switch to Video Tutorials tab
-        composeTestRule.onNodeWithTag("help_tab_tutorials").performClick()
-        composeTestRule.waitForIdle()
-
-        // Verify tutorial videos are shown
-        composeTestRule.onNodeWithTag("video_card_1").assertExists()
-        composeTestRule.onNodeWithTag("video_card_2").assertExists()
-
-        // Capture tutorials screenshot
-        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/help_dialog_tutorials.png")
     }
 
     @Test
@@ -103,35 +92,4 @@ class HelpTest {
         composeTestRule.onNodeWithTag("faq_card_1").assertDoesNotExist()
     }
 
-    @Test
-    fun testVideoPlayerLifecycle() {
-        composeTestRule.setContent {
-            MyApplicationTheme {
-                HelpDialog(
-                    visible = true,
-                    onDismiss = {},
-                    viewModel = viewModel
-                )
-            }
-        }
-        composeTestRule.waitForIdle()
-
-        // Switch to Video Tutorials tab
-        composeTestRule.onNodeWithTag("help_tab_tutorials").performClick()
-        composeTestRule.waitForIdle()
-
-        // Click first video card to launch player
-        composeTestRule.onNodeWithTag("video_card_1").performClick()
-        composeTestRule.waitForIdle()
-
-        // Verify video player dialog is open
-        composeTestRule.onNodeWithTag("video_player_dialog").assertExists()
-
-        // Click close on the player
-        composeTestRule.onNodeWithTag("video_player_close").performClick()
-        composeTestRule.waitForIdle()
-
-        // Verify player is closed
-        composeTestRule.onNodeWithTag("video_player_dialog").assertDoesNotExist()
-    }
 }
