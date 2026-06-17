@@ -262,6 +262,21 @@ fun LibraryScreen(
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.secondary
                             )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = {
+                                    searchQuery = ""
+                                    selectedTypeFilter = "All"
+                                    selectedClimateFilter = "All"
+                                    selectedWaterFilter = "All"
+                                    selectedBloomFilter = "All"
+                                },
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Default.RestartAlt, contentDescription = null, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Clear All Filters", fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }
@@ -639,7 +654,7 @@ fun PlantCareTrackerCard(
                 IconButton(onClick = onExpandClick) {
                     Icon(
                         if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = "Expand details"
+                        contentDescription = if (isExpanded) "Collapse details" else "Expand details"
                     )
                 }
             }
@@ -848,7 +863,7 @@ fun SpeciesEncyclopediaCard(
                 IconButton(onClick = onExpandClick) {
                     Icon(
                         if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = "Expand details"
+                        contentDescription = if (isExpanded) "Collapse details" else "Expand details"
                     )
                 }
             }
