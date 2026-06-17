@@ -451,7 +451,8 @@ fun DashboardScreen(
                 }
             }
         } else {
-            items(moodLogs) { log ->
+            // Performance: Provide stable key for smart reuse and fewer re-renders
+            items(moodLogs, key = { it.id }) { log ->
                 MoodLogItemCard(log = log, onDelete = { viewModel.deleteMoodLog(log.id) })
             }
         }
@@ -510,7 +511,8 @@ fun DashboardScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.heightIn(max = 300.dp)
                         ) {
-                            items(layouts) { lay ->
+                            // Performance: Provide stable key for smart reuse and fewer re-renders
+                            items(layouts, key = { it.id }) { lay ->
                                 val isSelected = activeLayout?.id == lay.id
                                 Card(
                                     modifier = Modifier
