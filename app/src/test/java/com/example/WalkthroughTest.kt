@@ -79,14 +79,7 @@ class WalkthroughTest {
         viewModel.nextWalkthroughStep()
         assertEquals(WalkthroughStep.AI_ADVISOR_TAB, viewModel.currentWalkthroughStep.value)
 
-        // AI_ADVISOR_TAB -> AR_LENS_TAB
-        viewModel.nextWalkthroughStep()
-        assertEquals(WalkthroughStep.AR_LENS_TAB, viewModel.currentWalkthroughStep.value)
-
-        // Setup some dummy targets to verify they are cleared at the end
-        viewModel.updateWalkthroughTarget(WalkthroughStep.AR_LENS_TAB, ScreenRect(0f, 0f, 50f, 50f))
-
-        // AR_LENS_TAB -> Finish (null)
+        // AI_ADVISOR_TAB -> Finish (null)
         viewModel.nextWalkthroughStep()
         assertNull(viewModel.currentWalkthroughStep.value)
         assertTrue(viewModel.walkthroughTargets.value.isEmpty())

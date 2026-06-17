@@ -315,7 +315,7 @@ fun WalkthroughOverlay(
                                                 viewModel.nextWalkthroughStep()
                                             }
                                             WalkthroughStep.AI_ADVISOR_TAB -> {
-                                                onTabChange(4) // Auto-switch to AR Lens
+                                                onTabChange(0) // Return to Dashboard
                                                 viewModel.nextWalkthroughStep()
                                             }
                                             WalkthroughStep.AR_LENS_TAB -> {
@@ -327,11 +327,11 @@ fun WalkthroughOverlay(
                                     modifier = Modifier.weight(1.3f),
                                     shape = RoundedCornerShape(10.dp)
                                 ) {
-                                    val buttonText = if (currentStep == WalkthroughStep.AR_LENS_TAB) "Finish" else "Next"
+                                    val buttonText = if (currentStep == WalkthroughStep.AI_ADVISOR_TAB || currentStep == WalkthroughStep.AR_LENS_TAB) "Finish" else "Next"
                                     Text(buttonText, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Icon(
-                                        imageVector = if (currentStep == WalkthroughStep.AR_LENS_TAB) Icons.Default.Check else Icons.Default.ArrowForward,
+                                        imageVector = if (currentStep == WalkthroughStep.AI_ADVISOR_TAB || currentStep == WalkthroughStep.AR_LENS_TAB) Icons.Default.Check else Icons.Default.ArrowForward,
                                         contentDescription = "Walkthrough Action",
                                         modifier = Modifier.size(14.dp)
                                     )

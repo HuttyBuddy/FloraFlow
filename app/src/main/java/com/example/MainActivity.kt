@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
                     if (!isOnboardingCompleted) {
                         OnboardingScreen(viewModel = viewModel)
                     } else {
-                    var currentTab by remember { mutableIntStateOf(0) }
+                    val currentTab by viewModel.currentTab.collectAsState()
                     var showFeedbackDialog by remember { mutableStateOf(false) }
                     var showSettingsDialog by remember { mutableStateOf(false) }
                     var showCommunityDialog by remember { mutableStateOf(false) }
@@ -183,7 +183,7 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 NavigationBarItem(
                                     selected = currentTab == 0,
-                                    onClick = { currentTab = 0 },
+                                    onClick = { viewModel.setCurrentTab(0) },
                                     icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
                                     label = { Text("Dashboard", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
                                     modifier = Modifier.testTag("nav_tab_dashboard"),
@@ -191,7 +191,7 @@ class MainActivity : ComponentActivity() {
                                 )
                                 NavigationBarItem(
                                     selected = currentTab == 1,
-                                    onClick = { currentTab = 1 },
+                                    onClick = { viewModel.setCurrentTab(1) },
                                     icon = { Icon(Icons.Default.Explore, contentDescription = "2D Planner") },
                                     label = { Text("2D Planner", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
                                     modifier = Modifier
@@ -207,7 +207,7 @@ class MainActivity : ComponentActivity() {
                                 )
                                 NavigationBarItem(
                                     selected = currentTab == 2,
-                                    onClick = { currentTab = 2 },
+                                    onClick = { viewModel.setCurrentTab(2) },
                                     icon = { Icon(Icons.Default.Spa, contentDescription = "Greenhouse") },
                                     label = { Text("Greenhouse", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
                                     modifier = Modifier.testTag("nav_tab_greenhouse"),
@@ -215,7 +215,7 @@ class MainActivity : ComponentActivity() {
                                 )
                                 NavigationBarItem(
                                     selected = currentTab == 3,
-                                    onClick = { currentTab = 3 },
+                                    onClick = { viewModel.setCurrentTab(3) },
                                     icon = { Icon(Icons.Default.SmartToy, contentDescription = "AI Advisor") },
                                     label = { Text("AI Advisor", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
                                     modifier = Modifier
@@ -224,27 +224,6 @@ class MainActivity : ComponentActivity() {
                                             val rect = coordinates.boundsInRoot()
                                             viewModel.updateWalkthroughTarget(
                                                 WalkthroughStep.AI_ADVISOR_TAB,
-                                                ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
-                                            )
-                                        },
-                                    alwaysShowLabel = false
-                                )
-                                NavigationBarItem(
-                                    selected = currentTab == 4,
-                                    onClick = {
-                                        currentTab = 4
-                                        if (!isPremium) {
-                                            viewModel.upgradeToPremium()
-                                        }
-                                    },
-                                    icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Lens") },
-                                    label = { Text("AR Lens", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
-                                    modifier = Modifier
-                                        .testTag("nav_tab_ar")
-                                        .onGloballyPositioned { coordinates ->
-                                            val rect = coordinates.boundsInRoot()
-                                            viewModel.updateWalkthroughTarget(
-                                                WalkthroughStep.AR_LENS_TAB,
                                                 ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
                                             )
                                         },
@@ -271,11 +250,11 @@ class MainActivity : ComponentActivity() {
                                 )
                                 1 -> PlannerScreen(
                                     viewModel = viewModel,
-                                    switchToChatTab = { currentTab = 3 }
+                                    switchToChatTab = { viewModel.setCurrentTab(3) }
                                 )
                                 2 -> LibraryScreen(
                                     viewModel = viewModel,
-                                    switchToChatTab = { currentTab = 3 }
+                                    switchToChatTab = { viewModel.setCurrentTab(3) }
                                 )
                                 3 -> AiStudioScreen(
                                     viewModel = viewModel,
@@ -321,7 +300,7 @@ class MainActivity : ComponentActivity() {
                     WalkthroughOverlay(
                         viewModel = viewModel,
                         currentTab = currentTab,
-                        onTabChange = { currentTab = it }
+                        onTabChange = { viewModel.setCurrentTab(it) }
                     )
                 }
             }

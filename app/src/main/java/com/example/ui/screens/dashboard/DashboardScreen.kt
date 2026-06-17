@@ -46,6 +46,7 @@ fun DashboardScreen(
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
     val activePlants by viewModel.activePlants.collectAsStateWithLifecycle()
     val moodLogs by viewModel.allMoodLogs.collectAsStateWithLifecycle()
+    val isAssessmentSkipped by viewModel.isAssessmentSkipped.collectAsStateWithLifecycle()
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var showLayoutSelector by remember { mutableStateOf(false) }
@@ -53,6 +54,47 @@ fun DashboardScreen(
 
     val configuration = LocalConfiguration.current
     val isWideScreen = configuration.screenWidthDp >= 600
+
+    val skippedAssessmentBanner = @Composable {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("skipped_assessment_banner"),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer
+            ),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.2f))
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "You haven't taken your Neural Load assessment yet. Take a 2-minute assessment to personalize your space.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    textAlign = TextAlign.Center
+                )
+                Button(
+                    onClick = { viewModel.resetAssessment() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Take Assessment",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onError
+                    )
+                }
+            }
+        }
+    }
 
     val headerContent = @Composable {
         Card(
@@ -432,6 +474,9 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 80.dp)
         ) {
+            if (isAssessmentSkipped) {
+                item { skippedAssessmentBanner() }
+            }
             item { headerContent() }
             item { quickActionsContent() }
             item { communityPromoContent() }
@@ -454,6 +499,9 @@ fun DashboardScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                if (isAssessmentSkipped) {
+                    skippedAssessmentBanner()
+                }
                 headerContent()
                 quickActionsContent()
                 communityPromoContent()

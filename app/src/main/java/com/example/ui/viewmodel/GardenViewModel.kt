@@ -83,6 +83,18 @@ class GardenViewModel @JvmOverloads constructor(
     private val _isOnboardingCompleted = MutableStateFlow(false)
     val isOnboardingCompleted: StateFlow<Boolean> = _isOnboardingCompleted.asStateFlow()
 
+    private val _assessmentScore = MutableStateFlow<Int?>(null)
+    val assessmentScore: StateFlow<Int?> = _assessmentScore.asStateFlow()
+
+    private val _lowestCategories = MutableStateFlow<List<String>>(emptyList())
+    val lowestCategories: StateFlow<List<String>> = _lowestCategories.asStateFlow()
+
+    private val _isAssessmentSkipped = MutableStateFlow(false)
+    val isAssessmentSkipped: StateFlow<Boolean> = _isAssessmentSkipped.asStateFlow()
+
+    private val _currentTab = MutableStateFlow(0)
+    val currentTab: StateFlow<Int> = _currentTab.asStateFlow()
+
     private val _currentWalkthroughStep = MutableStateFlow<WalkthroughStep?>(null)
     val currentWalkthroughStep: StateFlow<WalkthroughStep?> = _currentWalkthroughStep.asStateFlow()
 
@@ -109,7 +121,7 @@ class GardenViewModel @JvmOverloads constructor(
             WalkthroughStep.DASHBOARD_GARDEN -> WalkthroughStep.DASHBOARD_STATS
             WalkthroughStep.DASHBOARD_STATS -> WalkthroughStep.PLANNER_TAB
             WalkthroughStep.PLANNER_TAB -> WalkthroughStep.AI_ADVISOR_TAB
-            WalkthroughStep.AI_ADVISOR_TAB -> WalkthroughStep.AR_LENS_TAB
+            WalkthroughStep.AI_ADVISOR_TAB -> null
             WalkthroughStep.AR_LENS_TAB -> null
         }
         _currentWalkthroughStep.value = next
@@ -128,6 +140,45 @@ class GardenViewModel @JvmOverloads constructor(
         _isOnboardingCompleted.value = true
         sharedPrefs.edit { putBoolean("onboarding_completed", true) }
         startWalkthrough()
+    }
+
+    fun saveAssessmentResult(score: Int, lowest: List<String>) {
+        _assessmentScore.value = score
+        _lowestCategories.value = lowest
+        _isAssessmentSkipped.value = false
+        _isOnboardingCompleted.value = true
+        sharedPrefs.edit {
+            putInt("assessment_score", score)
+            putString("lowest_categories", lowest.joinToString(","))
+            putBoolean("assessment_skipped", false)
+            putBoolean("onboarding_completed", true)
+        }
+    }
+
+    fun skipAssessment() {
+        _isAssessmentSkipped.value = true
+        _isOnboardingCompleted.value = true
+        sharedPrefs.edit {
+            putBoolean("assessment_skipped", true)
+            putBoolean("onboarding_completed", true)
+        }
+    }
+
+    fun resetAssessment() {
+        _assessmentScore.value = null
+        _lowestCategories.value = emptyList()
+        _isAssessmentSkipped.value = false
+        _isOnboardingCompleted.value = false
+        sharedPrefs.edit {
+            putInt("assessment_score", -1)
+            putString("lowest_categories", "")
+            putBoolean("assessment_skipped", false)
+            putBoolean("onboarding_completed", false)
+        }
+    }
+
+    fun setCurrentTab(tab: Int) {
+        _currentTab.value = tab
     }
 
     // Advanced Billing State Properties
@@ -282,6 +333,16 @@ class GardenViewModel @JvmOverloads constructor(
         val savedPremium = sharedPrefs.getBoolean("is_premium", false)
         _isPremium.value = savedPremium
         _isOnboardingCompleted.value = sharedPrefs.getBoolean("onboarding_completed", false)
+
+        val score = sharedPrefs.getInt("assessment_score", -1)
+        if (score != -1) {
+            _assessmentScore.value = score
+        }
+        _isAssessmentSkipped.value = sharedPrefs.getBoolean("assessment_skipped", false)
+        val categoriesStr = sharedPrefs.getString("lowest_categories", "") ?: ""
+        if (categoriesStr.isNotEmpty()) {
+            _lowestCategories.value = categoriesStr.split(",")
+        }
         _subscriptionTier.value = sharedPrefs.getString("subscription_tier", null)
         _subscriptionTransactionId.value = sharedPrefs.getString("subscription_transaction_id", null)
         _subscriptionBillingDate.value = sharedPrefs.getString("subscription_billing_date", null)
@@ -682,7 +743,7 @@ class GardenViewModel @JvmOverloads constructor(
         if (message.isBlank()) return
         
         val userCount = _aiChatHistory.value.count { it.role == "user" }
-        if (!_isPremium.value && userCount >= 2) {
+        if (!_isPremium.value && userCount >= 3) {
             val currentHistory = _aiChatHistory.value.toMutableList()
             currentHistory.add(Content(role = "user", parts = listOf(Part(text = message))))
             currentHistory.add(
@@ -690,7 +751,7 @@ class GardenViewModel @JvmOverloads constructor(
                     role = "model",
                     parts = listOf(
                         Part(
-                            text = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
+                            text = "🔒 Free AI Advisor biophilic limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
                         )
                     )
                 )
@@ -706,9 +767,30 @@ class GardenViewModel @JvmOverloads constructor(
         _isAiLoading.value = true
 
         viewModelScope.launch {
-            val systemIns = "You are a friendly, conversational Master Botanist, Garden Stylist, and Mindfulness Coach. " +
-                    "Your job is to advise users on how to design their dream garden, suggest specific plants, resolve pest diagnoses, and discuss how surrounding ourselves with nature coordinates positive mental health. " +
-                    "Keep answers highly engaging, brief, and structured with clear tips."
+            val score = _assessmentScore.value
+            val categories = _lowestCategories.value
+            val systemIns = if (score != null) {
+                val zone = when (score) {
+                    in 15..20 -> "Green Zone — Low Neural Load"
+                    in 8..14 -> "Yellow Zone — Moderate Neural Load"
+                    else -> "Red Zone — High Neural Load"
+                }
+                val categoriesStr = categories.joinToString(", ")
+                "You are the FloraFlow Biophilic Design Advisor. You help users reduce their Neural Load by recommending specific changes to their physical environments — both indoor and outdoor.\n\n" +
+                "The user's current Neural Load score is: $score/20 ($zone).\n" +
+                "Their lowest-scoring categories are: $categoriesStr.\n\n" +
+                "RULES:\n" +
+                "1. Every recommendation must connect to their biology. Do not just say 'add a plant.' Say WHY it matters for their nervous system.\n" +
+                "2. Reference their specific weak scores when relevant. 'Your Nature Views score was low — this is why...'\n" +
+                "3. Recommend actionable, specific changes. Not 'add some greenery' but 'place a 4-6 ft snake plant in the corner nearest your desk.'\n" +
+                "4. Always consider their stated space constraints (indoor/outdoor, size, light, climate, budget, maintenance capacity).\n" +
+                "5. After giving a recommendation, offer to build it in the Garden Planner or find the plant in the Botanical Database.\n" +
+                "6. You are warm, knowledgeable, and direct. Not clinical. Not salesy. Like a smart friend who happens to know biophilic design science."
+            } else {
+                "You are a friendly, conversational Master Botanist, Garden Stylist, and Mindfulness Coach. " +
+                "Your job is to advise users on how to design their dream garden, suggest specific plants, resolve pest diagnoses, and discuss how surrounding ourselves with nature coordinates positive mental health. " +
+                "Keep answers highly engaging, brief, and structured with clear tips."
+            }
 
             val response = GeminiApiClient.getGardeningAdvice(
                 prompt = message,
