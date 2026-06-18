@@ -42,6 +42,7 @@ import androidx.camera.view.PreviewView
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.platform.LocalContext
+import android.util.Log
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import java.io.File
@@ -1003,7 +1004,7 @@ fun ArLensScreen(
                                             }
 
                                             override fun onError(exception: ImageCaptureException) {
-                                                exception.printStackTrace()
+                                                Log.e("ArLensScreen", "Image capture failed", exception)
                                                 val snap = DesignSnapshot(
                                                     id = "SNAP_${System.currentTimeMillis() % 10000}",
                                                     timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
@@ -1019,7 +1020,7 @@ fun ArLensScreen(
                                         }
                                     )
                                 } catch (exc: Exception) {
-                                    exc.printStackTrace()
+                                    Log.e("ArLensScreen", "Snapshot processing failed", exc)
                                     val snap = DesignSnapshot(
                                         id = "SNAP_${System.currentTimeMillis() % 10000}",
                                         timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
@@ -1508,7 +1509,7 @@ fun CameraPreview(
                         imageCapture
                     )
                 } catch (exc: Exception) {
-                    exc.printStackTrace()
+                    Log.e("ArLensScreen", "Camera initialization failed", exc)
                 }
             }, ContextCompat.getMainExecutor(context))
         }

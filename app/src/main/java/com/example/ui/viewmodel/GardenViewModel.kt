@@ -12,6 +12,7 @@ import com.example.data.repository.GardenRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import android.util.Log
 
 class GardenViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -288,7 +289,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                     )
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("GardenViewModel", "Garden layout loading failed", e)
             }
         }
 
