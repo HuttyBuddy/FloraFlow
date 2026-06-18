@@ -288,7 +288,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                     )
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                android.util.Log.e("GardenViewModel", "Error fetching data", e)
             }
         }
 

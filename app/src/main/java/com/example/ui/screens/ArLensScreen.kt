@@ -1003,7 +1003,7 @@ fun ArLensScreen(
                                             }
 
                                             override fun onError(exception: ImageCaptureException) {
-                                                exception.printStackTrace()
+                                                android.util.Log.e("ArLensScreen", "Image capture error", exception)
                                                 val snap = DesignSnapshot(
                                                     id = "SNAP_${System.currentTimeMillis() % 10000}",
                                                     timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
@@ -1019,7 +1019,7 @@ fun ArLensScreen(
                                         }
                                     )
                                 } catch (exc: Exception) {
-                                    exc.printStackTrace()
+                                    android.util.Log.e("ArLensScreen", "Camera setup error", exc)
                                     val snap = DesignSnapshot(
                                         id = "SNAP_${System.currentTimeMillis() % 10000}",
                                         timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
@@ -1508,7 +1508,7 @@ fun CameraPreview(
                         imageCapture
                     )
                 } catch (exc: Exception) {
-                    exc.printStackTrace()
+                    android.util.Log.e("ArLensScreen", "Camera setup error", exc)
                 }
             }, ContextCompat.getMainExecutor(context))
         }
