@@ -420,13 +420,14 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             available.shuffle()
             val slotsToSow = available.take(countToSow)
 
+            val newPlantsToInsert = mutableListOf<Plant>()
             for (slot in slotsToSow) {
                 val tpl = templates.random()
                 items.add(GridPlantItem(slot.first, slot.second, tpl.name))
                 
-                // Also add to inventory if not already cultivated
-                if (_activePlants.value.none { it.name == tpl.name }) {
-                    repository.insertPlant(
+                // Also add to inventory if not already cultivated (or in the new plants list)
+                if (_activePlants.value.none { it.name == tpl.name } && newPlantsToInsert.none { it.name == tpl.name }) {
+                    newPlantsToInsert.add(
                         Plant(
                             layoutId = current.id,
                             name = tpl.name,
@@ -445,6 +446,10 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                         )
                     )
                 }
+            }
+
+            if (newPlantsToInsert.isNotEmpty()) {
+                repository.insertPlants(newPlantsToInsert)
             }
 
             val newGridString = toGridString(items)
