@@ -655,6 +655,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 // Find lines having "|" symbol
                 val lines = response.lines().filter { it.contains("|") }
+                val plantsToInsert = mutableListOf<Plant>()
                 for (line in lines) {
                     val parts = line.split("|").map { it.trim() }
                     if (parts.size >= 2) {
@@ -663,7 +664,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                         val soil = if (parts.size >= 3) parts[2] else "Standard garden compost"
                         val sun = if (parts.size >= 4) parts[3] else "Full sun to dappled shade"
                         
-                        repository.insertPlant(
+                        plantsToInsert.add(
                             Plant(
                                 layoutId = layout.id,
                                 name = name,
@@ -678,6 +679,10 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                             )
                         )
                     }
+                }
+
+                if (plantsToInsert.isNotEmpty()) {
+                    repository.insertPlants(plantsToInsert)
                 }
             } catch (e: Exception) {
                 // Ignore parsing slip-ups, response remains visible in chat
