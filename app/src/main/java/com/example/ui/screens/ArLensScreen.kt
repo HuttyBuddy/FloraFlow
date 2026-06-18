@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.util.Log
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
@@ -1003,7 +1004,7 @@ fun ArLensScreen(
                                             }
 
                                             override fun onError(exception: ImageCaptureException) {
-                                                exception.printStackTrace()
+                                                Log.e("ArLensScreen", "Image capture failed", exception)
                                                 val snap = DesignSnapshot(
                                                     id = "SNAP_${System.currentTimeMillis() % 10000}",
                                                     timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
@@ -1019,7 +1020,7 @@ fun ArLensScreen(
                                         }
                                     )
                                 } catch (exc: Exception) {
-                                    exc.printStackTrace()
+                                    Log.e("ArLensScreen", "Init capture error", exc)
                                     val snap = DesignSnapshot(
                                         id = "SNAP_${System.currentTimeMillis() % 10000}",
                                         timestamp = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
@@ -1508,7 +1509,7 @@ fun CameraPreview(
                         imageCapture
                     )
                 } catch (exc: Exception) {
-                    exc.printStackTrace()
+                    Log.e("ArLensScreen", "Camera binding failed", exc)
                 }
             }, ContextCompat.getMainExecutor(context))
         }
