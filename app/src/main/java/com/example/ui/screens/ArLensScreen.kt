@@ -1376,7 +1376,10 @@ fun ArLensScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(savedSnapshots) { snap ->
+                        items(savedSnapshots, key = { it.id }) { snap ->
+                            // PERFORMANCE OPTIMIZATION: Providing a stable, unique key to items()
+                            // allows LazyRow to smartly reuse elements and prevent unnecessary
+                            // full-list re-renders when the data changes.
                             Card(
                                 modifier = Modifier
                                     .width(180.dp)

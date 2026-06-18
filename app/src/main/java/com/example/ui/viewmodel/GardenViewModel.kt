@@ -1,6 +1,7 @@
 package com.example.ui.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.api.Content
@@ -288,7 +289,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                     )
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("GardenViewModel", "Failed to initialize default data", e)
             }
         }
 
@@ -334,26 +335,25 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
             
             // Add initial default companion plants from climate templates to help get the user started!
             val templates = ClimatePlants.getTemplatesForClimate(climate).take(2)
-            for (tpl in templates) {
-                repository.insertPlant(
-                    Plant(
-                        layoutId = layoutId,
-                        name = tpl.name,
-                        type = tpl.type,
-                        careSpring = tpl.careSpring,
-                        careSummer = tpl.careSummer,
-                        careAutumn = tpl.careAutumn,
-                        careWinter = tpl.careWinter,
-                        soilType = tpl.soilType,
-                        sunlight = tpl.sunlight,
-                        growthProgress = 20,
-                        matureSize = tpl.matureSize,
-                        wateringNeeds = tpl.wateringNeeds,
-                        bloomTime = tpl.bloomTime,
-                        pestsDiseases = tpl.pestsDiseases
-                    )
+            val initialPlants = templates.map { tpl ->
+                Plant(
+                    layoutId = layoutId,
+                    name = tpl.name,
+                    type = tpl.type,
+                    careSpring = tpl.careSpring,
+                    careSummer = tpl.careSummer,
+                    careAutumn = tpl.careAutumn,
+                    careWinter = tpl.careWinter,
+                    soilType = tpl.soilType,
+                    sunlight = tpl.sunlight,
+                    growthProgress = 20,
+                    matureSize = tpl.matureSize,
+                    wateringNeeds = tpl.wateringNeeds,
+                    bloomTime = tpl.bloomTime,
+                    pestsDiseases = tpl.pestsDiseases
                 )
             }
+            repository.insertPlants(initialPlants)
             
             // Auto select newly created layout
             _activeLayout.value = created

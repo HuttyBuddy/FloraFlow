@@ -157,4 +157,28 @@ class GardenDatabaseTest {
         val currentLogs = dao.getAllMoodLogs().first()
         assertTrue(currentLogs.isEmpty())
     }
+
+    @Test
+    fun benchmarkPlantInsertion() = runTest {
+        val layoutId = 99
+        val plants = (1..50).map { i ->
+            Plant(
+                layoutId = layoutId,
+                name = "Plant $i",
+                type = "TestType"
+            )
+        }
+
+        val startTime = System.currentTimeMillis()
+        for (plant in plants) {
+            dao.insertPlant(plant)
+        }
+        val endTime = System.currentTimeMillis()
+        println("Baseline individual insert time for 50 plants: ${endTime - startTime} ms")
+
+        val startBatchTime = System.currentTimeMillis()
+        dao.insertPlants(plants)
+        val endBatchTime = System.currentTimeMillis()
+        println("Optimized batch insert time for 50 plants: ${endBatchTime - startBatchTime} ms")
+    }
 }
