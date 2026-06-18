@@ -215,50 +215,61 @@ fun SplashWarmUpScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Elegant pulsing organic icon container
-            Surface(
-                modifier = Modifier.size(110.dp),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                tonalElevation = 4.dp
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(text = "🌿", fontSize = 54.sp)
-                }
-            }
-
+            SplashLogo()
             Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "FloraFlow",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Therapeutic Space & Advisor",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-            )
-
+            SplashTitles()
             Spacer(modifier = Modifier.height(48.dp))
-
-            CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.primary,
-                strokeWidth = 3.dp,
-                modifier = Modifier.size(32.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Syncing botanical resources...",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-            )
+            SplashLoadingIndicator()
         }
     }
+}
+
+@Composable
+fun SplashLogo() {
+    // Elegant pulsing organic icon container
+    Surface(
+        modifier = Modifier.size(110.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.primaryContainer,
+        tonalElevation = 4.dp
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(text = "🌿", fontSize = 54.sp)
+        }
+    }
+}
+
+@Composable
+fun SplashTitles() {
+    Text(
+        text = "FloraFlow",
+        style = MaterialTheme.typography.headlineLarge,
+        fontWeight = FontWeight.ExtraBold,
+        color = MaterialTheme.colorScheme.primary
+    )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Text(
+        text = "Therapeutic Space & Advisor",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+    )
+}
+
+@Composable
+fun SplashLoadingIndicator() {
+    CircularProgressIndicator(
+        color = MaterialTheme.colorScheme.primary,
+        strokeWidth = 3.dp,
+        modifier = Modifier.size(32.dp)
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Text(
+        text = "Syncing botanical resources...",
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+    )
 }
