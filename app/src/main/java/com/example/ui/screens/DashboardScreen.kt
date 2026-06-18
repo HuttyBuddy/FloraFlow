@@ -451,7 +451,10 @@ fun DashboardScreen(
                 }
             }
         } else {
-            items(moodLogs) { log ->
+            items(moodLogs, key = { it.id }) { log ->
+                // PERFORMANCE OPTIMIZATION: Providing a stable, unique key to items()
+                // allows LazyColumn to smartly reuse elements and prevent unnecessary
+                // full-list re-renders when the data changes.
                 MoodLogItemCard(log = log, onDelete = { viewModel.deleteMoodLog(log.id) })
             }
         }
@@ -510,7 +513,10 @@ fun DashboardScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.heightIn(max = 300.dp)
                         ) {
-                            items(layouts) { lay ->
+                            items(layouts, key = { it.id }) { lay ->
+                                // PERFORMANCE OPTIMIZATION: Providing a stable, unique key to items()
+                                // allows LazyColumn to smartly reuse elements and prevent unnecessary
+                                // full-list re-renders when the data changes.
                                 val isSelected = activeLayout?.id == lay.id
                                 Card(
                                     modifier = Modifier
