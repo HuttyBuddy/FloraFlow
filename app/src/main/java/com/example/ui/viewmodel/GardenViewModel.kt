@@ -523,24 +523,8 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     fun sendAiChatMessage(message: String) {
         if (message.isBlank()) return
         
-        val userCount = _aiChatHistory.value.count { it.role == "user" }
-        if (!_isPremium.value && userCount >= 2) {
-            val currentHistory = _aiChatHistory.value.toMutableList()
-            currentHistory.add(Content(role = "user", parts = listOf(Part(text = message))))
-            currentHistory.add(
-                Content(
-                    role = "model",
-                    parts = listOf(
-                        Part(
-                            text = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
-                        )
-                    )
-                )
-            )
-            _aiChatHistory.value = currentHistory
-            return
-        }
-
+        val upsellMsg = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
+        if (checkPremiumLimit(message, upsellMsg)) return
         val currentHistory = _aiChatHistory.value.toMutableList()
         currentHistory.add(Content(role = "user", parts = listOf(Part(text = message))))
         _aiChatHistory.value = currentHistory
@@ -575,24 +559,9 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
     fun askAiForLayoutAdvice() {
         val layout = _activeLayout.value ?: return
         
-        val userCount = _aiChatHistory.value.count { it.role == "user" }
-        if (!_isPremium.value && userCount >= 2) {
-            val updatedHistory = _aiChatHistory.value.toMutableList()
-            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = "Suggest some visual additions and companion compatibility checks!"))))
-            updatedHistory.add(
-                Content(
-                    role = "model",
-                    parts = listOf(
-                        Part(
-                            text = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock advanced layout analysis, visual companion additions, and expert styling advice! 🌸✨"
-                        )
-                    )
-                )
-            )
-            _aiChatHistory.value = updatedHistory
-            return
-        }
-
+        val userQuery = "Suggest some visual additions and companion compatibility checks!"
+        val upsellMsg = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock advanced layout analysis, visual companion additions, and expert styling advice! 🌸✨"
+        if (checkPremiumLimit(userQuery, upsellMsg)) return
         val plantsListStr = _activePlants.value.joinToString(", ") { it.name }
         val prompt = "I have a garden layout styled as a '${layout.style}' in a '${layout.climate}' climate region. " +
                 "The current vegetation includes: [$plantsListStr]. " +
@@ -603,41 +572,89 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
 
         viewModelScope.launch {
             val advice = GeminiApiClient.getGardeningAdvice(prompt)
-            val updatedHistory = _aiChatHistory.value.toMutableList()
-            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = "Suggest some visual additions and companion compatibility checks!"))))
-            updatedHistory.add(Content(role = "model", parts = listOf(Part(text = advice))))
-            _aiChatHistory.value = updatedHistory
+            appendAiChatInteraction("Suggest some visual additions and companion compatibility checks!", advice)
             _isAiLoading.value = false
             _aiStatus.value = ""
         }
     }
 
     // Automatically generate visual plant selections for layouts using Gemini
-    fun generateAILayoutSuggestion() {
-        val layout = _activeLayout.value ?: return
-        
+
+    private fun checkPremiumLimit(userQuery: String, upsellMessage: String): Boolean {
         val userCount = _aiChatHistory.value.count { it.role == "user" }
         if (!_isPremium.value && userCount >= 2) {
             val updatedHistory = _aiChatHistory.value.toMutableList()
-            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = "Generate a companion design blueprint for my space!"))))
+            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = userQuery))))
             updatedHistory.add(
                 Content(
                     role = "model",
                     parts = listOf(
-                        Part(
-                            text = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock AI garden layout generator, instant database seeding, and dynamic blueprinting! 🌸✨"
-                        )
+                        Part(text = upsellMessage)
                     )
                 )
             )
             _aiChatHistory.value = updatedHistory
-            return
+            return true
         }
-        
-        val prompt = "Suggest a brand new layout idea. " +
+        return false
+    }
+
+    private fun appendAiChatInteraction(userQuery: String, response: String) {
+        val updatedHistory = _aiChatHistory.value.toMutableList()
+        if (userQuery.isNotBlank()) {
+            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = userQuery))))
+        }
+        updatedHistory.add(Content(role = "model", parts = listOf(Part(text = response))))
+        _aiChatHistory.value = updatedHistory
+    }
+
+    private fun buildLayoutSuggestionPrompt(layout: GardenLayout): String {
+        return "Suggest a brand new layout idea. " +
                 "For a garden with the style '${layout.style}' and climate of '${layout.climate}', name 3 highly compatible, beautifully flowering plants or useful crops. " +
                 "Format your answer as simple lines containing: PlantName | PlantType | IdealSoil | SunExposure. " +
                 "Follow this list with a clear, concise decorating suggestion."
+    }
+
+    private suspend fun parseAndInsertPlants(response: String, layoutId: Int) {
+        try {
+            val lines = response.lines().filter { it.contains("|") }
+            for (line in lines) {
+                val parts = line.split("|").map { it.trim() }
+                if (parts.size >= 2) {
+                    val name = parts[0].replace(Regex("^[^a-zA-Z0-9]+"), "")
+                    val type = parts[1]
+                    val soil = if (parts.size >= 3) parts[2] else "Standard garden compost"
+                    val sun = if (parts.size >= 4) parts[3] else "Full sun to dappled shade"
+
+                    repository.insertPlant(
+                        Plant(
+                            layoutId = layoutId,
+                            name = name,
+                            type = type,
+                            soilType = soil,
+                            sunlight = sun,
+                            growthProgress = 15,
+                            matureSize = "Medium",
+                            wateringNeeds = "Moderate",
+                            bloomTime = "Summer",
+                            pestsDiseases = "Minor pests"
+                        )
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            // Ignore parsing slip-ups
+        }
+    }
+
+    fun generateAILayoutSuggestion() {
+        val layout = _activeLayout.value ?: return
+
+        val userQuery = "Generate a companion design blueprint for my space!"
+        val upsellMsg = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock AI garden layout generator, instant database seeding, and dynamic blueprinting! 🌸✨"
+        if (checkPremiumLimit(userQuery, upsellMsg)) return
+
+        val prompt = buildLayoutSuggestionPrompt(layout)
 
         _isAiLoading.value = true
         _aiStatus.value = "Sowing AI botanical ideas..."
@@ -645,49 +662,13 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch {
             val response = GeminiApiClient.getGardeningAdvice(prompt)
             
-            // Feed response to the chat log
-            val updatedHistory = _aiChatHistory.value.toMutableList()
-            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = "Generate a companion design blueprint for my space!"))))
-            updatedHistory.add(Content(role = "model", parts = listOf(Part(text = response))))
-            _aiChatHistory.value = updatedHistory
-            
-            // Try and parse plants from response to inject into database
-            try {
-                // Find lines having "|" symbol
-                val lines = response.lines().filter { it.contains("|") }
-                for (line in lines) {
-                    val parts = line.split("|").map { it.trim() }
-                    if (parts.size >= 2) {
-                        val name = parts[0].replace(Regex("^[^a-zA-Z0-9]+"), "") // Clean up bullet symbols if any
-                        val type = parts[1]
-                        val soil = if (parts.size >= 3) parts[2] else "Standard garden compost"
-                        val sun = if (parts.size >= 4) parts[3] else "Full sun to dappled shade"
-                        
-                        repository.insertPlant(
-                            Plant(
-                                layoutId = layout.id,
-                                name = name,
-                                type = type,
-                                soilType = soil,
-                                sunlight = sun,
-                                growthProgress = 15,
-                                matureSize = "Medium",
-                                wateringNeeds = "Moderate",
-                                bloomTime = "Summer",
-                                pestsDiseases = "Minor pests"
-                            )
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                // Ignore parsing slip-ups, response remains visible in chat
-            }
+            appendAiChatInteraction(userQuery, response)
+            parseAndInsertPlants(response, layout.id)
 
             _isAiLoading.value = false
             _aiStatus.value = ""
         }
     }
-
     // --- AR Preview Control Methods ---
     fun addArPlant(name: String, emoji: String) {
         val list = _arPlacedPlants.value.toMutableList()
