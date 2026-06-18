@@ -1,4 +1,4 @@
-## 2026-06-18 - Insecure Android Backup Configuration
-**Vulnerability:** Android application configured with `android:allowBackup="true"` in `AndroidManifest.xml`.
-**Learning:** Leaving `android:allowBackup="true"` enables the Android backup service to back up the app's data to the user's Google Drive. This could inadvertently expose sensitive application data if not properly configured with explicit backup rules, and standard security practice dictates disabling it unless explicitly required.
-**Prevention:** Always set `android:allowBackup="false"` in `AndroidManifest.xml` unless there is a specific, explicitly defined need for data backup using Android backup rules.
+## 2024-06-18 - [Secure Input for CVC]
+**Vulnerability:** [CVC Code input was visible during entry and used a standard number keyboard, leaving it vulnerable to shoulder surfing and OS keyboard caching]
+**Learning:** [CVC Code fields are sensitive authentication data and must be treated as passwords]
+**Prevention:** [Always use PasswordVisualTransformation() and KeyboardType.NumberPassword for sensitive numeric inputs]
