@@ -52,7 +52,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.ClimatePlants
-import com.example.ui.viewmodel.ArPlantPlacement
 import com.example.ui.viewmodel.GardenViewModel
 import kotlinx.coroutines.isActive
 import kotlin.math.cos
