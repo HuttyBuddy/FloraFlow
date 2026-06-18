@@ -1,0 +1,4 @@
+## 2026-06-18 - Insecure Android Backup Configuration
+**Vulnerability:** Android application configured with `android:allowBackup="true"` in `AndroidManifest.xml`.
+**Learning:** Leaving `android:allowBackup="true"` enables the Android backup service to back up the app's data to the user's Google Drive. This could inadvertently expose sensitive application data if not properly configured with explicit backup rules, and standard security practice dictates disabling it unless explicitly required.
+**Prevention:** Always set `android:allowBackup="false"` in `AndroidManifest.xml` unless there is a specific, explicitly defined need for data backup using Android backup rules.
