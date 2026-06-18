@@ -1,6 +1,7 @@
 package com.example.ui.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.api.Content
@@ -288,7 +289,7 @@ class GardenViewModel(application: Application) : AndroidViewModel(application) 
                     )
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("GardenViewModel", "Failed to initialize default data", e)
             }
         }
 
