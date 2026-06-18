@@ -24,6 +24,8 @@ class GardenRepository(private val gardenDao: GardenDao) {
 
     suspend fun insertPlant(plant: Plant): Long = gardenDao.insertPlant(plant)
 
+    suspend fun insertPlants(plants: List<Plant>) = gardenDao.insertPlants(plants)
+
     suspend fun updatePlant(plant: Plant) = gardenDao.updatePlant(plant)
 
     suspend fun deletePlantById(plantId: Int) = gardenDao.deletePlantById(plantId)
