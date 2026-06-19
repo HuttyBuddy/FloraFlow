@@ -7,8 +7,10 @@ import androidx.room.RoomDatabase
 import com.example.data.model.GardenLayout
 import com.example.data.model.MoodLog
 import com.example.data.model.Plant
+import com.example.ui.screens.community.CommunityPost
+import com.example.ui.screens.community.CommunityComment
 
-@Database(entities = [GardenLayout::class, Plant::class, MoodLog::class], version = 1, exportSchema = false)
+@Database(entities = [GardenLayout::class, Plant::class, MoodLog::class, CommunityPost::class, CommunityComment::class], version = 2, exportSchema = false)
 abstract class GardenDatabase : RoomDatabase() {
     abstract fun gardenDao(): GardenDao
 
@@ -23,11 +25,16 @@ abstract class GardenDatabase : RoomDatabase() {
                     GardenDatabase::class.java,
                     "garden_database"
                 )
-                .fallbackToDestructiveMigration()
+                .fallbackToDestructiveMigration(true)
                 .build()
                 INSTANCE = instance
                 instance
             }
+        }
+
+        fun resetDatabase() {
+            INSTANCE?.close()
+            INSTANCE = null
         }
     }
 }

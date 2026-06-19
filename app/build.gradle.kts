@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.compose)
@@ -8,25 +10,41 @@ plugins {
 
 android {
   namespace = "com.example"
-  compileSdk { version = release(36) { minorApiLevel = 1 } }
+  compileSdk = 37
+  ndkVersion = "26.1.10909125"
 
   defaultConfig {
     applicationId = "com.aistudio.dreamgardendesigner.fhqpvw"
     minSdk = 24
-    targetSdk = 36
-    versionCode = 1
-    versionName = "1.0"
+    targetSdk = 37
+    versionCode = 18
+    versionName = "9.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    ndk {
+      abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+      debugSymbolLevel = "FULL"
+    }
   }
 
   signingConfigs {
     create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+      val properties = Properties()
+      val localPropertiesFile = rootProject.file("local.properties")
+      if (localPropertiesFile.exists()) {
+        val inputStream = localPropertiesFile.inputStream()
+        properties.load(inputStream)
+        inputStream.close()
+      }
+
+      val keystorePath = properties.getProperty("release.keystore.path")
+        ?: System.getenv("KEYSTORE_PATH")
+        ?: "${rootDir}/my-upload-key.jks"
       storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
+
+      storePassword = properties.getProperty("release.keystore.password") ?: System.getenv("STORE_PASSWORD")
+      keyAlias = properties.getProperty("release.key.alias") ?: System.getenv("KEY_ALIAS") ?: "upload"
+      keyPassword = properties.getProperty("release.key.password") ?: System.getenv("KEY_PASSWORD")
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
@@ -39,9 +57,13 @@ android {
   buildTypes {
     release {
       isCrunchPngs = false
-      isMinifyEnabled = false
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
+      ndk {
+        debugSymbolLevel = "FULL"
+      }
     }
     debug {
       signingConfig = signingConfigs.getByName("debugConfig")
@@ -55,7 +77,24 @@ android {
     compose = true
     buildConfig = true
   }
-  testOptions { unitTests { isIncludeAndroidResources = true } }
+  experimentalProperties["android.nativeLibraryAlignmentPageSize"] = "4k"
+  testOptions {
+    unitTests {
+      isIncludeAndroidResources = true
+      all {
+        it.jvmArgs(
+          "--add-opens=java.base/java.lang=ALL-UNNAMED",
+          "--add-opens=java.base/java.util=ALL-UNNAMED"
+        )
+      }
+    }
+  }
+}
+
+// Ensure the SQLite temp directory exists for Room compiler on Windows
+val sqliteTmpDir = layout.buildDirectory.dir("tmp/sqlite").get().asFile
+if (!sqliteTmpDir.exists()) {
+    sqliteTmpDir.mkdirs()
 }
 
 // Configure the Secrets Gradle Plugin to use .env and .env.example files
@@ -118,4 +157,8 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.tooling)
   "ksp"(libs.androidx.room.compiler)
   "ksp"(libs.moshi.kotlin.codegen)
+  implementation(libs.arsceneview) {
+      exclude(group = "androidx.core", module = "core")
+      exclude(group = "androidx.core", module = "core-ktx")
+  }
 }

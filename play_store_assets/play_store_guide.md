@@ -66,7 +66,7 @@ Use the copy-paste templates below to pitch friends, family, and online groups:
 ### 🌿 Script B: For Gardening & Green Reddit Communities / Facebook Groups
 > **Title: Need 20 green thumbs to test a therapeutic companion garden planner app (Free Lifetime Access!)**
 >
-> *"Hello fellow gardeners! I’m an independent creator preparing to launch **FloraFlow: Dream Garden Designer**. It’s an android application focused on grid companion mapping, live simulated climate overlays (rain drifts, blossom winds), and tracking physical mindfulness scores associated with outdoor soil contact.*
+> *"Hello fellow gardeners! I’m an independent creator preparing to launch **FloraFlow: Cultivating Calm through Mindful Gardening**. It’s an android application focused on grid companion mapping, live simulated climate overlays (rain drifts, blossom winds), and tracking physical mindfulness scores associated with outdoor soil contact.*
 >
 > *Google requires 20 closed testers for 14 straight days before launch. I’m looking for authentic feedback from people who actually grow!*
 >

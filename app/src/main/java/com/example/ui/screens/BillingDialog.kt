@@ -73,8 +73,8 @@ fun BillingDialog(
         )
     )
 
-    var currentStep by remember { mutableStateOf(1) } // 1: Select Plan, 2: Payment Method, 3: Card Entry, 4: Loading Banking, 5: Receipt Success
-    var selectedPlanIndex by remember { mutableStateOf(1) } // Default to Annual Plan
+    var currentStep by remember { mutableIntStateOf(1) } // 1: Select Plan, 2: Payment Method, 3: Card Entry, 4: Loading Banking, 5: Receipt Success
+    var selectedPlanIndex by remember { mutableIntStateOf(1) } // Default to Annual Plan
     var selectedPaymentMethod by remember { mutableStateOf("GooglePlay") } // "GooglePlay", "CreditCard", "GooglePay"
 
     // Card details input values

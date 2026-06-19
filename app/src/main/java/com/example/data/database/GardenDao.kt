@@ -52,4 +52,32 @@ interface GardenDao {
 
     @Query("DELETE FROM mood_logs WHERE id = :id")
     suspend fun deleteMoodLogById(id: Int)
+
+    // --- Community ---
+    @Query("SELECT * FROM community_posts ORDER BY timestamp DESC")
+    fun getAllPosts(): Flow<List<com.example.ui.screens.community.CommunityPost>>
+
+    @Query("SELECT * FROM community_posts WHERE id = :id")
+    fun getPostById(id: Int): Flow<com.example.ui.screens.community.CommunityPost?>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPost(post: com.example.ui.screens.community.CommunityPost): Long
+
+    @Query("UPDATE community_posts SET likes = :likes, isLiked = :isLiked WHERE id = :id")
+    suspend fun updatePostLikes(id: Int, likes: Int, isLiked: Boolean)
+
+    @Query("DELETE FROM community_posts WHERE id = :id")
+    suspend fun deletePostById(id: Int)
+
+    @Query("SELECT * FROM community_comments WHERE postId = :postId ORDER BY timestamp ASC")
+    fun getCommentsForPost(postId: Int): Flow<List<com.example.ui.screens.community.CommunityComment>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertComment(comment: com.example.ui.screens.community.CommunityComment): Long
+
+    @Query("UPDATE community_comments SET likes = :likes, isLiked = :isLiked WHERE id = :id")
+    suspend fun updateCommentLikes(id: Int, likes: Int, isLiked: Boolean)
+
+    @Query("DELETE FROM community_comments WHERE postId = :postId")
+    suspend fun deleteCommentsByPostId(postId: Int)
 }

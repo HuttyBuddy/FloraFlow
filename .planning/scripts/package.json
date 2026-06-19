@@ -1,0 +1,12 @@
+{
+  "name": "floraflow-content-pipeline-scripts",
+  "private": true,
+  "description": "Local Monday Execution routine for the FloraFlow content pipeline (see .claude/skills/floraflow-content-pipeline).",
+  "type": "commonjs",
+  "scripts": {
+    "execute-queue": "node flora_flow_execution_routine.js"
+  },
+  "dependencies": {
+    "googleapis": "^140.0.0"
+  }
+}

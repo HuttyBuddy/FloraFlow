@@ -16,3 +16,8 @@
 local.properties
 .env
 debug.keystore
+*.aab
+*.apk
+node_modules/
+.idea/appInsightsSettings.xml
+.planning/scripts/service-account.json

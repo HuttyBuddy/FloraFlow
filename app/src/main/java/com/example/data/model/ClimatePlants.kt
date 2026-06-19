@@ -399,6 +399,22 @@ object ClimatePlants {
             bloomTime = "Non-flowering",
             pestsDiseases = "Frond bugs, low humidity leaf drops",
             compatibleClimate = "Temperate"
+        ),
+        PlantTemplate(
+            name = "Bonsai Cherry",
+            type = "Tree",
+            careSpring = "Prune branches to maintain classic zen shape. Water regularly.",
+            careSummer = "Keep in partial shade during intense afternoon sun. Water daily.",
+            careAutumn = "Let foliage change naturally. Clear fallen leaves quickly.",
+            careWinter = "Protect roots from deep freeze. Keep compost moist but not wet.",
+            soilType = "Rich organic clay loam",
+            sunlight = "Partial Shade",
+            iconEmoji = "🪴",
+            matureSize = "Small (1-2 ft)",
+            wateringNeeds = "High",
+            bloomTime = "Early Spring",
+            pestsDiseases = "Scale insects, Root rot",
+            compatibleClimate = "Temperate"
         )
     )
 

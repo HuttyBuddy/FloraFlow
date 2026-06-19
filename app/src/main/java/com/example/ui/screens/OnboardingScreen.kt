@@ -3,38 +3,55 @@ package com.example.ui.screens
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.viewmodel.GardenViewModel
+import kotlinx.coroutines.delay
 
-data class OnboardingStep(
+enum class AssessmentScreenState {
+    SPLASH, QUESTION, CALCULATING, RESULT, STEPS
+}
+
+data class AssessmentQuestion(
+    val category: String,
+    val text: String,
+    val options: List<String> = listOf("Never or rarely", "Sometimes", "Always or almost always")
+)
+
+data class NextStepInfo(
+    val category: String,
     val title: String,
-    val subtitle: String,
-    val description: String,
-    val icon: ImageVector,
-    val emoji: String,
-    val accentColor: Color
+    val detail: String,
+    val cta: String,
+    val targetTab: Int
 )
 
 @OptIn(ExperimentalAnimationApi::class)
@@ -43,254 +60,838 @@ fun OnboardingScreen(
     viewModel: GardenViewModel,
     modifier: Modifier = Modifier
 ) {
-    var currentStepIdx by remember { mutableStateOf(0) }
+    var screenState by remember { mutableStateOf(AssessmentScreenState.SPLASH) }
+    var currentQuestionIdx by remember { mutableIntStateOf(0) }
+    val answers = remember { mutableStateMapOf<Int, Int>() } // question index to score (0, 1, or 2)
 
-    val steps = listOf(
-        OnboardingStep(
-            title = "FloraFlow",
-            subtitle = "Therapeutic Space Planner",
-            description = "Design gorgeous therapeutic gardens. Model customized Zen courtyards, desert xeriscapes, or tropical greenhouses on a perfect grid and measure plant dimensions.",
-            icon = Icons.Default.Spa,
-            emoji = "🎋",
-            accentColor = Color(0xFF386641) // Rich green
-        ),
-        OnboardingStep(
-            title = "Dr. Julian Greenleaf",
-            subtitle = "Synaptic Live AI Botanist",
-            description = "Meet your resident PhD botanist, powered by live Gemini Pro. Consult in real-time about soil moisture, microclimates, leaf pathologies, and stress-reduction therapy.",
-            icon = Icons.Default.AutoAwesome,
-            emoji = "🧑‍🔬",
-            accentColor = Color(0xFF6A994E) // Soft sprout green
-        ),
-        OnboardingStep(
-            title = "AR Lens Holograms",
-            subtitle = "Simulated Spatial Placement",
-            description = "Preview floral plans before purchasing. Place high-resolution digital plant stickers directly in your space using interactive gestures, rotation, and custom scale controls.",
-            icon = Icons.Default.Videocam,
-            emoji = "🪐",
-            accentColor = Color(0xFFBC4749) // Terra Cotta / Warm Red
+    val questions = remember {
+        listOf(
+            AssessmentQuestion("NATURE VIEWS", "I can see trees, plants, or open sky from where I most often sit or work."),
+            AssessmentQuestion("LIVING PLANTS", "There are living plants within my immediate indoor workspace or living area."),
+            AssessmentQuestion("NATURAL LIGHT", "My primary space is illuminated by natural daylight rather than artificial light."),
+            AssessmentQuestion("ACOUSTIC CALM", "My space is free from disruptive background noise (traffic, hums) and feels acoustically calm."),
+            AssessmentQuestion("NATURAL MATERIALS", "I am surrounded by natural materials like wood, stone, wool, or clay in my space."),
+            AssessmentQuestion("AIR & VENTILATION", "I feel a gentle breeze or have access to fresh outdoor air circulation in my room."),
+            AssessmentQuestion("ORGANIC FORMS", "My furniture or decor features curved, organic shapes and patterns instead of sharp, rigid angles."),
+            AssessmentQuestion("WATER FEATURES", "I can see or hear water (such as a fountain, rain, or stream) in or near my space."),
+            AssessmentQuestion("SENSORY RICHNESS", "My space includes natural scents (like wood, soil, or flowers) or tactile natural textures."),
+            AssessmentQuestion("SEASONAL AWARENESS", "I feel connected to the current season and weather changes from inside my space.")
         )
-    )
+    }
 
-    val activeStep = steps[currentStepIdx]
+    val totalScore = remember(answers.size, screenState) {
+        answers.values.sum()
+    }
 
-    // Background soft radial-like linear gradient
+    val lowestCategories = remember(answers.size, screenState) {
+        questions.mapIndexed { idx, q -> q.category to (answers[idx] ?: 0) }
+            .sortedBy { it.second }
+            .map { it.first }
+    }
+
+    val stepsMapping = remember {
+        mapOf(
+            "NATURE VIEWS" to NextStepInfo(
+                "NATURE VIEWS",
+                "Optimize your outdoor view",
+                "You scored low on Nature Views. Clear window blockages or place plants in your direct line of sight to simulate natural depth.",
+                "Design my layout →",
+                1
+            ),
+            "LIVING PLANTS" to NextStepInfo(
+                "LIVING PLANTS",
+                "Add living material to your work area",
+                "You scored 0 on Living Plants. Adding 2-3 plants to your primary space is the single highest-impact change for your score.",
+                "Find plants for my space →",
+                3
+            ),
+            "NATURAL LIGHT" to NextStepInfo(
+                "NATURAL LIGHT",
+                "Reposition toward natural light",
+                "You scored 1 on Natural Light. Even partial repositioning toward a window reduces sympathetic nervous system activation.",
+                "Design my layout →",
+                1
+            ),
+            "ACOUSTIC CALM" to NextStepInfo(
+                "ACOUSTIC CALM",
+                "Introduce acoustic masking",
+                "You scored low on Acoustic Calm. Mask background hums with natural soundscapes (water, wind) to rest your auditory cortex.",
+                "Find soothing soundscapes →",
+                3
+            ),
+            "NATURAL MATERIALS" to NextStepInfo(
+                "NATURAL MATERIALS",
+                "Introduce one natural texture",
+                "You scored 0 on Natural Materials. A wood surface, woven rug, or stone object changes your sensory baseline immediately.",
+                "Browse material ideas →",
+                2
+            ),
+            "AIR & VENTILATION" to NextStepInfo(
+                "AIR & VENTILATION",
+                "Enhance active airflow",
+                "You scored low on Air & Ventilation. Open windows for 10 minutes twice daily, or use a gentle oscillating fan to mimic natural wind.",
+                "Ask Advisor for advice →",
+                3
+            ),
+            "ORGANIC FORMS" to NextStepInfo(
+                "ORGANIC FORMS",
+                "Introduce organic patterns",
+                "You scored low on Organic Forms. Incorporate curved decor or botanical prints to soften sharp, institutional room angles.",
+                "Browse decoration ideas →",
+                2
+            ),
+            "WATER FEATURES" to NextStepInfo(
+                "WATER FEATURES",
+                "Add sound of moving water",
+                "You scored low on Water Features. A small tabletop fountain or rain sound machine lowers heart rate variability.",
+                "Explore water elements →",
+                3
+            ),
+            "SENSORY RICHNESS" to NextStepInfo(
+                "SENSORY RICHNESS",
+                "Stimulate with natural scents",
+                "You scored low on Sensory Richness. Use natural cedarwood, pine, or lavender oils to signal safety to your limbic system.",
+                "Get aromatic tips →",
+                3
+            ),
+            "SEASONAL AWARENESS" to NextStepInfo(
+                "SEASONAL AWARENESS",
+                "Align with current season",
+                "You scored low on Seasonal Awareness. Bring seasonal flowers indoors or adjust light cycles to stay synced with external rhythms.",
+                "Browse seasonal plants →",
+                2
+            )
+        )
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.9f),
-                        MaterialTheme.colorScheme.surface
-                    )
-                )
-            )
-            .padding(24.dp)
-            .windowInsetsPadding(WindowInsets.safeDrawing),
-        contentAlignment = Alignment.Center
+            .background(Color(0xFF1D3C28)) // Dark green default
     ) {
-        Column(
+        AnimatedContent(
+            targetState = screenState,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(400)) togetherWith fadeOut(animationSpec = tween(400))
+            },
+            label = "AssessmentFlowAnimation"
+        ) { state ->
+            when (state) {
+                AssessmentScreenState.SPLASH -> {
+                    SplashWelcomeScreen(
+                        onStart = {
+                            answers.clear()
+                            currentQuestionIdx = 0
+                            screenState = AssessmentScreenState.QUESTION
+                        },
+                        onSkip = { viewModel.skipAssessment() }
+                    )
+                }
+                AssessmentScreenState.QUESTION -> {
+                    QuestionFlowScreen(
+                        questions = questions,
+                        currentIndex = currentQuestionIdx,
+                        onAnswer = { score ->
+                            answers[currentQuestionIdx] = score
+                            if (currentQuestionIdx < questions.size - 1) {
+                                currentQuestionIdx++
+                            } else {
+                                screenState = AssessmentScreenState.CALCULATING
+                            }
+                        },
+                        onBack = {
+                            if (currentQuestionIdx > 0) {
+                                currentQuestionIdx--
+                            } else {
+                                screenState = AssessmentScreenState.SPLASH
+                            }
+                        }
+                    )
+                }
+                AssessmentScreenState.CALCULATING -> {
+                    CalculatingScreen(
+                        onComplete = {
+                            screenState = AssessmentScreenState.RESULT
+                        }
+                    )
+                }
+                AssessmentScreenState.RESULT -> {
+                    ResultScreen(
+                        score = totalScore,
+                        onSeeSteps = {
+                            screenState = AssessmentScreenState.STEPS
+                        }
+                    )
+                }
+                AssessmentScreenState.STEPS -> {
+                    StepsScreen(
+                        lowestCategories = lowestCategories,
+                        stepsMapping = stepsMapping,
+                        onFinish = { targetTab ->
+                            viewModel.saveAssessmentResult(totalScore, lowestCategories.take(3))
+                            viewModel.setCurrentTab(targetTab)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SplashWelcomeScreen(
+    onStart: () -> Unit,
+    onSkip: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Spacer(modifier = Modifier.height(48.dp))
+        
+        // centered FloraFlow logo top
+        Icon(
+            imageVector = Icons.Default.Spa,
+            contentDescription = "FloraFlow Logo",
+            tint = Color(0xFFE8C998),
+            modifier = Modifier.size(96.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = "FloraFlow",
+            style = MaterialTheme.typography.titleLarge.copy(
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.White
+            )
+        )
+        
+        Spacer(modifier = Modifier.weight(1f))
+        
+        Text(
+            text = "How much stress is your space creating?",
+            style = MaterialTheme.typography.headlineLarge.copy(
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFE8C998), // sandy warm cream
+                lineHeight = 40.sp,
+                textAlign = TextAlign.Center
+            )
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = "Take a 2-minute Neural Load assessment — find out if your environment is helping or hurting your nervous system.",
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = 16.sp,
+                color = Color.White.copy(alpha = 0.85f),
+                textAlign = TextAlign.Center,
+                lineHeight = 24.sp
+            ),
+            modifier = Modifier.padding(horizontal = 8.dp)
+        )
+        
+        Spacer(modifier = Modifier.weight(1f))
+        
+        Button(
+            onClick = onStart,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFE8C998),
+                contentColor = Color(0xFF1D3C28)
+            ),
+            shape = RoundedCornerShape(16.dp),
             modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .height(56.dp)
+                .testTag("onboarding_start_assessment_btn")
         ) {
-            // Header Top Bar with custom branding
+            Text(
+                text = "Start My Assessment",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Text(
+            text = "Skip for now →",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White.copy(alpha = 0.7f)
+            ),
+            modifier = Modifier
+                .clickable { onSkip() }
+                .padding(8.dp)
+                .testTag("onboarding_skip_assessment_btn")
+        )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+fun QuestionFlowScreen(
+    questions: List<AssessmentQuestion>,
+    currentIndex: Int,
+    onAnswer: (Int) -> Unit,
+    onBack: () -> Unit
+) {
+    val currentQuestion = questions[currentIndex]
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF7F9F6)) // light background
+            .padding(24.dp)
+    ) {
+        // Top Bar: Back navigation & 10-segmented progress bar
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color(0xFF1D3C28)
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // 10 segments progress bar
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Icon(
-                        imageVector = Icons.Default.Spa,
-                        contentDescription = "FloraFlow App Icon",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Text(
-                        text = "FloraFlow",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                Text(
-                    text = "SKIP",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .testTag("onboarding_skip_button")
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { viewModel.completeOnboarding() }
-                        .padding(horizontal = 12.dp, vertical = 6.dp)
-                )
-            }
-
-            // Central Interactive Carousel Box with sliding content animations
-            Box(
-                modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
+                    .height(6.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                AnimatedContent(
-                    targetState = activeStep,
-                    transitionSpec = {
-                        if (targetState.title != initialState.title) {
-                            slideInHorizontally { width -> width } + fadeIn() togetherWith
-                                    slideOutHorizontally { width -> -width } + fadeOut()
-                        } else {
-                            fadeIn() togetherWith fadeOut()
-                        }
-                    },
-                    label = "carouselScroll"
-                ) { step ->
-                    Card(
+                for (i in 0 until questions.size) {
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp)
-                            .testTag("onboarding_slide_card"),
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.background
-                        ),
-                        border = androidx.compose.foundation.BorderStroke(
-                            width = 1.5.dp,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            // Large beautiful geometric badge enclosing the active emoji
-                            Box(
-                                modifier = Modifier
-                                    .size(100.dp)
-                                    .clip(RoundedCornerShape(28.dp))
-                                    .background(step.accentColor.copy(alpha = 0.12f))
-                                    .align(Alignment.CenterHorizontally),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(72.dp)
-                                        .clip(RoundedCornerShape(22.dp))
-                                        .background(step.accentColor.copy(alpha = 0.22f)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(step.emoji, fontSize = 42.sp)
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Text(
-                                text = step.title,
-                                style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = TextAlign.Center
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clip(CircleShape)
+                            .background(
+                                if (i <= currentIndex) Color(0xFF6E8B7E) // filled (sage green)
+                                else Color(0xFFE2E8E5) // empty
                             )
-
-                            Text(
-                                text = step.subtitle,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                textAlign = TextAlign.Center
-                            )
-
-                            Text(
-                                text = step.description,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                                lineHeight = 20.sp,
-                                modifier = Modifier.padding(horizontal = 8.dp)
-                            )
-                        }
-                    }
+                    )
                 }
             }
-
-            // Bottom Navigation and Page Indicators
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Smooth horizontal pill dots indicator
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    steps.forEachIndexed { idx, _ ->
-                        val isSelected = currentStepIdx == idx
-                        val dotWidth by animateDpAsState(
-                            targetValue = if (isSelected) 24.dp else 8.dp,
-                            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy)
-                        )
-                        Box(
-                            modifier = Modifier
-                                .height(8.dp)
-                                .width(dotWidth)
-                                .clip(CircleShape)
-                                .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.outlineVariant
-                                )
-                        )
-                    }
-                }
-
-                // Action controls ("Next" or "Enter Space")
-                Button(
-                    onClick = {
-                        if (currentStepIdx < steps.size - 1) {
-                            currentStepIdx++
-                        } else {
-                            viewModel.completeOnboarding()
-                        }
-                    },
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Text(
+            text = "Question ${currentIndex + 1} of 10",
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontSize = 14.sp,
+                color = Color(0xFF6E8B7E),
+                fontWeight = FontWeight.Bold
+            )
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        // Category Badge
+        Box(
+            modifier = Modifier
+                .background(Color(0xFFE8EFEA), RoundedCornerShape(12.dp))
+                .padding(horizontal = 12.dp, vertical = 6.dp)
+        ) {
+            Text(
+                text = currentQuestion.category,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = 11.sp,
+                    color = Color(0xFF1D3C28),
+                    fontWeight = FontWeight.ExtraBold
+                )
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        // Question Text
+        Text(
+            text = currentQuestion.text,
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1D3C28),
+                lineHeight = 32.sp
+            ),
+            modifier = Modifier.weight(1f)
+        )
+        
+        // Options full-width touch targets
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            currentQuestion.options.forEachIndexed { score, text ->
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp)
-                        .testTag("onboarding_next_button"),
+                        .clickable { onAnswer(score) }
+                        .testTag("question_${currentIndex}_option_$score"),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.White
+                    ),
+                    border = borderStroke()
                 ) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = if (currentStepIdx == steps.size - 1) "ENTER FLORAL SPACE ✨" else "CONTINUE TOUR",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 14.sp
+                            text = text,
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF1D3C28)
+                            )
                         )
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = "Next onboard slide action",
-                            modifier = Modifier.size(16.dp)
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = Color(0xFF6E8B7E)
                         )
                     }
                 }
             }
         }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+fun borderStroke() = androidx.compose.foundation.BorderStroke(
+    width = 1.dp,
+    color = Color(0xFFE2E8E5)
+)
+
+@Composable
+fun CalculatingScreen(
+    onComplete: () -> Unit
+) {
+    var textToShow by remember { mutableStateOf("Analyzing your environment...") }
+    
+    LaunchedEffect(Unit) {
+        delay(800)
+        textToShow = "Calculating Neural Load..."
+        delay(800)
+        textToShow = "Generating your results..."
+        delay(900)
+        onComplete()
+    }
+    
+    // pulsing leaf animation
+    val infiniteTransition = rememberInfiniteTransition(label = "pulsing")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 0.8f,
+        targetValue = 1.2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
+    
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF1D3C28)),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(
+                imageVector = Icons.Default.Spa,
+                contentDescription = null,
+                tint = Color(0xFFE8C998),
+                modifier = Modifier
+                    .size(80.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .graphicsLayer(scaleX = scale, scaleY = scale)
+            )
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            Text(
+                text = textToShow,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White.copy(alpha = 0.9f)
+                ),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+fun ResultScreen(
+    score: Int,
+    onSeeSteps: () -> Unit
+) {
+    val zoneInfo = remember(score) {
+        when (score) {
+            in 15..20 -> Triple("GREEN ZONE", "LOW NEURAL LOAD", Color(0xFF1B4A2F))
+            in 8..14 -> Triple("YELLOW ZONE", "MODERATE NEURAL LOAD", Color(0xFF825E1B))
+            else -> Triple("RED ZONE", "HIGH NEURAL LOAD", Color(0xFF702123))
+        }
+    }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(zoneInfo.third)
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(48.dp))
+        
+        Text(
+            text = "Your Neural Load Score",
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White.copy(alpha = 0.7f)
+            )
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Large score number 48pt+ bold
+        Text(
+            text = "$score / 20",
+            style = MaterialTheme.typography.displayLarge.copy(
+                fontSize = 56.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.White
+            )
+        )
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Zone label badge
+        Box(
+            modifier = Modifier
+                .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(24.dp))
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = "${zoneInfo.first} — ${zoneInfo.second}",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        Text(
+            text = when (score) {
+                in 15..20 -> "Your environment is highly supportive of your nervous system. Biophilic cues are abundant, promoting natural calm, focus, and restoration. Maintain this healthy balance!"
+                in 8..14 -> "Your environment has meaningful biophilic gaps that are quietly costing you focus, mood, and resilience. The good news: the highest-impact fixes are specific and achievable."
+                else -> "Your environment is creating significant sensory strain. A lack of natural inputs may be contributing to fatigue, stress, or brain fog. A few key adjustments can transform this space."
+            },
+            style = MaterialTheme.typography.bodyLarge.copy(
+                fontSize = 16.sp,
+                color = Color.White.copy(alpha = 0.9f),
+                textAlign = TextAlign.Center,
+                lineHeight = 24.sp
+            ),
+            modifier = Modifier.padding(horizontal = 12.dp)
+        )
+        
+        Spacer(modifier = Modifier.weight(1f))
+        
+        Button(
+            onClick = onSeeSteps,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White,
+                contentColor = zoneInfo.third
+            ),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .testTag("result_see_steps_btn")
+        ) {
+            Text(
+                text = "See My 3 Next Steps",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Fake share button
+        var showShareToast by remember { mutableStateOf(false) }
+        
+        OutlinedButton(
+            onClick = { showShareToast = true },
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = Color.White
+            ),
+            border = borderStrokeShare(),
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .testTag("result_share_score_btn")
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                Text(
+                    text = "Share My Score",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
+        }
+        
+        if (showShareToast) {
+            AlertDialog(
+                onDismissRequest = { showShareToast = false },
+                confirmButton = {
+                    TextButton(onClick = { showShareToast = false }) {
+                        Text("Close", color = Color(0xFF1D3C28))
+                    }
+                },
+                title = { Text("Share Score Card", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(zoneInfo.third, RoundedCornerShape(16.dp))
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.Spa, contentDescription = null, tint = Color(0xFFE8C998), modifier = Modifier.size(36.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("FloraFlow Neural Load", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text("$score / 20", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 32.sp)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(zoneInfo.second, color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text("Take your own assessment: floraflow.app", color = Color(0xFFE8C998), fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text("Card generated successfully. Click share to post!", textAlign = TextAlign.Center, fontSize = 12.sp)
+                    }
+                }
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+fun borderStrokeShare() = androidx.compose.foundation.BorderStroke(
+    width = 1.dp,
+    color = Color.White.copy(alpha = 0.5f)
+)
+
+@Composable
+fun StepsScreen(
+    lowestCategories: List<String>,
+    stepsMapping: Map<String, NextStepInfo>,
+    onFinish: (Int) -> Unit
+) {
+    // Take the 3 lowest categories that have steps mapped
+    val finalSteps = remember(lowestCategories) {
+        lowestCategories.mapNotNull { stepsMapping[it] }.take(3)
+    }
+    
+    var expandedIndex by remember { mutableIntStateOf(0) } // initially expand step 1
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF7F9F6))
+            .padding(24.dp)
+    ) {
+        Text(
+            text = "Your Personalized Next Steps",
+            style = MaterialTheme.typography.headlineMedium.copy(
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1D3C28),
+                lineHeight = 32.sp
+            ),
+            modifier = Modifier.padding(top = 16.dp)
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Text(
+            text = "Click a step below to expand details and begin styling your environment.",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 14.sp,
+                color = Color(0xFF6E8B7E)
+            )
+        )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            finalSteps.forEachIndexed { index, step ->
+                val isExpanded = expandedIndex == index
+                
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { expandedIndex = if (isExpanded) -1 else index }
+                        .testTag("step_card_$index"),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isExpanded) Color.White else Color(0xFFEAEFEA)
+                    ),
+                    border = borderStroke()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                // Numbered Badge
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF1D3C28)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${index + 1}",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                                
+                                Text(
+                                    text = step.title,
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF1D3C28)
+                                    ),
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            
+                            Icon(
+                                imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                contentDescription = null,
+                                tint = Color(0xFF1D3C28)
+                            )
+                        }
+                        
+                        AnimatedVisibility(visible = isExpanded) {
+                            Column {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                Text(
+                                    text = step.detail,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontSize = 14.sp,
+                                        color = Color(0xFF1D3C28).copy(alpha = 0.8f),
+                                        lineHeight = 22.sp
+                                    )
+                                )
+                                
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                Button(
+                                    onClick = { onFinish(step.targetTab) },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF1D3C28),
+                                        contentColor = Color.White
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp)
+                                        .testTag("step_card_${index}_cta")
+                                ) {
+                                    Text(
+                                        text = step.cta,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // general Skip/Finish button
+        TextButton(
+            onClick = { onFinish(0) }, // Default to home (tab 0)
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .testTag("steps_finish_all_btn")
+        ) {
+            Text(
+                text = "Go to Floral Space Dashboard",
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1D3C28)
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
