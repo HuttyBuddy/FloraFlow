@@ -21,7 +21,7 @@ class PlannerScreenTest {
         assertTrue(checkPlantSynergy("Lavender", "Cherry"))
         assertTrue(checkPlantSynergy("Cactus", "Aloe"))
         assertTrue(checkPlantSynergy("Marigold", "Tomato"))
-        assertTrue(checkPlantSynergy("Tomato", "Potato"))
+        assertTrue(checkPlantSynergy("Tomato", "Basil"))
         assertTrue(checkPlantSynergy("Aster", "Thyme"))
         assertTrue(checkPlantSynergy("Columbine", "Fern"))
         assertTrue(checkPlantSynergy("Rosemary", "Lavender"))
@@ -87,7 +87,7 @@ class PlannerScreenTest {
 
         val gridItems4 = listOf(
             GridPlantItem(1, 1, "Tomato"),
-            GridPlantItem(1, 2, "Potato") // Right neighbor
+            GridPlantItem(1, 2, "Basil") // Right neighbor
         )
         assertTrue(hasNeighborSynergy(1, 1, gridItems4))
     }

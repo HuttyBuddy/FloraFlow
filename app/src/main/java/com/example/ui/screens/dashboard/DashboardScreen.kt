@@ -472,7 +472,7 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 80.dp)
+            contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
         ) {
             if (isAssessmentSkipped) {
                 item { skippedAssessmentBanner() }
@@ -506,7 +506,7 @@ fun DashboardScreen(
                 quickActionsContent()
                 communityPromoContent()
                 statisticsContent()
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
             Column(
                 modifier = Modifier
@@ -518,7 +518,7 @@ fun DashboardScreen(
                 canvasChartContent()
                 logsHeaderContent()
                 logsListContent()
-                Spacer(modifier = Modifier.height(80.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }

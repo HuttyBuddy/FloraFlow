@@ -77,7 +77,7 @@ android {
     compose = true
     buildConfig = true
   }
-  experimentalProperties["android.nativeLibraryAlignmentPageSize"] = "4k"
+  experimentalProperties["android.nativeLibraryAlignmentPageSize"] = "16k"
   testOptions {
     unitTests {
       isIncludeAndroidResources = true

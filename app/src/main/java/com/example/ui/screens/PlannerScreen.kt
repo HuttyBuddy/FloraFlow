@@ -46,7 +46,7 @@ fun checkPlantSynergy(plant1: String, plant2: String): Boolean {
         setOf("lavender", "cherry"),
         setOf("cactus", "aloe"),
         setOf("marigold", "tomato"),
-        setOf("tomato", "potato"),
+        setOf("tomato", "basil"),
         setOf("aster", "thyme"),
         setOf("columbine", "fern"),
         setOf("rosemary", "lavender"),
@@ -54,6 +54,29 @@ fun checkPlantSynergy(plant1: String, plant2: String): Boolean {
     )
     
     return companionRules.any { rule ->
+        rule.any { r -> p1.contains(r) } && rule.any { r -> p2.contains(r) }
+    }
+}
+
+fun checkPlantConflict(plant1: String, plant2: String): Boolean {
+    val p1 = plant1.lowercase()
+    val p2 = plant2.lowercase()
+    if (p1 == p2) return false
+    
+    val conflictRules = listOf(
+        setOf("tomato", "potato"),      // Blight risk
+        setOf("tomato", "fennel"),      // Growth inhibition
+        setOf("potato", "cucumber"),    // Blight & pests
+        setOf("onion", "bean"),         // Stunts beans
+        setOf("onion", "pea"),          // Stunts peas
+        setOf("garlic", "bean"),        // Stunts beans
+        setOf("garlic", "pea"),         // Stunts peas
+        setOf("rose", "cactus"),        // Water requirements conflict
+        setOf("mint", "rose"),          // Invasive root competition
+        setOf("mint", "lavender")       // Moisture conflict
+    )
+    
+    return conflictRules.any { rule ->
         rule.any { r -> p1.contains(r) } && rule.any { r -> p2.contains(r) }
     }
 }
@@ -70,6 +93,25 @@ fun hasNeighborSynergy(row: Int, col: Int, gridItems: List<GridPlantItem>): Bool
         val neighborItem = gridItems.firstOrNull { it.x == n.first && it.y == n.second }
         if (neighborItem != null) {
             if (checkPlantSynergy(currentLoc.plantName, neighborItem.plantName)) {
+                return true
+            }
+        }
+    }
+    return false
+}
+
+fun hasNeighborConflict(row: Int, col: Int, gridItems: List<GridPlantItem>): Boolean {
+    val currentLoc = gridItems.firstOrNull { it.x == row && it.y == col } ?: return false
+    val neighbors = listOf(
+        Pair(row - 1, col),
+        Pair(row + 1, col),
+        Pair(row, col - 1),
+        Pair(row, col + 1)
+    )
+    for (n in neighbors) {
+        val neighborItem = gridItems.firstOrNull { it.x == n.first && it.y == n.second }
+        if (neighborItem != null) {
+            if (checkPlantConflict(currentLoc.plantName, neighborItem.plantName)) {
                 return true
             }
         }
@@ -415,6 +457,7 @@ fun PlannerScreen(
                                     val emoji = getEmojiForPlantName(item?.plantName ?: "")
                                     val isHighlighted = highlightedPlantName != null && item?.plantName == highlightedPlantName
                                     val hasSynergy = item != null && hasNeighborSynergy(r, c, activeGridItems)
+                                    val hasConflict = item != null && hasNeighborConflict(r, c, activeGridItems)
 
                                     val scaleVal by animateFloatAsState(
                                         targetValue = if (isHighlighted) 1.08f else 1f,
@@ -434,6 +477,7 @@ fun PlannerScreen(
                                             .background(
                                                 if (item != null) {
                                                     if (isHighlighted) Color(0xFFFFD54F).copy(alpha = 0.5f)
+                                                     else if (hasConflict) Color(0xFFFFEBEE)
                                                      else if (hasSynergy) Color(0xFFE8F5E9)
                                                      else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                                                 } else {
@@ -441,8 +485,9 @@ fun PlannerScreen(
                                                 }
                                             )
                                             .border(
-                                                width = if (isHighlighted) 3.dp else if (hasSynergy) 2.2.dp else if (item != null) 2.dp else 1.dp,
+                                                width = if (isHighlighted) 3.dp else if (hasConflict) 2.2.dp else if (hasSynergy) 2.2.dp else if (item != null) 2.dp else 1.dp,
                                                 color = if (isHighlighted) Color(0xFFF57F17)
+                                                else if (hasConflict) Color(0xFFE53935)
                                                 else if (hasSynergy) Color(0xFF4CAF50)
                                                 else if (item != null) MaterialTheme.colorScheme.primary
                                                 else currentSoilTheme.outlineColor.copy(alpha = 0.4f),
@@ -463,12 +508,14 @@ fun PlannerScreen(
                                                          .size(38.dp)
                                                          .border(
                                                              width = 1.dp,
-                                                             color = if (hasSynergy) Color(0xFF4CAF50).copy(alpha = 0.4f)
+                                                             color = if (hasConflict) Color(0xFFE53935).copy(alpha = 0.4f)
+                                                             else if (hasSynergy) Color(0xFF4CAF50).copy(alpha = 0.4f)
                                                              else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                                                              shape = CircleShape
                                                          )
                                                          .background(
-                                                             if (hasSynergy) Color(0xFFC8E6C9).copy(alpha = 0.4f)
+                                                             if (hasConflict) Color(0xFFFFCDD2).copy(alpha = 0.4f)
+                                                             else if (hasSynergy) Color(0xFFC8E6C9).copy(alpha = 0.4f)
                                                              else MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
                                                              CircleShape
                                                          ),
@@ -485,10 +532,12 @@ fun PlannerScreen(
                                                          text = item.plantName.take(6),
                                                          fontSize = 8.5.sp,
                                                          fontWeight = FontWeight.ExtraBold,
-                                                         color = if (hasSynergy) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
+                                                         color = if (hasConflict) Color(0xFFC62828) else if (hasSynergy) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
                                                          textAlign = TextAlign.Center
                                                      )
-                                                     if (hasSynergy) {
+                                                     if (hasConflict) {
+                                                         Text("⚠️", fontSize = 7.sp, modifier = Modifier.padding(start = 1.dp))
+                                                     } else if (hasSynergy) {
                                                          Text("✨", fontSize = 7.sp, modifier = Modifier.padding(start = 1.dp))
                                                      }
                                                  }
@@ -666,7 +715,7 @@ fun PlannerScreen(
                     gridPlannerContent()
                     progressDensityContent()
                     cadBlueprintExportContent()
-                    Spacer(modifier = Modifier.height(80.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 Column(
@@ -680,7 +729,7 @@ fun PlannerScreen(
                     aiArchitectControlsContent()
                     substrateSelectorContent()
                     actionsPanelContent()
-                    Spacer(modifier = Modifier.height(80.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
@@ -693,6 +742,7 @@ fun PlannerScreen(
         val col = cellDialogCoords.second
         val currentOccupant = activeGridItems.firstOrNull { it.x == row && it.y == col }
         val hasSynergy = currentOccupant != null && hasNeighborSynergy(row, col, activeGridItems)
+        val hasConflict = currentOccupant != null && hasNeighborConflict(row, col, activeGridItems)
 
         Dialog(onDismissRequest = { showCellConfigDialog = null }) {
             Surface(
@@ -716,7 +766,7 @@ fun PlannerScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    if (hasSynergy) Color(0xFFE8F5E9) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                    if (hasConflict) Color(0xFFFFEBEE) else if (hasSynergy) Color(0xFFE8F5E9) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
                                     RoundedCornerShape(12.dp)
                                 )
                                 .padding(12.dp)
@@ -725,7 +775,7 @@ fun PlannerScreen(
                                 text = "Occupant: ${currentOccupant.plantName} ${getEmojiForPlantName(currentOccupant.plantName)}",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = if (hasSynergy) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
+                                color = if (hasConflict) Color(0xFFC62828) else if (hasSynergy) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
                             )
                             if (hasSynergy) {
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -733,6 +783,16 @@ fun PlannerScreen(
                                     text = "✨ COMPANION SYNERGY ACTIVE: This species benefits beautifully from neighboring root enzymes and shared microclimate shade!",
                                     fontSize = 11.sp,
                                     color = Color(0xFF2E7D32),
+                                    fontWeight = FontWeight.Bold,
+                                    lineHeight = 15.sp
+                                )
+                            }
+                            if (hasConflict) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "⚠️ COMPANION CONFLICT WARNING: Staged too close to an incompatible species! These plants compete for nutrients, attract pests, or clash in water needs.",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFFC62828),
                                     fontWeight = FontWeight.Bold,
                                     lineHeight = 15.sp
                                 )

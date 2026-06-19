@@ -78,7 +78,6 @@ fun AiStudioScreen(
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -100,7 +99,7 @@ fun AiStudioScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 300.dp, max = 500.dp)
+                    .weight(1f)
                     .background(
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f),
                         shape = RoundedCornerShape(20.dp)
@@ -343,7 +342,7 @@ fun AiStudioScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 100.dp),
+                        .padding(bottom = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     if (!isPremium) {

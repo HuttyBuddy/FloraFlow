@@ -252,7 +252,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         ) { innerPadding ->
-                            val safeBottomPadding = if (innerPadding.calculateBottomPadding() < 90.dp) 90.dp else innerPadding.calculateBottomPadding() + 12.dp
+                            val safeBottomPadding = innerPadding.calculateBottomPadding()
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()

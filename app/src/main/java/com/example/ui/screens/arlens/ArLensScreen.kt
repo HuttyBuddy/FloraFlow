@@ -72,6 +72,7 @@ import androidx.core.content.ContextCompat
 
 // Imports from the original package namespace
 import com.example.ui.screens.checkPlantSynergy
+import com.example.ui.screens.checkPlantConflict
 import com.example.ui.screens.getEmojiForPlantName
 import com.example.ui.screens.PremiumUpsellScreen
 
@@ -148,6 +149,23 @@ fun ArLensScreen(
                 val dy = p1.positionY - p2.positionY
                 val dist = kotlin.math.sqrt(dx * dx + dy * dy)
                 if (dist <= 180f && checkPlantSynergy(p1.name, p2.name)) {
+                    pairs.add(Pair(p1.id, p2.id))
+                }
+            }
+        }
+        pairs
+    }
+
+    val conflictPairs = remember(arPlacedPlants) {
+        val pairs = mutableListOf<Pair<Int, Int>>()
+        for (i in arPlacedPlants.indices) {
+            for (j in i + 1 until arPlacedPlants.size) {
+                val p1 = arPlacedPlants[i]
+                val p2 = arPlacedPlants[j]
+                val dx = p1.positionX - p2.positionX
+                val dy = p1.positionY - p2.positionY
+                val dist = kotlin.math.sqrt(dx * dx + dy * dy)
+                if (dist <= 180f && checkPlantConflict(p1.name, p2.name)) {
                     pairs.add(Pair(p1.id, p2.id))
                 }
             }
@@ -912,6 +930,50 @@ fun ArLensScreen(
                                 val start = Offset(p1.positionX + 75f, p1.positionY + 80f)
                                 val end = Offset(p2.positionX + 75f, p2.positionY + 80f)
                                 drawVitalityFlow(start, end, climateTimeFactor, Color(0xFF00FF66))
+                            }
+                        }
+                    }
+                }
+            }
+
+            // BOTANICAL CONFLICT/INCOMPATIBILITY GRAPHICS
+            if (conflictPairs.isNotEmpty()) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    clipRect {
+                        val conflictedIds = conflictPairs.flatMap { listOf(it.first, it.second) }.toSet()
+                        
+                        // 1. Draw glowing red visual aura beneath conflicted decals
+                        arPlacedPlants.forEach { placement ->
+                            if (conflictedIds.contains(placement.id)) {
+                                val pulse = 0.85f + 0.15f * sin(climateTimeFactor * 0.2f + placement.id.hashCode() * 0.1f)
+                                val auraCenter = Offset(placement.positionX + 75f, placement.positionY + 80f)
+                                val visuals = getBotanicalVisuals(localOverrides[placement.id]?.moisture ?: 0.7f, localOverrides[placement.id]?.growthStage ?: "Mature")
+                                val scale = placement.scale * visuals.scale
+                                val radius = 100f * scale * pulse
+                                drawCircle(
+                                    brush = Brush.radialGradient(
+                                        colors = listOf(
+                                            Color(0xFFFF3333).copy(alpha = 0.35f * pulse),
+                                            Color(0xFFFF3333).copy(alpha = 0.08f * pulse),
+                                            Color.Transparent
+                                        ),
+                                        center = auraCenter,
+                                        radius = radius
+                                    ),
+                                    radius = radius,
+                                    center = auraCenter
+                                )
+                            }
+                        }
+
+                        // 2. Draw pulsing neon-red connection lines to indicate conflict
+                        conflictPairs.forEach { pair ->
+                            val p1 = arPlacedPlants.firstOrNull { it.id == pair.first }
+                            val p2 = arPlacedPlants.firstOrNull { it.id == pair.second }
+                            if (p1 != null && p2 != null) {
+                                val start = Offset(p1.positionX + 75f, p1.positionY + 80f)
+                                val end = Offset(p2.positionX + 75f, p2.positionY + 80f)
+                                drawVitalityFlow(start, end, climateTimeFactor, Color(0xFFFF3333))
                             }
                         }
                     }
@@ -2137,7 +2199,7 @@ fun ArLensScreen(
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth(if (isLandscape) 0.65f else 1.0f)
                 .padding(horizontal = 14.dp)
-                .padding(bottom = 76.dp)
+                .padding(bottom = 16.dp)
                 .animateContentSize(),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
