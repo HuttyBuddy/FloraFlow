@@ -664,3 +664,11 @@ fun MoodLogItemCard(
         }
     }
 }
+
+// Helper to resolve string based Material Symbols
+fun imageIcons(name: String): androidx.compose.ui.graphics.vector.ImageVector = when (name) {
+    "eco" -> Icons.Default.Eco
+    "spa" -> Icons.Default.Spa
+    else -> Icons.Default.Terrain
+}
+

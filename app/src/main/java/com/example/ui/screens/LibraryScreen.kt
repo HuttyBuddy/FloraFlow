@@ -734,137 +734,85 @@ fun PlantCareTrackerCard(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("📏 Mature Size", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(plant.matureSize, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
-                            }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("💧 Watering Need", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(plant.wateringNeeds, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
-                            }
+                            Text("Sunlight: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(plant.sunlight, style = MaterialTheme.typography.bodySmall)
                         }
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("🌸 Bloom Season", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(plant.bloomTime, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
-                            }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("🐛 Pests & Diseases", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-                                Text(plant.pestsDiseases, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
-                            }
+                            Text("Soil Substrate: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(plant.soilType, style = MaterialTheme.typography.bodySmall)
                         }
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("🌱 Preferred Soil", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(plant.soilType, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
-                            }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("☀️ Ideal Sunlight", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(plant.sunlight, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
-                            }
+                            Text("Watering Needs: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(plant.wateringNeeds, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("Bloom Time: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(plant.bloomTime, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("Pests / Hazards: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(plant.pestsDiseases, style = MaterialTheme.typography.bodySmall)
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        "Four Seasons Care Routines:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
+                    // Season trackers
+                    Text("Seasonal Care Guidelines:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        SeasonCareBadge(season = "Spring", careInfo = plant.careSpring, modifier = Modifier.weight(1f))
-                        SeasonCareBadge(season = "Summer", careInfo = plant.careSummer, modifier = Modifier.weight(1f))
+                        SeasonCareBadge("Spring", plant.careSpring, modifier = Modifier.weight(1f))
+                        SeasonCareBadge("Summer", plant.careSummer, modifier = Modifier.weight(1f))
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        SeasonCareBadge(season = "Autumn", careInfo = plant.careAutumn, modifier = Modifier.weight(1f))
-                        SeasonCareBadge(season = "Winter", careInfo = plant.careWinter, modifier = Modifier.weight(1f))
+                        SeasonCareBadge("Autumn", plant.careAutumn, modifier = Modifier.weight(1f))
+                        SeasonCareBadge("Winter", plant.careWinter, modifier = Modifier.weight(1f))
                     }
 
-                    HorizontalDivider()
-
-                    // Simulate Growth adjust bar
-                    Text(
-                        "Simulate Cultivation Progress:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                    // Growth Progress Adjustment Slider
+                    Text("Update Live Growth progress index:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("Seed 🌱", style = MaterialTheme.typography.bodySmall)
                         Slider(
                             value = localGrowthProgress,
                             onValueChange = { localGrowthProgress = it },
-                            onValueChangeFinished = { onGrowthChange(localGrowthProgress.toInt()) },
+                            onValueChangeFinished = {
+                                onGrowthChange(localGrowthProgress.toInt())
+                            },
                             valueRange = 0f..100f,
-                            modifier = Modifier
-                                .weight(1f)
-                                .testTag("plant_growth_slider_${plant.id}"),
-                            colors = SliderDefaults.colors(
-                                thumbColor = MaterialTheme.colorScheme.primary,
-                                activeTrackColor = MaterialTheme.colorScheme.primary
-                            )
+                            modifier = Modifier.weight(1f).testTag("growth_slider_${plant.id}")
                         )
-                        Text("Bloom 🌺", style = MaterialTheme.typography.bodySmall)
+                        Text("${localGrowthProgress.toInt()}%", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
                     }
 
+                    // Card Actions panel
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        TextButton(
-                            onClick = onDeletePlant,
-                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                        Button(
+                            onClick = onConsultAi,
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.weight(1.5f).testTag("consult_ai_plant_btn")
                         ) {
-                            Icon(Icons.Default.DeleteOutline, contentDescription = "Delete", modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Delete", fontSize = 12.sp)
+                            Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Consult AI Bot", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
 
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        OutlinedButton(
+                            onClick = onDeletePlant,
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.weight(1f).testTag("delete_plant_btn")
                         ) {
-                            val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
-                            Button(
-                                onClick = {
-                                    val query = java.net.URLEncoder.encode("${plant.name} seeds starter organic", "UTF-8")
-                                    uriHandler.openUri("https://www.amazon.com/s?k=$query&tag=floraflow-20")
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                                modifier = Modifier.height(36.dp)
-                            ) {
-                                Icon(Icons.Default.ShoppingCart, contentDescription = "Buy Seeds", modifier = Modifier.size(14.dp), tint = Color.White)
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("Buy Seeds", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                            }
-
-                            Button(
-                                onClick = onConsultAi,
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                                modifier = Modifier.height(36.dp)
-                            ) {
-                                Icon(Icons.Default.SmartToy, contentDescription = "AI icon", modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("AI Help", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                            }
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(14.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Uproot", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -873,7 +821,7 @@ fun PlantCareTrackerCard(
     }
 }
 
-// --- BOTANICAL ENCYCLOPEDIA CARD ---
+// --- Specific Plant Encyclopedia Information Card ---
 @Composable
 fun SpeciesEncyclopediaCard(
     template: PlantTemplate,
@@ -886,55 +834,53 @@ fun SpeciesEncyclopediaCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onExpandClick() },
+            .testTag("species_card_${template.name.replace(" ", "_")}"),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onExpandClick() }
             ) {
                 Box(
                     modifier = Modifier
-                        .size(46.dp)
+                        .size(48.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(template.iconEmoji, fontSize = 22.sp)
+                    Text(template.iconEmoji, fontSize = 24.sp)
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         template.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium
                     )
+
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            template.type,
+                            text = template.type,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Box(
-                            modifier = Modifier
-                                .size(3.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f))
+                            color = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            template.compatibleClimate,
+                            text = "•",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        )
+                        Text(
+                            text = "Climate: ${template.compatibleClimate}",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
+                            color = MaterialTheme.colorScheme.secondary
                         )
                     }
                 }
@@ -947,30 +893,6 @@ fun SpeciesEncyclopediaCard(
                 }
             }
 
-            // Summary Tags
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text("☀️ ${template.sunlight}", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text("💧 Water: ${template.wateringNeeds}", fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-
             AnimatedVisibility(
                 visible = isExpanded,
                 enter = expandVertically() + fadeIn(),
@@ -978,11 +900,9 @@ fun SpeciesEncyclopediaCard(
             ) {
                 Column(
                     modifier = Modifier.padding(top = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-
-                    // Premium Botanical detailed stats grid
+                    // Care parameters overview table
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -991,123 +911,86 @@ fun SpeciesEncyclopediaCard(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("📏 Mature Size", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(template.matureSize, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
-                            }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("🌸 Bloom Season", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(template.bloomTime, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
-                            }
+                            Text("Ideal Sun Exposure: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(template.sunlight, style = MaterialTheme.typography.bodySmall)
                         }
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("🌱 Preferred Soil", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(template.soilType, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
-                            }
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text("🐛 Pests & Diseases", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
-                                Text(template.pestsDiseases, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onBackground)
-                            }
+                            Text("Substrate / Soil: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(template.soilType, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("Water Index level: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(template.wateringNeeds, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("Mature Dimensions: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(template.matureSize, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("Bloom Timeframe: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(template.bloomTime, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("Pests & Pathologies: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(template.pestsDiseases, style = MaterialTheme.typography.bodySmall)
                         }
                     }
 
-                    Text(
-                        "Suggested Four-Season Management:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
+                    // Season care guidelines
+                    Text("Seasonal Guideline Summary:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        SeasonCareBadge(season = "Spring", careInfo = template.careSpring, modifier = Modifier.weight(1f))
-                        SeasonCareBadge(season = "Summer", careInfo = template.careSummer, modifier = Modifier.weight(1f))
+                        SeasonCareBadge("Spring", template.careSpring, modifier = Modifier.weight(1f))
+                        SeasonCareBadge("Summer", template.careSummer, modifier = Modifier.weight(1f))
                     }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        SeasonCareBadge(season = "Autumn", careInfo = template.careAutumn, modifier = Modifier.weight(1f))
-                        SeasonCareBadge(season = "Winter", careInfo = template.careWinter, modifier = Modifier.weight(1f))
+                        SeasonCareBadge("Autumn", template.careAutumn, modifier = Modifier.weight(1f))
+                        SeasonCareBadge("Winter", template.careWinter, modifier = Modifier.weight(1f))
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    // planting control
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (isPlanted) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1.2f)
-                                    .height(44.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
-                                    .padding(horizontal = 8.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        Icons.Default.Celebration,
-                                        contentDescription = "Planted success icon",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        "Planted & Growing!",
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        } else {
-                            Button(
-                                onClick = {
-                                    if (activeLayoutAvailable) {
-                                        onSowPlant()
-                                    }
-                                },
-                                enabled = activeLayoutAvailable,
-                                modifier = Modifier.weight(1.2f).height(44.dp),
-                                shape = RoundedCornerShape(10.dp)
-                            ) {
-                                Icon(Icons.Default.LocalFlorist, contentDescription = "Cultivate icons", modifier = Modifier.size(14.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
+                    // Add button to inventory
+                    if (isPlanted) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.08f))
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Celebration, contentDescription = "Planted success icon", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    if (activeLayoutAvailable) "Sow in Garden" else "Choose Layout First",
-                                    fontWeight = FontWeight.Bold,
+                                    "Planted & Growing in Greenhouse Layout!",
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontSize = 11.sp,
-                                    maxLines = 1
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
                         }
-
-                        val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+                    } else {
                         Button(
                             onClick = {
-                                val query = java.net.URLEncoder.encode("${template.name} seeds starter plant", "UTF-8")
-                                uriHandler.openUri("https://www.amazon.com/s?k=$query&tag=floraflow-20")
+                                if (activeLayoutAvailable) {
+                                    onSowPlant()
+                                }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-                            modifier = Modifier.weight(0.8f).height(44.dp),
+                            enabled = activeLayoutAvailable,
+                            modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(10.dp)
                         ) {
-                            Icon(Icons.Default.ShoppingCart, contentDescription = "Buy Seeds", modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Icon(Icons.Default.LocalFlorist, contentDescription = "Cultivate icons", modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                "Buy Seeds",
+                                if (activeLayoutAvailable) "Sow in My Active Garden" else "Choose primary layout in Dashboard first",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp,
-                                maxLines = 1
+                                fontSize = 12.sp
                             )
                         }
                     }

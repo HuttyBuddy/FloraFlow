@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -10,10 +11,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
@@ -34,20 +37,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.ui.window.Dialog
 import com.example.ui.viewmodel.GardenViewModel
 import kotlin.math.PI
 import kotlin.math.sin
 
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-
 @Composable
 fun AiStudioScreen(
     viewModel: GardenViewModel,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val chatHistory by viewModel.aiChatHistory.collectAsStateWithLifecycle()
     val isAiLoading by viewModel.isAiLoading.collectAsStateWithLifecycle()
+    val aiStatus by viewModel.aiStatus.collectAsStateWithLifecycle()
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
     val activePlants by viewModel.activePlants.collectAsStateWithLifecycle()
@@ -84,16 +86,21 @@ fun AiStudioScreen(
 
             // 1. Dr. Julian Greenleaf's Glowing Live Profile Header
             BotanistProfileHeader(
+                isAiLoading = isAiLoading,
+                aiStatus = aiStatus,
                 hasHistory = chatHistory.isNotEmpty(),
                 onClearChat = { viewModel.clearAiChat() },
                 onOpenLab = { showLabPopup = true }
             )
 
-            // 2. Main Chat List Box container (Fixed height or based on content if scrollable page)
+            // 2. Soundwave Synth Voice Visualizer
+            LiveBotanistVoiceSynth(isGenerating = isAiLoading)
+
+            // 3. Main Chat List Box container
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 300.dp, max = 500.dp) // Give it enough space but let it be scrollable
+                    .heightIn(min = 300.dp, max = 500.dp)
                     .background(
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f),
                         shape = RoundedCornerShape(20.dp)
@@ -161,7 +168,7 @@ fun AiStudioScreen(
                                             },
                                         shape = RoundedCornerShape(12.dp),
                                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                        border = androidx.compose.foundation.BorderStroke(
+                                        border = BorderStroke(
                                             width = 1.dp,
                                             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                                         )
@@ -226,8 +233,8 @@ fun AiStudioScreen(
                                             if (isUser) {
                                                 Brush.horizontalGradient(
                                                     listOf(
-                                                        Color(0xFF386641), // Vibrant leaf green
-                                                        Color(0xFF6A994E)  // Fresh sprout green
+                                                        Color(0xFF386641),
+                                                        Color(0xFF6A994E)
                                                     )
                                                 )
                                             } else {
@@ -274,7 +281,7 @@ fun AiStudioScreen(
                 }
             }
 
-            // 5. Send message or premium wall trigger section
+            // Send message or premium wall trigger section
             if (!isPremium && (userQueriesCount >= 2)) {
                 Card(
                     modifier = Modifier
@@ -285,7 +292,7 @@ fun AiStudioScreen(
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
                     ),
-                    border = androidx.compose.foundation.BorderStroke(
+                    border = BorderStroke(
                         width = 2.dp,
                         brush = Brush.horizontalGradient(
                             listOf(Color(0xFFFFD54F), MaterialTheme.colorScheme.primary)
@@ -315,7 +322,7 @@ fun AiStudioScreen(
                             )
                         }
                         Text(
-                            text = "You have exhausted your free botanist credentials. Upgrade to PRO to unlock unlimited Live expert analyses, 2D model companions, and diagnostic AR overlays!",
+                            text = "You have exhausted your free credentials. Upgrade to PRO to unlock unlimited Live expert analyses, 2D model companions, and diagnostic AR overlays!",
                             style = MaterialTheme.typography.bodySmall,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
@@ -336,7 +343,7 @@ fun AiStudioScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 100.dp), // Extra space for nav bar
+                        .padding(bottom = 100.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     if (!isPremium) {
@@ -409,9 +416,7 @@ fun AiStudioScreen(
             }
 
             if (showLabPopup) {
-                androidx.compose.ui.window.Dialog(
-                    onDismissRequest = { showLabPopup = false }
-                ) {
+                Dialog(onDismissRequest = { showLabPopup = false }) {
                     BotanistLiveLabConsole(
                         activeLayout = activeLayout, 
                         activePlants = activePlants,
@@ -435,10 +440,14 @@ fun AiStudioScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 BotanistProfileHeader(
+                    isAiLoading = isAiLoading,
+                    aiStatus = aiStatus,
                     hasHistory = chatHistory.isNotEmpty(),
                     onClearChat = { viewModel.clearAiChat() },
                     onOpenLab = { showLabPopup = true }
                 )
+
+                LiveBotanistVoiceSynth(isGenerating = isAiLoading)
 
                 // Chat Box
                 Box(
@@ -584,7 +593,7 @@ fun AiStudioScreen(
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
                         ),
-                        border = androidx.compose.foundation.BorderStroke(
+                        border = BorderStroke(
                             width = 2.dp,
                             brush = Brush.horizontalGradient(
                                 listOf(Color(0xFFFFD54F), MaterialTheme.colorScheme.primary)
@@ -614,7 +623,7 @@ fun AiStudioScreen(
                                 )
                             }
                             Text(
-                                text = "You have exhausted your free botanist credentials. Upgrade to PRO to unlock unlimited Live expert analyses, 2D model companions, and diagnostic AR overlays!",
+                                text = "You have exhausted your free credentials. Upgrade to PRO to unlock unlimited Live expert analyses, 2D model companions, and diagnostic AR overlays!",
                                 style = MaterialTheme.typography.bodySmall,
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
@@ -708,26 +717,18 @@ fun AiStudioScreen(
                 }
             }
 
-            // Right Column (Julian's Biotech Side Console): Weight 0.45f
+            // Right Column (Sensors, suggestions): Weight 0.45f
             Column(
                 modifier = Modifier
                     .weight(0.45f)
                     .fillMaxHeight()
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text(
-                    "Biotech Diagnostics Console",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                // Synced sensor diagnostics metrics console
                 BotanistLiveLabConsole(
                     activeLayout = activeLayout, 
                     activePlants = activePlants,
-                    onClose = { /* Not used in side console but required by signature */ }
+                    onClose = null
                 )
 
                 // Suggestions / Quick diagnostic checks zone always available on widescreen
@@ -735,7 +736,7 @@ fun AiStudioScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)),
-                    border = androidx.compose.foundation.BorderStroke(
+                    border = BorderStroke(
                         width = 1.dp,
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
                     )
@@ -766,7 +767,7 @@ fun AiStudioScreen(
                                     },
                                 shape = RoundedCornerShape(12.dp),
                                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                border = androidx.compose.foundation.BorderStroke(
+                                border = BorderStroke(
                                     width = 1.dp,
                                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                                 )
@@ -801,10 +802,23 @@ fun AiStudioScreen(
 
 @Composable
 fun BotanistProfileHeader(
+    isAiLoading: Boolean,
+    aiStatus: String,
     hasHistory: Boolean,
     onClearChat: () -> Unit,
     onOpenLab: () -> Unit
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.3f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseDot"
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -846,16 +860,29 @@ fun BotanistProfileHeader(
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Dr. Julian Greenleaf",
-                    fontWeight = FontWeight.ExtraBold,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    lineHeight = 28.sp
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Dr. Julian Greenleaf",
+                        fontWeight = FontWeight.ExtraBold,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 28.sp
+                    )
+                    if (isAiLoading) {
+                        Box(
+                            modifier = Modifier
+                                .size(10.dp)
+                                .graphicsLayer { alpha = pulseAlpha }
+                                .background(Color(0xFF4CAF50), CircleShape)
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Live Gemini Agent • PhD in Botanical Systems",
+                    text = if (isAiLoading && aiStatus.isNotBlank()) aiStatus else "Live Gemini Agent • PhD in Botanical Systems",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                 )
@@ -923,7 +950,7 @@ fun LiveBotanistVoiceSynth(
             .padding(vertical = 2.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f)),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier
@@ -995,19 +1022,21 @@ fun LiveBotanistVoiceSynth(
 fun BotanistLiveLabConsole(
     activeLayout: com.example.data.model.GardenLayout?,
     activePlants: List<com.example.data.model.Plant>,
-    onClose: () -> Unit
+    onClose: (() -> Unit)? = null
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            .padding(if (onClose != null) 16.dp else 2.dp),
+        shape = RoundedCornerShape(if (onClose != null) 24.dp else 16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (onClose != null) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(if (onClose != null) 20.dp else 10.dp),
+            verticalArrangement = Arrangement.spacedBy(if (onClose != null) 12.dp else 6.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1016,31 +1045,46 @@ fun BotanistLiveLabConsole(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(if (onClose != null) 8.dp else 6.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Spa,
                         contentDescription = "Sensor flow icon",
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(if (onClose != null) 20.dp else 14.dp)
                     )
                     Text(
                         "BOTANICAL LAB TRANSSENDER FEED",
-                        style = MaterialTheme.typography.titleSmall,
+                        style = if (onClose != null) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary,
                         letterSpacing = 0.8.sp
                     )
                 }
-                IconButton(onClick = onClose) {
-                    Icon(Icons.Default.Close, contentDescription = "Close popup")
+                if (onClose != null) {
+                    IconButton(onClick = onClose) {
+                        Icon(Icons.Default.Close, contentDescription = "Close popup")
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = if (activeLayout != null) "SYNCED" else "STANDBY",
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
 
             if (activeLayout != null) {
                 Text(
                     text = "Layout: ${activeLayout.name} (${activeLayout.style} • ${activeLayout.climate})",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = if (onClose != null) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 2.dp)
@@ -1048,7 +1092,7 @@ fun BotanistLiveLabConsole(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(if (onClose != null) 8.dp else 6.dp)
                 ) {
                     BotanistMetricItem(
                         icon = "🌡️",
@@ -1080,10 +1124,10 @@ fun BotanistLiveLabConsole(
             } else {
                 Text(
                     text = "No Garden layout active. Select or create design blueprints in the 2D Planner to stream Live lab sensors!",
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = if (onClose != null) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
+                    modifier = Modifier.fillMaxWidth().padding(vertical = if (onClose != null) 12.dp else 4.dp)
                 )
             }
         }

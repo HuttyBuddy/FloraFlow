@@ -109,3 +109,4 @@ A Play Store Crawler verification script is configured inside `Robo Test Runs/` 
 
 ## 📄 License & Terms
 Terms of Service, Privacy Policies, and open-source licenses are accessible directly in the application under **Settings** ➡️ **Legal Information**.
+

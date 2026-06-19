@@ -1,7 +1,7 @@
 package com.example.ui.viewmodel
 
 import android.app.Application
-import androidx.core.content.edit
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.api.Content
@@ -10,6 +10,7 @@ import com.example.data.api.Part
 import com.example.data.database.GardenDatabase
 import com.example.data.model.*
 import com.example.data.repository.GardenRepository
+import androidx.core.content.edit
 import com.example.ui.screens.community.CommunityPost
 import com.example.ui.screens.community.CommunityComment
 import kotlinx.coroutines.CoroutineDispatcher
@@ -69,20 +70,29 @@ class GardenViewModel @JvmOverloads constructor(
     private val _aiChatHistory = MutableStateFlow<List<Content>>(emptyList())
     val aiChatHistory: StateFlow<List<Content>> = _aiChatHistory.asStateFlow()
 
-    private val _isAiLoading = MutableStateFlow(value = false)
+    private val _aiStatus = MutableStateFlow<String>("")
+    val aiStatus: StateFlow<String> = _aiStatus.asStateFlow()
+
+    private val _isAiLoading = MutableStateFlow(false)
     val isAiLoading: StateFlow<Boolean> = _isAiLoading.asStateFlow()
 
-    // Real AR Lens Placement States
+    // Mock AR Lens Placement States
     private val _arPlacedPlants = MutableStateFlow<List<ArPlantPlacement>>(emptyList())
     val arPlacedPlants: StateFlow<List<ArPlantPlacement>> = _arPlacedPlants.asStateFlow()
 
     // Premium subscription state for Devil's Advocate paywall demo
-    private val _isPremium = MutableStateFlow(value = false)
+    private val _isPremium = MutableStateFlow(false)
     val isPremium: StateFlow<Boolean> = _isPremium.asStateFlow()
 
     private val _isOnboardingCompleted = MutableStateFlow(false)
     val isOnboardingCompleted: StateFlow<Boolean> = _isOnboardingCompleted.asStateFlow()
 
+    fun completeOnboarding() {
+        _isOnboardingCompleted.value = true
+        sharedPrefs.edit { putBoolean("onboarding_completed", true) }
+    }
+
+    // Biophilic Assessment Results Store
     private val _assessmentScore = MutableStateFlow<Int?>(null)
     val assessmentScore: StateFlow<Int?> = _assessmentScore.asStateFlow()
 
@@ -92,8 +102,37 @@ class GardenViewModel @JvmOverloads constructor(
     private val _isAssessmentSkipped = MutableStateFlow(false)
     val isAssessmentSkipped: StateFlow<Boolean> = _isAssessmentSkipped.asStateFlow()
 
-    private val _currentTab = MutableStateFlow(0)
-    val currentTab: StateFlow<Int> = _currentTab.asStateFlow()
+    fun saveAssessmentResult(score: Int, categories: List<String>) {
+        _assessmentScore.value = score
+        _lowestCategories.value = categories
+        sharedPrefs.edit {
+            putInt("assessment_score", score)
+            putString("assessment_categories", categories.joinToString(","))
+        }
+    }
+
+    fun skipAssessment() {
+        _isAssessmentSkipped.value = true
+        sharedPrefs.edit { putBoolean("assessment_skipped", true) }
+        completeOnboarding()
+    }
+
+    fun resetAssessment() {
+        _isAssessmentSkipped.value = false
+        _assessmentScore.value = null
+        _lowestCategories.value = emptyList()
+        _isOnboardingCompleted.value = false
+        sharedPrefs.edit {
+            putBoolean("assessment_skipped", false)
+            remove("assessment_score")
+            remove("assessment_categories")
+            putBoolean("onboarding_completed", false)
+        }
+    }
+
+    // Interactive App Walkthrough Anchors Rects mapping
+    private val _walkthroughActive = MutableStateFlow(false)
+    val walkthroughActive: StateFlow<Boolean> = _walkthroughActive.asStateFlow()
 
     private val _currentWalkthroughStep = MutableStateFlow<WalkthroughStep?>(null)
     val currentWalkthroughStep: StateFlow<WalkthroughStep?> = _currentWalkthroughStep.asStateFlow()
@@ -101,84 +140,57 @@ class GardenViewModel @JvmOverloads constructor(
     private val _walkthroughTargets = MutableStateFlow<Map<WalkthroughStep, ScreenRect>>(emptyMap())
     val walkthroughTargets: StateFlow<Map<WalkthroughStep, ScreenRect>> = _walkthroughTargets.asStateFlow()
 
-    fun updateWalkthroughTarget(step: WalkthroughStep, rect: ScreenRect) {
-        _walkthroughTargets.value = _walkthroughTargets.value + (step to rect)
-    }
-
-    fun clearWalkthroughTargets() {
-        _walkthroughTargets.value = emptyMap()
-    }
-
     fun startWalkthrough() {
-        clearWalkthroughTargets()
         _currentWalkthroughStep.value = WalkthroughStep.WELCOME
+        _walkthroughTargets.value = emptyMap()
+        _walkthroughActive.value = true
     }
 
     fun nextWalkthroughStep() {
         val current = _currentWalkthroughStep.value ?: return
-        val next = when (current) {
-            WalkthroughStep.WELCOME -> WalkthroughStep.DASHBOARD_GARDEN
-            WalkthroughStep.DASHBOARD_GARDEN -> WalkthroughStep.DASHBOARD_STATS
-            WalkthroughStep.DASHBOARD_STATS -> WalkthroughStep.PLANNER_TAB
-            WalkthroughStep.PLANNER_TAB -> WalkthroughStep.AI_ADVISOR_TAB
-            WalkthroughStep.AI_ADVISOR_TAB -> null
-            WalkthroughStep.AR_LENS_TAB -> null
-        }
-        _currentWalkthroughStep.value = next
-        if (next == null) {
-            clearWalkthroughTargets()
-            recordPositiveInteraction()
+        val steps = WalkthroughStep.values()
+        val nextIdx = current.ordinal + 1
+        if (nextIdx < steps.size) {
+            _currentWalkthroughStep.value = steps[nextIdx]
+        } else {
+            _currentWalkthroughStep.value = null
+            _walkthroughTargets.value = emptyMap()
+            _walkthroughActive.value = false
         }
     }
 
     fun skipWalkthrough() {
         _currentWalkthroughStep.value = null
-        clearWalkthroughTargets()
+        _walkthroughTargets.value = emptyMap()
+        _walkthroughActive.value = false
     }
 
-    fun completeOnboarding() {
-        _isOnboardingCompleted.value = true
-        sharedPrefs.edit { putBoolean("onboarding_completed", true) }
-        startWalkthrough()
+    fun updateWalkthroughTarget(step: WalkthroughStep, rect: ScreenRect) {
+        val current = _walkthroughTargets.value.toMutableMap()
+        current[step] = rect
+        _walkthroughTargets.value = current
     }
 
-    fun saveAssessmentResult(score: Int, lowest: List<String>) {
-        _assessmentScore.value = score
-        _lowestCategories.value = lowest
-        _isAssessmentSkipped.value = false
-        _isOnboardingCompleted.value = true
-        sharedPrefs.edit {
-            putInt("assessment_score", score)
-            putString("lowest_categories", lowest.joinToString(","))
-            putBoolean("assessment_skipped", false)
-            putBoolean("onboarding_completed", true)
+    // Advanced Theme Control State
+    private val _themeMode = MutableStateFlow(ThemeMode.SYSTEM)
+    val themeMode: StateFlow<ThemeMode> = _themeMode.asStateFlow()
+
+    private val _isDarkTheme = MutableStateFlow<Boolean?>(null)
+    val isDarkTheme: StateFlow<Boolean?> = _isDarkTheme.asStateFlow()
+
+    fun setThemeMode(mode: ThemeMode) {
+        _themeMode.value = mode
+        _isDarkTheme.value = when (mode) {
+            ThemeMode.LIGHT -> false
+            ThemeMode.DARK -> true
+            ThemeMode.SYSTEM -> null
         }
+        sharedPrefs.edit { putString("theme_mode", mode.name) }
     }
 
-    fun skipAssessment() {
-        _isAssessmentSkipped.value = true
-        _isOnboardingCompleted.value = true
-        sharedPrefs.edit {
-            putBoolean("assessment_skipped", true)
-            putBoolean("onboarding_completed", true)
-        }
-    }
-
-    fun resetAssessment() {
-        _assessmentScore.value = null
-        _lowestCategories.value = emptyList()
-        _isAssessmentSkipped.value = false
-        _isOnboardingCompleted.value = false
-        sharedPrefs.edit {
-            putInt("assessment_score", -1)
-            putString("lowest_categories", "")
-            putBoolean("assessment_skipped", false)
-            putBoolean("onboarding_completed", false)
-        }
-    }
-
-    fun setCurrentTab(tab: Int) {
-        _currentTab.value = tab
+    fun toggleTheme(isSystemDark: Boolean) {
+        val current = _isDarkTheme.value ?: isSystemDark
+        _isDarkTheme.value = !current
     }
 
     // Advanced Billing State Properties
@@ -197,7 +209,7 @@ class GardenViewModel @JvmOverloads constructor(
     private val _showSubscriptionManagement = MutableStateFlow(false)
     val showSubscriptionManagement: StateFlow<Boolean> = _showSubscriptionManagement.asStateFlow()
 
-    // Feedback State Streams
+    // Offline Local Submissions Storage
     private val _feedbackSubmissions = MutableStateFlow<List<FeedbackSubmission>>(emptyList())
     val feedbackSubmissions: StateFlow<List<FeedbackSubmission>> = _feedbackSubmissions.asStateFlow()
 
@@ -207,6 +219,7 @@ class GardenViewModel @JvmOverloads constructor(
     private val _feedbackSuccess = MutableStateFlow(false)
     val feedbackSuccess: StateFlow<Boolean> = _feedbackSuccess.asStateFlow()
 
+    // Rate App prompt State Flow
     private val _showInAppRatePrompt = MutableStateFlow(false)
     val showInAppRatePrompt: StateFlow<Boolean> = _showInAppRatePrompt.asStateFlow()
 
@@ -224,7 +237,7 @@ class GardenViewModel @JvmOverloads constructor(
         _showSubscriptionManagement.value = visible
     }
 
-    fun processPurchase(tier: String, isAnnual: Boolean) {
+    fun processPurchase(tier: String, price: String, isAnnual: Boolean) {
         val txId = "GPA." + (1000..9999).random().toString() + "-" + 
                    (1000..9999).random().toString() + "-" + 
                    (1000..9999).random().toString() + "-" + 
@@ -287,6 +300,7 @@ class GardenViewModel @JvmOverloads constructor(
             }
             true
         } else {
+            // Force seed a standard restored purchase if they don't have local history (makes demo seamless)
             val txId = "GPA.DEMO-" + (1000..9999).random().toString() + "-RESTORED"
             val tier = "FloraFlow PRO Monthly"
             val nextDate = "Jul 21, 2026"
@@ -307,48 +321,35 @@ class GardenViewModel @JvmOverloads constructor(
         }
     }
 
-    private val _isDarkTheme = MutableStateFlow<Boolean?>(null)
-    val isDarkTheme: StateFlow<Boolean?> = _isDarkTheme.asStateFlow()
+    // Active screen index hoist state for onboarding assessments completion callbacks
+    private val _currentTab = MutableStateFlow(0)
+    val currentTab: StateFlow<Int> = _currentTab.asStateFlow()
 
-    private val _themeMode = MutableStateFlow(ThemeMode.SYSTEM)
-    val themeMode: StateFlow<ThemeMode> = _themeMode.asStateFlow()
-
-    fun toggleTheme(isSystemDark: Boolean) {
-        val current = _isDarkTheme.value ?: isSystemDark
-        val nextIsDark = !current
-        setThemeMode(if (nextIsDark) ThemeMode.DARK else ThemeMode.LIGHT)
-    }
-
-    fun setThemeMode(mode: ThemeMode) {
-        _themeMode.value = mode
-        sharedPrefs.edit { putString("theme_mode", mode.name) }
-        _isDarkTheme.value = when (mode) {
-            ThemeMode.LIGHT -> false
-            ThemeMode.DARK -> true
-            ThemeMode.SYSTEM -> null
-        }
+    fun setCurrentTab(tab: Int) {
+        _currentTab.value = tab
     }
 
     init {
+        // Load persistent billing subscription and onboarding values on start
         val savedPremium = sharedPrefs.getBoolean("is_premium", false)
         _isPremium.value = savedPremium
         _isOnboardingCompleted.value = sharedPrefs.getBoolean("onboarding_completed", false)
-
-        val score = sharedPrefs.getInt("assessment_score", -1)
-        if (score != -1) {
-            _assessmentScore.value = score
-        }
-        _isAssessmentSkipped.value = sharedPrefs.getBoolean("assessment_skipped", false)
-        val categoriesStr = sharedPrefs.getString("lowest_categories", "") ?: ""
-        if (categoriesStr.isNotEmpty()) {
-            _lowestCategories.value = categoriesStr.split(",")
-        }
         _subscriptionTier.value = sharedPrefs.getString("subscription_tier", null)
         _subscriptionTransactionId.value = sharedPrefs.getString("subscription_transaction_id", null)
         _subscriptionBillingDate.value = sharedPrefs.getString("subscription_billing_date", null)
+        _isAssessmentSkipped.value = sharedPrefs.getBoolean("assessment_skipped", false)
 
-        val savedThemeMode = sharedPrefs.getString("theme_mode", ThemeMode.SYSTEM.name) ?: ThemeMode.SYSTEM.name
-        val mode = try { ThemeMode.valueOf(savedThemeMode) } catch (_: Exception) { ThemeMode.SYSTEM }
+        val savedScore = sharedPrefs.getInt("assessment_score", -1)
+        if (savedScore != -1) {
+            _assessmentScore.value = savedScore
+        }
+        val savedCategories = sharedPrefs.getString("assessment_categories", null)
+        if (savedCategories != null) {
+            _lowestCategories.value = savedCategories.split(",").filter { it.isNotBlank() }
+        }
+
+        val savedTheme = sharedPrefs.getString("theme_mode", "SYSTEM")
+        val mode = try { ThemeMode.valueOf(savedTheme ?: "SYSTEM") } catch (_: Exception) { ThemeMode.SYSTEM }
         _themeMode.value = mode
         _isDarkTheme.value = when (mode) {
             ThemeMode.LIGHT -> false
@@ -514,8 +515,7 @@ class GardenViewModel @JvmOverloads constructor(
                     )
                 }
             } catch (e: Exception) {
-                println("SEEDING DEBUG ERROR: ${e.message}")
-                e.printStackTrace()
+                Log.e("GardenViewModel", "Failed to initialize default data", e)
             }
         }
 
@@ -558,26 +558,25 @@ class GardenViewModel @JvmOverloads constructor(
             val created = newLayout.copy(id = layoutId)
             
             val templates = ClimatePlants.getTemplatesForClimate(climate).take(2)
-            for (tpl in templates) {
-                repository.insertPlant(
-                    Plant(
-                        layoutId = layoutId,
-                        name = tpl.name,
-                        type = tpl.type,
-                        careSpring = tpl.careSpring,
-                        careSummer = tpl.careSummer,
-                        careAutumn = tpl.careAutumn,
-                        careWinter = tpl.careWinter,
-                        soilType = tpl.soilType,
-                        sunlight = tpl.sunlight,
-                        growthProgress = 20,
-                        matureSize = tpl.matureSize,
-                        wateringNeeds = tpl.wateringNeeds,
-                        bloomTime = tpl.bloomTime,
-                        pestsDiseases = tpl.pestsDiseases
-                    )
+            val initialPlants = templates.map { tpl ->
+                Plant(
+                    layoutId = layoutId,
+                    name = tpl.name,
+                    type = tpl.type,
+                    careSpring = tpl.careSpring,
+                    careSummer = tpl.careSummer,
+                    careAutumn = tpl.careAutumn,
+                    careWinter = tpl.careWinter,
+                    soilType = tpl.soilType,
+                    sunlight = tpl.sunlight,
+                    growthProgress = 20,
+                    matureSize = tpl.matureSize,
+                    wateringNeeds = tpl.wateringNeeds,
+                    bloomTime = tpl.bloomTime,
+                    pestsDiseases = tpl.pestsDiseases
                 )
             }
+            repository.insertPlants(initialPlants)
             
             _activeLayout.value = created
             recordPositiveInteraction()
@@ -742,23 +741,8 @@ class GardenViewModel @JvmOverloads constructor(
     fun sendAiChatMessage(message: String) {
         if (message.isBlank()) return
         
-        val userCount = _aiChatHistory.value.count { it.role == "user" }
-        if (!_isPremium.value && userCount >= 3) {
-            val currentHistory = _aiChatHistory.value.toMutableList()
-            currentHistory.add(Content(role = "user", parts = listOf(Part(text = message))))
-            currentHistory.add(
-                Content(
-                    role = "model",
-                    parts = listOf(
-                        Part(
-                            text = "🔒 Free AI Advisor biophilic limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
-                        )
-                    )
-                )
-            )
-            _aiChatHistory.value = currentHistory
-            return
-        }
+        val upsellMsg = "🔒 Free AI Advisor biophilic limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
+        if (checkPremiumLimit(message, upsellMsg, 3)) return
 
         val currentHistory = _aiChatHistory.value.toMutableList()
         currentHistory.add(Content(role = "user", parts = listOf(Part(text = message))))
@@ -798,9 +782,7 @@ class GardenViewModel @JvmOverloads constructor(
                 systemInstruction = systemIns
             )
 
-            val updatedHistory = _aiChatHistory.value.toMutableList()
-            updatedHistory.add(Content(role = "model", parts = listOf(Part(text = response))))
-            _aiChatHistory.value = updatedHistory
+            appendAiChatInteraction("", response)
             _isAiLoading.value = false
         }
     }
@@ -812,23 +794,9 @@ class GardenViewModel @JvmOverloads constructor(
     fun askAiForLayoutAdvice() {
         val layout = _activeLayout.value ?: return
         
-        val userCount = _aiChatHistory.value.count { it.role == "user" }
-        if (!_isPremium.value && userCount >= 2) {
-            val updatedHistory = _aiChatHistory.value.toMutableList()
-            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = "Suggest some visual additions and companion compatibility checks!"))))
-            updatedHistory.add(
-                Content(
-                    role = "model",
-                    parts = listOf(
-                        Part(
-                            text = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock advanced layout analysis, visual companion additions, and expert styling advice! 🌸✨"
-                        )
-                    )
-                )
-            )
-            _aiChatHistory.value = updatedHistory
-            return
-        }
+        val userQuery = "Suggest some visual additions and companion compatibility checks!"
+        val upsellMsg = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock advanced layout analysis, visual companion additions, and expert styling advice! 🌸✨"
+        if (checkPremiumLimit(userQuery, upsellMsg, 2)) return
 
         val plantsListStr = _activePlants.value.joinToString(", ") { it.name }
         val prompt = "I have a garden layout styled as a '${layout.style}' in a '${layout.climate}' climate region. " +
@@ -839,10 +807,7 @@ class GardenViewModel @JvmOverloads constructor(
 
         viewModelScope.launch {
             val advice = GeminiApiClient.getGardeningAdvice(prompt)
-            val updatedHistory = _aiChatHistory.value.toMutableList()
-            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = "Suggest some visual additions and companion compatibility checks!"))))
-            updatedHistory.add(Content(role = "model", parts = listOf(Part(text = advice))))
-            _aiChatHistory.value = updatedHistory
+            appendAiChatInteraction("Suggest some visual additions and companion compatibility checks!", advice)
             _isAiLoading.value = false
         }
     }
@@ -850,69 +815,90 @@ class GardenViewModel @JvmOverloads constructor(
     fun generateAILayoutSuggestion() {
         val layout = _activeLayout.value ?: return
         
-        val userCount = _aiChatHistory.value.count { it.role == "user" }
-        if (!_isPremium.value && userCount >= 2) {
-            val updatedHistory = _aiChatHistory.value.toMutableList()
-            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = "Generate a companion design blueprint for my space!"))))
-            updatedHistory.add(
-                Content(
-                    role = "model",
-                    parts = listOf(
-                        Part(
-                            text = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock AI garden layout generator, instant database seeding, and dynamic blueprinting! 🌸✨"
-                        )
-                    )
-                )
-            )
-            _arPlacedPlants.value = updatedHistory.run { _arPlacedPlants.value } // Guard reference
-            return
-        }
+        val userQuery = "Generate a companion design blueprint for my space!"
+        val upsellMsg = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock AI garden layout generator, instant database seeding, and dynamic blueprinting! 🌸✨"
+        if (checkPremiumLimit(userQuery, upsellMsg, 2)) return
         
-        val prompt = "Suggest a brand new layout idea. " +
-                "For a garden with the style '${layout.style}' and climate of '${layout.climate}', name 3 highly compatible, beautifully flowering plants or useful crops. " +
-                "Format your answer as simple lines containing: PlantName | PlantType | IdealSoil | SunExposure. " +
-                "Follow this list with a clear, concise decorating suggestion."
+        val prompt = buildLayoutSuggestionPrompt(layout)
 
         _isAiLoading.value = true
 
         viewModelScope.launch {
             val response = GeminiApiClient.getGardeningAdvice(prompt)
             
-            val updatedHistory = _aiChatHistory.value.toMutableList()
-            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = "Generate a companion design blueprint for my space!"))))
-            updatedHistory.add(Content(role = "model", parts = listOf(Part(text = response))))
-            _aiChatHistory.value = updatedHistory
-            
-            try {
-                val lines = response.lines().filter { it.contains("|") }
-                for (line in lines) {
-                    val parts = line.split("|").map { it.trim() }
-                    if (parts.size >= 2) {
-                        val name = parts[0].replace(Regex("^[^a-zA-Z0-9]+"), "")
-                        val type = parts[1]
-                        val soil = if (parts.size >= 3) parts[2] else "Standard garden compost"
-                        val sun = if (parts.size >= 4) parts[3] else "Full sun to dappled shade"
-                        
-                        repository.insertPlant(
-                            Plant(
-                                layoutId = layout.id,
-                                name = name,
-                                type = type,
-                                soilType = soil,
-                                sunlight = sun,
-                                growthProgress = 15,
-                                matureSize = "Medium",
-                                wateringNeeds = "Moderate",
-                                bloomTime = "Summer",
-                                pestsDiseases = "Minor pests"
-                            )
-                        )
-                    }
-                }
-            } catch (_: Exception) {}
+            appendAiChatInteraction(userQuery, response)
+            parseAndInsertPlants(response, layout.id)
 
             _isAiLoading.value = false
         }
+    }
+
+    // --- Private AI Helper Methods (extracted/refactored) ---
+    private fun checkPremiumLimit(userQuery: String, upsellMessage: String, limitCount: Int): Boolean {
+        val userCount = _aiChatHistory.value.count { it.role == "user" }
+        if (!_isPremium.value && userCount >= limitCount) {
+            val updatedHistory = _aiChatHistory.value.toMutableList()
+            if (userQuery.isNotBlank()) {
+                updatedHistory.add(Content(role = "user", parts = listOf(Part(text = userQuery))))
+            }
+            updatedHistory.add(
+                Content(
+                    role = "model",
+                    parts = listOf(
+                        Part(text = upsellMessage)
+                    )
+                )
+            )
+            _aiChatHistory.value = updatedHistory
+            return true
+        }
+        return false
+    }
+
+    private fun appendAiChatInteraction(userQuery: String, response: String) {
+        val updatedHistory = _aiChatHistory.value.toMutableList()
+        if (userQuery.isNotBlank()) {
+            updatedHistory.add(Content(role = "user", parts = listOf(Part(text = userQuery))))
+        }
+        updatedHistory.add(Content(role = "model", parts = listOf(Part(text = response))))
+        _aiChatHistory.value = updatedHistory
+    }
+
+    private fun buildLayoutSuggestionPrompt(layout: GardenLayout): String {
+        return "Suggest a brand new layout idea. " +
+                "For a garden with the style '${layout.style}' and climate of '${layout.climate}', name 3 highly compatible, beautifully flowering plants or useful crops. " +
+                "Format your answer as simple lines containing: PlantName | PlantType | IdealSoil | SunExposure. " +
+                "Follow this list with a clear, concise decorating suggestion."
+    }
+
+    private suspend fun parseAndInsertPlants(response: String, layoutId: Int) {
+        try {
+            val lines = response.lines().filter { it.contains("|") }
+            for (line in lines) {
+                val parts = line.split("|").map { it.trim() }
+                if (parts.size >= 2) {
+                    val name = parts[0].replace(Regex("^[^a-zA-Z0-9]+"), "")
+                    val type = parts[1]
+                    val soil = if (parts.size >= 3) parts[2] else "Standard garden compost"
+                    val sun = if (parts.size >= 4) parts[3] else "Full sun to dappled shade"
+                    
+                    repository.insertPlant(
+                        Plant(
+                            layoutId = layoutId,
+                            name = name,
+                            type = type,
+                            soilType = soil,
+                            sunlight = sun,
+                            growthProgress = 15,
+                            matureSize = "Medium",
+                            wateringNeeds = "Moderate",
+                            bloomTime = "Summer",
+                            pestsDiseases = "Minor pests"
+                        )
+                    )
+                }
+            }
+        } catch (_: Exception) {}
     }
 
     // --- Real AR Control Methods (Fixed parameters and list manipulation) ---

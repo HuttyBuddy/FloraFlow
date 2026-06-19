@@ -31,6 +31,9 @@ interface GardenDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPlant(plant: Plant): Long
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPlants(plants: List<Plant>)
+
     @Update
     suspend fun updatePlant(plant: Plant)
 

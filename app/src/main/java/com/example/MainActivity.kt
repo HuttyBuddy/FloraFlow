@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Forum
-import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.ui.graphics.Color
 import com.example.ui.screens.settings.SettingsDialog
 import com.example.ui.screens.community.CommunityDialog
@@ -46,7 +45,6 @@ import com.example.ui.screens.*
 import com.example.ui.screens.arlens.ArLensScreen
 import com.example.ui.screens.dashboard.DashboardScreen
 import com.example.ui.screens.feedback.FeedbackDialog
-
 import androidx.activity.viewModels
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.GardenViewModel
@@ -64,7 +62,7 @@ class MainActivity : ComponentActivity() {
             val useDarkTheme = isDarkThemeOverridden ?: systemDark
 
             MyApplicationTheme(darkTheme = useDarkTheme) {
-                var showSplash by remember { mutableStateOf(value = true) }
+                var showSplash by remember { mutableStateOf(true) }
 
                 LaunchedEffect(Unit) {
                     kotlinx.coroutines.delay(1000) // Defer heavy layout loading with 1 second of warm organic splash/load timer
@@ -79,234 +77,256 @@ class MainActivity : ComponentActivity() {
                     if (!isOnboardingCompleted) {
                         OnboardingScreen(viewModel = viewModel)
                     } else {
-                    val currentTab by viewModel.currentTab.collectAsState()
-                    var showFeedbackDialog by remember { mutableStateOf(false) }
-                    var showSettingsDialog by remember { mutableStateOf(false) }
-                    var showCommunityDialog by remember { mutableStateOf(false) }
-                    var showHelpDialog by remember { mutableStateOf(false) }
-                    val isPremium by viewModel.isPremium.collectAsState()
+                        val currentTab by viewModel.currentTab.collectAsState()
+                        var showFeedbackDialog by remember { mutableStateOf(false) }
+                        var showSettingsDialog by remember { mutableStateOf(false) }
+                        var showCommunityDialog by remember { mutableStateOf(false) }
+                        var showHelpDialog by remember { mutableStateOf(false) }
+                        val isPremium by viewModel.isPremium.collectAsState()
 
-                    // Universal sandbox Billing & Subscription Management Checkout Dialog
-                    BillingDialog(viewModel = viewModel)
+                        // Universal sandbox Billing & Subscription Management Checkout Dialog
+                        BillingDialog(viewModel = viewModel)
 
-                    val showInAppRatePrompt by viewModel.showInAppRatePrompt.collectAsState()
-                    val showSubscriptionManagement by viewModel.showSubscriptionManagement.collectAsState()
-                    SubscriptionManagementDialog(
-                        visible = showSubscriptionManagement,
-                        onDismiss = { viewModel.setSubscriptionManagementVisible(visible = false) },
-                        viewModel = viewModel,
-                    )
+                        val showInAppRatePrompt by viewModel.showInAppRatePrompt.collectAsState()
+                        val showSubscriptionManagement by viewModel.showSubscriptionManagement.collectAsState()
+                        SubscriptionManagementDialog(
+                            visible = showSubscriptionManagement,
+                            onDismiss = { viewModel.setSubscriptionManagementVisible(false) },
+                            viewModel = viewModel,
+                        )
 
-                    FeedbackDialog(
-                        visible = showFeedbackDialog,
-                        onDismiss = { showFeedbackDialog = false },
-                        viewModel = viewModel
-                    )
+                        FeedbackDialog(
+                            visible = showFeedbackDialog,
+                            onDismiss = { showFeedbackDialog = false },
+                            viewModel = viewModel
+                        )
 
-                    Scaffold(
-                        modifier = Modifier.fillMaxSize(),
-                        topBar = {
-                            @OptIn(ExperimentalMaterial3Api::class)
-                            CenterAlignedTopAppBar(
-                                title = {
-                                    Text(
-                                        text = "FloraFlow",
-                                        fontWeight = FontWeight.ExtraBold,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        color = MaterialTheme.colorScheme.primary,
-                                    )
-                                },
-                                actions = {
-                                    IconButton(
-                                        onClick = { showFeedbackDialog = true },
-                                        modifier = Modifier.testTag("feedback_button")
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Feedback,
-                                            contentDescription = "Share App Feedback"
+                        Scaffold(
+                            modifier = Modifier.fillMaxSize(),
+                            topBar = {
+                                @OptIn(ExperimentalMaterial3Api::class)
+                                CenterAlignedTopAppBar(
+                                    title = {
+                                        Text(
+                                            text = "FloraFlow",
+                                            fontWeight = FontWeight.ExtraBold,
+                                            style = MaterialTheme.typography.titleLarge,
+                                            color = MaterialTheme.colorScheme.primary
                                         )
-                                    }
-                                    IconButton(
+                                    },
+                                    actions = {
+                                        IconButton(
+                                            onClick = { showFeedbackDialog = true },
+                                            modifier = Modifier.testTag("feedback_button")
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Feedback,
+                                                contentDescription = "Share App Feedback"
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = {
+                                                if (isPremium) {
+                                                    viewModel.setSubscriptionManagementVisible(true)
+                                                } else {
+                                                    viewModel.upgradeToPremium()
+                                                }
+                                            },
+                                            modifier = Modifier.testTag("premium_key_status_crown")
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.WorkspacePremium,
+                                                contentDescription = "Subscription Info Status",
+                                                tint = if (isPremium) Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { showCommunityDialog = true },
+                                            modifier = Modifier.testTag("community_button")
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Forum,
+                                                contentDescription = "Community Forum"
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { showHelpDialog = true },
+                                            modifier = Modifier.testTag("help_button")
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                                                contentDescription = "Help & Support"
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { showSettingsDialog = true },
+                                            modifier = Modifier.testTag("settings_button")
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Settings,
+                                                contentDescription = "Settings"
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = { viewModel.toggleTheme(systemDark) },
+                                            modifier = Modifier.testTag("theme_toggle_button")
+                                        ) {
+                                            Icon(
+                                                imageVector = if (useDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                                                contentDescription = "Toggle Light/Dark Theme"
+                                            )
+                                        }
+                                    },
+                                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    )
+                                )
+                            },
+                            bottomBar = {
+                                NavigationBar(
+                                    modifier = Modifier.testTag("app_navigation_bar"),
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    tonalElevation = 8.dp
+                                ) {
+                                    NavigationBarItem(
+                                        selected = currentTab == 0,
+                                        onClick = { viewModel.setCurrentTab(0) },
+                                        icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
+                                        label = { Text("Dashboard", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        modifier = Modifier.testTag("nav_tab_dashboard"),
+                                        alwaysShowLabel = false
+                                    )
+                                    NavigationBarItem(
+                                        selected = currentTab == 1,
+                                        onClick = { viewModel.setCurrentTab(1) },
+                                        icon = { Icon(Icons.Default.Explore, contentDescription = "2D Planner") },
+                                        label = { Text("2D Planner", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        modifier = Modifier
+                                            .testTag("nav_tab_planner")
+                                            .onGloballyPositioned { coordinates ->
+                                                val rect = coordinates.boundsInRoot()
+                                                viewModel.updateWalkthroughTarget(
+                                                    WalkthroughStep.PLANNER_TAB,
+                                                    ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
+                                                )
+                                            },
+                                        alwaysShowLabel = false
+                                    )
+                                    NavigationBarItem(
+                                        selected = currentTab == 2,
+                                        onClick = { viewModel.setCurrentTab(2) },
+                                        icon = { Icon(Icons.Default.Spa, contentDescription = "Greenhouse") },
+                                        label = { Text("Greenhouse", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        modifier = Modifier.testTag("nav_tab_greenhouse"),
+                                        alwaysShowLabel = false
+                                    )
+                                    NavigationBarItem(
+                                        selected = currentTab == 3,
+                                        onClick = { viewModel.setCurrentTab(3) },
+                                        icon = { Icon(Icons.Default.SmartToy, contentDescription = "AI Advisor") },
+                                        label = { Text("AI Advisor", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        modifier = Modifier
+                                            .testTag("nav_tab_ai")
+                                            .onGloballyPositioned { coordinates ->
+                                                val rect = coordinates.boundsInRoot()
+                                                viewModel.updateWalkthroughTarget(
+                                                    WalkthroughStep.AI_ADVISOR_TAB,
+                                                    ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
+                                                )
+                                            },
+                                        alwaysShowLabel = false
+                                    )
+                                    NavigationBarItem(
+                                        selected = currentTab == 4,
                                         onClick = {
-                                            if (isPremium) {
-                                                viewModel.setSubscriptionManagementVisible(true)
-                                            } else {
+                                            viewModel.setCurrentTab(4)
+                                            if (!isPremium) {
                                                 viewModel.upgradeToPremium()
                                             }
                                         },
-                                        modifier = Modifier.testTag("premium_key_status_crown")
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.WorkspacePremium,
-                                            contentDescription = "Subscription Info Status",
-                                            tint = if (isPremium) Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                    IconButton(
-                                        onClick = { showCommunityDialog = true },
-                                        modifier = Modifier.testTag("community_button")
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Forum,
-                                            contentDescription = "Community Forum"
-                                        )
-                                    }
-                                    IconButton(
-                                        onClick = { showHelpDialog = true },
-                                        modifier = Modifier.testTag("help_button")
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.HelpOutline,
-                                            contentDescription = "Help & Support"
-                                        )
-                                    }
-                                    IconButton(
-                                        onClick = { showSettingsDialog = true },
-                                        modifier = Modifier.testTag("settings_button")
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Settings,
-                                            contentDescription = "Settings"
-                                        )
-                                    }
-                                },
-                                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                )
-                            )
-                        },
-                        bottomBar = {
-                            NavigationBar(
-                                modifier = Modifier.testTag("app_navigation_bar"),
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                tonalElevation = 8.dp
+                                        icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Lens") },
+                                        label = { Text("AR Lens", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        modifier = Modifier.testTag("nav_tab_ar"),
+                                        alwaysShowLabel = false
+                                    )
+                                }
+                            }
+                        ) { innerPadding ->
+                            val safeBottomPadding = if (innerPadding.calculateBottomPadding() < 90.dp) 90.dp else innerPadding.calculateBottomPadding() + 12.dp
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(
+                                        start = 0.dp,
+                                        top = innerPadding.calculateTopPadding(),
+                                        end = 0.dp,
+                                        bottom = safeBottomPadding
+                                    )
                             ) {
-                                NavigationBarItem(
-                                    selected = currentTab == 0,
-                                    onClick = { viewModel.setCurrentTab(0) },
-                                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
-                                    label = { Text("Dashboard", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
-                                    modifier = Modifier.testTag("nav_tab_dashboard"),
-                                    alwaysShowLabel = false
-                                )
-                                NavigationBarItem(
-                                    selected = currentTab == 1,
-                                    onClick = { viewModel.setCurrentTab(1) },
-                                    icon = { Icon(Icons.Default.Explore, contentDescription = "2D Planner") },
-                                    label = { Text("2D Planner", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
-                                    modifier = Modifier
-                                        .testTag("nav_tab_planner")
-                                        .onGloballyPositioned { coordinates ->
-                                            val rect = coordinates.boundsInRoot()
-                                            viewModel.updateWalkthroughTarget(
-                                                WalkthroughStep.PLANNER_TAB,
-                                                ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
-                                            )
-                                        },
-                                    alwaysShowLabel = false
-                                )
-                                NavigationBarItem(
-                                    selected = currentTab == 2,
-                                    onClick = { viewModel.setCurrentTab(2) },
-                                    icon = { Icon(Icons.Default.Spa, contentDescription = "Greenhouse") },
-                                    label = { Text("Greenhouse", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
-                                    modifier = Modifier.testTag("nav_tab_greenhouse"),
-                                    alwaysShowLabel = false
-                                )
-                                NavigationBarItem(
-                                    selected = currentTab == 3,
-                                    onClick = { viewModel.setCurrentTab(3) },
-                                    icon = { Icon(Icons.Default.SmartToy, contentDescription = "AI Advisor") },
-                                    label = { Text("AI Advisor", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
-                                    modifier = Modifier
-                                        .testTag("nav_tab_ai")
-                                        .onGloballyPositioned { coordinates ->
-                                            val rect = coordinates.boundsInRoot()
-                                            viewModel.updateWalkthroughTarget(
-                                                WalkthroughStep.AI_ADVISOR_TAB,
-                                                ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
-                                            )
-                                        },
-                                    alwaysShowLabel = false
-                                )
+                                when (currentTab) {
+                                    0 -> DashboardScreen(
+                                        viewModel = viewModel,
+                                        onCommunityClick = { showCommunityDialog = true }
+                                    )
+                                    1 -> PlannerScreen(
+                                        viewModel = viewModel,
+                                        switchToChatTab = { viewModel.setCurrentTab(3) }
+                                    )
+                                    2 -> LibraryScreen(
+                                        viewModel = viewModel,
+                                        switchToChatTab = { viewModel.setCurrentTab(3) }
+                                    )
+                                    3 -> AiStudioScreen(
+                                        viewModel = viewModel
+                                    )
+                                    4 -> ArLensScreen(
+                                        viewModel = viewModel
+                                    )
+                                }
                             }
                         }
-                    ) { innerPadding ->
-                        val safeBottomPadding = if (innerPadding.calculateBottomPadding() < 90.dp) 90.dp else innerPadding.calculateBottomPadding() + 12.dp
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(
-                                    start = 0.dp,
-                                    top = innerPadding.calculateTopPadding(),
-                                    end = 0.dp,
-                                    bottom = safeBottomPadding
-                                )
-                        ) {
-                            when (currentTab) {
-                                0 -> DashboardScreen(
-                                    viewModel = viewModel,
-                                    onCommunityClick = { showCommunityDialog = true }
-                                )
-                                1 -> PlannerScreen(
-                                    viewModel = viewModel,
-                                    switchToChatTab = { viewModel.setCurrentTab(3) }
-                                )
-                                2 -> LibraryScreen(
-                                    viewModel = viewModel,
-                                    switchToChatTab = { viewModel.setCurrentTab(3) }
-                                )
-                                3 -> AiStudioScreen(
-                                    viewModel = viewModel,
-                                )
-                                4 -> ArLensScreen(
-                                    viewModel = viewModel,
-                                )
-                            }
-                        }
+
+                        SettingsDialog(
+                            visible = showSettingsDialog,
+                            onDismiss = { showSettingsDialog = false },
+                            onFeedbackClick = {
+                                showSettingsDialog = false
+                                showFeedbackDialog = true
+                            },
+                            onHelpClick = {
+                                showHelpDialog = true
+                            },
+                            viewModel = viewModel
+                        )
+
+                        HelpDialog(
+                            visible = showHelpDialog,
+                            onDismiss = { showHelpDialog = false },
+                            viewModel = viewModel
+                        )
+
+                        CommunityDialog(
+                            visible = showCommunityDialog,
+                            onDismiss = { showCommunityDialog = false },
+                            viewModel = viewModel
+                        )
+
+                        InAppRatePromptDialog(
+                            visible = showInAppRatePrompt,
+                            onDismiss = { viewModel.dismissRatePrompt() },
+                            viewModel = viewModel
+                        )
+
+                        WalkthroughOverlay(
+                            viewModel = viewModel,
+                            currentTab = currentTab,
+                            onTabChange = { viewModel.setCurrentTab(it) }
+                        )
                     }
-
-                    SettingsDialog(
-                        visible = showSettingsDialog,
-                        onDismiss = { showSettingsDialog = false },
-                        onFeedbackClick = {
-                            showSettingsDialog = false
-                            showFeedbackDialog = true
-                        },
-                        onHelpClick = {
-                            showHelpDialog = true
-                        },
-                        viewModel = viewModel
-                    )
-
-                    HelpDialog(
-                        visible = showHelpDialog,
-                        onDismiss = { showHelpDialog = false },
-                        viewModel = viewModel
-                    )
-
-                    CommunityDialog(
-                        visible = showCommunityDialog,
-                        onDismiss = { showCommunityDialog = false },
-                        viewModel = viewModel
-                    )
-
-                    InAppRatePromptDialog(
-                        visible = showInAppRatePrompt,
-                        onDismiss = { viewModel.dismissRatePrompt() },
-                        viewModel = viewModel
-                    )
-
-                    WalkthroughOverlay(
-                        viewModel = viewModel,
-                        currentTab = currentTab,
-                        onTabChange = { viewModel.setCurrentTab(it) }
-                    )
                 }
             }
         }
     }
-}
 }
 
 @Composable

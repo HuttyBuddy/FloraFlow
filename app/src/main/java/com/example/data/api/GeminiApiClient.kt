@@ -90,9 +90,9 @@ object GeminiApiClient {
     suspend fun getGardeningAdvice(
         prompt: String,
         chatHistory: List<Content> = emptyList(),
-        systemInstruction: String? = null
+        systemInstruction: String? = null,
+        apiKey: String = BuildConfig.GEMINI_API_KEY
     ): String = withContext(Dispatchers.IO) {
-        val apiKey = BuildConfig.GEMINI_API_KEY
         if (apiKey.isEmpty() || apiKey == "MY_GEMINI_API_KEY") {
             return@withContext "API Key is missing. Please enter your GEMINI_API_KEY in the AI Studio Secrets panel."
         }
