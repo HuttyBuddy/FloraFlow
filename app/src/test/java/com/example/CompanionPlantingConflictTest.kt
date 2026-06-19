@@ -10,12 +10,12 @@ class CompanionPlantingConflictTest {
 
     @Test
     fun testCompanionSynergy() {
-        // marigold & tomato synergy
-        assertTrue(checkPlantSynergy("marigold", "tomato"))
-        assertTrue(checkPlantSynergy("tomato", "basil"))
+        // marigold & ivy synergy
+        assertTrue(checkPlantSynergy("marigold", "ivy"))
+        assertTrue(checkPlantSynergy("ivy", "basil"))
         
-        // tomato & potato is no longer a synergy
-        assertFalse(checkPlantSynergy("tomato", "potato"))
+        // ivy & cactus is no longer a synergy
+        assertFalse(checkPlantSynergy("ivy", "cactus"))
         
         // same species has no synergy
         assertFalse(checkPlantSynergy("lavender", "lavender"))
@@ -23,13 +23,13 @@ class CompanionPlantingConflictTest {
 
     @Test
     fun testCompanionConflict() {
-        // tomato & potato is a conflict
-        assertTrue(checkPlantConflict("tomato", "potato"))
+        // ivy & cactus is a conflict
+        assertTrue(checkPlantConflict("ivy", "cactus"))
         assertTrue(checkPlantConflict("rose", "cactus"))
         assertTrue(checkPlantConflict("mint", "lavender"))
         
-        // marigold & tomato has no conflict
-        assertFalse(checkPlantConflict("marigold", "tomato"))
+        // marigold & ivy has no conflict
+        assertFalse(checkPlantConflict("marigold", "ivy"))
         
         // same species has no conflict
         assertFalse(checkPlantConflict("lavender", "lavender"))

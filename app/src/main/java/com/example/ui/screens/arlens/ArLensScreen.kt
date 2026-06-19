@@ -284,7 +284,7 @@ fun ArLensScreen(
             "Simulated Live Yard" -> {
                 when (activeWeather) {
                     "Gentle Rain" -> Brush.verticalGradient(listOf(Color(0xFF37474F), Color(0xFF263238), Color(0xFF1A237E)))
-                    "Cherry Blossoms" -> Brush.verticalGradient(listOf(Color(0xFFF8BBD0), Color(0xFFE1BEE7), Color(0xFFD1C4E9)))
+                    "Blossom Shower" -> Brush.verticalGradient(listOf(Color(0xFFF8BBD0), Color(0xFFE1BEE7), Color(0xFFD1C4E9)))
                     "Fireflies Spark" -> Brush.verticalGradient(listOf(Color(0xFF0D1B2A), Color(0xFF1B263B), Color(0xFF000814)))
                     else -> Brush.verticalGradient(listOf(Color(0xFF29B6F6), Color(0xFF26A69A), Color(0xFF1B5E20))) // Clear Sky / sunny yard
                 }
@@ -398,7 +398,7 @@ fun ArLensScreen(
     val particlesList = remember(activeWeather) {
         val count = when (activeWeather) {
             "Gentle Rain" -> 40
-            "Cherry Blossoms" -> 25
+            "Blossom Shower" -> 25
             "Fireflies Spark" -> 15
             else -> 0
         }
@@ -591,11 +591,11 @@ fun ArLensScreen(
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.align(Alignment.CenterVertically).padding(end = 4.dp)
                     )
-                    listOf("Clear Sky", "Gentle Rain", "Cherry Blossoms", "Fireflies Spark").forEach { weather ->
+                    listOf("Clear Sky", "Gentle Rain", "Blossom Shower", "Fireflies Spark").forEach { weather ->
                         val isSelected = activeWeather == weather
                         val icon = when (weather) {
                             "Gentle Rain" -> "🌧️"
-                            "Cherry Blossoms" -> "🌸"
+                            "Blossom Shower" -> "🌸"
                             "Fireflies Spark" -> "✨"
                             else -> "☀️"
                         }
@@ -688,8 +688,8 @@ fun ArLensScreen(
                                         val plantEmoji: String
                                         when (activeLayout?.style) {
                                             "Zen Garden" -> {
-                                                plantName = "Bonsai Cherry"
-                                                plantEmoji = "🌸"
+                                                plantName = "Bonsai Juniper"
+                                                plantEmoji = "🪴"
                                             }
                                             else -> {
                                                 plantName = "English Lavender"
@@ -768,7 +768,7 @@ fun ArLensScreen(
                             // Sun
                             val sunColor = when (activeWeather) {
                                 "Gentle Rain" -> Color(0xFFECEFF1).copy(alpha = 0.6f)
-                                "Cherry Blossoms" -> Color(0xFFFFD54F).copy(alpha = 0.8f)
+                                "Blossom Shower" -> Color(0xFFFFD54F).copy(alpha = 0.8f)
                                 else -> Color(0xFFFFEB3B) // Clear Sky
                             }
                             // Sun aura glow
@@ -787,7 +787,7 @@ fun ArLensScreen(
                         // Draw Cedar Fence
                         val fenceColor = when (activeWeather) {
                             "Gentle Rain" -> Color(0xFF3E2723) // Wet dark mahogany
-                            "Cherry Blossoms" -> Color(0xFF8D6E63).copy(alpha = 0.7f) // Pale cedar
+                            "Blossom Shower" -> Color(0xFF8D6E63).copy(alpha = 0.7f) // Pale cedar
                             "Fireflies Spark" -> Color(0xFF1A120B) // Silhouetted fence
                             else -> Color(0xFFA1887F) // Warm cedar wood privacy fence
                         }
@@ -829,7 +829,7 @@ fun ArLensScreen(
                         // Draw Grass / Lawn
                         val grassColor = when (activeWeather) {
                             "Gentle Rain" -> Color(0xFF1B5E20) // Deep wet-green
-                            "Cherry Blossoms" -> Color(0xFF81C784).copy(alpha = 0.8f) // Pastel mossy
+                            "Blossom Shower" -> Color(0xFF81C784).copy(alpha = 0.8f) // Pastel mossy
                             "Fireflies Spark" -> Color(0xFF0F2C11) // Silhouetted dark green
                             else -> Color(0xFF4CAF50) // Vibrant rich green
                         }
@@ -842,7 +842,7 @@ fun ArLensScreen(
                         // Draw Bush Clusters with Flowers
                         val bushColor = when (activeWeather) {
                             "Gentle Rain" -> Color(0xFF0D5316)
-                            "Cherry Blossoms" -> Color(0xFF4CAF50).copy(alpha = 0.75f)
+                            "Blossom Shower" -> Color(0xFF4CAF50).copy(alpha = 0.75f)
                             "Fireflies Spark" -> Color(0xFF051C06)
                             else -> Color(0xFF2E7D32)
                         }
@@ -1927,7 +1927,7 @@ fun ArLensScreen(
                                                     selectedPlacement.name.lowercase().contains("rose") -> "Provides natural scent and attracts pollinators"
                                                     selectedPlacement.name.lowercase().contains("lavender") -> "Repels mosquitoes and flies, boosts beneficial insect activity"
                                                     selectedPlacement.name.lowercase().contains("marigold") -> "Deters nematodes and garden pests with root secretions"
-                                                    selectedPlacement.name.lowercase().contains("tomato") -> "Stimulates soil biological health and mutual root shading"
+                                                    selectedPlacement.name.lowercase().contains("ivy") -> "Enhances vertical space utilization and soil ground cover"
                                                     else -> "Improves soil biodiversity and nutrient extraction synergy"
                                                 }
                                                 Text(
@@ -2281,11 +2281,11 @@ fun ArLensScreen(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            listOf("Clear Sky", "Gentle Rain", "Cherry Blossoms", "Fireflies Spark").forEach { weather ->
+                            listOf("Clear Sky", "Gentle Rain", "Blossom Shower", "Fireflies Spark").forEach { weather ->
                                 val isSelected = activeWeather == weather
                                 val icon = when (weather) {
                                     "Gentle Rain" -> "🌧️"
-                                    "Cherry Blossoms" -> "🌸"
+                                    "Blossom Shower" -> "🌸"
                                     "Fireflies Spark" -> "✨"
                                     else -> "☀️"
                                 }
@@ -2546,10 +2546,10 @@ private fun getCompanionRecommendations(plantName: String): List<String> {
     }
     if (name.contains("lavender")) {
         companions.add("Rose Bush")
-        companions.add("Cherry Blossom")
+        companions.add("Bonsai Juniper")
         companions.add("Rosemary")
     }
-    if (name.contains("cherry")) {
+    if (name.contains("juniper")) {
         companions.add("Lavender")
     }
     if (name.contains("cactus") || name.contains("aloe")) {
@@ -2557,14 +2557,14 @@ private fun getCompanionRecommendations(plantName: String): List<String> {
         if (name.contains("aloe")) companions.add("Cactus")
     }
     if (name.contains("marigold")) {
-        companions.add("Tomato")
+        companions.add("English Ivy")
     }
-    if (name.contains("tomato")) {
+    if (name.contains("ivy")) {
         companions.add("Marigold")
-        companions.add("Sweet Potato")
+        companions.add("Golden Pothos")
     }
-    if (name.contains("potato")) {
-        companions.add("Tomato")
+    if (name.contains("pothos")) {
+        companions.add("English Ivy")
     }
     if (name.contains("aster")) {
         companions.add("Thyme")

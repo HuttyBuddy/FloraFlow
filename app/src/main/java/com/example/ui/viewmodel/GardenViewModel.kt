@@ -444,14 +444,14 @@ class GardenViewModel @JvmOverloads constructor(
                         name = "My First Zen Space",
                         style = "Zen Garden",
                         climate = "Temperate",
-                        gridString = "0,0,Bonsai Cherry|4,4,English Lavender",
+                        gridString = "0,0,Bonsai Juniper|4,4,English Lavender",
                     )
                     val layoutId = repository.insertLayout(defaultLayout).toInt()
 
                     repository.insertPlant(
                         Plant(
                             layoutId = layoutId,
-                            name = "Bonsai Cherry",
+                            name = "Bonsai Juniper",
                             type = "Tree",
                             careSpring = "Prune branches to maintain classic zen shape. Water regularly.",
                             careSummer = "Keep in partial shade during intense afternoon sun. Water daily.",

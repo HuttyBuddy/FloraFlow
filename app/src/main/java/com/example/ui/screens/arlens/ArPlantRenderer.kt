@@ -47,8 +47,7 @@ fun ProceduralArPlant(
 
     // Determine base plant attributes
     val isLavender = name.lowercase().contains("lavender")
-    val isCherry = name.lowercase().contains("cherry") || name.lowercase().contains("maple")
-    val isTomato = name.lowercase().contains("tomato")
+    val isJuniperOrMaple = name.lowercase().contains("juniper") || name.lowercase().contains("maple")
     val isFern = name.lowercase().contains("fern")
     val isCactus = name.lowercase().contains("cactus") || name.lowercase().contains("aloe")
 
@@ -67,8 +66,7 @@ fun ProceduralArPlant(
 
     val flowerColor = when {
         isLavender -> Color(0xFFAB47BC) // Purple
-        isCherry -> Color(0xFFFF8A80) // Soft Pink
-        isTomato -> Color(0xFFFF1744) // Bright Red
+        isJuniperOrMaple -> Color(0xFFFF8A80) // Soft Pink
         isCactus -> Color(0xFFFFB300) // Yellow blooms
         else -> Color(0xFFFFD54F) // Gold/yellow
     }
@@ -301,8 +299,8 @@ fun ProceduralArPlant(
                                 )
                             }
                         }
-                    } else if (isCherry) {
-                        // Soft pink cherry blossoms/maple leaves
+                    } else if (isJuniperOrMaple) {
+                        // Soft pink blossoms/maple leaves
                         val points = listOf(
                             Offset(b1EndX - 4f, b1EndY - 4f),
                             Offset(b1EndX + 6f, b1EndY + 4f),
@@ -314,18 +312,6 @@ fun ProceduralArPlant(
                         points.forEach { pt ->
                             drawCircle(color = flowerColor, radius = 5f, center = pt)
                             drawCircle(color = Color.White, radius = 1.5f, center = pt)
-                        }
-                    } else if (isTomato) {
-                        // Red tomato fruit circles
-                        val points = listOf(
-                            Offset(b1EndX, b1EndY + 8f),
-                            Offset(b2EndX, b2EndY + 8f),
-                            Offset(trunkEndX - 10f, trunkEndY + 10f)
-                        )
-                        points.forEach { pt ->
-                            drawCircle(color = flowerColor, radius = 6.5f, center = pt)
-                            // Stem cap
-                            drawCircle(color = Color(0xFF1B5E20), radius = 2f, center = Offset(pt.x, pt.y - 5f))
                         }
                     } else if (isFern) {
                         // Draw extra frond lines

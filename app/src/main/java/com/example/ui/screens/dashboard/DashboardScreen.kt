@@ -125,7 +125,7 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Coactive Wellness Space",
+                        text = "FloraFlow Garden Space",
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.titleMedium
                     )

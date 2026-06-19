@@ -43,10 +43,10 @@ fun checkPlantSynergy(plant1: String, plant2: String): Boolean {
     val companionRules = listOf(
         setOf("rose", "maple"),
         setOf("rose", "lavender"),
-        setOf("lavender", "cherry"),
+        setOf("lavender", "juniper"),
         setOf("cactus", "aloe"),
-        setOf("marigold", "tomato"),
-        setOf("tomato", "basil"),
+        setOf("marigold", "ivy"),
+        setOf("ivy", "basil"),
         setOf("aster", "thyme"),
         setOf("columbine", "fern"),
         setOf("rosemary", "lavender"),
@@ -64,13 +64,13 @@ fun checkPlantConflict(plant1: String, plant2: String): Boolean {
     if (p1 == p2) return false
     
     val conflictRules = listOf(
-        setOf("tomato", "potato"),      // Blight risk
-        setOf("tomato", "fennel"),      // Growth inhibition
-        setOf("potato", "cucumber"),    // Blight & pests
-        setOf("onion", "bean"),         // Stunts beans
-        setOf("onion", "pea"),          // Stunts peas
-        setOf("garlic", "bean"),        // Stunts beans
-        setOf("garlic", "pea"),         // Stunts peas
+        setOf("ivy", "cactus"),         // Moisture conflict
+        setOf("fern", "cactus"),        // Moisture conflict
+        setOf("lavender", "fern"),      // Sunlight/shade conflict
+        setOf("rosemary", "fern"),      // Moisture/shade mismatch
+        setOf("basil", "cactus"),       // Water requirements mismatch
+        setOf("pothos", "cactus"),      // Water mismatch
+        setOf("maple", "cactus"),       // Water requirements mismatch
         setOf("rose", "cactus"),        // Water requirements conflict
         setOf("mint", "rose"),          // Invasive root competition
         setOf("mint", "lavender")       // Moisture conflict
@@ -1077,17 +1077,14 @@ fun getEmojiForPlantName(name: String): String {
 
     return when {
          low.contains("bonsai") -> "🪴"
-         low.contains("cherry") -> "🌸"
+         low.contains("juniper") -> "🌲"
          low.contains("rose") -> "🌹"
          low.contains("cact") || low.contains("aloe") -> "🌵"
          low.contains("marigold") || low.contains("aster") -> "🌼"
          low.contains("lavender") -> "🪻"
          low.contains("orchid") -> "🌸"
          low.contains("hibiscus") || low.contains("bougainvillea") -> "🌺"
-         low.contains("tomato") -> "🍅"
-         low.contains("sweet potato") || low.contains("yam") -> "🍠"
-         low.contains("fig") -> "🍋"
-         low.contains("olive") || low.contains("maple") || low.contains("tree") -> "🌳"
+         low.contains("maple") || low.contains("tree") -> "🌳"
          low.contains("fern") || low.contains("monstera") || low.contains("shoot") -> "🌿"
          low.contains("basil") || low.contains("rosemary") || low.contains("herb") || low.contains("thyme") -> "🌱"
          else -> "🌱"

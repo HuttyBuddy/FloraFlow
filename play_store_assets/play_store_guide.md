@@ -31,7 +31,7 @@ Google Play requires at least **two** high-quality phone screenshots (plus separ
 ### 📱 Shot 1: The Interactive Layout Garden Planner (Primary Hook)
 * **What to capture:** The **Planner / Layout Grid** screen.
 * **Why it sells:** It visually communicates the core mechanic—dragging, placing, and aligning custom plant nodes.
-* **How to snap it:** Create a sample garden layout with a mix of companion veggies (like Tomatoes and Basil glowing green indicating a perfect companion matching layout). Make sure to position a few warning symbols to show off our smart safety companion-planting collision warnings.
+* **How to snap it:** Create a sample garden layout with a mix of companion plants (like Roses and Lavender glowing green indicating a perfect companion matching layout). Make sure to position a few warning symbols to show off our smart safety companion-planting companion matching warnings.
 
 ### 🎥 Shot 2: The AR Climate Simulator (The Aesthetic Hook)
 * **What to capture:** The **AR Lens Simulator** screen.
@@ -41,7 +41,7 @@ Google Play requires at least **two** high-quality phone screenshots (plus separ
 ### 🌍 Shot 3: The Hybrid Companion Plant Botanical Database
 * **What to capture:** The **Library / Details** screen.
 * **Why it sells:** It establishes deep authority and scientific credibility.
-* **How to snap it:** Tap on any premium plant detail page (e.g., Lavender or Tomato). Ensure the screen displays optimal Soil pH, sunlight requirements, and custom therapeutic attributes.
+* **How to snap it:** Tap on any premium plant detail page (e.g., Lavender or English Rose). Ensure the screen displays optimal Soil pH, sunlight requirements, and custom therapeutic attributes.
 
 ### 🧠 Shot 4: The Therapeutic Mental Wellness Tracker
 * **What to capture:** The **Dashboard / Sleep-Soil Stats** screen.

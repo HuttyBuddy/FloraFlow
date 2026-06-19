@@ -126,7 +126,7 @@ class PrimaryScreensVisualTest {
     fun testArLensScreenWithSelectionVisual() {
         viewModel.completeOnboarding()
         viewModel.restorePurchases()
-        viewModel.addArPlant("Bonsai Cherry", "🌳", 10f, 15f)
+        viewModel.addArPlant("Bonsai Juniper", "🌳", 10f, 15f)
         composeTestRule.setContent {
             MyApplicationTheme {
                 ArLensScreen(viewModel = viewModel)

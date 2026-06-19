@@ -20,7 +20,7 @@ data class PlantTemplate(
 object ClimatePlants {
     val CLIMATES = listOf("Temperate", "Arid (Desert)", "Tropical (Humid)", "Mediterranean", "Mountainous")
     
-    val STYLES = listOf("Zen Garden", "Cottage Garden", "English Classic", "Modern Patio", "Vegetable Patch")
+    val STYLES = listOf("Zen Garden", "Cottage Garden", "English Classic", "Modern Patio", "Botanical Sanctuary")
 
     val ALL_TEMPLATES = listOf(
         // Arid Climate Plants
@@ -155,19 +155,19 @@ object ClimatePlants {
             compatibleClimate = "Tropical (Humid)"
         ),
         PlantTemplate(
-            name = "Sweet Potato Vine",
-            type = "Veggie",
-            careSpring = "Plant cuttings, keep warm and moist.",
-            careSummer = "Incredible trailing growth. Water daily in hot spells.",
-            careAutumn = "Harvest tubers before first ground frost.",
-            careWinter = "Dormant tuber storage. Keep indoors dry.",
-            soilType = "Silt or sandy soil",
-            sunlight = "Full Sun to Partial Shade",
-            iconEmoji = "🍠",
-            matureSize = "1 - 2 feet tall, 5 - 8 feet trailing",
-            wateringNeeds = "Moderate to High",
-            bloomTime = "Late Summer",
-            pestsDiseases = "Flea beetles, Whiteflies",
+            name = "Golden Pothos",
+            type = "Shrub",
+            careSpring = "Water only when top soil is dry. Prune vine tips.",
+            careSummer = "Loves warmth and bright indirect light. Water weekly.",
+            careAutumn = "Reduce watering as temperatures drop.",
+            careWinter = "Keep in warm indoor room, water monthly.",
+            soilType = "Rich organic potting soil",
+            sunlight = "Filtered Bright Light",
+            iconEmoji = "🌿",
+            matureSize = "1 - 2 feet tall, 6 - 8 feet trailing",
+            wateringNeeds = "Moderate",
+            bloomTime = "Non-flowering",
+            pestsDiseases = "Mealybugs, Root rot in standing water",
             compatibleClimate = "Tropical (Humid)"
         ),
         PlantTemplate(
@@ -189,19 +189,19 @@ object ClimatePlants {
 
         // Mediterranean Climate Plants
         PlantTemplate(
-            name = "Olive Tree",
+            name = "Cypress Tree",
             type = "Tree",
-            careSpring = "Prune dense inner branches to let air flow in.",
-            careSummer = "Water deeply every 2 weeks. Loves dry heat.",
-            careAutumn = "Harvest ripe olives in late autumn.",
-            careWinter = "Extremely cold hardy, keep soil slightly dry.",
-            soilType = "Stony, alkaline, well-draining",
+            careSpring = "Prune lightly to maintain symmetrical conical shape.",
+            careSummer = "Water occasionally. Very drought tolerant.",
+            careAutumn = "Mulch around base to protect root system.",
+            careWinter = "Extremely winter hardy, evergreen foliage.",
+            soilType = "Stony, well-draining sandy loam",
             sunlight = "Full Sun",
-            iconEmoji = "🌳",
-            matureSize = "15 - 30 feet tall",
+            iconEmoji = "🌲",
+            matureSize = "20 - 40 feet tall",
             wateringNeeds = "Low",
-            bloomTime = "Late Spring",
-            pestsDiseases = "Olive fruit fly, Peacock spot",
+            bloomTime = "Non-flowering",
+            pestsDiseases = "Spider mites, Cypress aphids",
             compatibleClimate = "Mediterranean"
         ),
         PlantTemplate(
@@ -237,19 +237,19 @@ object ClimatePlants {
             compatibleClimate = "Mediterranean"
         ),
         PlantTemplate(
-            name = "Fig Tree",
+            name = "Jacaranda Tree",
             type = "Tree",
-            careSpring = "Apply balanced compost, remove weak branches.",
-            careSummer = "Water weekly to support ripening sweet figs.",
-            careAutumn = "Harvest figs, clean fallen leaves to deter pests.",
-            careWinter = "Goes deciduous, tolerates light freezing.",
-            soilType = "Loamy, neutral pH",
+            careSpring = "Water regularly to promote early spring purple blooms.",
+            careSummer = "Drought tolerant once established. Water bi-weekly.",
+            careAutumn = "Clean fallen leaf leaflets to keep soil aerated.",
+            careWinter = "Goes deciduous, protect young trees from deep freeze.",
+            soilType = "Sandy, well-drained fertile soil",
             sunlight = "Full Sun",
             iconEmoji = "🌳",
-            matureSize = "10 - 20 feet tall",
+            matureSize = "15 - 30 feet tall",
             wateringNeeds = "Moderate",
-            bloomTime = "Late Spring to Late Summer",
-            pestsDiseases = "Fig rust, Fruit birds",
+            bloomTime = "Late Spring (May - June)",
+            pestsDiseases = "Aphids, Mushroom root rot",
             compatibleClimate = "Mediterranean"
         ),
         PlantTemplate(
@@ -369,19 +369,19 @@ object ClimatePlants {
             compatibleClimate = "Temperate"
         ),
         PlantTemplate(
-            name = "Garden Tomato",
-            type = "Veggie",
-            careSpring = "Stake tall vines, pinch off first early blossoms.",
-            careSummer = "Water deeply daily. Apply high-potassium feed.",
-            careAutumn = "Harvest before first cold frost. Ripen indoors.",
-            careWinter = "Annual plant. Compost dead vines.",
-            soilType = "Heavy nutrient compost soil",
-            sunlight = "Full Direct Sun",
-            iconEmoji = "🍅",
-            matureSize = "4 - 6 feet tall vines",
-            wateringNeeds = "High",
-            bloomTime = "Summer",
-            pestsDiseases = "Tomato hornworm, Blossom end rot",
+            name = "English Ivy",
+            type = "Shrub",
+            careSpring = "Prune trailing vines to control spread. Mist foliage.",
+            careSummer = "Keep in dappled or partial shade. Water twice a week.",
+            careAutumn = "Clean ground twigs, maintain trailing boundaries.",
+            careWinter = "Evergreen vine. Minimize watering in cold seasons.",
+            soilType = "Loamy, moisture-retentive soil",
+            sunlight = "Dappled Shade",
+            iconEmoji = "🌿",
+            matureSize = "1 - 2 feet tall, 10 - 20 feet trailing",
+            wateringNeeds = "Moderate",
+            bloomTime = "Non-flowering",
+            pestsDiseases = "Spider mites, Leaf spot bacteria",
             compatibleClimate = "Temperate"
         ),
         PlantTemplate(
@@ -401,19 +401,19 @@ object ClimatePlants {
             compatibleClimate = "Temperate"
         ),
         PlantTemplate(
-            name = "Bonsai Cherry",
+            name = "Bonsai Juniper",
             type = "Tree",
-            careSpring = "Prune branches to maintain classic zen shape. Water regularly.",
-            careSummer = "Keep in partial shade during intense afternoon sun. Water daily.",
-            careAutumn = "Let foliage change naturally. Clear fallen leaves quickly.",
-            careWinter = "Protect roots from deep freeze. Keep compost moist but not wet.",
-            soilType = "Rich organic clay loam",
-            sunlight = "Partial Shade",
+            careSpring = "Pinch back new foliage shoots. Water regularly.",
+            careSummer = "Ensure bright indirect sunlight. Water when topsoil feels dry.",
+            careAutumn = "Clean dried needles, prepare root zones for dormancy.",
+            careWinter = "Extremely cold hardy bonsai. Keep outdoors or cool porch.",
+            soilType = "Fast-draining bonsai soil mix",
+            sunlight = "Full Sun to Partial Shade",
             iconEmoji = "🪴",
             matureSize = "Small (1-2 ft)",
-            wateringNeeds = "High",
-            bloomTime = "Early Spring",
-            pestsDiseases = "Scale insects, Root rot",
+            wateringNeeds = "Moderate",
+            bloomTime = "Non-flowering",
+            pestsDiseases = "Juniper scale, Cedar-apple rust",
             compatibleClimate = "Temperate"
         )
     )

@@ -103,22 +103,23 @@ fun LibraryScreen(
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Icon(
                         Icons.Default.Spa,
                         contentDescription = "My Garden",
                         tint = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         "My Garden Care", 
                         color = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
+                        fontSize = 11.sp,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -131,22 +132,23 @@ fun LibraryScreen(
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Icon(
                         Icons.AutoMirrored.Filled.MenuBook,
                         contentDescription = "Encyclopedia",
                         tint = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         "Species Encyclopedia", 
                         color = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
+                        fontSize = 11.sp,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -371,7 +373,7 @@ fun LibraryScreen(
                 Text("Plant Group Type:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(4.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    val types = listOf("All", "Flower", "Shrub", "Succulent", "Herb", "Veggie", "Tree", "Fern")
+                    val types = listOf("All", "Flower", "Shrub", "Succulent", "Herb", "Tree", "Fern")
                     items(types) { t ->
                         FilterChip(
                             selected = selectedTypeFilter == t,
@@ -1047,7 +1049,7 @@ fun AddCustomPlantDialog(
     var name by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("Flower") }
 
-    val typeOptions = listOf("Flower", "Shrub", "Succulent", "Herb", "Veggie", "Tree")
+    val typeOptions = listOf("Flower", "Shrub", "Succulent", "Herb", "Fern", "Tree")
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(

@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 data class GardenLayout(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val style: String, // e.g. Zen, Cottage, Desert, Urban Balcony, Vegetable
+    val style: String, // e.g. Zen, Cottage, Desert, Urban Balcony, Sanctuary
     val climate: String, // e.g. Temperate, Arid, Tropical, Mediterranean, Mountainous
     val gridWidth: Int = 5,
     val gridHeight: Int = 5,
@@ -20,7 +20,7 @@ data class Plant(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val layoutId: Int, // Refers to GardenLayout
     val name: String,
-    val type: String, // e.g. Flower, Shrub, Succulent, Herb, Veggie
+    val type: String, // e.g. Flower, Shrub, Succulent, Herb, Fern
     val careSpring: String = "Water once a week, expose to partial shade.",
     val careSummer: String = "Water daily, monitor for intense afternoon sun.",
     val careAutumn: String = "Lessen watering, compost soil.",

@@ -17,7 +17,7 @@
 
 ### 2. 2D Interactive Garden Planner
 *   **Grid-Based Layouts:** Draft layouts on a customizable 5x5 grid.
-*   **Design Styles:** Tailor your gardens to distinct themes, such as Zen, Cottage, Desert, Urban Balcony, or Vegetable.
+*   **Design Styles:** Tailor your gardens to distinct themes, such as Zen, Cottage, Desert, Urban Balcony, or Botanical Sanctuary.
 *   **Plant Layouts:** Place, arrange, and manage individual plant types directly on the digital plot.
 
 ### 3. Greenhouse Botanical Database
