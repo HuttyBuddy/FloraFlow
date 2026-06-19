@@ -112,12 +112,25 @@ class MainActivity : ComponentActivity() {
                                 @OptIn(ExperimentalMaterial3Api::class)
                                 CenterAlignedTopAppBar(
                                     title = {
-                                        Text(
-                                            text = "FloraFlow",
-                                            fontWeight = FontWeight.ExtraBold,
-                                            style = MaterialTheme.typography.titleLarge,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.ic_logo_heart),
+                                                contentDescription = "FloraFlow Logo",
+                                                modifier = Modifier
+                                                    .size(28.dp)
+                                                    .clip(RoundedCornerShape(6.dp))
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "FloraFlow",
+                                                fontWeight = FontWeight.ExtraBold,
+                                                style = MaterialTheme.typography.titleLarge,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                        }
                                     },
                                     actions = {
                                         IconButton(
@@ -220,15 +233,15 @@ class MainActivity : ComponentActivity() {
                                         selected = currentTab == 0,
                                         onClick = { viewModel.setCurrentTab(0) },
                                         icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
-                                        label = { Text("Dashboard", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        label = { Text("Dashboard", style = MaterialTheme.typography.labelSmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 2, softWrap = true) },
                                         modifier = Modifier.testTag("nav_tab_dashboard"),
-                                        alwaysShowLabel = false
+                                        alwaysShowLabel = true
                                     )
                                     NavigationBarItem(
                                         selected = currentTab == 1,
                                         onClick = { viewModel.setCurrentTab(1) },
                                         icon = { Icon(Icons.Default.Explore, contentDescription = "My Plot") },
-                                        label = { Text("My Plot", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        label = { Text("My Plot", style = MaterialTheme.typography.labelSmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 2, softWrap = true) },
                                         modifier = Modifier
                                             .testTag("nav_tab_planner")
                                             .onGloballyPositioned { coordinates ->
@@ -238,21 +251,21 @@ class MainActivity : ComponentActivity() {
                                                     ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
                                                 )
                                             },
-                                        alwaysShowLabel = false
+                                        alwaysShowLabel = true
                                     )
                                     NavigationBarItem(
                                         selected = currentTab == 2,
                                         onClick = { viewModel.setCurrentTab(2) },
                                         icon = { Icon(Icons.Default.Spa, contentDescription = "Greenhouse") },
-                                        label = { Text("Greenhouse", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        label = { Text("Greenhouse", style = MaterialTheme.typography.labelSmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 2, softWrap = true) },
                                         modifier = Modifier.testTag("nav_tab_greenhouse"),
-                                        alwaysShowLabel = false
+                                        alwaysShowLabel = true
                                     )
                                     NavigationBarItem(
                                         selected = currentTab == 3,
                                         onClick = { viewModel.setCurrentTab(3) },
                                         icon = { Icon(Icons.Default.SmartToy, contentDescription = "Garden Counsel") },
-                                        label = { Text("Garden Counsel", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        label = { Text("Garden Counsel", style = MaterialTheme.typography.labelSmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 2, softWrap = true) },
                                         modifier = Modifier
                                             .testTag("nav_tab_ai")
                                             .onGloballyPositioned { coordinates ->
@@ -262,7 +275,7 @@ class MainActivity : ComponentActivity() {
                                                     ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
                                                 )
                                             },
-                                        alwaysShowLabel = false
+                                        alwaysShowLabel = true
                                     )
                                     NavigationBarItem(
                                         selected = currentTab == 4,
@@ -273,9 +286,9 @@ class MainActivity : ComponentActivity() {
                                             }
                                         },
                                         icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Garden") },
-                                        label = { Text("AR Garden", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        label = { Text("AR Garden", style = MaterialTheme.typography.labelSmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 2, softWrap = true) },
                                         modifier = Modifier.testTag("nav_tab_ar"),
-                                        alwaysShowLabel = false
+                                        alwaysShowLabel = true
                                     )
                                 }
                             }

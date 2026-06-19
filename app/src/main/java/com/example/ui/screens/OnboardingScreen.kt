@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.viewmodel.GardenViewModel
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.Image
+import com.example.R
 
 enum class AssessmentScreenState {
     SPLASH, QUESTION, CALCULATING, RESULT, STEPS
@@ -254,11 +256,12 @@ fun SplashWelcomeScreen(
         Spacer(modifier = Modifier.height(48.dp))
         
         // centered FloraFlow logo top
-        Icon(
-            imageVector = Icons.Default.Spa,
+        Image(
+            painter = painterResource(id = R.drawable.ic_logo_heart),
             contentDescription = "FloraFlow Logo",
-            tint = Color(0xFFE8C998),
-            modifier = Modifier.size(96.dp)
+            modifier = Modifier
+                .size(96.dp)
+                .clip(RoundedCornerShape(24.dp))
         )
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -521,14 +524,14 @@ fun CalculatingScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = Icons.Default.Spa,
-                contentDescription = null,
-                tint = Color(0xFFE8C998),
+            Image(
+                painter = painterResource(id = R.drawable.ic_logo_heart),
+                contentDescription = "FloraFlow Logo",
                 modifier = Modifier
                     .size(80.dp)
                     .align(Alignment.CenterHorizontally)
                     .graphicsLayer(scaleX = scale, scaleY = scale)
+                    .clip(RoundedCornerShape(20.dp))
             )
             
             Spacer(modifier = Modifier.height(32.dp))
@@ -698,7 +701,13 @@ fun ResultScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(Icons.Default.Spa, contentDescription = null, tint = Color(0xFFE8C998), modifier = Modifier.size(36.dp))
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_logo_heart),
+                                    contentDescription = "FloraFlow Logo",
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text("FloraFlow Neural Load", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                 Spacer(modifier = Modifier.height(12.dp))
