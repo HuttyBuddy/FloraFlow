@@ -167,15 +167,6 @@ class MainActivity : ComponentActivity() {
                                                 contentDescription = "Settings"
                                             )
                                         }
-                                        IconButton(
-                                            onClick = { viewModel.toggleTheme(systemDark) },
-                                            modifier = Modifier.testTag("theme_toggle_button")
-                                        ) {
-                                            Icon(
-                                                imageVector = if (useDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                                                contentDescription = "Toggle Light/Dark Theme"
-                                            )
-                                        }
                                     },
                                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                                         containerColor = MaterialTheme.colorScheme.surfaceVariant
