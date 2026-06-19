@@ -74,20 +74,20 @@ class HelpTest {
         composeTestRule.waitForIdle()
 
         // Search for specific word e.g. "AR"
-        composeTestRule.onNodeWithTag("faq_search_input").performTextInput("AR Lens")
+        composeTestRule.onNodeWithTag("faq_search_input").performTextInput("AR Garden")
         composeTestRule.waitForIdle()
 
-        // Verify only AR related card is visible (card 3 is AR Lens FAQ)
+        // Verify only AR related card is visible (card 3 is AR Garden FAQ)
         composeTestRule.onNodeWithTag("faq_card_3").assertExists()
         composeTestRule.onNodeWithTag("faq_card_1").assertDoesNotExist()
 
-        // Filter by category chip e.g. "AI Advisor"
+        // Filter by category chip e.g. "Garden Counsel"
         composeTestRule.onNodeWithTag("faq_search_input").performTextClearance()
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag("faq_chip_AI Advisor").performScrollTo().performClick()
+        composeTestRule.onNodeWithTag("faq_chip_Garden Counsel").performScrollTo().performClick()
         composeTestRule.waitForIdle()
 
-        // Verify AI Advisor faq (id = 2) is visible and others are not
+        // Verify Garden Counsel faq (id = 2) is visible and others are not
         composeTestRule.onNodeWithTag("faq_card_2").performScrollTo().assertExists()
         composeTestRule.onNodeWithTag("faq_card_1").assertDoesNotExist()
     }

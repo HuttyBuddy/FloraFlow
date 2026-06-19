@@ -47,26 +47,26 @@ data class FAQItem(
 val faqs = listOf(
     FAQItem(
         id = 1,
-        question = "How do I design a garden in the 2D Planner?",
-        answer = "Go to the '2D Planner' tab. Tap the 'Add Plant' button, select a plant species from our database, and tap anywhere on the canvas to place it. You can drag and drop plants to rearrange them, tap to select, and resize or rotate them.",
-        category = "2D Planner"
+        question = "How do I design a garden in My Plot?",
+        answer = "Go to the 'My Plot' tab. Tap the 'Add Plant' button, select a plant species from our database, and tap anywhere on the canvas to place it. You can drag and drop plants to rearrange them, tap to select, and resize or rotate them.",
+        category = "My Plot"
     ),
     FAQItem(
         id = 2,
-        question = "What is the AI Advisor and how can it help?",
-        answer = "The AI Advisor is powered by Gemini and acts as your personal master gardener. Tap the 'AI Advisor' tab to start a chat. Ask about planting calendars, pest control, companion planting, or lighting requirements for specific species.",
-        category = "AI Advisor"
+        question = "What is the Garden Counsel and how can it help?",
+        answer = "The Garden Counsel is powered by Gemini and acts as your personal master gardener. Tap the 'Garden Counsel' tab to start a chat. Ask about planting calendars, pest control, companion planting, or lighting requirements for specific species.",
+        category = "Garden Counsel"
     ),
     FAQItem(
         id = 3,
-        question = "How do I use the AR Lens?",
-        answer = "The AR Lens lets you view your garden design in the real world in 3D. Open the 'AR Lens' tab (requires FloraFlow Premium), select a plant from your list, scan a flat surface in your room or yard, and tap the screen to place a 3D model.",
-        category = "AR Lens"
+        question = "How do I use the AR Garden?",
+        answer = "The AR Garden lets you view your garden design in the real world in 3D. Open the 'AR Garden' tab (requires FloraFlow Premium), select a plant from your list, scan a flat surface in your room or yard, and tap the screen to place a 3D model.",
+        category = "AR Garden"
     ),
     FAQItem(
         id = 4,
         question = "Is a premium subscription required?",
-        answer = "FloraFlow is free for basic 2D layout planning, greenhouse inventory, and standard AI advice. FloraFlow Premium unlocks the AR Lens, unlimited AI queries, custom watering logs, and premium plant species catalog access.",
+        answer = "FloraFlow is free for basic layout planning, greenhouse inventory, and standard AI advice. FloraFlow Premium unlocks the AR Garden, unlimited AI queries, custom watering logs, and premium plant species catalog access.",
         category = "Premium"
     ),
     FAQItem(
@@ -78,8 +78,8 @@ val faqs = listOf(
     FAQItem(
         id = 6,
         question = "Can I export or share my designs?",
-        answer = "Yes! In the 2D Planner, you can tap the export icon to save a high-resolution screenshot of your layout directly to your device gallery or share it with friends.",
-        category = "2D Planner"
+        answer = "Yes! In My Plot, you can tap the export icon to save a high-resolution screenshot of your layout directly to your device gallery or share it with friends.",
+        category = "My Plot"
     ),
     FAQItem(
         id = 7,
@@ -172,7 +172,7 @@ fun FaqTabContent() {
     var selectedCategory by remember { mutableStateOf("All") }
     var expandedFaqId by remember { mutableStateOf<Int?>(null) }
 
-    val categories = listOf("All", "Getting Started", "2D Planner", "AR Lens", "AI Advisor", "Premium")
+    val categories = listOf("All", "Getting Started", "My Plot", "AR Garden", "Garden Counsel", "Premium")
 
     val filteredFaqs = remember(searchQuery, selectedCategory) {
         faqs.filter { faq ->
@@ -245,7 +245,7 @@ fun FaqTabContent() {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "No questions found matching '$searchQuery'",
+                        text = "Even our head botanist couldn't find an answer for '$searchQuery'. Try different words to search the library.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center

@@ -29,6 +29,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.ClimatePlants
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import com.example.data.model.Plant
 import com.example.data.model.PlantTemplate
 import com.example.ui.viewmodel.GardenViewModel
@@ -498,7 +503,7 @@ fun LibraryScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
-                        "No Botanicals Match Your Filter",
+                        "Even in a vast forest, some seeds are rare. Try adjusting your search filters to find a match.",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary,
@@ -621,6 +626,53 @@ fun LibraryScreen(
     }
 }
 
+@Composable
+fun GrowthTreeRingsIndicator(
+    progress: Float,
+    modifier: Modifier = Modifier
+) {
+    val ringColor = MaterialTheme.colorScheme.primary
+    val trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+    val woodColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+
+    Canvas(modifier = modifier) {
+        val sizeMin = size.minDimension
+        val center = Offset(size.width / 2, size.height / 2)
+
+        // 1. Draw organic inner tree rings (concentric circles)
+        val ringCount = 3
+        for (i in 1..ringCount) {
+            val fraction = i.toFloat() / (ringCount + 1)
+            val radius = (sizeMin / 2) * fraction
+            drawCircle(
+                color = woodColor,
+                radius = radius,
+                style = Stroke(width = 1.dp.toPx())
+            )
+        }
+
+        // 2. Draw outer track (the full circle representing 100% potential)
+        val outerRadius = sizeMin / 2 - 4.dp.toPx()
+        drawCircle(
+            color = trackColor,
+            radius = outerRadius,
+            style = Stroke(width = 3.dp.toPx())
+        )
+
+        // 3. Draw progress arc (the growth rings completed)
+        val sweepAngle = (progress / 100f) * 360f
+        drawArc(
+            color = ringColor,
+            startAngle = -90f,
+            sweepAngle = sweepAngle,
+            useCenter = false,
+            topLeft = Offset(center.x - outerRadius, center.y - outerRadius),
+            size = Size(outerRadius * 2, outerRadius * 2),
+            style = Stroke(width = 4.dp.toPx(), cap = StrokeCap.Round)
+        )
+    }
+}
+
 // --- Specific Plant Care Info Expandable Card ---
 @Composable
 fun PlantCareTrackerCard(
@@ -678,13 +730,22 @@ fun PlantCareTrackerCard(
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Growth: ${plant.growthProgress}%",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            maxLines = 1
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "Growth: ${plant.growthProgress}%",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                maxLines = 1
+                            )
+                            GrowthTreeRingsIndicator(
+                                progress = plant.growthProgress.toFloat(),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
 
                     Row(

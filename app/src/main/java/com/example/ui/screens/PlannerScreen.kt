@@ -193,10 +193,11 @@ fun PlannerScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "No Garden Outline Open",
+                text = "Select a plot to begin designing your sanctuary.",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -569,7 +570,7 @@ fun PlannerScreen(
                         if (distinctPlanted.isEmpty()) {
                              item {
                                  Text(
-                                     "No seeds sown on layout workspace yet.",
+                                     "This plot is waiting for its first seeds. Tap the grid below to sow your garden.",
                                      style = MaterialTheme.typography.bodySmall,
                                      color = MaterialTheme.colorScheme.secondary,
                                      fontSize = 11.sp
@@ -1003,7 +1004,7 @@ fun PlannerScreen(
                           )
                           if (activeGridItems.isEmpty()) {
                               Text(
-                                  "No plants sown in this blueprint workspace. Tap plots on grid planner to sow seeds first.",
+                                  "A quiet patch of soil. Tap the grid to plant your first seeds and watch them grow.",
                                   color = Color.Gray,
                                   fontSize = 10.sp,
                                   fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace

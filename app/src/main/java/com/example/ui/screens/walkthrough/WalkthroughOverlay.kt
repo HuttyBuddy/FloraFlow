@@ -253,9 +253,9 @@ fun WalkthroughOverlay(
                                 WalkthroughStep.WELCOME -> "Welcome to FloraFlow!"
                                 WalkthroughStep.DASHBOARD_GARDEN -> "Active Garden Control"
                                 WalkthroughStep.DASHBOARD_STATS -> "Mindfulness Tracker"
-                                WalkthroughStep.PLANNER_TAB -> "2D Companion Planner"
-                                WalkthroughStep.AI_ADVISOR_TAB -> "Live AI Advisor"
-                                WalkthroughStep.AR_LENS_TAB -> "AR Hologram Lens"
+                                WalkthroughStep.PLANNER_TAB -> "My Plot Grid"
+                                WalkthroughStep.AI_ADVISOR_TAB -> "Garden Counsel"
+                                WalkthroughStep.AR_LENS_TAB -> "AR Garden"
                             }
 
                             Text(
@@ -268,11 +268,11 @@ fun WalkthroughOverlay(
 
                             val description = when (currentStep) {
                                 WalkthroughStep.WELCOME -> "Let's take a quick interactive tour to get familiar with your new therapeutic garden helper."
-                                WalkthroughStep.DASHBOARD_GARDEN -> "This is your Garden Hub. Tap 'New Garden' to create Zen spaces or switch active layouts via 'Select Garden'."
+                                WalkthroughStep.DASHBOARD_GARDEN -> "This is your Garden Hub. Tap 'Plant a New Seed' to create Zen spaces or switch active layouts via 'Visit a Garden'."
                                 WalkthroughStep.DASHBOARD_STATS -> "The Growth Sync chart correlates your physical gardening minutes with rating improvements to track stress reduction."
-                                WalkthroughStep.PLANNER_TAB -> "Switch to the 2D Planner to drag-and-drop crops on a companion planting grid with spacing safety alerts."
-                                WalkthroughStep.AI_ADVISOR_TAB -> "Consult Dr. Julian Greenleaf, your live AI advisor, for plant stress diagnostics, soil pH balance, and mindfulness support."
-                                WalkthroughStep.AR_LENS_TAB -> "Enter the AR Lens to project digital flower decals directly in your physical room and check exact sizing overlays."
+                                WalkthroughStep.PLANNER_TAB -> "Switch to My Plot to drag-and-drop crops on a companion planting grid with spacing safety alerts."
+                                WalkthroughStep.AI_ADVISOR_TAB -> "Consult Dr. Julian Greenleaf, your live Garden Counsel, for plant stress diagnostics, soil pH balance, and mindfulness support."
+                                WalkthroughStep.AR_LENS_TAB -> "Enter the AR Garden to project digital flower decals directly in your physical room and check exact sizing overlays."
                             }
 
                             Text(

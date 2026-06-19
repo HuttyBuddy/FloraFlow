@@ -192,7 +192,7 @@ fun ChooseLayoutDialog(
 
                 if (layouts.isEmpty()) {
                     Text(
-                        text = "No custom designs created. Create a new garden above!",
+                        text = "Your blueprint journal is empty. Let's plant a new seed to begin your design.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(vertical = 24.dp),

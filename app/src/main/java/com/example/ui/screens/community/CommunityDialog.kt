@@ -308,11 +308,12 @@ fun CommunityFeedView(
                         tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "No posts found",
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                     Text(
+                         text = "No stories shared in this patch yet. Tap the button below to plant a new conversation.",
+                         fontWeight = FontWeight.Bold,
+                         color = MaterialTheme.colorScheme.primary,
+                         textAlign = TextAlign.Center
+                     )
                     Text(
                         text = "Be the first to share a tips or experience with the garden circle!",
                         style = MaterialTheme.typography.bodySmall,
@@ -612,13 +613,13 @@ fun CommunityDetailView(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
                     ) {
-                        Text(
-                            text = "No comments yet. Start the conversation below!",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(16.dp),
-                            fontWeight = FontWeight.Medium
-                        )
+                         Text(
+                             text = "The air is still here. Be the first to share your thoughts at the garden gate.",
+                             style = MaterialTheme.typography.bodyMedium,
+                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                             modifier = Modifier.padding(16.dp),
+                             fontWeight = FontWeight.Medium
+                         )
                     }
                 }
             } else {

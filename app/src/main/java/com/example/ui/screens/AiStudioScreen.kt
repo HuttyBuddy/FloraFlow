@@ -1122,7 +1122,7 @@ fun BotanistLiveLabConsole(
                 }
             } else {
                 Text(
-                    text = "No Garden layout active. Select or create design blueprints in the 2D Planner to stream Live lab sensors!",
+                    text = "The greenhouse is quiet. Choose a plot from your garden beds to listen to its botanical signals.",
                     style = if (onClose != null) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

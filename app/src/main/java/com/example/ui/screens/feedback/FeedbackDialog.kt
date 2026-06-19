@@ -504,7 +504,7 @@ fun SuccessFeedbackView(
     var triggerBloom by remember { mutableStateOf(false) }
     val bloomProgress by animateFloatAsState(
         targetValue = if (triggerBloom) 1.0f else 0.0f,
-        animationSpec = tween(1800, easing = FastOutSlowInEasing)
+        animationSpec = spring(dampingRatio = 0.7f, stiffness = 100f)
     )
 
     LaunchedEffect(Unit) {

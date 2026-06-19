@@ -23,6 +23,11 @@ import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import com.example.ui.screens.settings.SettingsDialog
 import com.example.ui.screens.community.CommunityDialog
@@ -116,15 +121,6 @@ class MainActivity : ComponentActivity() {
                                     },
                                     actions = {
                                         IconButton(
-                                            onClick = { showFeedbackDialog = true },
-                                            modifier = Modifier.testTag("feedback_button")
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Feedback,
-                                                contentDescription = "Share App Feedback"
-                                            )
-                                        }
-                                        IconButton(
                                             onClick = {
                                                 if (isPremium) {
                                                     viewModel.setSubscriptionManagementVisible(true)
@@ -149,23 +145,64 @@ class MainActivity : ComponentActivity() {
                                                 contentDescription = "Community Forum"
                                             )
                                         }
-                                        IconButton(
-                                            onClick = { showHelpDialog = true },
-                                            modifier = Modifier.testTag("help_button")
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.AutoMirrored.Filled.HelpOutline,
-                                                contentDescription = "Help & Support"
-                                            )
-                                        }
-                                        IconButton(
-                                            onClick = { showSettingsDialog = true },
-                                            modifier = Modifier.testTag("settings_button")
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Settings,
-                                                contentDescription = "Settings"
-                                            )
+                                        var showMenu by remember { mutableStateOf(false) }
+                                        Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
+                                            IconButton(
+                                                onClick = { showMenu = true },
+                                                modifier = Modifier.testTag("more_options_button")
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.MoreVert,
+                                                    contentDescription = "More options"
+                                                )
+                                            }
+                                            DropdownMenu(
+                                                expanded = showMenu,
+                                                onDismissRequest = { showMenu = false }
+                                            ) {
+                                                DropdownMenuItem(
+                                                    text = { Text("Share App Feedback") },
+                                                    onClick = {
+                                                        showMenu = false
+                                                        showFeedbackDialog = true
+                                                    },
+                                                    leadingIcon = {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Feedback,
+                                                            contentDescription = "Feedback"
+                                                        )
+                                                    },
+                                                    modifier = Modifier.testTag("feedback_button")
+                                                )
+                                                DropdownMenuItem(
+                                                    text = { Text("Help & Support") },
+                                                    onClick = {
+                                                        showMenu = false
+                                                        showHelpDialog = true
+                                                    },
+                                                    leadingIcon = {
+                                                        Icon(
+                                                            imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                                                            contentDescription = "Help"
+                                                        )
+                                                    },
+                                                    modifier = Modifier.testTag("help_button")
+                                                )
+                                                DropdownMenuItem(
+                                                    text = { Text("Settings") },
+                                                    onClick = {
+                                                        showMenu = false
+                                                        showSettingsDialog = true
+                                                    },
+                                                    leadingIcon = {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Settings,
+                                                            contentDescription = "Settings"
+                                                        )
+                                                    },
+                                                    modifier = Modifier.testTag("settings_button")
+                                                )
+                                            }
                                         }
                                     },
                                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -190,8 +227,8 @@ class MainActivity : ComponentActivity() {
                                     NavigationBarItem(
                                         selected = currentTab == 1,
                                         onClick = { viewModel.setCurrentTab(1) },
-                                        icon = { Icon(Icons.Default.Explore, contentDescription = "2D Planner") },
-                                        label = { Text("2D Planner", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        icon = { Icon(Icons.Default.Explore, contentDescription = "My Plot") },
+                                        label = { Text("My Plot", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
                                         modifier = Modifier
                                             .testTag("nav_tab_planner")
                                             .onGloballyPositioned { coordinates ->
@@ -214,8 +251,8 @@ class MainActivity : ComponentActivity() {
                                     NavigationBarItem(
                                         selected = currentTab == 3,
                                         onClick = { viewModel.setCurrentTab(3) },
-                                        icon = { Icon(Icons.Default.SmartToy, contentDescription = "AI Advisor") },
-                                        label = { Text("AI Advisor", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        icon = { Icon(Icons.Default.SmartToy, contentDescription = "Garden Counsel") },
+                                        label = { Text("Garden Counsel", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
                                         modifier = Modifier
                                             .testTag("nav_tab_ai")
                                             .onGloballyPositioned { coordinates ->
@@ -235,8 +272,8 @@ class MainActivity : ComponentActivity() {
                                                 viewModel.upgradeToPremium()
                                             }
                                         },
-                                        icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Lens") },
-                                        label = { Text("AR Lens", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                                        icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Garden") },
+                                        label = { Text("AR Garden", style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
                                         modifier = Modifier.testTag("nav_tab_ar"),
                                         alwaysShowLabel = false
                                     )
@@ -322,6 +359,20 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SplashWarmUpScreen() {
+    var startAnimation by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (startAnimation) 1f else 0.1f,
+        animationSpec = spring(
+            dampingRatio = 0.6f, // Nice slightly bouncy bloom effect
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "logoScale"
+    )
+    
+    LaunchedEffect(Unit) {
+        startAnimation = true
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -338,6 +389,7 @@ fun SplashWarmUpScreen() {
                 contentDescription = "FloraFlow Logo",
                 modifier = Modifier
                     .size(110.dp)
+                    .scale(scale)
                     .clip(RoundedCornerShape(28.dp))
             )
 

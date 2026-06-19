@@ -172,7 +172,7 @@ fun OnboardingScreen(
         AnimatedContent(
             targetState = screenState,
             transitionSpec = {
-                fadeIn(animationSpec = tween(400)) togetherWith fadeOut(animationSpec = tween(400))
+                fadeIn(animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessMedium)) togetherWith fadeOut(animationSpec = spring(dampingRatio = 0.8f, stiffness = Spring.StiffnessMedium))
             },
             label = "AssessmentFlowAnimation"
         ) { state ->

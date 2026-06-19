@@ -1213,7 +1213,7 @@ fun ArLensScreen(
                             // Pulse circle indicator
                             val pulseScale by animateFloatAsState(
                                 targetValue = if (laserProgress > 0.5f) 1.05f else 0.95f,
-                                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing)
+                                animationSpec = spring(dampingRatio = 0.7f, stiffness = Spring.StiffnessLow)
                             )
                             
                             Column(

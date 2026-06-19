@@ -86,7 +86,7 @@ fun DashboardScreen(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "Take Assessment",
+                        text = "Begin Your Garden Journey",
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onError
@@ -133,7 +133,7 @@ fun DashboardScreen(
                         text = if (activeLayout != null) {
                             "Project: ${activeLayout?.name} | Style: ${activeLayout?.style}"
                         } else {
-                            "No active garden selected"
+                            "Your garden beds are ready to be planted"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
@@ -167,7 +167,7 @@ fun DashboardScreen(
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Create layout", modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("New Garden", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text("Plant a New Seed", fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
             
             Button(
@@ -181,7 +181,7 @@ fun DashboardScreen(
             ) {
                 Icon(Icons.Default.Eco, contentDescription = "Choose layout", modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Select Garden", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text("Visit a Garden", fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -211,7 +211,7 @@ fun DashboardScreen(
                         fontWeight = FontWeight.ExtraBold
                     )
                     Text(
-                        text = "Total Session Time",
+                        text = "Time in the Garden",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -236,7 +236,7 @@ fun DashboardScreen(
                         fontWeight = FontWeight.ExtraBold
                     )
                     Text(
-                        text = "Avg Therapy Rating",
+                        text = "Wellness Bloom",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -260,7 +260,7 @@ fun DashboardScreen(
                         fontWeight = FontWeight.ExtraBold
                     )
                     Text(
-                        text = "Cared Items",
+                        text = "Plants Tended",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -304,13 +304,13 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "FloraFlow Community Circle",
+                        text = "The Garden Gate",
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
-                        text = "Share tips, swap stories, and learn from others!",
+                        text = "Step through the gate and grow together",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -443,9 +443,10 @@ fun DashboardScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "No Mood & Garden Logs Yet",
+                        text = "No mood entries yet — every garden begins with a single breath.",
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center
                     )
                     Text(
                         text = "Record how you feel after spending time outdoors styling plants. Your botanic health directly syncs with mental release!",
