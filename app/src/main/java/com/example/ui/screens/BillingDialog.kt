@@ -61,15 +61,6 @@ fun BillingDialog(
             description = "Save over 33%! Unlocks unlimited Gemini-Powered AI advice, full Eco-Acoustic journal chimes, stress metric logs, and advanced layouts.",
             isPopular = true,
             isAnnual = true
-        ),
-        BillingPlan(
-            name = "FloraFlow Elite Suite",
-            price = "$14.99",
-            period = "month",
-            trial = "Priority Access",
-            description = "Ultimate professional tier: high-priority Gemini AI responses, multiple plot synchronizations, PDF layout exports, and expert botany diagnoses.",
-            isPopular = false,
-            isAnnual = false
         )
     )
 
