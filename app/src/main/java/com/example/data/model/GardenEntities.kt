@@ -46,6 +46,19 @@ data class MoodLog(
     val growthIndex: Int = 0 // average growth progress of the garden plants during the session
 )
 
+@Entity(tableName = "care_tasks")
+data class CareTask(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val plantId: Int, // Refers to Plant.id
+    val plantName: String,
+    val taskType: String, // e.g. WATER, FERTILIZE, PRUNE, MIST
+    val dueDate: Long, // timestamp
+    val completedDate: Long? = null,
+    val isRecurring: Boolean = true,
+    val intervalDays: Int = 7
+)
+
+
 // Helper class for UI Grid mapping
 data class GridPlantItem(
     val x: Int,

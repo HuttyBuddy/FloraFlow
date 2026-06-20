@@ -7,10 +7,11 @@ import androidx.room.RoomDatabase
 import com.example.data.model.GardenLayout
 import com.example.data.model.MoodLog
 import com.example.data.model.Plant
+import com.example.data.model.CareTask
 import com.example.ui.screens.community.CommunityPost
 import com.example.ui.screens.community.CommunityComment
 
-@Database(entities = [GardenLayout::class, Plant::class, MoodLog::class, CommunityPost::class, CommunityComment::class], version = 2, exportSchema = false)
+@Database(entities = [GardenLayout::class, Plant::class, MoodLog::class, CommunityPost::class, CommunityComment::class, CareTask::class], version = 3, exportSchema = false)
 abstract class GardenDatabase : RoomDatabase() {
     abstract fun gardenDao(): GardenDao
 
