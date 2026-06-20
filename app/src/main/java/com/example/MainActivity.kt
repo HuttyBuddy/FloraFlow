@@ -330,14 +330,11 @@ class MainActivity : ComponentActivity() {
                                             },
                                         alwaysShowLabel = true
                                     )
-                                    NavigationBarItem(
-                                        selected = currentTab == 4,
-                                        onClick = {
-                                            viewModel.setCurrentTab(4)
-                                            if (!isPremium) {
-                                                viewModel.upgradeToPremium()
-                                            }
-                                        },
+                                     NavigationBarItem(
+                                         selected = currentTab == 4,
+                                         onClick = {
+                                             viewModel.setCurrentTab(4)
+                                         },
                                         icon = { Icon(Icons.Default.Spa, contentDescription = "Restoration", modifier = Modifier.size(24.dp)) },
                                         label = { Text("Restoration", style = uniformTextStyle, maxLines = 1, softWrap = false) },
                                         colors = uniformColors,

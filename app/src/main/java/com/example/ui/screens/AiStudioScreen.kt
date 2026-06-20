@@ -317,7 +317,7 @@ fun AiStudioScreen(
             }
 
             // Send message or premium wall trigger section
-            if (!isPremium && (userQueriesCount >= 2)) {
+            if (!isPremium && (userQueriesCount >= 3)) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -350,7 +350,7 @@ fun AiStudioScreen(
                                 modifier = Modifier.size(24.dp)
                             )
                             Text(
-                                text = "Consultation Limit Reached (2/2)",
+                                text = "Consultation Limit Reached (3/3)",
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -390,7 +390,7 @@ fun AiStudioScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Live consultations remaining: ${2 - userQueriesCount}/2",
+                                text = "Live consultations remaining: ${3 - userQueriesCount}/3",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.secondary,
                                 fontWeight = FontWeight.SemiBold
@@ -657,7 +657,7 @@ fun AiStudioScreen(
                 }
 
                 // Chat Input section
-                if (!isPremium && (userQueriesCount >= 2)) {
+                if (!isPremium && (userQueriesCount >= 3)) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -690,7 +690,7 @@ fun AiStudioScreen(
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Text(
-                                    text = "Consultation Limit Reached (2/2)",
+                                    text = "Consultation Limit Reached (3/3)",
                                     fontWeight = FontWeight.Bold,
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -730,7 +730,7 @@ fun AiStudioScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Live consultations remaining: ${2 - userQueriesCount}/2",
+                                    text = "Live consultations remaining: ${3 - userQueriesCount}/3",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.secondary,
                                     fontWeight = FontWeight.SemiBold

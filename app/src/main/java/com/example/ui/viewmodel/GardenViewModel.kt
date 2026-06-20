@@ -103,6 +103,9 @@ class GardenViewModel @JvmOverloads constructor(
     private val _isPremium = MutableStateFlow(false)
     val isPremium: StateFlow<Boolean> = _isPremium.asStateFlow()
 
+    private val _restorationTrialCount = MutableStateFlow(0)
+    val restorationTrialCount: StateFlow<Int> = _restorationTrialCount.asStateFlow()
+
     private val _isOnboardingCompleted = MutableStateFlow(false)
     val isOnboardingCompleted: StateFlow<Boolean> = _isOnboardingCompleted.asStateFlow()
 
@@ -260,6 +263,21 @@ class GardenViewModel @JvmOverloads constructor(
         _showBillingDialog.value = true
     }
 
+    fun incrementRestorationTrial(): Boolean {
+        if (_isPremium.value) return true
+        val currentCount = _restorationTrialCount.value
+        if (currentCount >= 3) {
+            upgradeToPremium()
+            return false
+        }
+        val newCount = currentCount + 1
+        _restorationTrialCount.value = newCount
+        sharedPrefs.edit {
+            putInt("restoration_trial_count", newCount)
+        }
+        return true
+    }
+
     fun setBillingDialogVisible(visible: Boolean) {
         _showBillingDialog.value = visible
     }
@@ -364,6 +382,7 @@ class GardenViewModel @JvmOverloads constructor(
         // Load persistent billing subscription and onboarding values on start
         val savedPremium = sharedPrefs.getBoolean("is_premium", false)
         _isPremium.value = savedPremium
+        _restorationTrialCount.value = sharedPrefs.getInt("restoration_trial_count", 0)
         _isOnboardingCompleted.value = sharedPrefs.getBoolean("onboarding_completed", false)
         _subscriptionTier.value = sharedPrefs.getString("subscription_tier", null)
         _subscriptionTransactionId.value = sharedPrefs.getString("subscription_transaction_id", null)
@@ -873,8 +892,8 @@ class GardenViewModel @JvmOverloads constructor(
         val layout = _activeLayout.value ?: return
         
         val userQuery = "Suggest some visual additions and companion compatibility checks!"
-        val upsellMsg = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock advanced layout analysis, visual companion additions, and expert styling advice! 🌸✨"
-        if (checkPremiumLimit(userQuery, upsellMsg, 2)) return
+        val upsellMsg = "🔒 Free AI Advisor consultation limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock advanced layout analysis, visual companion additions, and expert styling advice! 🌸✨"
+        if (checkPremiumLimit(userQuery, upsellMsg, 3)) return
 
         val plantsListStr = _activePlants.value.joinToString(", ") { it.name }
         val prompt = "I have a garden layout styled as a '${layout.style}' in a '${layout.climate}' climate region. " +
@@ -894,8 +913,8 @@ class GardenViewModel @JvmOverloads constructor(
         val layout = _activeLayout.value ?: return
         
         val userQuery = "Generate a companion design blueprint for my space!"
-        val upsellMsg = "🔒 Free AI Advisor consultation limit reached (2/2 queries).\n\nPlease upgrade to FloraFlow PRO to unlock AI garden layout generator, instant database seeding, and dynamic blueprinting! 🌸✨"
-        if (checkPremiumLimit(userQuery, upsellMsg, 2)) return
+        val upsellMsg = "🔒 Free AI Advisor consultation limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock AI garden layout generator, instant database seeding, and dynamic blueprinting! 🌸✨"
+        if (checkPremiumLimit(userQuery, upsellMsg, 3)) return
         
         val prompt = buildLayoutSuggestionPrompt(layout)
 
@@ -1349,6 +1368,7 @@ class GardenViewModel @JvmOverloads constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
     fun logRestorationSession(nriScore: Int, completedTasks: List<String>, trackName: String) {
+        if (!incrementRestorationTrial()) return
         viewModelScope.launch(ioDispatcher) {
             val log = RestorationLog(
                 nriScore = nriScore,
@@ -1420,6 +1440,7 @@ class GardenViewModel @JvmOverloads constructor(
             service.pauseSoundscape()
             _isSoundscapePlaying.value = false
         } else {
+            if (!incrementRestorationTrial()) return
             val intent = Intent(context, com.example.ui.screens.restoration.SoundscapeService::class.java).apply {
                 action = "ACTION_PLAY"
             }

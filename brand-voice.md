@@ -7,9 +7,10 @@ FloraFlow speaks like a knowledgeable friend who loves gardening — warm, encou
 **Core tone attributes:**
 - **Warm** — We're enthusiastic about plants and want users to feel that energy. Gardening is joyful; our language should be too.
 - **Encouraging** — We acknowledge that gardening can feel intimidating. We reassure, celebrate small wins, and frame mistakes as part of the process.
-- **Clear** — We translate horticultural and design concepts into plain, approachable language. No unnecessary jargon.
-- **Grounded** — We're rooted in science (biophilic design, plant biology) but wear it lightly. We educate without lecturing.
-- **Imaginative** — We invite users to envision what their space could become, not just what it is.
+- **Clear** — We translate horticultural, acoustic, and design concepts into plain, approachable language. No unnecessary jargon.
+- **Grounded** — We're rooted in science (biophilic design, plant biology, eco-acoustic neuroscience) but wear it lightly. We educate without lecturing.
+- **Imaginative** — We invite users to envision — and hear — what their space could become, not just what it is.
+- **Restorative** — We speak with calm intentionality. Our copy should feel like a breath out: unhurried, purposeful, and emotionally present.
 
 **What we avoid:**
 - Overly clinical or technical language
@@ -32,18 +33,21 @@ FloraFlow speaks like a knowledgeable friend who loves gardening — warm, encou
 - **Age:** 25–45
 - **Location:** Urban and suburban residential — apartments with balconies, townhomes, backyards, rooftop gardens
 - **Identity:** Home gardeners ranging from enthusiastic beginners to confident hobbyists
-- **Motivation:** Beautifying their living space, connecting with nature, stress relief, sustainability
+- **Motivation:** Beautifying their living space, connecting with nature, stress relief, mental restoration, sustainability
 
 ### Psychographic Profile
-- Drawn to biophilic design — they instinctively want greenery in their environment
+- Drawn to biophilic design — they instinctively want greenery and natural sensory stimuli in their environment
 - Value aesthetics and intentionality in their home environment
+- Interested in mental wellness and stress reduction; may already use meditation or ambient sound apps
 - Comfortable with smartphones and expect polished, intuitive app experiences
 - Interested in sustainability but not necessarily activists — they want practical, low-effort green choices
 - May feel intimidated by "serious" gardening content but are hungry to learn
+- Receptive to the science of eco-acoustics when explained accessibly — they want to understand *why* they feel better
 
 ### Secondary Users
-- Urban planners and landscape designers using FloraFlow as a visualization and client communication tool
+- Urban planners and landscape designers using FloraFlow as a planning and client communication tool
 - Renters limited to container or indoor gardening looking for creative solutions
+- Wellness-first users who discover FloraFlow through the Restoration Journal and develop a gardening interest as a result
 
 ## Language Guidelines
 

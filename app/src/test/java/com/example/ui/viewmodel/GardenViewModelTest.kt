@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -44,5 +45,41 @@ class GardenViewModelTest {
         // Assert shared preferences is updated
         val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", Context.MODE_PRIVATE)
         assertTrue(sharedPrefs.getBoolean("onboarding_completed", false))
+    }
+
+    @Test
+    fun restorationTrial_limitsFreeUsersToThreeUses() {
+        // Assert initial trial count is 0
+        assertEquals(0, viewModel.restorationTrialCount.value)
+        assertFalse(viewModel.showBillingDialog.value)
+
+        // 1st use
+        assertTrue(viewModel.incrementRestorationTrial())
+        assertEquals(1, viewModel.restorationTrialCount.value)
+
+        // 2nd use
+        assertTrue(viewModel.incrementRestorationTrial())
+        assertEquals(2, viewModel.restorationTrialCount.value)
+
+        // 3rd use
+        assertTrue(viewModel.incrementRestorationTrial())
+        assertEquals(3, viewModel.restorationTrialCount.value)
+
+        // 4th use should fail and trigger billing dialog
+        assertFalse(viewModel.incrementRestorationTrial())
+        assertEquals(3, viewModel.restorationTrialCount.value)
+        assertTrue(viewModel.showBillingDialog.value)
+    }
+
+    @Test
+    fun restorationTrial_allowsUnlimitedUsesForPremium() {
+        // Upgrade to premium
+        viewModel.restorePurchases() // makes the user premium
+        assertTrue(viewModel.isPremium.value)
+
+        // Call 5 times, should always return true and not change/exceed trial count
+        for (i in 1..5) {
+            assertTrue(viewModel.incrementRestorationTrial())
+        }
     }
 }

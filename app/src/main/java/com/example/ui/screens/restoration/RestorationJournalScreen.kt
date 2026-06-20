@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -75,6 +76,8 @@ fun RestorationJournalScreen(
     val ambientVol by viewModel.ambientVolume.collectAsStateWithLifecycle()
     val binauralVol by viewModel.binauralVolume.collectAsStateWithLifecycle()
     val restorationLogs by viewModel.allRestorationLogs.collectAsStateWithLifecycle()
+    val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
+    val restorationTrialCount by viewModel.restorationTrialCount.collectAsStateWithLifecycle()
 
     // Local checklist state
     val availableTasks = remember(activePlants) {
@@ -145,6 +148,40 @@ fun RestorationJournalScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            if (!isPremium) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Card(
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (restorationTrialCount < 3) Color(0xFFFFF3E0).copy(alpha = 0.15f) else Color(0xFFFFEBEE).copy(alpha = 0.15f)
+                    ),
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = if (restorationTrialCount < 3) Color(0xFFFFB74D) else Color(0xFFE57373)
+                    ),
+                    modifier = Modifier.testTag("restoration_trial_badge")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (restorationTrialCount < 3) Icons.Default.Info else Icons.Default.Lock,
+                            contentDescription = null,
+                            tint = if (restorationTrialCount < 3) Color(0xFFFFB74D) else Color(0xFFE57373),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = if (restorationTrialCount < 3) "Free Trial: $restorationTrialCount/3 plays remaining" else "Trial Exhausted (3/3) - Go PRO 👑",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (restorationTrialCount < 3) Color(0xFFFFB74D) else Color(0xFFE57373)
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(20.dp))
 
             // NRI Index Gauge or Onboarding state
@@ -158,14 +195,16 @@ fun RestorationJournalScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Soundscape Player Controller
-            Card(
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E352F).copy(alpha = 0.7f)),
-                border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.15f)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Column {
+                    // Soundscape Player Controller
+                    Card(
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E352F).copy(alpha = 0.7f)),
+                        border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.15f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(20.dp),
@@ -387,6 +426,63 @@ fun RestorationJournalScreen(
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF0F261D)
                         )
+                    }
+                }
+            }
+                }
+
+                if (!isPremium && restorationTrialCount >= 3) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(Color(0xFF0F261D).copy(alpha = 0.85f), RoundedCornerShape(24.dp))
+                            .clickable(enabled = false) {},
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .padding(16.dp)
+                                .testTag("restoration_premium_paywall_card"),
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1B3B30)),
+                            border = BorderStroke(1.dp, Color(0xFFFFD54F))
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(20.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Premium locked",
+                                    tint = Color(0xFFFFD54F),
+                                    modifier = Modifier.size(36.dp)
+                                )
+                                Text(
+                                    text = "Restoration Journal (Premium 👑)",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = Color(0xFFA8E6CF),
+                                    textAlign = TextAlign.Center
+                                )
+                                Text(
+                                    text = "You have completed your 3 free trial sessions. Upgrade to FloraFlow PRO to unlock full binaural beat chimes, neural restoration tracking, and unlimited botanical stress metrics!",
+                                    fontSize = 12.sp,
+                                    color = Color.White.copy(alpha = 0.7f),
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 16.sp
+                                )
+                                Button(
+                                    onClick = { viewModel.upgradeToPremium() },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF81C784)),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.fillMaxWidth().height(44.dp)
+                                ) {
+                                    Text("Upgrade to PRO for Unlimited Access", fontWeight = FontWeight.Bold, color = Color(0xFF0F261D), fontSize = 12.sp)
+                                }
+                            }
+                        }
                     }
                 }
             }

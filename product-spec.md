@@ -32,10 +32,11 @@ An intelligent conversational assistant that guides users through the planning p
 FloraFlow's recommendations are informed by biophilic design neuroscience — the study of how natural environments affect human wellbeing. The app:
 - Prioritizes plant selections and arrangements that reduce stress and increase cognitive restoration
 - Surfaces the emotional and psychological benefits of design choices to users
-- Encourages sensory variety: texture, color, scent, and seasonal change
+- Encourages sensory variety: texture, color, scent, sound, and seasonal change
+- Links garden layout choices directly to the NRI score, closing the loop between planning and restoration
 
 ### 4. Interactive Garden Planning Canvas
-Beyond AR, users can plan gardens in a 2D/3D interactive canvas:
+Users can plan gardens in a 2D/3D interactive canvas:
 - Drag-and-drop plant placement
 - View seasonal transitions — see what the garden looks like in spring vs. autumn
 - Save, iterate, and share plans
@@ -53,6 +54,7 @@ A comprehensive, searchable database of plants suited to residential and urban g
 - Not a professional landscape architecture platform
 - Not a social/community gardening app (no public feed or UGC focus)
 - Not a plant delivery or e-commerce service (though integrations are possible roadmap items)
+- Not a generic meditation or sleep app — the soundscapes are rooted in the user's actual garden plan, not generic ambient audio
 
 ## Key Differentiators
 
