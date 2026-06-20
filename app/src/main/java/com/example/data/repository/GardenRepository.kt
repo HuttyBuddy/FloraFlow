@@ -4,6 +4,7 @@ import com.example.data.database.GardenDao
 import com.example.data.model.GardenLayout
 import com.example.data.model.MoodLog
 import com.example.data.model.Plant
+import com.example.data.model.CareTask
 import kotlinx.coroutines.flow.Flow
 
 class GardenRepository(private val gardenDao: GardenDao) {
@@ -58,4 +59,17 @@ class GardenRepository(private val gardenDao: GardenDao) {
     suspend fun insertComment(comment: com.example.ui.screens.community.CommunityComment): Long = gardenDao.insertComment(comment)
 
     suspend fun updateCommentLikes(id: Int, likes: Int, isLiked: Boolean) = gardenDao.updateCommentLikes(id, likes, isLiked)
+
+    // --- Care Tasks ---
+    val allCareTasks: Flow<List<CareTask>> = gardenDao.getAllCareTasks()
+    val pendingCareTasks: Flow<List<CareTask>> = gardenDao.getPendingCareTasks()
+
+    fun getCareTasksForPlant(plantId: Int): Flow<List<CareTask>> = gardenDao.getCareTasksForPlant(plantId)
+
+    suspend fun insertCareTask(careTask: CareTask): Long = gardenDao.insertCareTask(careTask)
+    suspend fun insertCareTasks(careTasks: List<CareTask>) = gardenDao.insertCareTasks(careTasks)
+    suspend fun updateCareTask(careTask: CareTask) = gardenDao.updateCareTask(careTask)
+    suspend fun completeCareTask(id: Int, completedDate: Long) = gardenDao.completeCareTask(id, completedDate)
+    suspend fun deleteCareTaskById(id: Int) = gardenDao.deleteCareTaskById(id)
+    suspend fun deleteCareTasksByPlant(plantId: Int) = gardenDao.deleteCareTasksByPlant(plantId)
 }

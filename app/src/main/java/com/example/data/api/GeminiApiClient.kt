@@ -31,8 +31,15 @@ data class Content(
 )
 
 @JsonClass(generateAdapter = true)
+data class InlineData(
+    val mimeType: String,
+    val data: String // base64 encoded image string
+)
+
+@JsonClass(generateAdapter = true)
 data class Part(
-    val text: String? = null
+    val text: String? = null,
+    val inlineData: InlineData? = null
 )
 
 @JsonClass(generateAdapter = true)
@@ -91,6 +98,8 @@ object GeminiApiClient {
         prompt: String,
         chatHistory: List<Content> = emptyList(),
         systemInstruction: String? = null,
+        imageBytesBase64: String? = null,
+        imageMimeType: String? = "image/jpeg",
         apiKey: String = BuildConfig.GEMINI_API_KEY
     ): String = withContext(Dispatchers.IO) {
         if (apiKey.isEmpty() || apiKey == "MY_GEMINI_API_KEY") {
@@ -101,8 +110,15 @@ object GeminiApiClient {
         if (chatHistory.isNotEmpty()) {
             formattedContents.addAll(chatHistory)
         }
-        // Add the current prompt
-        formattedContents.add(Content(role = "user", parts = listOf(Part(text = prompt))))
+
+        val userParts = mutableListOf<Part>()
+        if (imageBytesBase64 != null) {
+            userParts.add(Part(inlineData = InlineData(mimeType = imageMimeType ?: "image/jpeg", data = imageBytesBase64)))
+        }
+        userParts.add(Part(text = prompt))
+
+        // Add the current prompt (and optional image)
+        formattedContents.add(Content(role = "user", parts = userParts))
 
         val request = GenerateContentRequest(
             contents = formattedContents,
