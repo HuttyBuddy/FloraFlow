@@ -1,6 +1,7 @@
 package com.example.ui.screens.arlens
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import kotlin.math.cos
@@ -44,7 +45,7 @@ fun DrawScope.drawWeatherParticles(
                     strokeWidth = particle.size
                 )
             }
-            "Cherry Blossoms" -> {
+            "Cherry Blossoms", "Blossom Shower" -> {
                 // Draw soft pink cherry blossom drifting petals
                 val rawY = (particle.y + particle.speed * 0.6f * climateTimeFactor) % 1000f
                 val currentY = if (rawY < 0) rawY + 1000f else rawY
@@ -54,6 +55,33 @@ fun DrawScope.drawWeatherParticles(
                 drawCircle(
                     color = Color(0xFFFFC0CB).copy(alpha = particle.alpha),
                     radius = particle.size,
+                    center = Offset(currentX, currentY)
+                )
+            }
+            "Autumn Leaf Fall" -> {
+                // Falling orange/red leaves drifting and rotating
+                val rawY = (particle.y + particle.speed * 0.4f * climateTimeFactor) % 1000f
+                val currentY = if (rawY < 0) rawY + 1000f else rawY
+                val rawX = (particle.x + sin(climateTimeFactor * 0.04f + particle.driftAngle) * 40f) % 1000f
+                val currentX = if (rawX < 0) rawX + 1000f else rawX
+                
+                // Draw a simple leaf (oval path or small rotated rectangle)
+                drawOval(
+                    color = Color(0xFFD84315).copy(alpha = particle.alpha), // Rust red/orange
+                    topLeft = Offset(currentX - particle.size, currentY - particle.size * 0.5f),
+                    size = Size(particle.size * 2f, particle.size)
+                )
+            }
+            "Snow Blizzard" -> {
+                // Drifting white snow circles blowing sideways
+                val rawY = (particle.y + particle.speed * 0.5f * climateTimeFactor) % 1000f
+                val currentY = if (rawY < 0) rawY + 1000f else rawY
+                val rawX = (particle.x - particle.speed * 1.2f * climateTimeFactor) % 1000f // blowing to the left!
+                val currentX = if (rawX < 0) rawX + 1000f else rawX
+                
+                drawCircle(
+                    color = Color.White.copy(alpha = particle.alpha * 0.85f),
+                    radius = particle.size * 0.7f,
                     center = Offset(currentX, currentY)
                 )
             }

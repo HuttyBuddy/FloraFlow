@@ -3,6 +3,8 @@ package com.example.ui.screens.arlens
 import io.github.sceneview.ar.ARSceneView
 import com.google.ar.core.HitResult
 import android.view.MotionEvent
+import android.opengl.Matrix
+import android.media.MediaPlayer
 
 import androidx.compose.animation.*
 import java.util.Locale
@@ -246,6 +248,29 @@ fun ArLensScreen(
     var activeWeather by remember { mutableStateOf("Clear Sky") }
     var arFrame by remember { mutableStateOf<com.google.ar.core.Frame?>(null) }
 
+    val currentSeason by viewModel.currentSeason.collectAsStateWithLifecycle()
+    var soundEnabled by remember { mutableStateOf(false) }
+    var mediaPlayer by remember { mutableStateOf<android.media.MediaPlayer?>(null) }
+
+    DisposableEffect(activeWeather, soundEnabled) {
+        if (soundEnabled) {
+            try {
+                val mp = android.media.MediaPlayer.create(context, com.example.R.raw.wind_chime)
+                if (mp != null) {
+                    mp.setLooping(true)
+                    mp.start()
+                    mediaPlayer = mp
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("ArLensScreen", "Failed to initialize MediaPlayer: ${e.message}")
+            }
+        }
+        onDispose {
+            mediaPlayer?.release()
+            mediaPlayer = null
+        }
+    }
+
     val isRunningInTest = remember {
         try {
             Class.forName("org.robolectric.Robolectric")
@@ -286,6 +311,8 @@ fun ArLensScreen(
                     "Gentle Rain" -> Brush.verticalGradient(listOf(Color(0xFF37474F), Color(0xFF263238), Color(0xFF1A237E)))
                     "Blossom Shower" -> Brush.verticalGradient(listOf(Color(0xFFF8BBD0), Color(0xFFE1BEE7), Color(0xFFD1C4E9)))
                     "Fireflies Spark" -> Brush.verticalGradient(listOf(Color(0xFF0D1B2A), Color(0xFF1B263B), Color(0xFF000814)))
+                    "Autumn Leaf Fall" -> Brush.verticalGradient(listOf(Color(0xFFE65100), Color(0xFFBF360C), Color(0xFF3E2723)))
+                    "Snow Blizzard" -> Brush.verticalGradient(listOf(Color(0xFFECEFF1), Color(0xFFB0BEC5), Color(0xFF78909C)))
                     else -> Brush.verticalGradient(listOf(Color(0xFF29B6F6), Color(0xFF26A69A), Color(0xFF1B5E20))) // Clear Sky / sunny yard
                 }
             }
@@ -400,6 +427,8 @@ fun ArLensScreen(
             "Gentle Rain" -> 40
             "Blossom Shower" -> 25
             "Fireflies Spark" -> 15
+            "Autumn Leaf Fall" -> 25
+            "Snow Blizzard" -> 45
             else -> 0
         }
         val rand = Random(42) // Fixed seed for stable composition layout offsets
@@ -591,7 +620,7 @@ fun ArLensScreen(
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.align(Alignment.CenterVertically).padding(end = 4.dp)
                     )
-                    listOf("Clear Sky", "Gentle Rain", "Blossom Shower", "Fireflies Spark").forEach { weather ->
+                    listOf("Clear Sky", "Gentle Rain", "Blossom Shower", "Fireflies Spark", "Autumn Leaf Fall", "Snow Blizzard").forEach { weather ->
                         val isSelected = activeWeather == weather
                         val icon = when (weather) {
                             "Gentle Rain" -> "🌧️"
@@ -1082,27 +1111,86 @@ fun ArLensScreen(
 
                     val finalScale = placement.scale * visuals.scale
                     
+                    val lastScreenPosition = remember(placement.id) { floatArrayOf(0f, 0f) }
+                    var accumulatedDragX by remember(placement.id) { mutableFloatStateOf(0f) }
+                    var accumulatedDragY by remember(placement.id) { mutableFloatStateOf(0f) }
+
                     Box(
                         modifier = Modifier
                             .offset {
-                                IntOffset(
-                                    placement.positionX.toInt(),
-                                    placement.positionY.toInt()
-                                )
+                                val frame = arFrame
+                                val camera = frame?.camera
+                                val projectedOffset = if (selectedBackgroundPreset == "Live Camera" && 
+                                    frame != null && camera != null && 
+                                    camera.trackingState == com.google.ar.core.TrackingState.TRACKING
+                                ) {
+                                    val viewMatrix = FloatArray(16)
+                                    camera.getViewMatrix(viewMatrix, 0)
+                                    val projectionMatrix = FloatArray(16)
+                                    camera.getProjectionMatrix(projectionMatrix, 0, 0.1f, 100.0f)
+                                    val vpMatrix = FloatArray(16)
+                                    android.opengl.Matrix.multiplyMM(vpMatrix, 0, projectionMatrix, 0, viewMatrix, 0)
+                                    
+                                    projectWorldToScreen(
+                                        placement.positionX,
+                                        placement.positionY,
+                                        placement.positionZ,
+                                        vpMatrix,
+                                        viewportSize.width,
+                                        viewportSize.height
+                                    )
+                                } else {
+                                    null
+                                }
+                                
+                                if (projectedOffset != null) {
+                                    lastScreenPosition[0] = projectedOffset.x
+                                    lastScreenPosition[1] = projectedOffset.y
+                                    IntOffset(projectedOffset.x.toInt(), projectedOffset.y.toInt())
+                                } else {
+                                    lastScreenPosition[0] = placement.positionX
+                                    lastScreenPosition[1] = placement.positionY
+                                    IntOffset(placement.positionX.toInt(), placement.positionY.toInt())
+                                }
                             }
                             .pointerInput(placement.id) {
                                 detectDragGestures(
                                     onDragStart = {
                                         selectedPlacementId = currentPlacement.id
                                         activePanel = null
+                                        accumulatedDragX = lastScreenPosition[0]
+                                        accumulatedDragY = lastScreenPosition[1]
                                     },
                                     onDrag = { change, dragAmount ->
                                         change.consume()
-                                        viewModel.updateArPlantPosition(
-                                            currentPlacement.id,
-                                            dragAmount.x,
-                                            dragAmount.y
-                                        )
+                                        accumulatedDragX += dragAmount.x
+                                        accumulatedDragY += dragAmount.y
+                                        
+                                        if (selectedBackgroundPreset == "Live Camera" && !isRunningInTest) {
+                                            val frame = arFrame
+                                            if (frame != null) {
+                                                val hits = frame.hitTest(accumulatedDragX, accumulatedDragY)
+                                                val planeHit = hits.firstOrNull { hit ->
+                                                    hit.trackable is com.google.ar.core.Plane && (hit.trackable as com.google.ar.core.Plane).isPoseInPolygon(hit.hitPose)
+                                                } ?: hits.firstOrNull()
+                                                
+                                                planeHit?.let { hit ->
+                                                    val pose = hit.hitPose
+                                                    viewModel.updateArPlant3DPosition(
+                                                        currentPlacement.id,
+                                                        pose.tx(),
+                                                        pose.ty(),
+                                                        pose.tz()
+                                                    )
+                                                }
+                                            }
+                                        } else {
+                                            viewModel.updateArPlantPosition(
+                                                currentPlacement.id,
+                                                dragAmount.x,
+                                                dragAmount.y
+                                            )
+                                        }
                                     }
                                 )
                             }
@@ -1132,7 +1220,8 @@ fun ArLensScreen(
                             onClick = {
                                 selectedPlacementId = currentPlacement.id
                                 activePanel = null
-                            }
+                            },
+                            season = currentSeason
                         )
                     }
                 }
@@ -1304,6 +1393,41 @@ fun ArLensScreen(
                             }
                         }
                     }
+                }
+            }
+
+            // Winter frost camera screen border overlay
+            if (currentSeason == "Winter") {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val border = 24.dp.toPx()
+                    drawRect(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color.White.copy(alpha = 0.35f), Color.Transparent),
+                            center = Offset(0f, 0f),
+                            radius = border * 4f
+                        )
+                    )
+                    drawRect(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color.White.copy(alpha = 0.35f), Color.Transparent),
+                            center = Offset(size.width, 0f),
+                            radius = border * 4f
+                        )
+                    )
+                    drawRect(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color.White.copy(alpha = 0.35f), Color.Transparent),
+                            center = Offset(0f, size.height),
+                            radius = border * 4f
+                        )
+                    )
+                    drawRect(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color.White.copy(alpha = 0.35f), Color.Transparent),
+                            center = Offset(size.width, size.height),
+                            radius = border * 4f
+                        )
+                    )
                 }
             }
 
@@ -1527,11 +1651,33 @@ fun ArLensScreen(
                                                 val count = arPlacedPlants.size
                                                 val centerX = if (viewportSize.width > 0) viewportSize.width / 2f else 300f
                                                 val centerY = if (viewportSize.height > 0) viewportSize.height / 2f else 200f
-                                                val staggerX = ((count % 3) - 1) * 80f
-                                                val staggerY = ((count / 3) % 3 - 1) * 80f
-                                                val finalX = centerX + staggerX - 100f
-                                                val finalY = centerY + staggerY - 100f
-                                                viewModel.addArPlant(asset.first, asset.second, finalX, finalY)
+                                                
+                                                if (selectedBackgroundPreset == "Live Camera" && !isRunningInTest) {
+                                                    val frame = arFrame
+                                                    if (frame != null) {
+                                                        val hits = frame.hitTest(centerX, centerY)
+                                                        val planeHit = hits.firstOrNull { hit ->
+                                                            hit.trackable is com.google.ar.core.Plane && (hit.trackable as com.google.ar.core.Plane).isPoseInPolygon(hit.hitPose)
+                                                        } ?: hits.firstOrNull()
+                                                        
+                                                        val pose = planeHit?.hitPose ?: frame.camera.pose.compose(
+                                                            com.google.ar.core.Pose.makeTranslation(0f, 0f, -1.0f)
+                                                        )
+                                                        viewModel.addArPlant(
+                                                            name = asset.first,
+                                                            emoji = asset.second,
+                                                            customX = pose.tx(),
+                                                            customY = pose.ty(),
+                                                            customZ = pose.tz()
+                                                        )
+                                                    }
+                                                } else {
+                                                    val staggerX = ((count % 3) - 1) * 80f
+                                                    val staggerY = ((count / 3) % 3 - 1) * 80f
+                                                    val finalX = centerX + staggerX - 100f
+                                                    val finalY = centerY + staggerY - 100f
+                                                    viewModel.addArPlant(asset.first, asset.second, finalX, finalY)
+                                                }
                                             }
                                             .padding(2.dp)
                                     ) {
@@ -1575,11 +1721,33 @@ fun ArLensScreen(
                                         val count = arPlacedPlants.size
                                         val centerX = if (viewportSize.width > 0) viewportSize.width / 2f else 300f
                                         val centerY = if (viewportSize.height > 0) viewportSize.height / 2f else 200f
-                                        val staggerX = ((count % 3) - 1) * 80f
-                                        val staggerY = ((count / 3) % 3 - 1) * 80f
-                                        val finalX = centerX + staggerX - 100f
-                                        val finalY = centerY + staggerY - 100f
-                                        viewModel.addArPlant(asset.first, asset.second, finalX, finalY)
+                                        
+                                        if (selectedBackgroundPreset == "Live Camera" && !isRunningInTest) {
+                                            val frame = arFrame
+                                            if (frame != null) {
+                                                val hits = frame.hitTest(centerX, centerY)
+                                                val planeHit = hits.firstOrNull { hit ->
+                                                    hit.trackable is com.google.ar.core.Plane && (hit.trackable as com.google.ar.core.Plane).isPoseInPolygon(hit.hitPose)
+                                                } ?: hits.firstOrNull()
+                                                
+                                                val pose = planeHit?.hitPose ?: frame.camera.pose.compose(
+                                                    com.google.ar.core.Pose.makeTranslation(0f, 0f, -1.0f)
+                                                )
+                                                viewModel.addArPlant(
+                                                    name = asset.first,
+                                                    emoji = asset.second,
+                                                    customX = pose.tx(),
+                                                    customY = pose.ty(),
+                                                    customZ = pose.tz()
+                                                )
+                                            }
+                                        } else {
+                                            val staggerX = ((count % 3) - 1) * 80f
+                                            val staggerY = ((count / 3) % 3 - 1) * 80f
+                                            val finalX = centerX + staggerX - 100f
+                                            val finalY = centerY + staggerY - 100f
+                                            viewModel.addArPlant(asset.first, asset.second, finalX, finalY)
+                                        }
                                     }
                                     .padding(2.dp)
                             ) {
@@ -2155,6 +2323,39 @@ fun ArLensScreen(
                 Icon(Icons.Default.Add, contentDescription = "Inventory", tint = Color.White)
             }
 
+            // Season selector trigger
+            FloatingActionButton(
+                onClick = {
+                    activePanel = if (activePanel == "season") null else "season"
+                    selectedPlacementId = null
+                },
+                containerColor = if (activePanel == "season") MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.7f),
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier.size(46.dp)
+            ) {
+                Text(
+                    text = when (currentSeason) {
+                        "Spring" -> "🌱"
+                        "Autumn" -> "🍂"
+                        "Winter" -> "❄️"
+                        else -> "☀️"
+                    },
+                    fontSize = 18.sp
+                )
+            }
+
+            // Audio toggle trigger
+            FloatingActionButton(
+                onClick = { soundEnabled = !soundEnabled },
+                containerColor = if (soundEnabled) MaterialTheme.colorScheme.primary else Color.Black.copy(alpha = 0.7f),
+                contentColor = Color.White,
+                shape = CircleShape,
+                modifier = Modifier.size(46.dp)
+            ) {
+                Text(if (soundEnabled) "🔊" else "🔇", fontSize = 18.sp)
+            }
+
             // Gyroscope toggle button
             FloatingActionButton(
                 onClick = { useGyroscope = !useGyroscope },
@@ -2212,6 +2413,68 @@ fun ArLensScreen(
             // Collapsible assets inventory selection panel
             if (activePanel == "inventory") {
                 inventoryBlock(isLandscape)
+            }
+
+            // Collapsible global seasonal parameters control panel
+            if (activePanel == "season") {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("⏳ Global Seasonal Time-Lapse", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                            IconButton(onClick = { activePanel = null }, modifier = Modifier.size(24.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(14.dp))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            listOf("Spring", "Summer", "Autumn", "Winter").forEach { season ->
+                                val isSelected = currentSeason == season
+                                val emoji = when (season) {
+                                    "Spring" -> "🌱"
+                                    "Autumn" -> "🍂"
+                                    "Winter" -> "❄️"
+                                    else -> "☀️"
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant)
+                                        .clickable {
+                                            viewModel.setCurrentSeason(season)
+                                            // Match weather for visual cohesion
+                                            when (season) {
+                                                "Spring" -> activeWeather = "Gentle Rain"
+                                                "Summer" -> activeWeather = "Fireflies Spark"
+                                                "Autumn" -> activeWeather = "Autumn Leaf Fall"
+                                                "Winter" -> activeWeather = "Snow Blizzard"
+                                            }
+                                        }
+                                        .padding(vertical = 8.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Text(emoji, fontSize = 18.sp)
+                                        Text(season, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             // Collapsible backdrop preset selection panel
@@ -2281,7 +2544,7 @@ fun ArLensScreen(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            listOf("Clear Sky", "Gentle Rain", "Blossom Shower", "Fireflies Spark").forEach { weather ->
+                            listOf("Clear Sky", "Gentle Rain", "Blossom Shower", "Fireflies Spark", "Autumn Leaf Fall", "Snow Blizzard").forEach { weather ->
                                 val isSelected = activeWeather == weather
                                 val icon = when (weather) {
                                     "Gentle Rain" -> "🌧️"
@@ -2584,4 +2847,24 @@ private fun getCompanionRecommendations(plantName: String): List<String> {
         companions.add("Thyme")
     }
     return companions
+}
+
+fun projectWorldToScreen(
+    worldX: Float, worldY: Float, worldZ: Float,
+    viewProjectionMatrix: FloatArray,
+    screenWidth: Int, screenHeight: Int
+): androidx.compose.ui.geometry.Offset? {
+    val worldPoint = floatArrayOf(worldX, worldY, worldZ, 1.0f)
+    val ndcPoint = FloatArray(4)
+    android.opengl.Matrix.multiplyMV(ndcPoint, 0, viewProjectionMatrix, 0, worldPoint, 0)
+    
+    if (ndcPoint[3] == 0f) return null
+    if (ndcPoint[3] < 0f) return null
+    
+    val xNdc = ndcPoint[0] / ndcPoint[3]
+    val yNdc = ndcPoint[1] / ndcPoint[3]
+    
+    val screenX = ((xNdc + 1.0f) / 2.0f) * screenWidth
+    val screenY = ((1.0f - yNdc) / 2.0f) * screenHeight
+    return androidx.compose.ui.geometry.Offset(screenX, screenY)
 }

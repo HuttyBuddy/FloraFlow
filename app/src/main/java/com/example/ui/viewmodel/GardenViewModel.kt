@@ -86,6 +86,14 @@ class GardenViewModel @JvmOverloads constructor(
     private val _arPlacedPlants = MutableStateFlow<List<ArPlantPlacement>>(emptyList())
     val arPlacedPlants: StateFlow<List<ArPlantPlacement>> = _arPlacedPlants.asStateFlow()
 
+    // Premium Global Season State
+    private val _currentSeason = MutableStateFlow<String>("Summer")
+    val currentSeason: StateFlow<String> = _currentSeason.asStateFlow()
+
+    fun setCurrentSeason(season: String) {
+        _currentSeason.value = season
+    }
+
     // Premium subscription state for Devil's Advocate paywall demo
     private val _isPremium = MutableStateFlow(false)
     val isPremium: StateFlow<Boolean> = _isPremium.asStateFlow()
@@ -1028,6 +1036,15 @@ class GardenViewModel @JvmOverloads constructor(
 
     fun clearArPlants() {
         _arPlacedPlants.value = emptyList()
+    }
+
+    fun updateArPlant3DPosition(id: Int, x: Float, y: Float, z: Float) {
+        val list = _arPlacedPlants.value.map {
+            if (it.id == id) {
+                it.copy(positionX = x, positionY = y, positionZ = z)
+            } else it
+        }
+        _arPlacedPlants.value = list
     }
 
     // --- Feedback Operations ---

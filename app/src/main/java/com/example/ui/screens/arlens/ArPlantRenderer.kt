@@ -39,7 +39,8 @@ fun ProceduralArPlant(
     isSelected: Boolean,
     climateTimeFactor: Float,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    season: String = "Summer"
 ) {
     val moisture = decalOverride.moisture
     val growthStage = decalOverride.growthStage
@@ -51,20 +52,24 @@ fun ProceduralArPlant(
     val isFern = name.lowercase().contains("fern")
     val isCactus = name.lowercase().contains("cactus") || name.lowercase().contains("aloe")
 
-    // Determine colors based on moisture / health state
-    val healthyGreen = Color(0xFF2E7D32)
-    val dryYellow = Color(0xFFC0CA33)
-    val dryBrown = Color(0xFF8D6E63)
-    val waterloggedTeal = Color(0xFF00796B)
+    // Determine colors based on moisture / health state & global season
+    val healthyGreen = when (season) {
+        "Spring" -> Color(0xFF66BB6A) // Light vibrant green
+        "Autumn" -> Color(0xFFE65100) // Warm orange/red leaf fall
+        "Winter" -> Color(0xFF5D4037) // Dormant brown
+        else -> Color(0xFF2E7D32) // Summer/healthy deep green
+    }
 
     val leafColor = when {
-        moisture < 0.2f -> dryBrown
-        moisture < 0.4f -> dryYellow
-        moisture > 0.85f -> waterloggedTeal
+        moisture < 0.2f -> Color(0xFF8D6E63) // dry brown
+        moisture < 0.4f -> Color(0xFFC0CA33) // dry yellow
+        moisture > 0.85f -> Color(0xFF00796B) // waterlogged teal
         else -> healthyGreen
     }
 
     val flowerColor = when {
+        season == "Spring" -> Color(0xFFF8BBD0) // Budding pink
+        season == "Autumn" -> Color(0xFFFFB300) // Golden yellow drying
         isLavender -> Color(0xFFAB47BC) // Purple
         isJuniperOrMaple -> Color(0xFFFF8A80) // Soft Pink
         isCactus -> Color(0xFFFFB300) // Yellow blooms
@@ -211,12 +216,19 @@ fun ProceduralArPlant(
                 )
 
                 // --- Growth Configuration ---
+                val seasonalScale = when (season) {
+                    "Spring" -> 0.7f
+                    "Autumn" -> 0.9f
+                    "Winter" -> 0.4f
+                    else -> 1.0f
+                }
+
                 val heightScale = when (growthStage) {
                     "Sprout" -> 0.3f
                     "Young" -> 0.6f
                     "Colossal" -> 1.4f
                     else -> 1.0f // Mature
-                }
+                } * seasonalScale
 
                 // Moisture Droop Factor
                 val droop = if (moisture < 0.3f) (1f - moisture / 0.3f) * 15f else 0f
@@ -283,7 +295,13 @@ fun ProceduralArPlant(
                     drawCircle(color = leafColor.copy(alpha = 0.9f), radius = foliageRadius * 1.2f, center = Offset(trunkEndX, trunkEndY))
 
                     // --- Render Species Specific Features ---
-                    if (isLavender) {
+                    if (season == "Winter") {
+                        // Winter: draw frost/snow highlights on leaf clumps
+                        val snowColor = Color.White.copy(alpha = 0.85f)
+                        drawCircle(color = snowColor, radius = foliageRadius * 0.6f, center = Offset(b1EndX, b1EndY - foliageRadius * 0.4f))
+                        drawCircle(color = snowColor, radius = foliageRadius * 0.6f, center = Offset(b2EndX, b2EndY - foliageRadius * 0.4f))
+                        drawCircle(color = snowColor, radius = foliageRadius * 0.8f, center = Offset(trunkEndX, trunkEndY - foliageRadius * 0.4f))
+                    } else if (isLavender) {
                         // Lavender flower spikes (purple droplets rising from branch tips)
                         val points = listOf(
                             Offset(b1EndX, b1EndY - 10f),
