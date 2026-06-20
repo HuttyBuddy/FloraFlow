@@ -367,6 +367,15 @@ class GardenViewModel @JvmOverloads constructor(
         repository = GardenRepository(db.gardenDao())
 
         allLayouts = repository.allLayouts
+            .map { list ->
+                list.map { layout ->
+                    if (layout.name == "My First Zen Space") {
+                        layout.copy(name = "My First Space")
+                    } else {
+                        layout
+                    }
+                }
+            }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
