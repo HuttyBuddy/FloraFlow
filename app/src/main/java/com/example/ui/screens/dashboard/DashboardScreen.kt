@@ -19,6 +19,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
@@ -30,11 +33,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.GardenLayout
 import com.example.data.model.MoodLog
+import com.example.data.model.CareTask
 import com.example.ui.viewmodel.GardenViewModel
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.boundsInRoot
 import com.example.ui.viewmodel.WalkthroughStep
 import com.example.ui.viewmodel.ScreenRect
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.foundation.Canvas
 
 @Composable
 fun DashboardScreen(
@@ -481,6 +489,7 @@ fun DashboardScreen(
                 item { skippedAssessmentBanner() }
             }
             item { headerContent() }
+            item { DailyHabitCard(viewModel = viewModel) }
             item { quickActionsContent() }
             item { communityPromoContent() }
             item { statisticsContent() }
@@ -506,6 +515,7 @@ fun DashboardScreen(
                     skippedAssessmentBanner()
                 }
                 headerContent()
+                DailyHabitCard(viewModel = viewModel)
                 quickActionsContent()
                 communityPromoContent()
                 statisticsContent()
@@ -667,6 +677,239 @@ fun MoodLogItemCard(
         }
     }
 }
+
+@Composable
+fun DailyGrowthRing(
+    completedCount: Int,
+    totalCount: Int,
+    modifier: Modifier = Modifier
+) {
+    val completionRatio = if (totalCount > 0) completedCount.toFloat() / totalCount else 0.0f
+    
+    // Animated sweep angle
+    val animatedProgress by animateFloatAsState(
+        targetValue = completionRatio,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "GrowthRingProgress"
+    )
+
+    Box(
+        modifier = modifier.size(80.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val strokeWidth = 8.dp.toPx()
+            val radius = (size.minDimension - strokeWidth) / 2
+            val center = Offset(size.width / 2, size.height / 2)
+
+            // Draw base track (earthy green background)
+            drawCircle(
+                color = Color(0xFFE2ECE9),
+                radius = radius,
+                center = center,
+                style = Stroke(width = strokeWidth)
+            )
+
+            // Draw active progress (vibrant botanical green gradient)
+            drawArc(
+                brush = Brush.sweepGradient(
+                    colors = listOf(Color(0xFF81C784), Color(0xFF4CAF50), Color(0xFF2E7D32), Color(0xFF81C784))
+                ),
+                startAngle = -90f,
+                sweepAngle = animatedProgress * 360f,
+                useCenter = false,
+                style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
+            )
+        }
+
+        // Draw small flower emoji or percentage inside
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = "🌱",
+                fontSize = 18.sp
+            )
+            Text(
+                text = "${(completionRatio * 100).toInt()}%",
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 10.sp
+            )
+        }
+    }
+}
+
+@Composable
+fun DailyHabitCard(
+    viewModel: GardenViewModel,
+    modifier: Modifier = Modifier
+) {
+    val pendingTasks by viewModel.pendingCareTasks.collectAsStateWithLifecycle()
+    val allTasks by viewModel.allCareTasks.collectAsStateWithLifecycle()
+    val weather by viewModel.currentWeather.collectAsStateWithLifecycle()
+    val moodLogs by viewModel.allMoodLogs.collectAsStateWithLifecycle()
+
+    val completedTasksToday = remember(allTasks) {
+        allTasks.count { it.completedDate != null && isToday(it.completedDate) }
+    }
+    val pendingTasksToday = remember(pendingTasks) {
+        pendingTasks.count { it.dueDate <= System.currentTimeMillis() }
+    }
+    val totalTasksToday = completedTasksToday + pendingTasksToday
+
+    // Calculate streak
+    val streakCount = remember(moodLogs) {
+        calculateStreak(moodLogs)
+    }
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Your Daily Growth Ring",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = "Nurture your plants and mind",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                // Streak badge
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text("🔥", fontSize = 14.sp)
+                    Text(
+                        text = "$streakCount Day Streak",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Growth ring
+                DailyGrowthRing(
+                    completedCount = completedTasksToday,
+                    totalCount = totalTasksToday,
+                    modifier = Modifier.padding(8.dp)
+                )
+
+                // Weather and Care checklist column
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // Local Eco-Zone Weather status
+                    Text(
+                        text = "Weather: ${getWeatherEmoji(weather.condition)} ${weather.cityName} (${weather.temperatureCelsius.toInt()}°C • ${weather.condition})",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    if (pendingTasksToday == 0) {
+                        Text(
+                            text = "✨ All tasks complete! Your garden is thriving.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        Text(
+                            text = "Due Today:",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        // List first 2 pending tasks
+                        pendingTasks.filter { it.dueDate <= System.currentTimeMillis() }.take(2).forEach { task ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Checkbox(
+                                    checked = false,
+                                    onCheckedChange = { viewModel.completeCareTask(task) },
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Text(
+                                    text = "${task.taskType} ${task.plantName}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    maxLines = 1
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Helpers
+private fun isToday(timestamp: Long): Boolean {
+    val dayMillis = 24 * 60 * 60 * 1000
+    val todayStart = (System.currentTimeMillis() / dayMillis) * dayMillis
+    return timestamp >= todayStart
+}
+
+private fun getWeatherEmoji(condition: String): String {
+    return when (condition.lowercase()) {
+        "rain" -> "🌧️"
+        "snow" -> "❄️"
+        "clear" -> "☀️"
+        "clouds" -> "☁️"
+        "heatwave" -> "🥵"
+        "frost" -> "🥶"
+        else -> "⛅"
+    }
+}
+
+private fun calculateStreak(logs: List<MoodLog>): Int {
+    if (logs.isEmpty()) return 0
+    val dayMillis = 24 * 60 * 60 * 1000
+    val days = logs.map { it.timestamp / dayMillis }.distinct().sortedDescending()
+    
+    var streak = 1
+    val today = System.currentTimeMillis() / dayMillis
+    
+    if (days.first() < today - 1) {
+        return 0 // Streak broken
+    }
+    
+    for (i in 0 until days.size - 1) {
+        if (days[i] - days[i+1] == 1L) {
+            streak++
+        } else {
+            break
+        }
+    }
+    return streak
+}
+
 
 // Helper to resolve string based Material Symbols
 fun imageIcons(name: String): androidx.compose.ui.graphics.vector.ImageVector = when (name) {

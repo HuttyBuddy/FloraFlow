@@ -53,12 +53,28 @@ import com.example.ui.screens.feedback.FeedbackDialog
 import androidx.activity.viewModels
 import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.viewmodel.GardenViewModel
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.ExistingPeriodicWorkPolicy
+import java.util.concurrent.TimeUnit
+import com.example.ui.screens.dashboard.CareSyncWorker
 
 class MainActivity : ComponentActivity() {
     private val viewModel: GardenViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        try {
+            val workRequest = PeriodicWorkRequestBuilder<CareSyncWorker>(12, TimeUnit.HOURS).build()
+            WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+                "CareSyncWork",
+                ExistingPeriodicWorkPolicy.KEEP,
+                workRequest
+            )
+        } catch (e: Exception) {
+            android.util.Log.e("MainActivity", "Failed to schedule CareSyncWorker: ${e.message}")
+        }
 
         setContent {
             val isDarkThemeOverridden by viewModel.isDarkTheme.collectAsState()

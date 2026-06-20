@@ -61,6 +61,45 @@ fun AiStudioScreen(
     var textInput by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
     var showLabPopup by remember { mutableStateOf(false) }
+    var attachedImage by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var showAttachmentDialog by remember { mutableStateOf(false) }
+
+    if (showAttachmentDialog) {
+        AlertDialog(
+            onDismissRequest = { showAttachmentDialog = false },
+            title = { Text("Simulate Plant Photo Capture") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Select a mock plant condition to simulate camera capture and pass to Dr. Julian for visual diagnosis:")
+                    val mockOptions = listOf(
+                        "Rose Powdery Mildew Spot" to "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                        "Monstera Chlorosis (Yellowing)" to "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+                        "Tomato Aphid Infestation" to "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                    )
+                    mockOptions.forEach { (name, b64) ->
+                        Button(
+                            onClick = {
+                                attachedImage = name to b64
+                                showAttachmentDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        ) {
+                            Text(name, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showAttachmentDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     // Smooth scroll to latest message when history increases
     LaunchedEffect(chatHistory.size) {
@@ -366,11 +405,42 @@ fun AiStudioScreen(
                         }
                     }
 
+                    if (attachedImage != null) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(Icons.Default.Image, contentDescription = "Attached Photo", tint = MaterialTheme.colorScheme.primary)
+                            Text(
+                                text = "Attached: ${attachedImage?.first}",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(onClick = { attachedImage = null }, modifier = Modifier.size(24.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Clear image attachment", modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    }
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        IconButton(
+                            onClick = { showAttachmentDialog = true },
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AddAPhoto,
+                                contentDescription = "Attach plant photo for diagnosis",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
                         OutlinedTextField(
                             value = textInput,
                             onValueChange = { textInput = it },
@@ -383,8 +453,13 @@ fun AiStudioScreen(
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                             keyboardActions = KeyboardActions(
                                 onSend = {
-                                    if (textInput.isNotBlank()) {
-                                        viewModel.sendAiChatMessage(textInput)
+                                    if (textInput.isNotBlank() || attachedImage != null) {
+                                        viewModel.sendAiChatMessage(
+                                            message = if (textInput.isBlank() && attachedImage != null) "Diagnose plant: ${attachedImage?.first}" else textInput,
+                                            imageBytesBase64 = attachedImage?.second,
+                                            imageMimeType = "image/gif"
+                                        )
+                                        attachedImage = null
                                         textInput = ""
                                     }
                                 }
@@ -393,8 +468,13 @@ fun AiStudioScreen(
 
                         FloatingActionButton(
                             onClick = {
-                                if (textInput.isNotBlank()) {
-                                    viewModel.sendAiChatMessage(textInput)
+                                if (textInput.isNotBlank() || attachedImage != null) {
+                                    viewModel.sendAiChatMessage(
+                                        message = if (textInput.isBlank() && attachedImage != null) "Diagnose plant: ${attachedImage?.first}" else textInput,
+                                        imageBytesBase64 = attachedImage?.second,
+                                        imageMimeType = "image/gif"
+                                    )
+                                    attachedImage = null
                                     textInput = ""
                                 }
                             },
@@ -665,11 +745,42 @@ fun AiStudioScreen(
                             }
                         }
 
+                        if (attachedImage != null) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(Icons.Default.Image, contentDescription = "Attached Photo", tint = MaterialTheme.colorScheme.primary)
+                                Text(
+                                    text = "Attached: ${attachedImage?.first}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                IconButton(onClick = { attachedImage = null }, modifier = Modifier.size(24.dp)) {
+                                    Icon(Icons.Default.Close, contentDescription = "Clear image attachment", modifier = Modifier.size(16.dp))
+                                }
+                            }
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
+                            IconButton(
+                                onClick = { showAttachmentDialog = true },
+                                modifier = Modifier.size(48.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AddAPhoto,
+                                    contentDescription = "Attach plant photo for diagnosis",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+
                             OutlinedTextField(
                                 value = textInput,
                                 onValueChange = { textInput = it },
@@ -682,8 +793,13 @@ fun AiStudioScreen(
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                                 keyboardActions = KeyboardActions(
                                     onSend = {
-                                        if (textInput.isNotBlank()) {
-                                            viewModel.sendAiChatMessage(textInput)
+                                        if (textInput.isNotBlank() || attachedImage != null) {
+                                            viewModel.sendAiChatMessage(
+                                                message = if (textInput.isBlank() && attachedImage != null) "Diagnose plant: ${attachedImage?.first}" else textInput,
+                                                imageBytesBase64 = attachedImage?.second,
+                                                imageMimeType = "image/gif"
+                                            )
+                                            attachedImage = null
                                             textInput = ""
                                         }
                                     }
@@ -692,8 +808,13 @@ fun AiStudioScreen(
 
                             FloatingActionButton(
                                 onClick = {
-                                    if (textInput.isNotBlank()) {
-                                        viewModel.sendAiChatMessage(textInput)
+                                    if (textInput.isNotBlank() || attachedImage != null) {
+                                        viewModel.sendAiChatMessage(
+                                            message = if (textInput.isBlank() && attachedImage != null) "Diagnose plant: ${attachedImage?.first}" else textInput,
+                                            imageBytesBase64 = attachedImage?.second,
+                                            imageMimeType = "image/gif"
+                                        )
+                                        attachedImage = null
                                         textInput = ""
                                     }
                                 },

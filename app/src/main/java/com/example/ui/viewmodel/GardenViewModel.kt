@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.api.Content
 import com.example.data.api.GeminiApiClient
 import com.example.data.api.Part
+import com.example.data.api.InlineData
 import com.example.data.database.GardenDatabase
 import com.example.data.model.*
 import com.example.data.repository.GardenRepository
@@ -53,11 +54,16 @@ class GardenViewModel @JvmOverloads constructor(
 ) : AndroidViewModel(application) {
 
     private val repository: GardenRepository
+    private val weatherRepository: com.example.data.repository.WeatherRepository
+    private val careScheduler: com.example.ui.screens.dashboard.CareScheduler
 
     // Reactive database streams
     val allLayouts: StateFlow<List<GardenLayout>>
     val allMoodLogs: StateFlow<List<MoodLog>>
     val allCommunityPosts: StateFlow<List<CommunityPost>>
+    val allCareTasks: StateFlow<List<CareTask>>
+    val pendingCareTasks: StateFlow<List<CareTask>>
+    val currentWeather: StateFlow<com.example.data.repository.WeatherInfo>
 
     // Active selection states
     private val _activeLayout = MutableStateFlow<GardenLayout?>(null)
@@ -365,6 +371,23 @@ class GardenViewModel @JvmOverloads constructor(
 
         val db = database ?: GardenDatabase.getDatabase(application)
         repository = GardenRepository(db.gardenDao())
+        weatherRepository = com.example.data.repository.WeatherRepository(application)
+        careScheduler = com.example.ui.screens.dashboard.CareScheduler(application, repository, weatherRepository)
+        currentWeather = weatherRepository.currentWeather
+
+        allCareTasks = repository.allCareTasks
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+
+        pendingCareTasks = repository.pendingCareTasks
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
 
         allLayouts = repository.allLayouts
             .map { list ->
@@ -398,6 +421,7 @@ class GardenViewModel @JvmOverloads constructor(
 
         viewModelScope.launch(ioDispatcher) {
             try {
+                careScheduler.syncCareSchedules()
                 val existingPosts = repository.allPosts.firstOrNull() ?: emptyList()
                 if (existingPosts.isEmpty()) {
                     val p1Id = repository.insertPost(
@@ -747,14 +771,20 @@ class GardenViewModel @JvmOverloads constructor(
     }
 
     // --- Real-time Gemini Client interactions ---
-    fun sendAiChatMessage(message: String) {
-        if (message.isBlank()) return
+    fun sendAiChatMessage(message: String, imageBytesBase64: String? = null, imageMimeType: String? = "image/jpeg") {
+        if (message.isBlank() && imageBytesBase64 == null) return
         
         val upsellMsg = "🔒 Free AI Advisor biophilic limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
         if (checkPremiumLimit(message, upsellMsg, 3)) return
 
         val currentHistory = _aiChatHistory.value.toMutableList()
-        currentHistory.add(Content(role = "user", parts = listOf(Part(text = message))))
+        val userParts = mutableListOf<Part>()
+        if (imageBytesBase64 != null) {
+            userParts.add(Part(inlineData = InlineData(mimeType = imageMimeType ?: "image/jpeg", data = imageBytesBase64)))
+        }
+        userParts.add(Part(text = message))
+        
+        currentHistory.add(Content(role = "user", parts = userParts))
         _aiChatHistory.value = currentHistory
 
         _isAiLoading.value = true
@@ -788,7 +818,9 @@ class GardenViewModel @JvmOverloads constructor(
             val response = GeminiApiClient.getGardeningAdvice(
                 prompt = message,
                 chatHistory = currentHistory.dropLast(1),
-                systemInstruction = systemIns
+                systemInstruction = systemIns,
+                imageBytesBase64 = imageBytesBase64,
+                imageMimeType = imageMimeType
             )
 
             appendAiChatInteraction("", response)
@@ -1098,6 +1130,35 @@ class GardenViewModel @JvmOverloads constructor(
             val newIsLiked = !currentIsLiked
             val newLikes = if (newIsLiked) currentLikes + 1 else (currentLikes - 1).coerceAtLeast(0)
             repository.updateCommentLikes(commentId, newLikes, newIsLiked)
+        }
+    }
+
+    // --- Care Scheduler & Weather Integration Methods ---
+
+    fun completeCareTask(task: CareTask) {
+        viewModelScope.launch(ioDispatcher) {
+            careScheduler.completeTask(task)
+        }
+    }
+
+    fun syncCareSchedules() {
+        viewModelScope.launch(ioDispatcher) {
+            careScheduler.syncCareSchedules()
+        }
+    }
+
+    fun updateWeatherLocation(zip: String) {
+        viewModelScope.launch(ioDispatcher) {
+            weatherRepository.saveUserLocationZip(zip)
+            weatherRepository.fetchWeather(zip)
+            careScheduler.syncCareSchedules()
+        }
+    }
+
+    fun simulateWeather(condition: String, temp: Double, humidity: Double) {
+        viewModelScope.launch(ioDispatcher) {
+            weatherRepository.simulateWeather(condition, temp, humidity)
+            careScheduler.syncCareSchedules()
         }
     }
 }
