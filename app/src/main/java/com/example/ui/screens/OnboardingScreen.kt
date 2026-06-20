@@ -232,6 +232,7 @@ fun OnboardingScreen(
                         onFinish = { targetTab ->
                             viewModel.saveAssessmentResult(totalScore, lowestCategories.take(3))
                             viewModel.setCurrentTab(targetTab)
+                            viewModel.completeOnboarding()
                         }
                     )
                 }
