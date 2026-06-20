@@ -92,9 +92,6 @@ fun AiStudioScreen(
                 onOpenLab = { showLabPopup = true }
             )
 
-            // 2. Soundwave Synth Voice Visualizer
-            LiveBotanistVoiceSynth(isGenerating = isAiLoading)
-
             // 3. Main Chat List Box container
             Box(
                 modifier = Modifier
@@ -445,8 +442,6 @@ fun AiStudioScreen(
                     onClearChat = { viewModel.clearAiChat() },
                     onOpenLab = { showLabPopup = true }
                 )
-
-                LiveBotanistVoiceSynth(isGenerating = isAiLoading)
 
                 // Chat Box
                 Box(
@@ -822,8 +817,8 @@ fun BotanistProfileHeader(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clip(RoundedCornerShape(24.dp)),
-        shape = RoundedCornerShape(24.dp),
+            .clip(RoundedCornerShape(12.dp)),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
@@ -831,13 +826,13 @@ fun BotanistProfileHeader(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 20.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .size(52.dp)
+                    .size(48.dp)
                     .background(
                         Brush.linearGradient(
                             listOf(
@@ -849,10 +844,10 @@ fun BotanistProfileHeader(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text("🧑‍🔬", fontSize = 24.sp)
+                Text("🧑‍🔬", fontSize = 22.sp)
                 Box(
                     modifier = Modifier
-                        .size(12.dp)
+                        .size(10.dp)
                         .align(Alignment.BottomEnd)
                         .background(MaterialTheme.colorScheme.primary, CircleShape)
                         .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape)
@@ -889,19 +884,19 @@ fun BotanistProfileHeader(
                 )
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 IconButton(
                     onClick = onOpenLab,
                     colors = IconButtonDefaults.iconButtonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
                     ),
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Spa,
                         contentDescription = "Open Lab Console",
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(16.dp)
                     )
                 }
 
@@ -911,13 +906,13 @@ fun BotanistProfileHeader(
                         colors = IconButtonDefaults.iconButtonColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
                         ),
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.DeleteSweep,
                             contentDescription = "Clear Chat",
                             tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(16.dp)
                         )
                     }
                 }
@@ -926,98 +921,7 @@ fun BotanistProfileHeader(
     }
 }
 
-@Composable
-fun LiveBotanistVoiceSynth(
-    isGenerating: Boolean
-) {
-    val primaryColor = MaterialTheme.colorScheme.primary
-    val secondaryColor = MaterialTheme.colorScheme.secondary
 
-    val infiniteTransition = rememberInfiniteTransition(label = "voiceSynth")
-    val offset by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 2f * PI.toFloat(),
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "sineOffset"
-    )
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp)
-            .padding(vertical = 2.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f)),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.weight(1.4f)
-            ) {
-                Icon(
-                    imageVector = if (isGenerating) Icons.Default.Mic else Icons.Default.Hearing,
-                    contentDescription = "Voice synthesis feed",
-                    tint = if (isGenerating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.size(18.dp)
-                )
-                Column {
-                    Text(
-                        text = if (isGenerating) "Julian is analyzing microclimates..." else "MICROCLIMATE SYSTEM FEED STANDBY",
-                        fontSize = 8.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isGenerating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
-                        letterSpacing = 0.3.sp
-                    )
-                    Text(
-                        text = if (isGenerating) "Transmitting direct synaptic plant feedback..." else "Live monitoring active...",
-                        fontSize = 8.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Canvas(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .padding(vertical = 14.dp)
-            ) {
-                val waveWidth = size.width
-                val waveHeight = size.height
-                val midY = waveHeight / 2f
-                val amplitude = if (isGenerating) 12f else 3f
-                val frequency = if (isGenerating) 0.08f else 0.04f
-
-                val points = mutableListOf<Offset>()
-                for (x in 0..waveWidth.toInt() step 2) {
-                    val y = midY + amplitude * sin((x * frequency) + offset)
-                    points.add(Offset(x.toFloat(), y))
-                }
-
-                for (i in 0 until points.size - 1) {
-                    drawLine(
-                        color = if (isGenerating) primaryColor else secondaryColor.copy(alpha = 0.6f),
-                        start = points[i],
-                        end = points[i + 1],
-                        strokeWidth = if (isGenerating) 3.5f else 1.8f,
-                        cap = StrokeCap.Round
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun BotanistLiveLabConsole(

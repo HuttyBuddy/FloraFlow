@@ -59,12 +59,30 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
 
         setContent {
             val isDarkThemeOverridden by viewModel.isDarkTheme.collectAsState()
             val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
             val useDarkTheme = isDarkThemeOverridden ?: systemDark
+
+            val statusBarStyle = if (useDarkTheme) {
+                androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+            } else {
+                androidx.activity.SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+            }
+            val navigationBarStyle = if (useDarkTheme) {
+                androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+            } else {
+                androidx.activity.SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+            }
+
+            DisposableEffect(useDarkTheme) {
+                enableEdgeToEdge(
+                    statusBarStyle = statusBarStyle,
+                    navigationBarStyle = navigationBarStyle
+                )
+                onDispose {}
+            }
 
             MyApplicationTheme(darkTheme = useDarkTheme) {
                 var showSplash by remember { mutableStateOf(true) }
@@ -233,7 +251,7 @@ class MainActivity : ComponentActivity() {
                                         selected = currentTab == 0,
                                         onClick = { viewModel.setCurrentTab(0) },
                                         icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
-                                        label = { Text("Dashboard", style = MaterialTheme.typography.labelSmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 2, softWrap = true) },
+                                        label = { Text("Dashboard", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = (-0.3).sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, softWrap = false) },
                                         modifier = Modifier.testTag("nav_tab_dashboard"),
                                         alwaysShowLabel = true
                                     )
@@ -241,7 +259,7 @@ class MainActivity : ComponentActivity() {
                                         selected = currentTab == 1,
                                         onClick = { viewModel.setCurrentTab(1) },
                                         icon = { Icon(Icons.Default.Explore, contentDescription = "My Plot") },
-                                        label = { Text("My Plot", style = MaterialTheme.typography.labelSmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 2, softWrap = true) },
+                                        label = { Text("My Plot", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = (-0.3).sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, softWrap = false) },
                                         modifier = Modifier
                                             .testTag("nav_tab_planner")
                                             .onGloballyPositioned { coordinates ->
@@ -257,7 +275,7 @@ class MainActivity : ComponentActivity() {
                                         selected = currentTab == 2,
                                         onClick = { viewModel.setCurrentTab(2) },
                                         icon = { Icon(Icons.Default.Spa, contentDescription = "Greenhouse") },
-                                        label = { Text("Greenhouse", style = MaterialTheme.typography.labelSmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 2, softWrap = true) },
+                                        label = { Text("Greenhouse", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = (-0.3).sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, softWrap = false) },
                                         modifier = Modifier.testTag("nav_tab_greenhouse"),
                                         alwaysShowLabel = true
                                     )
@@ -265,7 +283,7 @@ class MainActivity : ComponentActivity() {
                                         selected = currentTab == 3,
                                         onClick = { viewModel.setCurrentTab(3) },
                                         icon = { Icon(Icons.Default.SmartToy, contentDescription = "Garden Counsel") },
-                                        label = { Text("Garden Counsel", style = MaterialTheme.typography.labelSmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 2, softWrap = true) },
+                                        label = { Text("Garden Counsel", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = (-0.3).sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, softWrap = false) },
                                         modifier = Modifier
                                             .testTag("nav_tab_ai")
                                             .onGloballyPositioned { coordinates ->
@@ -286,7 +304,7 @@ class MainActivity : ComponentActivity() {
                                             }
                                         },
                                         icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Garden") },
-                                        label = { Text("AR Garden", style = MaterialTheme.typography.labelSmall, textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 2, softWrap = true) },
+                                        label = { Text("AR Garden", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = (-0.3).sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, softWrap = false) },
                                         modifier = Modifier.testTag("nav_tab_ar"),
                                         alwaysShowLabel = true
                                     )
