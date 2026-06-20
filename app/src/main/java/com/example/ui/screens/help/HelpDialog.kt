@@ -59,14 +59,14 @@ val faqs = listOf(
     ),
     FAQItem(
         id = 3,
-        question = "How do I use the AR Garden?",
-        answer = "The AR Garden lets you view your garden design in the real world in 3D. Open the 'AR Garden' tab (requires FloraFlow Premium), select a plant from your list, scan a flat surface in your room or yard, and tap the screen to place a 3D model.",
-        category = "AR Garden"
+        question = "How do I use the Restoration Journal?",
+        answer = "The Restoration Journal calculates a Neural Restoration Index (NRI) representing stress relief based on your garden's biophilic design. Open the 'Restoration' tab (requires FloraFlow Premium) to adjust soundscape volumes, choose a binaural beat frequency (Alpha, Theta, or Delta), and check off mindful sensory tasks linked to your plants.",
+        category = "Restoration"
     ),
     FAQItem(
         id = 4,
         question = "Is a premium subscription required?",
-        answer = "FloraFlow is free for basic layout planning, greenhouse inventory, and standard AI advice. FloraFlow Premium unlocks the AR Garden, unlimited AI queries, custom watering logs, and premium plant species catalog access.",
+        answer = "FloraFlow is free for basic layout planning, greenhouse inventory, and standard AI advice. FloraFlow Premium unlocks the Restoration Journal and continuous binaural beats, unlimited AI queries, custom watering logs, and premium plant species catalog access.",
         category = "Premium"
     ),
     FAQItem(
@@ -172,7 +172,7 @@ fun FaqTabContent() {
     var selectedCategory by remember { mutableStateOf("All") }
     var expandedFaqId by remember { mutableStateOf<Int?>(null) }
 
-    val categories = listOf("All", "Getting Started", "My Plot", "AR Garden", "Garden Counsel", "Premium")
+    val categories = listOf("All", "Getting Started", "My Plot", "Restoration", "Garden Counsel", "Premium")
 
     val filteredFaqs = remember(searchQuery, selectedCategory) {
         faqs.filter { faq ->

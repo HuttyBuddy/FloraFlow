@@ -49,7 +49,7 @@ fun BillingDialog(
             price = "$4.99",
             period = "month",
             trial = "7-Day Free Trial",
-            description = "Get full AR Lens access, unlimited AI advice, and standard botany design templates.",
+            description = "Get full Restoration Journal access, unlimited AI advice, and standard botany design templates.",
             isPopular = false,
             isAnnual = false
         ),

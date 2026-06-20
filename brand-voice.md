@@ -24,7 +24,7 @@ FloraFlow speaks like a knowledgeable friend who loves gardening — warm, encou
 | Onboarding | "Let's figure out what your space needs." | "Please complete the setup wizard." |
 | Error state | "Hmm, something didn't load — let's try again." | "An error occurred. Error code: 403." |
 | Plant suggestion | "This one thrives in spots just like yours." | "Optimal species selection for your USDA zone." |
-| AR feature | "Point your camera and watch your garden come to life." | "Activate the AR visualization module." |
+| Restoration feature | "Put on your headphones and let the wind chimes settle your mind." | "Activate the background audio playback system." |
 
 ## Demographic Profile
 

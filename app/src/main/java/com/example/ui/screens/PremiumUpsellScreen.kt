@@ -90,8 +90,8 @@ fun PremiumUpsellScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 PremiumFeatureRow(
-                    title = "AR Vision Lens",
-                    description = "Simulate how mature plants will look in your exact physical space before lifting a shovel."
+                    title = "Restoration Journal",
+                    description = "Access procedural binaural soundscapes and calculate your Neural Restoration Index (NRI) to reduce stress."
                 )
                 PremiumFeatureRow(
                     title = "Unlimited AI Botanist",
@@ -218,12 +218,12 @@ fun PremiumUpsellScreen(
 
                 // Feature Row 2
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("3D AR Lens", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                    Text("Restoration Journal", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
                     Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("Stickers", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
+                        Text("Basic Chimes", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
                     }
                     Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("Spatial HD", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                        Text("Full Binaural", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
                     }
                 }
 

@@ -53,7 +53,7 @@ fun SubscriptionManagementDialog(
             },
             text = {
                 Text(
-                    "Are you sure you want to cancel your high-speed Master AI insights, exotic species records, and interactive AR Lens modeling features? Your custom garden designs will remain saved.",
+                    "Are you sure you want to cancel your high-speed Master AI insights, exotic species records, and interactive Restoration Journal features? Your custom garden designs will remain saved.",
                     style = MaterialTheme.typography.bodyMedium
                 )
             },

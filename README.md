@@ -28,12 +28,12 @@
 *   **Intelligent Q&A:** Chat with an AI assistant powered by the Gemini API via Google AI Studio.
 *   **Personalized Consultations:** Get instant recommendations, layout design ideas, plant care tips, and diagnostic help for ailing plants.
 
-### 5. AR Simulator Lens (Premium 👑)
-*   **Augmented Reality Previews:** Utilize your device's camera via `ARSceneview` to simulate plants in physical spaces.
-*   **Atmospheric Climate Filters:** Premium subscribers can activate immersive overlays, such as "Cherry Blossoms" and "Fireflies," to cultivate a relaxing ambiance.
+### 5. Eco-Acoustic Restoration Journal (Premium 👑)
+*   **Neural Restoration Index (NRI):** Automatically analyze your garden's biophilic design, unique plant types, and companion synergies to calculate a stress-relief recovery percentage.
+*   **Binaural Soundscapes & Nature Loops:** Play procedural, continuous Alpha (focus), Theta (meditation), and Delta (sleep) brainwave entrainment frequencies overlaid with natural wind chimes via a persistent background service.
 
 ### 6. Dynamic Walkthrough Tour
-*   **Guided Onboarding:** Step-by-step interactive overlay highlights core features, guiding new users through the Planner, Advisor, and AR Lens.
+*   **Guided Onboarding:** Step-by-step interactive overlay highlights core features, guiding new users through the Planner, Advisor, and Restoration Journal.
 
 ---
 
@@ -45,7 +45,6 @@ FloraFlow is built as a native Android application using modern, performance-ori
 *   **UI Toolkit:** [Jetpack Compose](https://developer.android.com/compose) with [Material Design 3](https://m3.material.io/)
 *   **Local Storage:** [Room Database (2.7.0)](https://developer.android.com/training/data-storage/room) for offline support, local garden layouts, plant progress, and wellness logs.
 *   **Network & Serialization:** [Retrofit (2.12.0)](https://square.github.io/retrofit/) and [Moshi (1.15.2)](https://github.com/square/moshi) for communicating with the Gemini AI services.
-*   **AR Engine:** [ARSceneview (4.16.8)](https://github.com/SceneView/arsceneview) for high-performance 3D and augmented reality rendering.
 *   **Testing:** [Robolectric (4.16.1)](http://robolectric.org/) and [Roborazzi (1.59.0)](https://github.com/takahirom/roborazzi) for screenshot validation and automated UI test assertions.
 
 ### Project Directory Layout

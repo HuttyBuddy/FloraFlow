@@ -244,7 +244,7 @@ fun WalkthroughOverlay(
                                     WalkthroughStep.DASHBOARD_STATS -> "📈"
                                     WalkthroughStep.PLANNER_TAB -> "📐"
                                     WalkthroughStep.AI_ADVISOR_TAB -> "🔬"
-                                    WalkthroughStep.AR_LENS_TAB -> "🪐"
+                                    WalkthroughStep.AR_LENS_TAB -> "🧘"
                                 }
                                 Text(textOrIcon, fontSize = 24.sp)
                             }
@@ -255,7 +255,7 @@ fun WalkthroughOverlay(
                                 WalkthroughStep.DASHBOARD_STATS -> "Mindfulness Tracker"
                                 WalkthroughStep.PLANNER_TAB -> "My Plot Grid"
                                 WalkthroughStep.AI_ADVISOR_TAB -> "Garden Counsel"
-                                WalkthroughStep.AR_LENS_TAB -> "AR Garden"
+                                WalkthroughStep.AR_LENS_TAB -> "Restoration Journal"
                             }
 
                             Text(
@@ -272,7 +272,7 @@ fun WalkthroughOverlay(
                                 WalkthroughStep.DASHBOARD_STATS -> "The Growth Sync chart correlates your physical gardening minutes with rating improvements to track stress reduction."
                                 WalkthroughStep.PLANNER_TAB -> "Switch to My Plot to drag-and-drop crops on a companion planting grid with spacing safety alerts."
                                 WalkthroughStep.AI_ADVISOR_TAB -> "Consult Dr. Julian Greenleaf, your live Garden Counsel, for plant stress diagnostics, soil pH balance, and mindfulness support."
-                                WalkthroughStep.AR_LENS_TAB -> "Enter the AR Garden to project digital flower decals directly in your physical room and check exact sizing overlays."
+                                WalkthroughStep.AR_LENS_TAB -> "Enter the Restoration Journal to listen to calming binaural waves and check off daily mindfulness tasks mapped to your plant layout."
                             }
 
                             Text(

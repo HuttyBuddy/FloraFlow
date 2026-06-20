@@ -2,7 +2,7 @@
 
 ## Overview
 
-FloraFlow is an advanced mobile application for the Android ecosystem that revolutionizes residential and urban landscape planning. By merging Augmented Reality (AR) visualization with an AI assistant grounded in biophilic design neuroscience, FloraFlow transforms garden planning from static blueprints into an immersive, emotionally grounding creative experience.
+FloraFlow is an advanced mobile application for the Android ecosystem that revolutionizes residential and urban landscape planning. By merging immersive eco-acoustic binaural soundscapes and a Neural Restoration Journal with an AI assistant grounded in biophilic design neuroscience, FloraFlow transforms garden planning from static blueprints into an immersive, emotionally grounding creative experience.
 
 ## Core Value Proposition
 
@@ -11,15 +11,15 @@ FloraFlow makes professional-grade landscape design accessible to everyday home 
 ## Platform
 
 - **Primary platform:** Android (mobile)
-- **Target devices:** Android smartphones and tablets with ARCore support
+- **Target devices:** Android smartphones and tablets supporting background audio services
 
 ## Core Features
 
-### 1. AR Garden Visualization
-Users point their camera at any outdoor or indoor space to see a real-time, overlaid preview of how plants, garden beds, and landscape elements would look in that environment. AR rendering accounts for:
-- Existing spatial dimensions and obstacles
-- Lighting conditions and sun exposure
-- Scale and proportion relative to surroundings
+### 1. Eco-Acoustics & Neural Restoration Journal
+Users track their daily stress-relief progress through a dynamic Neural Restoration Index (NRI) computed from their garden layouts. The premium Restoration Journal includes:
+- **Procedural Binaural Beats:** Synthesized Alpha, Theta, and Delta waves to facilitate deep focus, creative visualization, or sleep.
+- **Layered Nature Soundscapes:** Real-time volume controls for looping raw ambient tracks like wind chimes and rustling leaves.
+- **Mindfulness Tasks:** Daily grounding exercises dynamically generated based on the plants in the user's active garden plan.
 
 ### 2. AI Garden Planning Assistant
 An intelligent conversational assistant that guides users through the planning process. Rooted in biophilic design principles, the AI:
@@ -58,14 +58,14 @@ A comprehensive, searchable database of plants suited to residential and urban g
 
 | Feature | FloraFlow | Typical garden apps |
 |---|---|---|
-| AR visualization | Real-time, spatially aware | Photo filters or static overlays |
+| Restoration Journal | Dynamic NRI & Binaural audio | Basic checklists |
 | AI recommendations | Biophilic design–grounded | Generic plant databases |
 | Emotional framing | Wellbeing-first | Utility-first |
 | Platform depth | Immersive planning experience | Basic care reminders |
 
 ## Technical Notes
 
-- Requires ARCore-compatible Android device
-- Camera and location permissions required for full functionality
+- Requires a device supporting background audio services and notifications
+- Post-Notification permission required for system media controller interaction
 - Plant recommendations use USDA Hardiness Zones and Köppen climate classification
 - AI assistant uses on-device + cloud hybrid processing

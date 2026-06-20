@@ -73,11 +73,11 @@ class HelpTest {
         composeTestRule.onNodeWithTag("faq_card_1").performClick()
         composeTestRule.waitForIdle()
 
-        // Search for specific word e.g. "AR"
-        composeTestRule.onNodeWithTag("faq_search_input").performTextInput("AR Garden")
+        // Search for specific word e.g. "Restoration"
+        composeTestRule.onNodeWithTag("faq_search_input").performTextInput("Restoration")
         composeTestRule.waitForIdle()
 
-        // Verify only AR related card is visible (card 3 is AR Garden FAQ)
+        // Verify only Restoration related card is visible (card 3 is Restoration FAQ)
         composeTestRule.onNodeWithTag("faq_card_3").assertExists()
         composeTestRule.onNodeWithTag("faq_card_1").assertDoesNotExist()
 
