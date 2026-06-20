@@ -28,8 +28,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -39,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.window.Dialog
 import com.example.ui.viewmodel.GardenViewModel
+import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -53,6 +57,9 @@ fun AiStudioScreen(
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
     val activePlants by viewModel.activePlants.collectAsStateWithLifecycle()
+    val assessmentScore by viewModel.assessmentScore.collectAsStateWithLifecycle()
+    val lowestCategories by viewModel.lowestCategories.collectAsStateWithLifecycle()
+    val isAssessmentSkipped by viewModel.isAssessmentSkipped.collectAsStateWithLifecycle()
 
     val userQueriesCount = remember(chatHistory) {
         chatHistory.count { it.role == "user" }
@@ -64,10 +71,40 @@ fun AiStudioScreen(
     var attachedImage by remember { mutableStateOf<Pair<String, String>?>(null) }
     var showAttachmentDialog by remember { mutableStateOf(false) }
 
+    // Toggle states for portrait dashboard features
+    var showNeuralLoad by remember { mutableStateOf(false) }
+    var showBreather by remember { mutableStateOf(false) }
+
+    val onMetricClicked: (String) -> Unit = { metricType ->
+        val layout = activeLayout
+        if (layout != null) {
+            val msg = when (metricType) {
+                "soil_temp" -> "Dr. Julian, my current soil temperature is 21.6°C. Is this optimal for my '${layout.style}' garden in '${layout.climate}' climate? What biology-driven suggestions do you have to regulate it?"
+                "moisture" -> {
+                    val moistureVal = when (layout.style) {
+                        "Desert", "Xeriscaping" -> "18%"
+                        "Zen Garden" -> "44%"
+                        "Tropical" -> "75%"
+                        else -> "52%"
+                    }
+                    "Dr. Julian, my garden soil moisture is currently at $moistureVal. How does this level affect the transpiration and nutrient absorption for a '${layout.style}' styled space?"
+                }
+                "species" -> {
+                    val plantsList = activePlants.joinToString(", ") { it.name }
+                    "Dr. Julian, I have these active species in my garden: [$plantsList]. Can you analyze their companion compatibility and physiological synergy?"
+                }
+                else -> ""
+            }
+            if (msg.isNotBlank()) {
+                viewModel.sendAiChatMessage(msg)
+            }
+        }
+    }
+
     if (showAttachmentDialog) {
         AlertDialog(
             onDismissRequest = { showAttachmentDialog = false },
-            title = { Text("Simulate Plant Photo Capture") },
+            title = { Text("Simulate Plant Photo Capture", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("Select a mock plant condition to simulate camera capture and pass to Dr. Julian for visual diagnosis:")
@@ -130,6 +167,47 @@ fun AiStudioScreen(
                 onClearChat = { viewModel.clearAiChat() },
                 onOpenLab = { showLabPopup = true }
             )
+
+            // Interactive Toggle Control Bar for Portrait Mode
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ControlTabButton(
+                    icon = Icons.Default.Favorite,
+                    label = "Neural Scan",
+                    active = showNeuralLoad,
+                    onClick = { showNeuralLoad = !showNeuralLoad },
+                    modifier = Modifier.weight(1f)
+                )
+                ControlTabButton(
+                    icon = Icons.Default.SelfImprovement,
+                    label = "Breather",
+                    active = showBreather,
+                    onClick = { showBreather = !showBreather },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            AnimatedVisibility(
+                visible = showNeuralLoad,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                NeuralLoadDashboardWidget(
+                    assessmentScore = assessmentScore,
+                    lowestCategories = lowestCategories,
+                    onStartAssessment = { viewModel.resetAssessment() }
+                )
+            }
+
+            AnimatedVisibility(
+                visible = showBreather,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                BreathingGardenCircle()
+            }
 
             // 3. Main Chat List Box container
             Box(
@@ -293,21 +371,34 @@ fun AiStudioScreen(
                                         )
                                         .padding(horizontal = 14.dp, vertical = 10.dp)
                                 ) {
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                        verticalAlignment = Alignment.Top,
-                                        modifier = Modifier.fillMaxWidth()
+                                    Column(
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
                                         if (!isUser) {
-                                            Text("🍃", fontSize = 12.sp)
+                                            Text(
+                                                text = "DR. JULIAN GREENLEAF",
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                letterSpacing = 0.5.sp
+                                            )
                                         }
-                                        Text(
-                                            text = text,
-                                            fontSize = 13.sp,
-                                            color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
-                                            style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
-                                            modifier = Modifier.weight(1f)
-                                        )
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                            verticalAlignment = Alignment.Top,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            if (!isUser) {
+                                                Text("🍃", fontSize = 12.sp)
+                                            }
+                                            Text(
+                                                text = text,
+                                                fontSize = 13.sp,
+                                                color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
+                                                style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -406,21 +497,49 @@ fun AiStudioScreen(
                     }
 
                     if (attachedImage != null) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 4.dp, vertical = 4.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Icon(Icons.Default.Image, contentDescription = "Attached Photo", tint = MaterialTheme.colorScheme.primary)
-                            Text(
-                                text = "Attached: ${attachedImage?.first}",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.weight(1f)
-                            )
-                            IconButton(onClick = { attachedImage = null }, modifier = Modifier.size(24.dp)) {
-                                Icon(Icons.Default.Close, contentDescription = "Clear image attachment", modifier = Modifier.size(16.dp))
+                            Row(
+                                modifier = Modifier.padding(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.primaryContainer),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Default.Spa,
+                                        contentDescription = "Diagnostic leaf",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "Photo Capture Diagnosis",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = attachedImage?.first ?: "",
+                                        fontSize = 9.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                IconButton(onClick = { attachedImage = null }, modifier = Modifier.size(24.dp)) {
+                                    Icon(Icons.Default.Close, contentDescription = "Clear image attachment", modifier = Modifier.size(16.dp))
+                                }
                             }
                         }
                     }
@@ -496,7 +615,11 @@ fun AiStudioScreen(
                     BotanistLiveLabConsole(
                         activeLayout = activeLayout, 
                         activePlants = activePlants,
-                        onClose = { showLabPopup = false }
+                        onClose = { showLabPopup = false },
+                        onMetricClicked = { metric ->
+                            onMetricClicked(metric)
+                            showLabPopup = false
+                        }
                     )
                 }
             }
@@ -633,21 +756,34 @@ fun AiStudioScreen(
                                             )
                                             .padding(horizontal = 14.dp, vertical = 10.dp)
                                     ) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            verticalAlignment = Alignment.Top,
-                                            modifier = Modifier.fillMaxWidth()
+                                        Column(
+                                            verticalArrangement = Arrangement.spacedBy(4.dp)
                                         ) {
                                             if (!isUser) {
-                                                Text("🍃", fontSize = 12.sp)
+                                                Text(
+                                                    text = "DR. JULIAN GREENLEAF",
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    letterSpacing = 0.5.sp
+                                                )
                                             }
-                                            Text(
-                                                text = text,
-                                                fontSize = 13.sp,
-                                                color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
-                                                style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
-                                                modifier = Modifier.weight(1f)
-                                            )
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                verticalAlignment = Alignment.Top,
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                if (!isUser) {
+                                                    Text("🍃", fontSize = 12.sp)
+                                                }
+                                                Text(
+                                                    text = text,
+                                                    fontSize = 13.sp,
+                                                    color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
+                                                    style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -746,21 +882,49 @@ fun AiStudioScreen(
                         }
 
                         if (attachedImage != null) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 2.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 4.dp, vertical = 4.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
-                                Icon(Icons.Default.Image, contentDescription = "Attached Photo", tint = MaterialTheme.colorScheme.primary)
-                                Text(
-                                    text = "Attached: ${attachedImage?.first}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(onClick = { attachedImage = null }, modifier = Modifier.size(24.dp)) {
-                                    Icon(Icons.Default.Close, contentDescription = "Clear image attachment", modifier = Modifier.size(16.dp))
+                                Row(
+                                    modifier = Modifier.padding(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(40.dp)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(MaterialTheme.colorScheme.primaryContainer),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Spa,
+                                            contentDescription = "Diagnostic leaf",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "Photo Capture Diagnosis",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = attachedImage?.first ?: "",
+                                            fontSize = 9.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    IconButton(onClick = { attachedImage = null }, modifier = Modifier.size(24.dp)) {
+                                        Icon(Icons.Default.Close, contentDescription = "Clear image attachment", modifier = Modifier.size(16.dp))
+                                    }
                                 }
                             }
                         }
@@ -840,10 +1004,21 @@ fun AiStudioScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                // Neural Load Dashboard Widget on widescreen
+                NeuralLoadDashboardWidget(
+                    assessmentScore = assessmentScore,
+                    lowestCategories = lowestCategories,
+                    onStartAssessment = { viewModel.resetAssessment() }
+                )
+
+                // Breathing Garden Circle on widescreen
+                BreathingGardenCircle()
+
                 BotanistLiveLabConsole(
                     activeLayout = activeLayout, 
                     activePlants = activePlants,
-                    onClose = null
+                    onClose = null,
+                    onMetricClicked = onMetricClicked
                 )
 
                 // Suggestions / Quick diagnostic checks zone always available on widescreen
@@ -934,6 +1109,17 @@ fun BotanistProfileHeader(
         label = "pulseDot"
     )
 
+    // Animated glow scale for avatar ring
+    val glowScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.25f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "glowScale"
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -952,27 +1138,44 @@ fun BotanistProfileHeader(
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(
-                        Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.primaryContainer,
-                                MaterialTheme.colorScheme.tertiaryContainer
-                            )
-                        ),
-                        CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.size(52.dp)
             ) {
-                Text("🧑‍🔬", fontSize = 22.sp)
+                // Pulsing glow ring around avatar
                 Box(
                     modifier = Modifier
-                        .size(10.dp)
-                        .align(Alignment.BottomEnd)
+                        .size(46.dp)
+                        .graphicsLayer {
+                            scaleX = glowScale
+                            scaleY = glowScale
+                            alpha = if (isAiLoading) pulseAlpha * 0.4f else 0.15f
+                        }
                         .background(MaterialTheme.colorScheme.primary, CircleShape)
-                        .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape)
                 )
+
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.primaryContainer,
+                                    MaterialTheme.colorScheme.tertiaryContainer
+                                )
+                            ),
+                            CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("🧑‍🔬", fontSize = 20.sp)
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .align(Alignment.BottomEnd)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                            .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape)
+                    )
+                }
             }
 
             Column(modifier = Modifier.weight(1f)) {
@@ -983,7 +1186,7 @@ fun BotanistProfileHeader(
                     Text(
                         text = "Dr. Julian Greenleaf",
                         fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleLarge.copy(fontSize = 18.sp),
+                        style = MaterialTheme.typography.titleLarge.copy(fontSize = 17.sp),
                         color = MaterialTheme.colorScheme.onSurface,
                         lineHeight = 22.sp
                     )
@@ -1042,13 +1245,12 @@ fun BotanistProfileHeader(
     }
 }
 
-
-
 @Composable
 fun BotanistLiveLabConsole(
     activeLayout: com.example.data.model.GardenLayout?,
     activePlants: List<com.example.data.model.Plant>,
-    onClose: (() -> Unit)? = null
+    onClose: (() -> Unit)? = null,
+    onMetricClicked: (String) -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -1061,8 +1263,8 @@ fun BotanistLiveLabConsole(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
     ) {
         Column(
-            modifier = Modifier.padding(if (onClose != null) 20.dp else 10.dp),
-            verticalArrangement = Arrangement.spacedBy(if (onClose != null) 12.dp else 6.dp)
+            modifier = Modifier.padding(if (onClose != null) 20.dp else 12.dp),
+            verticalArrangement = Arrangement.spacedBy(if (onClose != null) 12.dp else 8.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -1107,6 +1309,34 @@ fun BotanistLiveLabConsole(
                 }
             }
 
+            // Interactive Bio-Signal wave!
+            if (activeLayout != null) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "LIVE SIGNAL TRANSLATOR",
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                        )
+                        Text(
+                            text = "120.4Hz • STABLE",
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                    BotanistLiveSignalWave(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
             if (activeLayout != null) {
                 Text(
                     text = "Layout: ${activeLayout.name} (${activeLayout.style} • ${activeLayout.climate})",
@@ -1125,6 +1355,7 @@ fun BotanistLiveLabConsole(
                         label = "Soil Temp",
                         value = "21.6°C",
                         desc = "Optimal range",
+                        onClick = { onMetricClicked("soil_temp") },
                         modifier = Modifier.weight(1f)
                     )
                     BotanistMetricItem(
@@ -1137,6 +1368,7 @@ fun BotanistLiveLabConsole(
                             else -> "52%"
                         },
                         desc = "Stable bed",
+                        onClick = { onMetricClicked("moisture") },
                         modifier = Modifier.weight(1f)
                     )
                     BotanistMetricItem(
@@ -1144,6 +1376,7 @@ fun BotanistLiveLabConsole(
                         label = "Species Logs",
                         value = "${activePlants.size} Active",
                         desc = "In database",
+                        onClick = { onMetricClicked("species") },
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -1166,12 +1399,14 @@ fun BotanistMetricItem(
     label: String,
     value: String,
     desc: String,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.62f), RoundedCornerShape(8.dp))
             .border(1.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f), RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
             .padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(1.dp)
@@ -1180,5 +1415,461 @@ fun BotanistMetricItem(
         Text(value, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
         Text(label, fontSize = 8.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(desc, fontSize = 7.5.sp, color = Color.Gray)
+    }
+}
+
+@Composable
+fun ControlTabButton(
+    icon: ImageVector,
+    label: String,
+    active: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = if (active) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+    }
+    val contentColor = if (active) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val borderColor = if (active) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+    } else {
+        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+    }
+
+    Card(
+        modifier = modifier
+            .height(38.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        border = BorderStroke(1.dp, borderColor)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = contentColor,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text(
+                text = label,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = contentColor
+            )
+        }
+    }
+}
+
+@Composable
+fun NeuralLoadDashboardWidget(
+    assessmentScore: Int?,
+    lowestCategories: List<String>,
+    onStartAssessment: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            if (assessmentScore != null) {
+                val zoneColor = when (assessmentScore) {
+                    in 15..20 -> Color(0xFF4CAF50)
+                    in 8..14 -> Color(0xFFFFC107)
+                    else -> Color(0xFFF44336)
+                }
+                val zoneName = when (assessmentScore) {
+                    in 15..20 -> "Green Zone — Low Neural Load"
+                    in 8..14 -> "Yellow Zone — Moderate Load"
+                    else -> "Red Zone — High Neural Load"
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(12.dp)
+                                .background(zoneColor, CircleShape)
+                        )
+                        Text(
+                            text = "Neural Load Score",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onStartAssessment,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Retake Assessment",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(60.dp)
+                    ) {
+                        CircularProgressIndicator(
+                            progress = { assessmentScore.toFloat() / 20f },
+                            modifier = Modifier.size(60.dp),
+                            color = zoneColor,
+                            strokeWidth = 6.dp,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            strokeCap = StrokeCap.Round,
+                        )
+                        Text(
+                            text = "$assessmentScore/20",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = zoneName,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
+                            color = zoneColor
+                        )
+                        if (lowestCategories.isNotEmpty()) {
+                            Text(
+                                text = "Focus areas: ${lowestCategories.take(3).joinToString(", ")}",
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Favorite,
+                            contentDescription = "Health scan icon",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Optimize Biophilic Harmony",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Take a 2-minute neural load scan to personalize Dr. Julian's recommendations.",
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 13.sp
+                        )
+                    }
+
+                    Button(
+                        onClick = onStartAssessment,
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Text("Scan", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BreathingGardenCircle(modifier: Modifier = Modifier) {
+    var isExpanded by remember { mutableStateOf(false) }
+    var breathingState by remember { mutableStateOf("Ready") }
+    var breathingProgress by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(isExpanded) {
+        if (isExpanded) {
+            while (true) {
+                breathingState = "Inhale"
+                animate(
+                    initialValue = 0f,
+                    targetValue = 1f,
+                    animationSpec = tween(4000, easing = LinearOutSlowInEasing)
+                ) { value, _ ->
+                    breathingProgress = value
+                }
+                breathingState = "Hold"
+                delay(4000)
+                breathingState = "Exhale"
+                animate(
+                    initialValue = 1f,
+                    targetValue = 0f,
+                    animationSpec = tween(4000, easing = FastOutLinearInEasing)
+                ) { value, _ ->
+                    breathingProgress = value
+                }
+                delay(2000)
+            }
+        } else {
+            breathingProgress = 0f
+            breathingState = "Ready"
+        }
+    }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)
+        ),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SelfImprovement,
+                        contentDescription = "Mindfulness icon",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        text = "Biophilic Breather",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                TextButton(
+                    onClick = { isExpanded = !isExpanded },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                    modifier = Modifier.height(28.dp)
+                ) {
+                    Text(
+                        text = if (isExpanded) "Close" else "Begin",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "Breathe in harmony with your botanical surroundings.",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(160.dp)
+                            .padding(16.dp)
+                    ) {
+                        val scale = 0.7f + (breathingProgress * 0.4f)
+                        val alpha = 0.15f + (breathingProgress * 0.35f)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer {
+                                    scaleX = scale
+                                    scaleY = scale
+                                    this.alpha = alpha
+                                }
+                                .background(
+                                    brush = Brush.radialGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primary,
+                                            Color.Transparent
+                                        )
+                                    ),
+                                    shape = CircleShape
+                                )
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .size(80.dp)
+                                .graphicsLayer {
+                                    scaleX = 0.9f + (breathingProgress * 0.2f)
+                                    scaleY = 0.9f + (breathingProgress * 0.2f)
+                                }
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        colors = listOf(
+                                            MaterialTheme.colorScheme.primary,
+                                            MaterialTheme.colorScheme.secondary
+                                        )
+                                    ),
+                                    shape = CircleShape
+                                )
+                                .border(2.dp, Color.White.copy(alpha = 0.8f), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = breathingState,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = when (breathingState) {
+                            "Inhale" -> "Slowly fill your lungs with fresh air (4s)..."
+                            "Hold" -> "Suspend your breath, feel the calm (4s)..."
+                            "Exhale" -> "Release tension, breathe out completely (4s)..."
+                            else -> "Prepare to align your breath..."
+                        },
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun BotanistLiveSignalWave(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.primary
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "signalWave")
+    val phase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = (2 * PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "phase"
+    )
+
+    val secondPhase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = -(2 * PI).toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(2200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "secondPhase"
+    )
+
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(28.dp)
+    ) {
+        val width = size.width
+        val height = size.height
+        val points = 80
+        val wavePath1 = Path()
+        val wavePath2 = Path()
+
+        wavePath1.moveTo(0f, height / 2f)
+        wavePath2.moveTo(0f, height / 2f)
+
+        for (i in 0..points) {
+            val x = i * (width / points.toFloat())
+            val y1 = (height / 2f) + 8f * sin((i * 0.15f) + phase)
+            wavePath1.lineTo(x, y1)
+
+            val y2 = (height / 2f) + 5f * sin((i * 0.25f) + secondPhase)
+            wavePath2.lineTo(x, y2)
+        }
+
+        drawPath(
+            path = wavePath1,
+            color = color,
+            style = Stroke(width = 1.5.dp.toPx(), cap = StrokeCap.Round)
+        )
+
+        drawPath(
+            path = wavePath2,
+            color = color.copy(alpha = 0.4f),
+            style = Stroke(width = 1.dp.toPx(), cap = StrokeCap.Round)
+        )
     }
 }

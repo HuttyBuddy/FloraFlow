@@ -21,7 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
@@ -37,6 +39,7 @@ import com.example.data.model.CareTask
 import com.example.data.model.Plant
 import androidx.compose.ui.window.Dialog
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.theme.SoilSageDark
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.boundsInRoot
 import com.example.ui.viewmodel.WalkthroughStep
@@ -45,6 +48,21 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+enum class BreathingState {
+    IDLE, INHALE, HOLD_IN, EXHALE, HOLD_OUT
+}
 
 @Composable
 fun DashboardScreen(
@@ -107,37 +125,40 @@ fun DashboardScreen(
     }
 
     val headerContent = @Composable {
+        val headerGradient = Brush.horizontalGradient(
+            colors = listOf(
+                MaterialTheme.colorScheme.primary,
+                MaterialTheme.colorScheme.secondary
+            )
+        )
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .background(headerGradient)
+                    .padding(20.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
+                Image(
+                    painter = painterResource(id = com.example.R.drawable.ic_logo_heart),
+                    contentDescription = "FloraFlow Logo",
                     modifier = Modifier
                         .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Spa,
-                        contentDescription = "Flower",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White.copy(alpha = 0.2f))
+                        .padding(4.dp)
+                )
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "FloraFlow Garden Space",
                         fontWeight = FontWeight.ExtraBold,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                     Text(
                         text = if (activeLayout != null) {
@@ -146,7 +167,7 @@ fun DashboardScreen(
                             "Your garden beds are ready to be planted"
                         },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                     )
                 }
             }
@@ -206,10 +227,28 @@ fun DashboardScreen(
             val totalMinutes = moodLogs.sumOf { it.activityMinutes }
             val avgMood = if (moodLogs.isNotEmpty()) moodLogs.map { it.moodScore }.average() else 0.0
 
+            var isPressedTime by remember { mutableStateOf(false) }
+            val scaleTime by animateFloatAsState(if (isPressedTime) 0.95f else 1f, label = "ScaleTime")
+
             Card(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .scale(scaleTime)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                isPressedTime = true
+                                tryAwaitRelease()
+                                isPressedTime = false
+                            },
+                            onTap = {
+                                showLogMoodDialog = true
+                            }
+                        )
+                    },
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.2.dp, Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), Color.Transparent)))
             ) {
                 Column(
                     modifier = Modifier.padding(14.dp),
@@ -225,15 +264,34 @@ fun DashboardScreen(
                     Text(
                         text = "Time in the Garden",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
 
+            var isPressedWellness by remember { mutableStateOf(false) }
+            val scaleWellness by animateFloatAsState(if (isPressedWellness) 0.95f else 1f, label = "ScaleWellness")
+
             Card(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .scale(scaleWellness)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                isPressedWellness = true
+                                tryAwaitRelease()
+                                isPressedWellness = false
+                            },
+                            onTap = {
+                                showLogMoodDialog = true
+                            }
+                        )
+                    },
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.2.dp, Brush.verticalGradient(listOf(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f), Color.Transparent)))
             ) {
                 Column(
                     modifier = Modifier.padding(14.dp),
@@ -250,15 +308,34 @@ fun DashboardScreen(
                     Text(
                         text = "Wellness Bloom",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
 
+            var isPressedPlants by remember { mutableStateOf(false) }
+            val scalePlants by animateFloatAsState(if (isPressedPlants) 0.95f else 1f, label = "ScalePlants")
+
             Card(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .scale(scalePlants)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onPress = {
+                                isPressedPlants = true
+                                tryAwaitRelease()
+                                isPressedPlants = false
+                            },
+                            onTap = {
+                                viewModel.setCurrentTab(1)
+                            }
+                        )
+                    },
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.2.dp, Brush.verticalGradient(listOf(MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f), Color.Transparent)))
             ) {
                 Column(
                     modifier = Modifier.padding(14.dp),
@@ -274,7 +351,8 @@ fun DashboardScreen(
                     Text(
                         text = "Plants Tended",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -282,38 +360,66 @@ fun DashboardScreen(
     }
 
     val communityPromoContent = @Composable {
+        var isPressedComm by remember { mutableStateOf(false) }
+        val scaleComm by animateFloatAsState(if (isPressedComm) 0.96f else 1f, label = "ScaleComm")
+        
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onCommunityClick() }
+                .scale(scaleComm)
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onPress = {
+                            isPressedComm = true
+                            tryAwaitRelease()
+                            isPressedComm = false
+                        },
+                        onTap = { onCommunityClick() }
+                    )
+                }
                 .testTag("dashboard_community_promo_card"),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
             ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+            border = BorderStroke(
+                1.5.dp, 
+                Brush.horizontalGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f)
+                    )
+                )
+            )
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(14.dp),
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(40.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary),
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.secondary
+                                )
+                            )
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Forum,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "The Garden Gate",
@@ -324,14 +430,14 @@ fun DashboardScreen(
                     Text(
                         text = "Step through the gate and grow together",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
                     )
                 }
                 Icon(
                     Icons.Default.ArrowForward,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }
@@ -349,7 +455,16 @@ fun DashboardScreen(
                     )
                 },
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(
+                1.5.dp,
+                Brush.horizontalGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                    )
+                )
+            )
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
@@ -492,6 +607,7 @@ fun DashboardScreen(
             }
             item { headerContent() }
             item { DailyHabitCard(viewModel = viewModel) }
+            item { MindfulBreathingCard(viewModel = viewModel) }
             item { MonthlyWellnessDigestCard(moodLogs = moodLogs) }
             item { SeasonalCareCoachCard(activePlants = activePlants) }
             item { quickActionsContent() }
@@ -520,6 +636,7 @@ fun DashboardScreen(
                 }
                 headerContent()
                 DailyHabitCard(viewModel = viewModel)
+                MindfulBreathingCard(viewModel = viewModel)
                 MonthlyWellnessDigestCard(moodLogs = moodLogs)
                 SeasonalCareCoachCard(activePlants = activePlants)
                 quickActionsContent()
@@ -639,10 +756,40 @@ fun MoodLogItemCard(
         else -> "🌱"
     }
 
+    val isDark = MaterialTheme.colorScheme.primary == SoilSageDark
+    val itemBgColor = if (isDark) {
+        when (log.mood) {
+            "Peaceful" -> Color(0xFF2C1E30)
+            "Energized" -> Color(0xFF332B12)
+            "Refreshed" -> Color(0xFF1B2E1E)
+            "Happy" -> Color(0xFF302213)
+            "Anxious" -> Color(0xFF212529)
+            "Tired" -> Color(0xFF1C1D1F)
+            else -> MaterialTheme.colorScheme.primaryContainer
+        }
+    } else {
+        when (log.mood) {
+            "Peaceful" -> Color(0xFFF3E5F5)
+            "Energized" -> Color(0xFFFFFDE7)
+            "Refreshed" -> Color(0xFFE8F5E9)
+            "Happy" -> Color(0xFFFFF3E0)
+            "Anxious" -> Color(0xFFECEFF1)
+            "Tired" -> Color(0xFFF5F5F5)
+            else -> MaterialTheme.colorScheme.surface
+        }
+    }
+
+    val emojiBgColor = if (isDark) {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+    } else {
+        MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = itemBgColor),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -652,7 +799,7 @@ fun MoodLogItemCard(
                 modifier = Modifier
                     .size(54.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)),
+                    .background(emojiBgColor),
                 contentAlignment = Alignment.Center
             ) {
                 Text(emoji, fontSize = 28.sp)
@@ -669,7 +816,8 @@ fun MoodLogItemCard(
                     Text(
                         text = "${log.mood} Garden Sesh",
                         fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -693,12 +841,12 @@ fun MoodLogItemCard(
                     Text(
                         text = "⏱️ ${log.activityMinutes} minutes",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                     Text(
                         text = "🪴 Garden Index: ${log.growthIndex}%",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                 }
 
@@ -708,7 +856,7 @@ fun MoodLogItemCard(
                         text = "\"${log.notes}\"",
                         style = MaterialTheme.typography.bodyMedium,
                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
                     )
                 }
             }
@@ -718,9 +866,272 @@ fun MoodLogItemCard(
                 Icon(
                     Icons.Default.DeleteOutline,
                     contentDescription = "Delete Log",
-                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
+                    tint = MaterialTheme.colorScheme.error.copy(alpha = 0.8f),
                     modifier = Modifier.size(20.dp)
                 )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun MindfulBreathingCard(
+    viewModel: GardenViewModel,
+    modifier: Modifier = Modifier
+) {
+    var breathingState by remember { mutableStateOf(BreathingState.IDLE) }
+    var secondsRemaining by remember { mutableIntStateOf(60) }
+    var showSuccessState by remember { mutableStateOf(false) }
+    var customNotes by remember { mutableStateOf("") }
+    
+    val targetProgress = when (breathingState) {
+        BreathingState.INHALE -> 1.0f
+        BreathingState.HOLD_IN -> 1.0f
+        BreathingState.EXHALE -> 0.0f
+        BreathingState.HOLD_OUT -> 0.0f
+        BreathingState.IDLE -> 0.0f
+    }
+    
+    val breathProgress by animateFloatAsState(
+        targetValue = targetProgress,
+        animationSpec = tween(durationMillis = 4000, easing = FastOutSlowInEasing),
+        label = "BreathProgress"
+    )
+    
+    val auraColor by animateColorAsState(
+        targetValue = when (breathingState) {
+            BreathingState.INHALE -> Color(0xFF80CBC4)
+            BreathingState.HOLD_IN -> Color(0xFF81C784)
+            BreathingState.EXHALE -> Color(0xFFB39DDB)
+            BreathingState.HOLD_OUT -> Color(0xFF90A4AE)
+            BreathingState.IDLE -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+        },
+        animationSpec = tween(durationMillis = 1500),
+        label = "AuraColor"
+    )
+    
+    val stateText = when (breathingState) {
+        BreathingState.INHALE -> "Breathe In..."
+        BreathingState.HOLD_IN -> "Hold..."
+        BreathingState.EXHALE -> "Breathe Out..."
+        BreathingState.HOLD_OUT -> "Hold..."
+        BreathingState.IDLE -> "Press Begin to start 1-minute box breathing"
+    }
+
+    LaunchedEffect(breathingState) {
+        if (breathingState != BreathingState.IDLE && secondsRemaining > 0) {
+            while (secondsRemaining > 0 && breathingState != BreathingState.IDLE) {
+                delay(1000)
+                secondsRemaining--
+                if (secondsRemaining == 0) {
+                    breathingState = BreathingState.IDLE
+                    showSuccessState = true
+                }
+            }
+        }
+    }
+    
+    LaunchedEffect(breathingState) {
+        if (breathingState != BreathingState.IDLE) {
+            while (secondsRemaining > 0) {
+                delay(4000)
+                breathingState = when (breathingState) {
+                    BreathingState.INHALE -> BreathingState.HOLD_IN
+                    BreathingState.HOLD_IN -> BreathingState.EXHALE
+                    BreathingState.EXHALE -> BreathingState.HOLD_OUT
+                    BreathingState.HOLD_OUT -> BreathingState.INHALE
+                    else -> BreathingState.IDLE
+                }
+            }
+        }
+    }
+    
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(
+            1.5.dp, 
+            Brush.horizontalGradient(
+                listOf(
+                    MaterialTheme.colorScheme.tertiary, 
+                    MaterialTheme.colorScheme.primary
+                )
+            )
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Default.SelfImprovement,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Mindful Garden Breath",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                if (breathingState != BreathingState.IDLE) {
+                    Text(
+                        text = "${secondsRemaining}s remaining",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            }
+            
+            if (showSuccessState) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text("🌸 Excellent! You completed a breathing cycle.", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text("This outdoor breathing minute correlates with 5% higher mental well-being and calmness indices.", style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
+                    
+                    OutlinedTextField(
+                        value = customNotes,
+                        onValueChange = { customNotes = it },
+                        placeholder = { Text("How do you feel? (e.g. Cleared my mind)", fontSize = 11.sp) },
+                        modifier = Modifier.fillMaxWidth().height(56.dp).testTag("breathing_gratitude_input"),
+                        singleLine = true,
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 12.sp)
+                    )
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        TextButton(onClick = { 
+                            showSuccessState = false
+                            customNotes = ""
+                        }) {
+                            Text("Dismiss")
+                        }
+                        Button(
+                            onClick = {
+                                viewModel.logMood(
+                                    mood = "Peaceful",
+                                    score = 5,
+                                    duration = 1,
+                                    notes = customNotes.ifBlank { "Completed 1 minute of mindful breathing." }
+                                )
+                                showSuccessState = false
+                                customNotes = ""
+                            },
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Save Log", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(140.dp)
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
+                        val petalCount = 8
+                        val scale = 0.4f + breathProgress * 0.6f
+                        val center = Offset(size.width / 2, size.height / 2)
+                        
+                        // Glow aura background
+                        drawCircle(
+                            brush = Brush.radialGradient(
+                                colors = listOf(auraColor.copy(alpha = 0.35f), Color.Transparent),
+                                radius = size.minDimension / 1.6f
+                            ),
+                            center = center
+                        )
+                        
+                        // Draw petals
+                        for (i in 0 until petalCount) {
+                            val angle = i * (360f / petalCount)
+                            rotate(angle, pivot = center) {
+                                val petalWidth = size.width * 0.16f * scale
+                                val petalHeight = size.height * 0.36f * scale
+                                drawOval(
+                                    color = auraColor,
+                                    topLeft = Offset(center.x - petalWidth / 2, center.y - petalHeight),
+                                    size = Size(petalWidth, petalHeight),
+                                    alpha = 0.8f
+                                )
+                            }
+                        }
+                        
+                        // Gold center
+                        drawCircle(
+                            color = Color(0xFFFFD54F),
+                            radius = size.minDimension * 0.08f * (0.8f + breathProgress * 0.2f),
+                            center = center
+                        )
+                    }
+                    
+                    if (breathingState != BreathingState.IDLE) {
+                        Text(
+                            text = when (breathingState) {
+                                BreathingState.INHALE -> "In"
+                                BreathingState.HOLD_IN -> "Hold"
+                                BreathingState.EXHALE -> "Out"
+                                BreathingState.HOLD_OUT -> "Hold"
+                                else -> ""
+                            },
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+                
+                Text(
+                    text = stateText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                    textAlign = TextAlign.Center
+                )
+                
+                if (breathingState == BreathingState.IDLE) {
+                    Button(
+                        onClick = {
+                            secondsRemaining = 60
+                            breathingState = BreathingState.INHALE
+                        },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Begin Breathing")
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = {
+                            breathingState = BreathingState.IDLE
+                            secondsRemaining = 60
+                        },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Reset")
+                    }
+                }
             }
         }
     }
@@ -741,6 +1152,13 @@ fun DailyGrowthRing(
         label = "GrowthRingProgress"
     )
 
+    val isFull = completionRatio >= 1.0f
+    val emojiScale by animateFloatAsState(
+        targetValue = if (isFull) 1.25f else 1.0f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+        label = "EmojiScale"
+    )
+
     Box(
         modifier = modifier.size(80.dp),
         contentAlignment = Alignment.Center
@@ -758,10 +1176,14 @@ fun DailyGrowthRing(
                 style = Stroke(width = strokeWidth)
             )
 
-            // Draw active progress (vibrant botanical green gradient)
+            // Draw active progress (vibrant botanical green/gold sweep gradient)
             drawArc(
                 brush = Brush.sweepGradient(
-                    colors = listOf(Color(0xFF81C784), Color(0xFF4CAF50), Color(0xFF2E7D32), Color(0xFF81C784))
+                    colors = if (isFull) {
+                        listOf(Color(0xFF81C784), Color(0xFF4CAF50), Color(0xFFFFD54F), Color(0xFF81C784))
+                    } else {
+                        listOf(Color(0xFF81C784), Color(0xFF4CAF50), Color(0xFF2E7D32), Color(0xFF81C784))
+                    }
                 ),
                 startAngle = -90f,
                 sweepAngle = animatedProgress * 360f,
@@ -771,16 +1193,19 @@ fun DailyGrowthRing(
         }
 
         // Draw small flower emoji or percentage inside
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.scale(emojiScale)
+        ) {
             Text(
-                text = "🌱",
-                fontSize = 18.sp
+                text = if (isFull) "🌸" else "🌱",
+                fontSize = 20.sp
             )
             Text(
                 text = "${(completionRatio * 100).toInt()}%",
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                color = if (isFull) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
                 fontSize = 10.sp
             )
         }
@@ -813,8 +1238,16 @@ fun DailyHabitCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(
+            1.5.dp,
+            Brush.horizontalGradient(
+                listOf(
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)
+                )
+            )
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(
@@ -954,27 +1387,67 @@ fun DailyHabitCard(
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold
                         )
-                        // List first 2 pending tasks
-                        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
-                        pendingTasks.filter { it.dueDate <= System.currentTimeMillis() }.take(2).forEach { task ->
+                        
+                        val completedTodayList = remember(allTasks) {
+                            allTasks.filter { it.completedDate != null && isToday(it.completedDate) }
+                        }
+                        val pendingTodayList = remember(pendingTasks) {
+                            pendingTasks.filter { it.dueDate <= System.currentTimeMillis() }
+                        }
+                        val combinedTasks = remember(pendingTodayList, completedTodayList) {
+                            (pendingTodayList + completedTodayList).take(3)
+                        }
+
+                        combinedTasks.forEach { task ->
+                            val isCompleted = task.completedDate != null
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 1.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Checkbox(
-                                    checked = false,
-                                    onCheckedChange = {
-                                        viewModel.completeCareTask(task)
-                                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.Confirm)
-                                    },
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Text(
-                                    text = "${task.taskType} ${task.plantName}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    maxLines = 1
-                                )
+                                if (isCompleted) {
+                                    Icon(
+                                        imageVector = androidx.compose.material.icons.Icons.Default.CheckCircle,
+                                        contentDescription = "Completed",
+                                        tint = Color(0xFF4CAF50),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Text(
+                                        text = "${task.taskType} ${task.plantName}",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            textDecoration = TextDecoration.LineThrough
+                                        ),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                        maxLines = 1
+                                    )
+                                } else {
+                                    var checked by remember { mutableStateOf(false) }
+                                    val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+                                    val coroutineScope = rememberCoroutineScope()
+                                    
+                                    Checkbox(
+                                        checked = checked,
+                                        onCheckedChange = { isChecked ->
+                                            if (isChecked) {
+                                                checked = true
+                                                haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.Confirm)
+                                                coroutineScope.launch {
+                                                    delay(300)
+                                                    viewModel.completeCareTask(task)
+                                                }
+                                            }
+                                        },
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Text(
+                                        text = "${task.taskType} ${task.plantName}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 1
+                                    )
+                                }
                             }
                         }
                     }
@@ -1019,8 +1492,16 @@ fun MonthlyWellnessDigestCard(
     Card(
         modifier = modifier.fillMaxWidth().testTag("monthly_wellness_digest_card"),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f)),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(
+            1.5.dp,
+            Brush.horizontalGradient(
+                listOf(
+                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.8f),
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                )
+            )
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(
@@ -1103,8 +1584,16 @@ fun SeasonalCareCoachCard(
     Card(
         modifier = modifier.fillMaxWidth().testTag("seasonal_coach_card"),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(
+            1.5.dp,
+            Brush.horizontalGradient(
+                listOf(
+                    MaterialTheme.colorScheme.tertiary.copy(alpha = 0.8f),
+                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)
+                )
+            )
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(

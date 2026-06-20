@@ -775,6 +775,7 @@ class GardenViewModel @JvmOverloads constructor(
                 pestsDiseases = template?.pestsDiseases ?: "Aphids, Powdery Mildew"
             )
             repository.insertPlant(newPlant)
+            careScheduler.syncCareSchedules()
         }
     }
 
@@ -793,6 +794,7 @@ class GardenViewModel @JvmOverloads constructor(
     fun deletePlant(plantId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deletePlantById(plantId)
+            repository.deleteCareTasksByPlant(plantId)
         }
     }
 

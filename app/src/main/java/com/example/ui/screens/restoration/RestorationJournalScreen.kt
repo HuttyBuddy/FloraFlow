@@ -19,10 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +39,11 @@ import com.google.accompanist.permissions.rememberPermissionState
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+
+import com.example.data.model.parseGridString
+import com.example.data.model.GridPlantItem
+import com.example.ui.screens.checkPlantSynergy
+import kotlin.math.*
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -78,6 +85,52 @@ fun RestorationJournalScreen(
     val restorationLogs by viewModel.allRestorationLogs.collectAsStateWithLifecycle()
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
     val restorationTrialCount by viewModel.restorationTrialCount.collectAsStateWithLifecycle()
+    val pendingCareTasks by viewModel.pendingCareTasks.collectAsStateWithLifecycle()
+
+    // Biophilic scores calculation for breakdown view
+    val uniqueTypes = remember(activePlants) {
+        activePlants.map { it.type.lowercase().trim() }.distinct()
+    }
+    val diversityScore = remember(uniqueTypes) {
+        (uniqueTypes.size * 10).coerceAtMost(40)
+    }
+
+    val gridItems = remember(activeLayout) {
+        activeLayout?.let { parseGridString(it.gridString) } ?: emptyList()
+    }
+    val synergyScore = remember(gridItems) {
+        var synergyCount = 0
+        for (i in gridItems.indices) {
+            for (j in i + 1 until gridItems.size) {
+                val item1 = gridItems[i]
+                val item2 = gridItems[j]
+                val dx = item1.x - item2.x
+                val dy = item1.y - item2.y
+                val dist = sqrt((dx * dx + dy * dy).toDouble())
+                if (dist <= 1.5 && checkPlantSynergy(item1.plantName, item2.plantName)) {
+                    synergyCount++
+                }
+            }
+        }
+        (synergyCount * 8).coerceAtMost(40)
+    }
+
+    val avgGrowth = remember(activePlants) {
+        if (activePlants.isNotEmpty()) activePlants.map { it.growthProgress }.average() else 0.0
+    }
+    val careMultiplier = remember(avgGrowth) {
+        0.8 + (if (activePlants.isNotEmpty()) (avgGrowth / 100.0) * 0.4 else 0.2)
+    }
+
+    val layoutPlantIds = remember(activePlants) {
+        activePlants.map { it.id }.toSet()
+    }
+    val overdueTasksCount = remember(pendingCareTasks, layoutPlantIds) {
+        pendingCareTasks.filter { it.plantId in layoutPlantIds && it.dueDate < System.currentTimeMillis() && it.completedDate == null }.size
+    }
+    val penaltyScore = remember(overdueTasksCount) {
+        overdueTasksCount * 5
+    }
 
     // Local checklist state
     val availableTasks = remember(activePlants) {
@@ -190,7 +243,14 @@ fun RestorationJournalScreen(
                 EmptyStateCard()
             } else {
                 // NRI Progress gauge card
-                NriGaugeCard(nriScore)
+                NriGaugeCard(
+                    nriScore = nriScore,
+                    diversityScore = diversityScore,
+                    synergyScore = synergyScore,
+                    careMultiplier = careMultiplier,
+                    penaltyScore = penaltyScore,
+                    plantCount = activePlants.size
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -205,237 +265,332 @@ fun RestorationJournalScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Eco-Acoustic Soundscapes",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFA8E6CF),
-                        modifier = Modifier.align(Alignment.Start)
-                    )
-                    Text(
-                        text = "Binaural beat synthesis overlaying natural ambient channels",
-                        fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.5f),
-                        modifier = Modifier
-                            .align(Alignment.Start)
-                            .padding(bottom = 16.dp)
-                    )
-
-                    // Track selector tabs
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFF0F261D).copy(alpha = 0.8f), RoundedCornerShape(12.dp))
-                            .padding(4.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        tracks.forEach { track ->
-                            val isSelected = currentTrack == track.name
-                            Box(
+                        Column(
+                            modifier = Modifier.padding(20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Eco-Acoustic Soundscapes",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFA8E6CF),
+                                modifier = Modifier.align(Alignment.Start)
+                            )
+                            Text(
+                                text = "Binaural beat synthesis overlaying natural ambient channels",
+                                fontSize = 12.sp,
+                                color = Color.White.copy(alpha = 0.5f),
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(if (isSelected) Color(0xFF81C784).copy(alpha = 0.25f) else Color.Transparent)
-                                    .clickable {
-                                        viewModel.changeSoundscapeTrack(track.name, track.baseFreq, track.diffFreq)
-                                        Toast.makeText(context, "Switched to ${track.name}", Toast.LENGTH_SHORT).show()
-                                    }
-                                    .padding(vertical = 10.dp),
-                                contentAlignment = Alignment.Center
+                                    .align(Alignment.Start)
+                                    .padding(bottom = 16.dp)
+                            )
+
+                            // Track selector tabs
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFF0F261D).copy(alpha = 0.8f), RoundedCornerShape(12.dp))
+                                    .padding(4.dp),
+                                horizontalArrangement = Arrangement.SpaceEvenly
                             ) {
-                                Text(
-                                    text = track.name.split(" ")[0], // Alpha, Theta, Delta
-                                    fontSize = 12.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) Color(0xFFA8E6CF) else Color.White.copy(alpha = 0.7f)
-                                )
-                            }
-                        }
-                    }
-
-                    // Track Description
-                    val currentTrackDesc = tracks.find { it.name == currentTrack }?.description ?: ""
-                    Text(
-                        text = currentTrackDesc,
-                        fontSize = 11.sp,
-                        color = Color.White.copy(alpha = 0.6f),
-                        lineHeight = 15.sp,
-                        modifier = Modifier.padding(vertical = 12.dp)
-                    )
-
-                    Divider(color = Color(0xFF81C784).copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 8.dp))
-
-                    // Dual Vol Sliders
-                    // 1. Ambient Vol
-                    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("🍃 Ambient nature", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
-                            Text("${(ambientVol * 100).toInt()}%", fontSize = 12.sp, color = Color(0xFFA8E6CF))
-                        }
-                        Slider(
-                            value = ambientVol,
-                            onValueChange = { viewModel.updateAmbientVolume(it) },
-                            colors = SliderDefaults.colors(
-                                thumbColor = Color(0xFF81C784),
-                                activeTrackColor = Color(0xFF81C784),
-                                inactiveTrackColor = Color(0xFF0F261D)
-                            )
-                        )
-                    }
-
-                    // 2. Binaural Vol
-                    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text("🧠 Binaural brainwaves", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
-                            Text("${(binauralVol * 100).toInt()}%", fontSize = 12.sp, color = Color(0xFFA8E6CF))
-                        }
-                        Slider(
-                            value = binauralVol,
-                            onValueChange = { viewModel.updateBinauralVolume(it) },
-                            colors = SliderDefaults.colors(
-                                thumbColor = Color(0xFF81C784),
-                                activeTrackColor = Color(0xFF81C784),
-                                inactiveTrackColor = Color(0xFF0F261D)
-                            )
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Play/Pause button
-                    Button(
-                        onClick = { viewModel.toggleSoundscapePlay() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (isPlaying) Color(0xFFC62828).copy(alpha = 0.8f) else Color(0xFF2E7D32).copy(alpha = 0.8f)
-                        ),
-                        shape = RoundedCornerShape(50.dp),
-                        modifier = Modifier.width(200.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = if (isPlaying) "Pause" else "Play",
-                            tint = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = if (isPlaying) "Pause Soundscape" else "Play Soundscape",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Mindfulness checklist
-            Card(
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E352F).copy(alpha = 0.7f)),
-                border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.15f)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp)
-                ) {
-                    Text(
-                        text = "🧘 Today's Mindfulness Tasks",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFA8E6CF)
-                    )
-                    Text(
-                        text = "Complete layout tasks to train sensory grounding and log progress",
-                        fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-
-                    availableTasks.forEach { task ->
-                        val isChecked = completedTasksList.contains(task)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 6.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isChecked) Color(0xFF81C784).copy(alpha = 0.05f) else Color.Transparent)
-                                .clickable {
-                                    if (isChecked) {
-                                        completedTasksList.remove(task)
-                                    } else {
-                                        completedTasksList.add(task)
+                                tracks.forEach { track ->
+                                    val isSelected = currentTrack == track.name
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(if (isSelected) Color(0xFF81C784).copy(alpha = 0.25f) else Color.Transparent)
+                                            .clickable {
+                                                viewModel.changeSoundscapeTrack(track.name, track.baseFreq, track.diffFreq)
+                                                Toast.makeText(context, "Switched to ${track.name}", Toast.LENGTH_SHORT).show()
+                                            }
+                                            .padding(vertical = 10.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = track.name.split(" ")[0], // Alpha, Theta, Delta
+                                            fontSize = 12.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isSelected) Color(0xFFA8E6CF) else Color.White.copy(alpha = 0.7f)
+                                        )
                                     }
                                 }
-                                .padding(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                checked = isChecked,
-                                onCheckedChange = {
-                                    if (isChecked) {
-                                        completedTasksList.remove(task)
-                                    } else {
-                                        completedTasksList.add(task)
-                                    }
-                                },
-                                colors = CheckboxDefaults.colors(checkedColor = Color(0xFF81C784))
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            }
+
+                            // Track Description
+                            val currentTrackDesc = tracks.find { it.name == currentTrack }?.description ?: ""
                             Text(
-                                text = task,
-                                fontSize = 12.sp,
-                                color = if (isChecked) Color.White.copy(alpha = 0.5f) else Color.White,
-                                lineHeight = 16.sp
+                                text = currentTrackDesc,
+                                fontSize = 11.sp,
+                                color = Color.White.copy(alpha = 0.6f),
+                                lineHeight = 15.sp,
+                                modifier = Modifier.padding(vertical = 12.dp)
                             )
+
+                            Divider(color = Color(0xFF81C784).copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 8.dp))
+
+                            // Dual Vol Sliders
+                            // 1. Ambient Vol
+                            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("🍃 Ambient nature", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                                    Text("${(ambientVol * 100).toInt()}%", fontSize = 12.sp, color = Color(0xFFA8E6CF))
+                                }
+                                Slider(
+                                    value = ambientVol,
+                                    onValueChange = { viewModel.updateAmbientVolume(it) },
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = Color(0xFF81C784),
+                                        activeTrackColor = Color(0xFF81C784),
+                                        inactiveTrackColor = Color(0xFF0F261D)
+                                    )
+                                )
+                            }
+
+                            // 2. Binaural Vol
+                            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("🧠 Binaural brainwaves", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                                    Text("${(binauralVol * 100).toInt()}%", fontSize = 12.sp, color = Color(0xFFA8E6CF))
+                                }
+                                Slider(
+                                    value = binauralVol,
+                                    onValueChange = { viewModel.updateBinauralVolume(it) },
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = Color(0xFF81C784),
+                                        activeTrackColor = Color(0xFF81C784),
+                                        inactiveTrackColor = Color(0xFF0F261D)
+                                    )
+                                )
+                            }
+
+                            // Interactive Audio Waveform Visualizer
+                            AudioWaveformVisualizer(
+                                isPlaying = isPlaying,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .padding(vertical = 4.dp)
+                            )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Play/Pause button with custom gradient and shadow/glow
+                            Button(
+                                onClick = { viewModel.toggleSoundscapePlay() },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                contentPadding = PaddingValues(),
+                                shape = RoundedCornerShape(24.dp),
+                                modifier = Modifier
+                                    .width(220.dp)
+                                    .height(48.dp)
+                                    .background(
+                                        brush = if (isPlaying) {
+                                            Brush.horizontalGradient(colors = listOf(Color(0xFFE57373), Color(0xFFC62828)))
+                                        } else {
+                                            Brush.horizontalGradient(colors = listOf(Color(0xFF81C784), Color(0xFF2E7D32)))
+                                        },
+                                        shape = RoundedCornerShape(24.dp)
+                                    )
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                        contentDescription = if (isPlaying) "Pause" else "Play",
+                                        tint = Color.White
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = if (isPlaying) "Pause Soundscape" else "Play Soundscape",
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Complete / Log Journal entry button
-                    Button(
-                        onClick = {
-                            viewModel.logRestorationSession(
-                                nriScore = if (activeLayout != null && activePlants.isNotEmpty()) nriScore else 30,
-                                completedTasks = completedTasksList.toList(),
-                                trackName = currentTrack
-                            )
-                            Toast.makeText(context, "Restoration session logged to journal successfully!", Toast.LENGTH_SHORT).show()
-                            completedTasksList.clear()
-                        },
-                        enabled = completedTasksList.isNotEmpty() || isPlaying,
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF81C784)),
-                        shape = RoundedCornerShape(12.dp)
+                    // Mindfulness checklist
+                    Card(
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E352F).copy(alpha = 0.7f)),
+                        border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.15f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
                     ) {
-                        Text(
-                            text = "Log Session & Lock In Progress",
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0F261D)
-                        )
+                        Column(
+                            modifier = Modifier.padding(20.dp)
+                        ) {
+                            Text(
+                                text = "🧘 Today's Mindfulness Tasks",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFA8E6CF)
+                            )
+                            Text(
+                                text = "Complete layout tasks to train sensory grounding and log progress",
+                                fontSize = 12.sp,
+                                color = Color.White.copy(alpha = 0.5f),
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+
+                            // Grounding progress indicator
+                            val taskProgress = if (availableTasks.isNotEmpty()) {
+                                completedTasksList.size.toFloat() / availableTasks.size
+                            } else 0f
+                            
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Grounding Progress: ${completedTasksList.size}/${availableTasks.size}",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFFA8E6CF),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = "${(taskProgress * 100).toInt()}%",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFFA8E6CF),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            LinearProgressIndicator(
+                                progress = taskProgress,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(6.dp)
+                                    .clip(RoundedCornerShape(3.dp))
+                                    .padding(bottom = 16.dp),
+                                color = Color(0xFF81C784),
+                                trackColor = Color(0xFF0F261D)
+                            )
+
+                            availableTasks.forEach { task ->
+                                val isChecked = completedTasksList.contains(task)
+                                val category = getTaskCategory(task)
+                                
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 6.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(
+                                            if (isChecked) Color(0xFF81C784).copy(alpha = 0.08f) 
+                                            else Color(0xFF0F261D).copy(alpha = 0.4f)
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (isChecked) Color(0xFF81C784).copy(alpha = 0.3f) else Color.Transparent,
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+                                        .clickable {
+                                            if (isChecked) {
+                                                completedTasksList.remove(task)
+                                            } else {
+                                                completedTasksList.add(task)
+                                            }
+                                        }
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = isChecked,
+                                        onCheckedChange = {
+                                            if (isChecked) {
+                                                completedTasksList.remove(task)
+                                            } else {
+                                                completedTasksList.add(task)
+                                            }
+                                        },
+                                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF81C784))
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        // Capsule category badge
+                                        Box(
+                                            modifier = Modifier
+                                                .background(category.color.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                                .border(0.5.dp, category.color.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = category.name,
+                                                fontSize = 8.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = category.color
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = task,
+                                            fontSize = 12.sp,
+                                            color = if (isChecked) Color.White.copy(alpha = 0.5f) else Color.White,
+                                            lineHeight = 16.sp
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Complete / Log Journal entry button
+                            Button(
+                                onClick = {
+                                    viewModel.logRestorationSession(
+                                        nriScore = if (activeLayout != null && activePlants.isNotEmpty()) nriScore else 30,
+                                        completedTasks = completedTasksList.toList(),
+                                        trackName = currentTrack
+                                    )
+                                    Toast.makeText(context, "Restoration session logged to journal successfully!", Toast.LENGTH_SHORT).show()
+                                    completedTasksList.clear()
+                                },
+                                enabled = completedTasksList.isNotEmpty() || isPlaying,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF81C784)),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(
+                                    text = "Log Session & Lock In Progress",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF0F261D)
+                                )
+                            }
+                        }
                     }
-                }
-            }
                 }
 
                 if (!isPremium && restorationTrialCount >= 3) {
+                    val infiniteTransition = rememberInfiniteTransition(label = "paywall_pulse")
+                    val paywallPulse by infiniteTransition.animateFloat(
+                        initialValue = 0.96f,
+                        targetValue = 1.04f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(2000, easing = FastOutSlowInEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ),
+                        label = "paywall_pulse"
+                    )
+
                     Box(
                         modifier = Modifier
                             .matchParentSize()
-                            .background(Color(0xFF0F261D).copy(alpha = 0.85f), RoundedCornerShape(24.dp))
+                            .background(Color(0xFF0F261D).copy(alpha = 0.88f), RoundedCornerShape(24.dp))
                             .clickable(enabled = false) {},
                         contentAlignment = Alignment.Center
                     ) {
@@ -444,9 +599,18 @@ fun RestorationJournalScreen(
                                 .fillMaxWidth(0.9f)
                                 .padding(16.dp)
                                 .testTag("restoration_premium_paywall_card"),
-                            shape = RoundedCornerShape(20.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFF1B3B30)),
-                            border = BorderStroke(1.dp, Color(0xFFFFD54F))
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF0C1F18)),
+                            border = BorderStroke(
+                                width = 2.dp,
+                                brush = Brush.linearGradient(
+                                    colors = listOf(
+                                        Color(0xFFFFD54F), // Gold
+                                        Color(0xFFFFB74D), // Amber
+                                        Color(0xFFFFD54F)
+                                    )
+                                )
+                            )
                         ) {
                             Column(
                                 modifier = Modifier.padding(20.dp),
@@ -457,29 +621,49 @@ fun RestorationJournalScreen(
                                     imageVector = Icons.Default.Lock,
                                     contentDescription = "Premium locked",
                                     tint = Color(0xFFFFD54F),
-                                    modifier = Modifier.size(36.dp)
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .scale(paywallPulse)
                                 )
                                 Text(
                                     text = "Restoration Journal (Premium 👑)",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 18.sp,
                                     color = Color(0xFFA8E6CF),
                                     textAlign = TextAlign.Center
                                 )
                                 Text(
                                     text = "You have completed your 3 free trial sessions. Upgrade to FloraFlow PRO to unlock full binaural beat chimes, neural restoration tracking, and unlimited botanical stress metrics!",
                                     fontSize = 12.sp,
-                                    color = Color.White.copy(alpha = 0.7f),
+                                    color = Color.White.copy(alpha = 0.75f),
                                     textAlign = TextAlign.Center,
-                                    lineHeight = 16.sp
+                                    lineHeight = 17.sp
                                 )
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Button(
                                     onClick = { viewModel.upgradeToPremium() },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF81C784)),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                    contentPadding = PaddingValues(),
                                     shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier.fillMaxWidth().height(44.dp)
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp)
+                                        .background(
+                                            Brush.horizontalGradient(
+                                                colors = listOf(
+                                                    Color(0xFFFFD54F),
+                                                    Color(0xFFFFB74D)
+                                                )
+                                            ),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
                                 ) {
-                                    Text("Upgrade to PRO for Unlimited Access", fontWeight = FontWeight.Bold, color = Color(0xFF0F261D), fontSize = 12.sp)
+                                    Text(
+                                        text = "Upgrade to PRO for Unlimited Access",
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Color(0xFF0F261D),
+                                        fontSize = 13.sp
+                                    )
                                 }
                             }
                         }
@@ -491,6 +675,11 @@ fun RestorationJournalScreen(
 
             // Restoration logs list
             if (restorationLogs.isNotEmpty()) {
+                NriHistoryChart(
+                    logs = restorationLogs,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+
                 Text(
                     text = "Restoration Logs",
                     fontSize = 16.sp,
@@ -552,7 +741,14 @@ fun EmptyStateCard() {
 }
 
 @Composable
-fun NriGaugeCard(nriScore: Int) {
+fun NriGaugeCard(
+    nriScore: Int,
+    diversityScore: Int,
+    synergyScore: Int,
+    careMultiplier: Double,
+    penaltyScore: Int,
+    plantCount: Int
+) {
     val ratingText = when {
         nriScore >= 75 -> "Optimal Restoration Potential"
         nriScore >= 50 -> "Moderate Cognitive Recovery"
@@ -568,8 +764,11 @@ fun NriGaugeCard(nriScore: Int) {
     // Animated score rotation/scale
     val animatedNri = animateIntAsState(
         targetValue = nriScore,
-        animationSpec = tween(durationMillis = 1500, easing = FastOutSlowInEasing)
+        animationSpec = tween(durationMillis = 1500, easing = FastOutSlowInEasing),
+        label = "nri"
     )
+
+    var isExpanded by remember { mutableStateOf(false) }
 
     Card(
         shape = RoundedCornerShape(24.dp),
@@ -591,10 +790,23 @@ fun NriGaugeCard(nriScore: Int) {
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Canvas arc gauge
+            // Canvas arc gauge with pulsing glow
+            val infiniteTransition = rememberInfiniteTransition(label = "gauge_glow")
+            val pulseScale by infiniteTransition.animateFloat(
+                initialValue = 0.98f,
+                targetValue = 1.02f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2000, easing = FastOutSlowInEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "pulse"
+            )
+
             Box(
                 contentAlignment = Alignment.Center,
-                modifier = Modifier.size(160.dp)
+                modifier = Modifier
+                    .size(160.dp)
+                    .scale(pulseScale)
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
                     // Track circle
@@ -605,9 +817,15 @@ fun NriGaugeCard(nriScore: Int) {
                         useCenter = false,
                         style = Stroke(width = 14.dp.toPx(), cap = StrokeCap.Round)
                     )
-                    // Progress arc
+                    // Progress arc with gradient
                     drawArc(
-                        color = Color(0xFF81C784),
+                        brush = Brush.sweepGradient(
+                            colors = listOf(
+                                Color(0xFF81C784),
+                                Color(0xFF4DB6AC),
+                                Color(0xFF81C784)
+                            )
+                        ),
                         startAngle = 135f,
                         sweepAngle = (270f * (animatedNri.value / 100f)),
                         useCenter = false,
@@ -646,6 +864,368 @@ fun NriGaugeCard(nriScore: Int) {
                 textAlign = TextAlign.Center,
                 lineHeight = 16.sp
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Divider(color = Color(0xFF81C784).copy(alpha = 0.1f))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Expandable Diagnostics Toggle Button
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { isExpanded = !isExpanded }
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "View Score Diagnostics",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFA8E6CF)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Icon(
+                    imageVector = Icons.Default.ExpandMore,
+                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                    tint = Color(0xFFA8E6CF),
+                    modifier = Modifier
+                        .size(16.dp)
+                        .scale(scaleX = 1f, scaleY = if (isExpanded) -1f else 1f)
+                )
+            }
+
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // 1. Plant Diversity
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("🌿 Unique Species Diversity", fontSize = 11.sp, color = Color.White.copy(alpha = 0.7f))
+                            Text("$diversityScore / 40 pts", fontSize = 11.sp, color = Color(0xFFA8E6CF), fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        LinearProgressIndicator(
+                            progress = diversityScore / 40f,
+                            color = Color(0xFF81C784),
+                            trackColor = Color(0xFF0F261D),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                        )
+                    }
+
+                    // 2. Companion Synergy
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("🤝 Adjacency Synergy Score", fontSize = 11.sp, color = Color.White.copy(alpha = 0.7f))
+                            Text("$synergyScore / 40 pts", fontSize = 11.sp, color = Color(0xFFA8E6CF), fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        LinearProgressIndicator(
+                            progress = synergyScore / 40f,
+                            color = Color(0xFF81C784),
+                            trackColor = Color(0xFF0F261D),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                        )
+                    }
+
+                    // 3. Care & Maturity Multiplier
+                    Column {
+                        val multiplierProgress = ((careMultiplier - 0.8) / 0.4).toFloat().coerceIn(0f, 1f)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("📈 Plant Health & Growth Multiplier", fontSize = 11.sp, color = Color.White.copy(alpha = 0.7f))
+                            Text(String.format(Locale.US, "%.2fx", careMultiplier), fontSize = 11.sp, color = Color(0xFFA8E6CF), fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        LinearProgressIndicator(
+                            progress = multiplierProgress,
+                            color = Color(0xFF4DB6AC),
+                            trackColor = Color(0xFF0F261D),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                        )
+                    }
+
+                    // 4. Overdue Task Penalty
+                    if (penaltyScore > 0) {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("⚠️ Neglected Care Penalty", fontSize = 11.sp, color = Color(0xFFE57373))
+                                Text("-$penaltyScore pts", fontSize = 11.sp, color = Color(0xFFE57373), fontWeight = FontWeight.Bold)
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            LinearProgressIndicator(
+                                progress = (penaltyScore / 50f).coerceIn(0f, 1f),
+                                color = Color(0xFFE57373),
+                                trackColor = Color(0xFF0F261D),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(2.dp))
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AudioWaveformVisualizer(
+    isPlaying: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "waveform")
+    val phase by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2 * Math.PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "phase"
+    )
+
+    // Smooth transition for amplitude when play state changes
+    val amplitudeMultiplier by animateFloatAsState(
+        targetValue = if (isPlaying) 1f else 0.08f,
+        animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+        label = "amplitude"
+    )
+
+    Canvas(modifier = modifier) {
+        val width = size.width
+        val height = size.height
+        val centerY = height / 2
+
+        // Draw 3 overlaying waves with different properties (color, speed, amplitude)
+        val waves = listOf(
+            Triple(Color(0xFF81C784).copy(alpha = 0.4f), 1.5f, 14.dp.toPx()),     // Wave 1
+            Triple(Color(0xFFA8E6CF).copy(alpha = 0.5f), 2.2f, 8.dp.toPx()),      // Wave 2
+            Triple(Color(0xFF4DB6AC).copy(alpha = 0.3f), 0.9f, 18.dp.toPx())      // Wave 3
+        )
+
+        waves.forEachIndexed { index, (color, frequencyFactor, maxAmplitude) ->
+            val path = androidx.compose.ui.graphics.Path()
+            val currentAmplitude = maxAmplitude * amplitudeMultiplier
+            
+            for (x in 0..width.toInt() step 4) {
+                val progress = x.toFloat() / width
+                val edgeTaper = sin(progress * Math.PI.toFloat())
+                val angle = (progress * 2 * Math.PI.toFloat() * frequencyFactor) + phase * (if (index % 2 == 0) 1 else -1)
+                val y = centerY + sin(angle) * currentAmplitude * edgeTaper
+
+                if (x == 0) {
+                    path.moveTo(x.toFloat(), y)
+                } else {
+                    path.lineTo(x.toFloat(), y)
+                }
+            }
+
+            drawPath(
+                path = path,
+                color = color,
+                style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+            )
+        }
+    }
+}
+
+@Composable
+fun NriHistoryChart(
+    logs: List<com.example.data.model.RestorationLog>,
+    modifier: Modifier = Modifier
+) {
+    val recentLogs = remember(logs) {
+        logs.take(5).reversed()
+    }
+
+    if (recentLogs.size < 2) return
+
+    Card(
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E352F).copy(alpha = 0.5f)),
+        border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.1f)),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Stress Relief Progress (NRI History)",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFFA8E6CF),
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+            ) {
+                val width = size.width
+                val height = size.height
+                val paddingLeft = 35.dp.toPx()
+                val paddingRight = 20.dp.toPx()
+                val paddingTop = 15.dp.toPx()
+                val paddingBottom = 20.dp.toPx()
+
+                val chartWidth = width - paddingLeft - paddingRight
+                val chartHeight = height - paddingTop - paddingBottom
+
+                val minScore = 0f
+                val maxScore = 100f
+
+                val points = recentLogs.mapIndexed { index, log ->
+                    val x = paddingLeft + (index.toFloat() / (recentLogs.size - 1)) * chartWidth
+                    val yPercent = (log.nriScore - minScore) / (maxScore - minScore)
+                    val y = height - paddingBottom - yPercent * chartHeight
+                    Offset(x, y)
+                }
+
+                // Draw grid lines
+                val gridLines = 4
+                for (i in 0..gridLines) {
+                    val yPercent = i.toFloat() / gridLines
+                    val y = height - paddingBottom - yPercent * chartHeight
+                    
+                    drawLine(
+                        color = Color(0xFF81C784).copy(alpha = 0.1f),
+                        start = Offset(paddingLeft, y),
+                        end = Offset(width - paddingRight, y),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                    
+                    drawContext.canvas.nativeCanvas.drawText(
+                        "${(minScore + yPercent * (maxScore - minScore)).toInt()}%",
+                        10f,
+                        y + 4.dp.toPx(),
+                        android.graphics.Paint().apply {
+                            color = android.graphics.Color.parseColor("#66A8E6CF")
+                            textSize = 9.sp.toPx()
+                            textAlign = android.graphics.Paint.Align.LEFT
+                        }
+                    )
+                }
+
+                val strokePath = androidx.compose.ui.graphics.Path()
+                val fillPath = androidx.compose.ui.graphics.Path()
+
+                if (points.isNotEmpty()) {
+                    strokePath.moveTo(points[0].x, points[0].y)
+                    fillPath.moveTo(points[0].x, points[0].y)
+
+                    for (i in 0 until points.size - 1) {
+                        val p1 = points[i]
+                        val p2 = points[i + 1]
+                        val controlPointX1 = p1.x + (p2.x - p1.x) / 2
+                        val controlPointY1 = p1.y
+                        val controlPointX2 = p1.x + (p2.x - p1.x) / 2
+                        val controlPointY2 = p2.y
+
+                        strokePath.cubicTo(
+                            controlPointX1, controlPointY1,
+                            controlPointX2, controlPointY2,
+                            p2.x, p2.y
+                        )
+                        fillPath.cubicTo(
+                            controlPointX1, controlPointY1,
+                            controlPointX2, controlPointY2,
+                            p2.x, p2.y
+                        )
+                    }
+
+                    fillPath.lineTo(points.last().x, height - paddingBottom)
+                    fillPath.lineTo(points.first().x, height - paddingBottom)
+                    fillPath.close()
+
+                    drawPath(
+                        path = fillPath,
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF81C784).copy(alpha = 0.25f),
+                                Color(0xFF81C784).copy(alpha = 0.0f)
+                            )
+                        )
+                    )
+
+                    drawPath(
+                        path = strokePath,
+                        color = Color(0xFF81C784),
+                        style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+                    )
+
+                    points.forEachIndexed { index, point ->
+                        val log = recentLogs[index]
+                        
+                        drawCircle(
+                            color = Color(0xFF0F261D),
+                            radius = 6.dp.toPx(),
+                            center = Offset(point.x, point.y)
+                        )
+                        drawCircle(
+                            color = Color(0xFF81C784),
+                            radius = 4.dp.toPx(),
+                            center = Offset(point.x, point.y)
+                        )
+
+                        drawContext.canvas.nativeCanvas.drawText(
+                            "${log.nriScore}%",
+                            point.x,
+                            point.y - 8.dp.toPx(),
+                            android.graphics.Paint().apply {
+                                color = android.graphics.Color.WHITE
+                                textSize = 10.sp.toPx()
+                                typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+                                textAlign = android.graphics.Paint.Align.CENTER
+                            }
+                        )
+
+                        val trackLabel = log.soundscapeTrack.split(" ")[0]
+                        drawContext.canvas.nativeCanvas.drawText(
+                            trackLabel,
+                            point.x,
+                            height - 4.dp.toPx(),
+                            android.graphics.Paint().apply {
+                                color = android.graphics.Color.parseColor("#99FFFFFF")
+                                textSize = 8.sp.toPx()
+                                textAlign = android.graphics.Paint.Align.CENTER
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -710,3 +1290,17 @@ data class SoundscapeTrackInfo(
     val diffFreq: Float,
     val description: String
 )
+
+data class TaskCategory(val name: String, val color: Color)
+
+fun getTaskCategory(task: String): TaskCategory {
+    val t = task.lowercase()
+    return when {
+        t.contains("breathing") -> TaskCategory("BREATHING", Color(0xFF81C784))
+        t.contains("breeze") || t.contains("chimes") -> TaskCategory("AUDITORY", Color(0xFF4DB6AC))
+        t.contains("aroma") || t.contains("smell") -> TaskCategory("OLFACTORY", Color(0xFFFFB74D))
+        t.contains("geometry") || t.contains("veins") || t.contains("visual") -> TaskCategory("VISUAL", Color(0xFF64B5F6))
+        t.contains("rub") || t.contains("fingers") || t.contains("touch") -> TaskCategory("TACTILE", Color(0xFFBA68C8))
+        else -> TaskCategory("SENSORY", Color(0xFFA8E6CF))
+    }
+}
