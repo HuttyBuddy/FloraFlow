@@ -6,7 +6,7 @@ FloraFlow is an advanced mobile application for the Android ecosystem that revol
 
 ## Core Value Proposition
 
-FloraFlow makes professional-grade landscape design accessible to everyday home gardeners. Users don't need design training or horticultural expertise — they point their phone at a space and FloraFlow helps them envision, plan, and bring a garden to life.
+FloraFlow makes professional-grade landscape design accessible to everyday home gardeners. Users don't need design training or horticultural expertise — FloraFlow's AI assistant and eco-acoustic tools guide them through envisioning, planning, and emotionally connecting with a garden they build themselves.
 
 ## Platform
 

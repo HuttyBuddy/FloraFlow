@@ -68,8 +68,8 @@ fun PremiumUpsellScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Unlock the ultimate garden design and diagnostic experience.",
-                style = MaterialTheme.typography.bodyLarge,
+                text = "Point your phone at a space, envision, plan, and bring a garden to life. Unlock premium eco-acoustic soundscapes and biophilic design neuroscience.",
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -90,16 +90,16 @@ fun PremiumUpsellScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 PremiumFeatureRow(
-                    title = "Restoration Journal",
-                    description = "Access procedural binaural soundscapes and calculate your Neural Restoration Index (NRI) to reduce stress."
+                    title = "Eco-Acoustic Restoration Journal",
+                    description = "Immersive eco-acoustic binaural soundscapes & Neural Restoration Journal with dynamic stress metrics."
                 )
                 PremiumFeatureRow(
-                    title = "Unlimited AI Botanist",
-                    description = "Get expert, tailored diagnosis from our Gemini-powered Master Botanist without daily limits."
+                    title = "Gemini AI Advisor",
+                    description = "Biophilic design neuroscience assistant. Point your phone at any space to envision, plan, and get expert botany advice."
                 )
                 PremiumFeatureRow(
-                    title = "Exotic Species DB",
-                    description = "Gain access to 5,000+ premium rare and exotic plant templates for intricate climates."
+                    title = "Unlimited Blueprints & Layouts",
+                    description = "Plan professional-grade garden layouts on the interactive grid blueprint without design training."
                 )
             }
         }
@@ -220,7 +220,7 @@ fun PremiumUpsellScreen(
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("Restoration Journal", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
                     Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("Basic Chimes", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
+                        Text("3 free plays", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
                     }
                     Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
                         Text("Full Binaural", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
@@ -231,7 +231,7 @@ fun PremiumUpsellScreen(
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("AI Master Botanist", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
                     Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("5 / day", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
+                        Text("3 free queries", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
                     }
                     Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
                         Text("Unlimited", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)

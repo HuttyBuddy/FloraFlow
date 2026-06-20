@@ -4,7 +4,9 @@
 
 ---
 
-**FloraFlow** is a therapeutic gardening application designed to bring the calming, restorative benefits of nature into the palm of your hand. Whether you are managing a small indoor balcony or sketching out a large backyard oasis, FloraFlow helps you plan your botanical spaces, catalog your plants, track your mood, and receive personalized advice from an AI gardening counselor.
+**FloraFlow** is an advanced mobile application for the Android ecosystem that revolutionizes residential and urban landscape planning. By merging immersive eco-acoustic binaural soundscapes and a Neural Restoration Journal with an AI assistant grounded in biophilic design neuroscience, FloraFlow transforms garden planning from static blueprints into an immersive, emotionally grounding creative experience.
+
+FloraFlow makes professional-grade landscape design accessible to everyday home gardeners. Users don't need design training or horticultural expertise — they point their phone at a space and FloraFlow helps them envision, plan, and bring a garden to life.
 
 ---
 

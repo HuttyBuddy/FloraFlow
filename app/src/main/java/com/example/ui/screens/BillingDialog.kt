@@ -49,7 +49,7 @@ fun BillingDialog(
             price = "$4.99",
             period = "month",
             trial = "7-Day Free Trial",
-            description = "Get full Restoration Journal access, unlimited AI advice, and standard botany design templates.",
+            description = "Try premium features: full Neural Restoration Journal access, synthesized brainwave soundscapes, and 3 free Gemini AI expert queries.",
             isPopular = false,
             isAnnual = false
         ),
@@ -58,7 +58,7 @@ fun BillingDialog(
             price = "$39.99",
             period = "year",
             trial = "14-Day Free Trial",
-            description = "Best value! Save over 33% on elite catalog design parameters and dynamic 2D growth modeling.",
+            description = "Save over 33%! Unlocks unlimited Gemini-Powered AI advice, full Eco-Acoustic journal chimes, stress metric logs, and advanced layouts.",
             isPopular = true,
             isAnnual = true
         ),
@@ -67,7 +67,7 @@ fun BillingDialog(
             price = "$14.99",
             period = "month",
             trial = "Priority Access",
-            description = "Ultimate package for professional landscaping: continuous high-compute model upgrades, PDF layout exports, and companion team garden synchronizations.",
+            description = "Ultimate professional tier: high-priority Gemini AI responses, multiple plot synchronizations, PDF layout exports, and expert botany diagnoses.",
             isPopular = false,
             isAnnual = false
         )
@@ -349,7 +349,7 @@ fun PlanSelectionStep(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
             text = "Select Your Premium Plan Tier",
@@ -364,7 +364,7 @@ fun PlanSelectionStep(
             val backgroundGradient = if (isSelected) {
                 Brush.linearGradient(
                     listOf(
-                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f),
+                        Color(0xFFE8F5E9).copy(alpha = 0.35f),
                         MaterialTheme.colorScheme.surface
                     )
                 )
@@ -375,88 +375,102 @@ fun PlanSelectionStep(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .border(
-                        width = if (isSelected) 2.5.dp else 1.dp,
-                        brush = if (isSelected) {
-                            Brush.linearGradient(
-                                listOf(MaterialTheme.colorScheme.primary, Color(0xFFFFD54F))
-                            )
-                        } else {
-                            SolidColor(borderColor)
-                        },
-                        shape = RoundedCornerShape(16.dp)
-                    )
-                    .background(backgroundGradient)
-                    .clickable { onIndexChange(index) }
-                    .padding(16.dp)
+                    .padding(top = if (plan.isPopular) 8.dp else 0.dp)
             ) {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = isSelected,
-                            onClick = { onIndexChange(index) }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .border(
+                            width = if (isSelected) 2.dp else 1.dp,
+                            brush = if (isSelected) {
+                                Brush.linearGradient(
+                                    listOf(MaterialTheme.colorScheme.primary, Color(0xFFFFD54F))
+                                )
+                            } else {
+                                SolidColor(borderColor)
+                            },
+                            shape = RoundedCornerShape(16.dp)
                         )
-                        
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                        .background(backgroundGradient)
+                        .clickable { onIndexChange(index) }
+                        .padding(16.dp)
+                ) {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = isSelected,
+                                onClick = { onIndexChange(index) }
+                            )
+                            
+                            Spacer(modifier = Modifier.width(8.dp))
+                            
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
                                     text = plan.name,
                                     fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 15.sp,
+                                    fontSize = 16.sp,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
-                                if (plan.isPopular) {
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .background(Color(0xFFE8F5E9), RoundedCornerShape(6.dp))
-                                            .border(1.dp, Color(0xFF4CAF50), RoundedCornerShape(6.dp))
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                                    ) {
-                                        Text(
-                                            "POPULAR",
-                                            fontSize = 8.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF2E7D32)
-                                        )
-                                    }
-                                }
+                                Text(
+                                    text = plan.trial,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
                             }
-                            Text(
-                                text = plan.trial,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
+
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = plan.price,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = "/ ${plan.period}",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
 
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = plan.price,
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = "/ ${plan.period}",
-                                fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = plan.description,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            lineHeight = 16.sp,
+                            modifier = Modifier.padding(start = 32.dp)
+                        )
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = plan.description,
-                        fontSize = 11.5.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = 15.sp,
-                        modifier = Modifier.padding(start = 48.dp)
-                    )
+                if (plan.isPopular) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(end = 24.dp)
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(Color(0xFF2E7D32), Color(0xFF4CAF50))
+                                ),
+                                shape = RoundedCornerShape(10.dp)
+                            )
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "POPULAR",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
                 }
             }
         }
