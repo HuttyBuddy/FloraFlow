@@ -7,7 +7,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.core.app.ApplicationProvider
 import com.example.ui.screens.*
-import com.example.ui.screens.arlens.ArLensScreen
+import com.example.ui.screens.restoration.RestorationJournalScreen
 import com.example.ui.screens.dashboard.DashboardScreen
 import com.example.ui.theme.MyApplicationTheme
 
@@ -110,47 +110,44 @@ class PrimaryScreensVisualTest {
     }
 
     @Test
-    fun testArLensScreenVisual() {
+    fun testRestorationJournalScreenVisual() {
         viewModel.completeOnboarding()
         viewModel.restorePurchases()
         composeTestRule.setContent {
             MyApplicationTheme {
-                ArLensScreen(viewModel = viewModel)
+                RestorationJournalScreen(viewModel = viewModel)
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/ar_lens_screen.png")
+        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/restoration_journal_screen.png")
     }
 
     @Test
-    fun testArLensScreenWithSelectionVisual() {
+    fun testRestorationJournalScreenWithLogsVisual() {
         viewModel.completeOnboarding()
         viewModel.restorePurchases()
-        viewModel.addArPlant("Bonsai Juniper", "🌳", 10f, 15f)
+        viewModel.logRestorationSession(85, listOf("🫁 Deep breathing", "🌿 Lavender check"), "Theta Meditate")
         composeTestRule.setContent {
             MyApplicationTheme {
-                ArLensScreen(viewModel = viewModel)
+                RestorationJournalScreen(viewModel = viewModel)
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag("ar_placement_1").performClick()
-        composeTestRule.waitForIdle()
-        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/ar_lens_screen_selected.png")
+        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/restoration_journal_screen_with_logs.png")
     }
 
     @Test
     @Config(qualifiers = "w1280dp-h800dp-land-xhdpi")
-    fun testArLensScreenTabletLandscapeVisual() {
+    fun testRestorationJournalScreenTabletLandscapeVisual() {
         viewModel.completeOnboarding()
         viewModel.restorePurchases()
-        viewModel.addArPlant("Japanese Maple", "🍁", 5f, 10f)
         composeTestRule.setContent {
             MyApplicationTheme {
-                ArLensScreen(viewModel = viewModel)
+                RestorationJournalScreen(viewModel = viewModel)
             }
         }
         composeTestRule.waitForIdle()
-        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/ar_lens_screen_tablet_landscape.png")
+        composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/restoration_journal_screen_tablet_landscape.png")
     }
 
     @Test

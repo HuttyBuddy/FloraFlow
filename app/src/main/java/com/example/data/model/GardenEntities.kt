@@ -95,3 +95,14 @@ fun parseGridString(gridString: String): List<GridPlantItem> {
 fun toGridString(items: List<GridPlantItem>): String {
     return items.joinToString("|") { it.toString() }
 }
+
+@Entity(tableName = "restoration_logs")
+data class RestorationLog(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val timestamp: Long = System.currentTimeMillis(),
+    val nriScore: Int,
+    val layoutId: Int?,
+    val completedTasks: String, // comma-separated list of task names
+    val soundscapeTrack: String
+)
+

@@ -47,7 +47,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.screens.*
-import com.example.ui.screens.arlens.ArLensScreen
+import com.example.ui.screens.restoration.RestorationJournalScreen
 import com.example.ui.screens.dashboard.DashboardScreen
 import com.example.ui.screens.feedback.FeedbackDialog
 import androidx.activity.viewModels
@@ -338,8 +338,8 @@ class MainActivity : ComponentActivity() {
                                                 viewModel.upgradeToPremium()
                                             }
                                         },
-                                        icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Garden", modifier = Modifier.size(24.dp)) },
-                                        label = { Text("AR Garden", style = uniformTextStyle, maxLines = 1, softWrap = false) },
+                                        icon = { Icon(Icons.Default.Spa, contentDescription = "Restoration", modifier = Modifier.size(24.dp)) },
+                                        label = { Text("Restoration", style = uniformTextStyle, maxLines = 1, softWrap = false) },
                                         colors = uniformColors,
                                         modifier = Modifier.testTag("nav_tab_ar"),
                                         alwaysShowLabel = true
@@ -374,7 +374,7 @@ class MainActivity : ComponentActivity() {
                                     3 -> AiStudioScreen(
                                         viewModel = viewModel
                                     )
-                                    4 -> ArLensScreen(
+                                    4 -> RestorationJournalScreen(
                                         viewModel = viewModel
                                     )
                                 }

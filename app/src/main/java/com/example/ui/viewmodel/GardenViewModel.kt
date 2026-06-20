@@ -21,6 +21,11 @@ import kotlinx.coroutines.launch
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import android.content.Intent
+import android.content.Context
+import android.os.Build
+import com.example.ui.screens.checkPlantSynergy
+import com.example.ui.screens.checkPlantConflict
 
 enum class ThemeMode {
     SYSTEM, LIGHT, DARK
@@ -1298,6 +1303,157 @@ class GardenViewModel @JvmOverloads constructor(
             .getAppWidgetIds(android.content.ComponentName(context, com.example.ui.screens.dashboard.GardenWidgetProvider::class.java))
         intent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
         context.sendBroadcast(intent)
+    }
+
+    // --- Neural Restoration Index & Soundscapes ---
+    val allRestorationLogs: StateFlow<List<RestorationLog>> = repository.allRestorationLogs
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val neuralRestorationIndex: StateFlow<Int> = combine(activeLayout, activePlants, pendingCareTasks) { layout, plants, tasks ->
+        if (layout == null || plants.isEmpty()) return@combine 0
+        
+        // 1. Unique plant diversity (max 40%)
+        val uniqueTypes = plants.map { it.type.lowercase().trim() }.distinct()
+        val diversityScore = (uniqueTypes.size * 10).coerceAtMost(40)
+        
+        // 2. Synergy Score (max 40%)
+        val gridItems = parseGridString(layout.gridString)
+        var synergyCount = 0
+        for (i in gridItems.indices) {
+            for (j in i + 1 until gridItems.size) {
+                val item1 = gridItems[i]
+                val item2 = gridItems[j]
+                val dx = item1.x - item2.x
+                val dy = item1.y - item2.y
+                val dist = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
+                if (dist <= 1.5 && checkPlantSynergy(item1.plantName, item2.plantName)) {
+                    synergyCount++
+                }
+            }
+        }
+        val synergyScore = (synergyCount * 8).coerceAtMost(40)
+        
+        // 3. Care Factor (Modifier: 0.8 to 1.2)
+        val avgGrowth = plants.map { it.growthProgress }.average()
+        val careFactorBase = 0.8 + (if (plants.isNotEmpty()) (avgGrowth / 100.0) * 0.4 else 0.2)
+        
+        // 4. Care Penalty
+        val layoutPlantIds = plants.map { it.id }.toSet()
+        val overdueTasksCount = tasks.filter { it.plantId in layoutPlantIds && it.dueDate < System.currentTimeMillis() && it.completedDate == null }.size
+        val penalty = overdueTasksCount * 5
+        
+        val baseScore = diversityScore + synergyScore
+        val finalScore = ((baseScore * careFactorBase) - penalty).toInt().coerceIn(10, 100)
+        
+        finalScore
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    fun logRestorationSession(nriScore: Int, completedTasks: List<String>, trackName: String) {
+        viewModelScope.launch(ioDispatcher) {
+            val log = RestorationLog(
+                nriScore = nriScore,
+                layoutId = activeLayout.value?.id,
+                completedTasks = completedTasks.joinToString(","),
+                soundscapeTrack = trackName
+            )
+            repository.insertRestorationLog(log)
+        }
+    }
+
+    // Soundscape Background Service Integration
+    private var soundscapeService: com.example.ui.screens.restoration.SoundscapeService? = null
+    
+    private val _isServiceBound = MutableStateFlow(false)
+    val isServiceBound: StateFlow<Boolean> = _isServiceBound.asStateFlow()
+    
+    private val _isSoundscapePlaying = MutableStateFlow(false)
+    val isSoundscapePlaying: StateFlow<Boolean> = _isSoundscapePlaying.asStateFlow()
+    
+    private val _currentSoundscapeTrack = MutableStateFlow("Theta Meditate")
+    val currentSoundscapeTrack: StateFlow<String> = _currentSoundscapeTrack.asStateFlow()
+    
+    private val _ambientVolume = MutableStateFlow(0.5f)
+    val ambientVolume: StateFlow<Float> = _ambientVolume.asStateFlow()
+    
+    private val _binauralVolume = MutableStateFlow(0.3f)
+    val binauralVolume: StateFlow<Float> = _binauralVolume.asStateFlow()
+    
+    private val serviceConnection = object : android.content.ServiceConnection {
+        override fun onServiceConnected(name: android.content.ComponentName?, service: android.os.IBinder?) {
+            val binder = service as? com.example.ui.screens.restoration.SoundscapeService.SoundscapeBinder
+            soundscapeService = binder?.getService()
+            _isServiceBound.value = true
+            
+            soundscapeService?.let {
+                _isSoundscapePlaying.value = it.isPlaying()
+                _currentSoundscapeTrack.value = it.getCurrentTrackName()
+                _ambientVolume.value = it.getAmbientVolume()
+                _binauralVolume.value = it.getBinauralVolume()
+            }
+        }
+        
+        override fun onServiceDisconnected(name: android.content.ComponentName?) {
+            soundscapeService = null
+            _isServiceBound.value = false
+        }
+    }
+    
+    fun bindSoundscapeService() {
+        val context = getApplication<Application>().applicationContext
+        val intent = Intent(context, com.example.ui.screens.restoration.SoundscapeService::class.java)
+        context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+    }
+    
+    fun unbindSoundscapeService() {
+        if (_isServiceBound.value) {
+            val context = getApplication<Application>().applicationContext
+            context.unbindService(serviceConnection)
+            _isServiceBound.value = false
+            soundscapeService = null
+        }
+    }
+    
+    fun toggleSoundscapePlay() {
+        val service = soundscapeService ?: return
+        val context = getApplication<Application>().applicationContext
+        if (service.isPlaying()) {
+            service.pauseSoundscape()
+            _isSoundscapePlaying.value = false
+        } else {
+            val intent = Intent(context, com.example.ui.screens.restoration.SoundscapeService::class.java).apply {
+                action = "ACTION_PLAY"
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+            bindSoundscapeService()
+            _isSoundscapePlaying.value = true
+        }
+    }
+    
+    fun changeSoundscapeTrack(name: String, baseFreq: Float, diffFreq: Float) {
+        val service = soundscapeService ?: return
+        service.setTrack(name, baseFreq, diffFreq)
+        _currentSoundscapeTrack.value = name
+    }
+    
+    fun updateAmbientVolume(vol: Float) {
+        val service = soundscapeService ?: return
+        service.setAmbientVolume(vol)
+        _ambientVolume.value = vol
+    }
+    
+    fun updateBinauralVolume(vol: Float) {
+        val service = soundscapeService ?: return
+        service.setBinauralVolume(vol)
+        _binauralVolume.value = vol
+    }
+
+    override fun onCleared() {
+        unbindSoundscapeService()
+        super.onCleared()
     }
 }
 

@@ -5,6 +5,7 @@ import com.example.data.model.GardenLayout
 import com.example.data.model.MoodLog
 import com.example.data.model.Plant
 import com.example.data.model.CareTask
+import com.example.data.model.RestorationLog
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -109,4 +110,11 @@ interface GardenDao {
 
     @Query("DELETE FROM community_comments WHERE postId = :postId")
     suspend fun deleteCommentsByPostId(postId: Int)
+
+    // --- Restoration Logs ---
+    @Query("SELECT * FROM restoration_logs ORDER BY timestamp DESC")
+    fun getAllRestorationLogs(): Flow<List<RestorationLog>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertRestorationLog(log: RestorationLog): Long
 }
