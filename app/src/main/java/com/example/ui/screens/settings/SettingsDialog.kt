@@ -177,6 +177,32 @@ fun SettingsDialog(
                     )
 
                     SettingsActionRow(
+                        title = "Retake Biophilic Assessment",
+                        subtitle = "Recalculate your Neural Load score & tips",
+                        icon = Icons.Default.Eco,
+                        iconTint = MaterialTheme.colorScheme.primary,
+                        onClick = {
+                            onDismiss()
+                            viewModel.resetAssessment()
+                        }
+                    )
+
+                    SettingsActionRow(
+                        title = "Invite a Garden Buddy",
+                        subtitle = "Share FloraFlow and unlock 5 exotic species",
+                        icon = Icons.Default.Share,
+                        iconTint = MaterialTheme.colorScheme.tertiary,
+                        onClick = {
+                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_SUBJECT, "Plant a Seed on FloraFlow")
+                                putExtra(Intent.EXTRA_TEXT, "Your friend planted a seed for you on FloraFlow! 🌸 Use this link to download the app and unlock a gift of 5 exotic species to cultivate calm: https://floraflow.app/referral?by=buddy")
+                            }
+                            context.startActivity(Intent.createChooser(shareIntent, "Invite a Garden Buddy"))
+                        }
+                    )
+
+                    SettingsActionRow(
                         title = "Help & FAQs",
                         subtitle = "Browse tutorials and troubleshooting guides",
                         icon = Icons.Default.Help,

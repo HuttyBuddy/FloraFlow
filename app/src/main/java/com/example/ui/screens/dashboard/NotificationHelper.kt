@@ -18,9 +18,16 @@ object NotificationHelper {
 
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val soundUri = android.net.Uri.parse("android.resource://${context.packageName}/raw/wind_chime")
+            val audioAttributes = android.media.AudioAttributes.Builder()
+                .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
+                .build()
+
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance).apply {
                 description = CHANNEL_DESC
+                setSound(soundUri, audioAttributes)
             }
             val notificationManager: NotificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -28,7 +35,7 @@ object NotificationHelper {
         }
     }
 
-    fun sendCareReminder(context: Context, title: String, message: String) {
+    fun sendCareReminder(context: Context, title: String, message: String, priority: Int = NotificationCompat.PRIORITY_DEFAULT) {
         createNotificationChannel(context)
 
         val intent = Intent(context, MainActivity::class.java).apply {
@@ -41,11 +48,14 @@ object NotificationHelper {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
+        val soundUri = android.net.Uri.parse("android.resource://${context.packageName}/raw/wind_chime")
+
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_menu_my_calendar) // Standard fallback calendar icon
+            .setSmallIcon(com.example.R.drawable.ic_logo_heart)
             .setContentTitle(title)
             .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(priority)
+            .setSound(soundUri)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 

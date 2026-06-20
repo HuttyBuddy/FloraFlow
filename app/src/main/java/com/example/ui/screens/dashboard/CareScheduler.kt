@@ -96,17 +96,38 @@ class CareScheduler(
             Log.d("CareScheduler", "Generated ${newTasks.size} new care tasks.")
         }
 
-        // Check if any task is due today, and trigger a local notification
         val pendingTasks = gardenRepository.pendingCareTasks.first()
         val now = System.currentTimeMillis()
         val dueTodayCount = pendingTasks.count { it.dueDate <= now }
 
-        if (dueTodayCount > 0) {
-            val title = "🌸 FloraFlow Garden Alert"
-            val message = if (dueTodayCount == 1) {
-                "You have 1 plant care task waiting in your garden today."
-            } else {
-                "You have $dueTodayCount plant care tasks waiting in your garden today."
+        // Check for Plant Rescue Alerts (WATER task overdue by 3+ days)
+        val overdueWaterTasks = pendingTasks.filter {
+            it.taskType == "WATER" && (now - it.dueDate) >= TimeUnit.DAYS.toMillis(3)
+        }
+
+        if (overdueWaterTasks.isNotEmpty()) {
+            val task = overdueWaterTasks.minByOrNull { it.dueDate }!!
+            val overdueDays = TimeUnit.MILLISECONDS.toDays(now - task.dueDate)
+            val totalDays = task.intervalDays + overdueDays
+            val title = "🚨 Plant Rescue Alert!"
+            val message = "Your ${task.plantName} hasn't been watered in $totalDays days — it might be getting thirsty."
+            NotificationHelper.sendCareReminder(context, title, message, androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+        } else if (dueTodayCount > 0) {
+            // Weather-aware notification copies
+            val firstTask = pendingTasks.firstOrNull { it.dueDate <= now }
+            val plantName = firstTask?.plantName ?: "plants"
+            val title = "🌸 FloraFlow Garden Care"
+            
+            val message = when {
+                isRaining -> {
+                    "Rain tonight in ${weather.cityName} — your $plantName can skip watering today."
+                }
+                isHeatwave -> {
+                    "Heatwave alert! Give your $plantName extra shade and a deep soak."
+                }
+                else -> {
+                    "Clear skies in ${weather.cityName} — your $plantName is ready for care!"
+                }
             }
             NotificationHelper.sendCareReminder(context, title, message)
         }
@@ -124,6 +145,17 @@ class CareScheduler(
                 )
             }
         }
+
+        // Trigger home screen widget updates
+        try {
+            val widgetIntent = android.content.Intent(context, GardenWidgetProvider::class.java).apply {
+                action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+            }
+            val ids = android.appwidget.AppWidgetManager.getInstance(context)
+                .getAppWidgetIds(android.content.ComponentName(context, GardenWidgetProvider::class.java))
+            widgetIntent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+            context.sendBroadcast(widgetIntent)
+        } catch (_: Exception) {}
     }
 
     private fun getWateringIntervalDays(wateringNeeds: String): Int {

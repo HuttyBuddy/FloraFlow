@@ -12,7 +12,8 @@ data class CommunityPost(
     val author: String,
     val timestamp: Long = System.currentTimeMillis(),
     val likes: Int = 0,
-    val isLiked: Boolean = false
+    val isLiked: Boolean = false,
+    val gridString: String = ""
 )
 
 @Entity(tableName = "community_comments")

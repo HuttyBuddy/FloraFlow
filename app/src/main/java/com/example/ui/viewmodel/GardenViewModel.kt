@@ -108,10 +108,18 @@ class GardenViewModel @JvmOverloads constructor(
     private val _isAssessmentSkipped = MutableStateFlow(false)
     val isAssessmentSkipped: StateFlow<Boolean> = _isAssessmentSkipped.asStateFlow()
 
+    private val _firstBloomTrigger = MutableStateFlow<String?>(null)
+    val firstBloomTrigger: StateFlow<String?> = _firstBloomTrigger.asStateFlow()
+    fun clearFirstBloomTrigger() { _firstBloomTrigger.value = null }
+
     fun saveAssessmentResult(score: Int, categories: List<String>) {
+        val oldScore = sharedPrefs.getInt("assessment_score", -1)
         _assessmentScore.value = score
         _lowestCategories.value = categories
         sharedPrefs.edit {
+            if (oldScore != -1) {
+                putInt("prev_assessment_score", oldScore)
+            }
             putInt("assessment_score", score)
             putString("assessment_categories", categories.joinToString(","))
         }
@@ -124,11 +132,15 @@ class GardenViewModel @JvmOverloads constructor(
     }
 
     fun resetAssessment() {
+        val currentScore = sharedPrefs.getInt("assessment_score", -1)
         _isAssessmentSkipped.value = false
         _assessmentScore.value = null
         _lowestCategories.value = emptyList()
         _isOnboardingCompleted.value = false
         sharedPrefs.edit {
+            if (currentScore != -1) {
+                putInt("prev_assessment_score", currentScore)
+            }
             putBoolean("assessment_skipped", false)
             remove("assessment_score")
             remove("assessment_categories")
@@ -639,6 +651,8 @@ class GardenViewModel @JvmOverloads constructor(
             val newGridString = toGridString(items)
             repository.updateLayoutGrid(current.id, newGridString)
             _activeLayout.value = current.copy(gridString = newGridString)
+            saveGridSnapshot(current.id, newGridString)
+            refreshWidget()
         }
     }
 
@@ -647,6 +661,8 @@ class GardenViewModel @JvmOverloads constructor(
         viewModelScope.launch(Dispatchers.IO) {
             repository.updateLayoutGrid(current.id, "")
             _activeLayout.value = current.copy(gridString = "")
+            saveGridSnapshot(current.id, "")
+            refreshWidget()
         }
     }
 
@@ -701,6 +717,8 @@ class GardenViewModel @JvmOverloads constructor(
             val newGridString = toGridString(items)
             repository.updateLayoutGrid(current.id, newGridString)
             _activeLayout.value = current.copy(gridString = newGridString)
+            saveGridSnapshot(current.id, newGridString)
+            refreshWidget()
         }
     }
 
@@ -732,7 +750,11 @@ class GardenViewModel @JvmOverloads constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val plants = _activePlants.value
             val p = plants.firstOrNull { it.id == plantId } ?: return@launch
-            repository.updatePlant(p.copy(growthProgress = progress.coerceIn(0, 100)))
+            val newProgress = progress.coerceIn(0, 100)
+            repository.updatePlant(p.copy(growthProgress = newProgress))
+            if (newProgress == 100 && p.growthProgress < 100) {
+                _firstBloomTrigger.value = p.name
+            }
         }
     }
 
@@ -761,12 +783,14 @@ class GardenViewModel @JvmOverloads constructor(
             )
             repository.insertMoodLog(newLog)
             recordPositiveInteraction()
+            refreshWidget()
         }
     }
 
     fun deleteMoodLog(id: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteMoodLogById(id)
+            refreshWidget()
         }
     }
 
@@ -1084,15 +1108,74 @@ class GardenViewModel @JvmOverloads constructor(
     }
 
     // --- Community Actions ---
-    fun createPost(title: String, content: String, category: String, author: String) {
+    fun createPost(title: String, content: String, category: String, author: String, gridString: String = "") {
         viewModelScope.launch(ioDispatcher) {
             val post = CommunityPost(
                 title = title,
                 content = content,
                 category = category,
-                author = author.ifBlank { "Anonymous Gardener" }
+                author = author.ifBlank { "Anonymous Gardener" },
+                gridString = gridString
             )
             repository.insertPost(post)
+        }
+    }
+
+    fun importLayoutGrid(importedGridString: String) {
+        val current = _activeLayout.value ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateLayoutGrid(current.id, importedGridString)
+            _activeLayout.value = current.copy(gridString = importedGridString)
+            saveGridSnapshot(current.id, importedGridString)
+            
+            val items = parseGridString(importedGridString)
+            val uniquePlantNames = items.map { it.plantName }.distinct()
+            
+            val existingActivePlants = repository.getPlantsForLayout(current.id).first()
+            val existingNames = existingActivePlants.map { it.name }.toSet()
+            
+            for (plantName in uniquePlantNames) {
+                if (plantName.isNotBlank() && plantName != "Empty" && !existingNames.contains(plantName)) {
+                    val tpl = ClimatePlants.ALL_TEMPLATES.find { it.name.equals(plantName, ignoreCase = true) }
+                    val newPlant = if (tpl != null) {
+                        Plant(
+                            layoutId = current.id,
+                            name = tpl.name,
+                            type = tpl.type,
+                            careSpring = tpl.careSpring,
+                            careSummer = tpl.careSummer,
+                            careAutumn = tpl.careAutumn,
+                            careWinter = tpl.careWinter,
+                            soilType = tpl.soilType,
+                            sunlight = tpl.sunlight,
+                            growthProgress = 20,
+                            matureSize = tpl.matureSize,
+                            wateringNeeds = tpl.wateringNeeds,
+                            bloomTime = tpl.bloomTime,
+                            pestsDiseases = tpl.pestsDiseases
+                        )
+                    } else {
+                        Plant(
+                            layoutId = current.id,
+                            name = plantName,
+                            type = "Flower",
+                            careSpring = "Water once a week, expose to partial shade.",
+                            careSummer = "Water twice a week, expose to full sun.",
+                            careAutumn = "Water once a week, shield from frost.",
+                            careWinter = "Water once a month, keep warm indoors.",
+                            soilType = "Loamy",
+                            sunlight = "Full Sun",
+                            growthProgress = 20,
+                            matureSize = "Medium",
+                            wateringNeeds = "Moderate",
+                            bloomTime = "Summer",
+                            pestsDiseases = "Aphids"
+                        )
+                    }
+                    repository.insertPlant(newPlant)
+                }
+            }
+            refreshWidget()
         }
     }
 
@@ -1138,6 +1221,7 @@ class GardenViewModel @JvmOverloads constructor(
     fun completeCareTask(task: CareTask) {
         viewModelScope.launch(ioDispatcher) {
             careScheduler.completeTask(task)
+            refreshWidget()
         }
     }
 
@@ -1160,6 +1244,43 @@ class GardenViewModel @JvmOverloads constructor(
             weatherRepository.simulateWeather(condition, temp, humidity)
             careScheduler.syncCareSchedules()
         }
+    }
+
+    fun saveGridSnapshot(layoutId: Int, gridString: String) {
+        val key = "grid_snapshots_$layoutId"
+        val existing = sharedPrefs.getString(key, "") ?: ""
+        val parts = if (existing.isEmpty()) emptyList() else existing.split(";;;")
+        val lastGridString = parts.lastOrNull()?.substringAfter(":::") ?: ""
+        if (gridString != lastGridString) {
+            val newPart = "${System.currentTimeMillis()}:::$gridString"
+            val updated = if (existing.isEmpty()) newPart else "$existing;;;$newPart"
+            sharedPrefs.edit { putString(key, updated) }
+        }
+    }
+
+    fun getGridSnapshots(layoutId: Int): List<Pair<Long, String>> {
+        val key = "grid_snapshots_$layoutId"
+        val existing = sharedPrefs.getString(key, "") ?: ""
+        if (existing.isBlank()) return emptyList()
+        return existing.split(";;;").mapNotNull { part ->
+            val sub = part.split(":::")
+            if (sub.size >= 2) {
+                val ts = sub[0].toLongOrNull() ?: 0L
+                val gs = sub[1]
+                Pair(ts, gs)
+            } else null
+        }
+    }
+
+    fun refreshWidget() {
+        val context = getApplication<Application>()
+        val intent = android.content.Intent(context, com.example.ui.screens.dashboard.GardenWidgetProvider::class.java).apply {
+            action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        }
+        val ids = android.appwidget.AppWidgetManager.getInstance(context)
+            .getAppWidgetIds(android.content.ComponentName(context, com.example.ui.screens.dashboard.GardenWidgetProvider::class.java))
+        intent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+        context.sendBroadcast(intent)
     }
 }
 

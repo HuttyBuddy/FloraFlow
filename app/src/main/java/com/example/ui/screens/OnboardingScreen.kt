@@ -593,6 +593,31 @@ fun ResultScreen(
                 color = Color.White
             )
         )
+
+        val context = androidx.compose.ui.platform.LocalContext.current
+        val sharedPrefs = remember { context.getSharedPreferences("floraflow_prefs", android.content.Context.MODE_PRIVATE) }
+        val prevScore = remember { sharedPrefs.getInt("prev_assessment_score", -1) }
+
+        if (prevScore != -1) {
+            val delta = score - prevScore
+            val textDelta = if (delta > 0) {
+                "Your Neural Load improved from $prevScore/20 to $score/20 (+$delta)!"
+            } else if (delta < 0) {
+                "Your Neural Load went from $prevScore/20 to $score/20 ($delta)."
+            } else {
+                "Your Neural Load remained at $score/20."
+            }
+            Text(
+                text = textDelta,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White.copy(alpha = 0.95f)
+                ),
+                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
+                textAlign = TextAlign.Center
+            )
+        }
         
         Spacer(modifier = Modifier.height(16.dp))
         

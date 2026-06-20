@@ -121,15 +121,22 @@ fun CommunityDialog(
                             selectedPost?.let { currentPost ->
                                 // Keep reference to updated post from DB stream
                                 val updatedPost = posts.find { it.id == currentPost.id } ?: currentPost
+                                val activeLayout by viewModel.activeLayout.collectAsState()
+                                val context = androidx.compose.ui.platform.LocalContext.current
                                 CommunityDetailView(
                                     post = updatedPost,
                                     commentsFlow = viewModel.getCommentsForPost(updatedPost.id),
+                                    hasActiveLayout = activeLayout != null,
                                     onBackClick = {
                                         selectedPost = null
                                         viewState = CommunityViewState.FEED
                                     },
                                     onLikePost = {
                                         viewModel.toggleLikePost(updatedPost.id, updatedPost.likes, updatedPost.isLiked)
+                                    },
+                                    onImportLayout = {
+                                        viewModel.importLayoutGrid(updatedPost.gridString)
+                                        android.widget.Toast.makeText(context, "Garden blueprint sowed! 🌿", android.widget.Toast.LENGTH_LONG).show()
                                     },
                                     onAddComment = { author, content ->
                                         viewModel.addComment(updatedPost.id, author, content)
@@ -141,12 +148,15 @@ fun CommunityDialog(
                             }
                         }
                         CommunityViewState.CREATE -> {
+                            val activeLayout by viewModel.activeLayout.collectAsState()
                             CommunityCreatePostView(
+                                activeLayoutName = activeLayout?.name,
                                 onBackClick = {
                                     viewState = CommunityViewState.FEED
                                 },
-                                onPublishClick = { title, content, category, author ->
-                                    viewModel.createPost(title, content, category, author)
+                                onPublishClick = { title, content, category, author, attachBlueprint ->
+                                    val gridStr = if (attachBlueprint) activeLayout?.gridString ?: "" else ""
+                                    viewModel.createPost(title, content, category, author, gridStr)
                                     viewState = CommunityViewState.FEED
                                 }
                             )
@@ -373,6 +383,32 @@ fun CommunityPostCard(
                 // Category Tag
                 CommunityCategoryBadge(category = post.category)
                 Spacer(modifier = Modifier.width(8.dp))
+                if (post.gridString.isNotEmpty()) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.testTag("post_blueprint_badge_${post.id}")
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Eco,
+                                contentDescription = "Blueprint Attached",
+                                modifier = Modifier.size(10.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(
+                                text = "Blueprint",
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
                 // Author info
                 Text(
                     text = "by ${post.author}",
@@ -486,8 +522,10 @@ fun CommunityPostCard(
 fun CommunityDetailView(
     post: CommunityPost,
     commentsFlow: Flow<List<CommunityComment>>,
+    hasActiveLayout: Boolean,
     onBackClick: () -> Unit,
     onLikePost: () -> Unit,
+    onImportLayout: () -> Unit,
     onAddComment: (String, String) -> Unit,
     onLikeComment: (CommunityComment) -> Unit
 ) {
@@ -565,6 +603,25 @@ fun CommunityDetailView(
                             style = MaterialTheme.typography.bodyLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+
+                        if (post.gridString.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(
+                                onClick = onImportLayout,
+                                enabled = hasActiveLayout,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("import_blueprint_button"),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Default.Eco, contentDescription = "Import blueprint")
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = if (hasActiveLayout) "Import & Plant This Layout" else "Create/Select a Garden first to Import",
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
 
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -784,13 +841,15 @@ fun CommentItemRow(
 
 @Composable
 fun CommunityCreatePostView(
+    activeLayoutName: String?,
     onBackClick: () -> Unit,
-    onPublishClick: (String, String, String, String) -> Unit
+    onPublishClick: (String, String, String, String, Boolean) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
     var author by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("Tips") }
+    var attachBlueprint by remember { mutableStateOf(false) }
 
     val isFormValid = title.isNotBlank() && content.isNotBlank()
     val categories = listOf("Tips", "Experiences", "Questions", "General")
@@ -944,12 +1003,34 @@ fun CommunityCreatePostView(
                 }
             }
 
+            if (activeLayoutName != null) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = attachBlueprint,
+                            onCheckedChange = { attachBlueprint = it },
+                            modifier = Modifier.testTag("attach_blueprint_checkbox")
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Attach my active layout: $activeLayoutName",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+
             // Publish Button
             item {
                 Button(
                     onClick = {
                         if (isFormValid) {
-                            onPublishClick(title.trim(), content.trim(), category, author.trim())
+                            onPublishClick(title.trim(), content.trim(), category, author.trim(), attachBlueprint)
                         }
                     },
                     modifier = Modifier

@@ -14,7 +14,8 @@ data class PlantTemplate(
     val wateringNeeds: String,
     val bloomTime: String,
     val pestsDiseases: String,
-    val compatibleClimate: String
+    val compatibleClimate: String,
+    val funFacts: List<String> = emptyList()
 )
 
 object ClimatePlants {
@@ -38,7 +39,12 @@ object ClimatePlants {
             wateringNeeds = "Low",
             bloomTime = "Late Spring (May - June)",
             pestsDiseases = "Bacterial necrosis, Mealybugs",
-            compatibleClimate = "Arid (Desert)"
+            compatibleClimate = "Arid (Desert)",
+            funFacts = listOf(
+                "Saguaro cacti can take up to 75 years to grow their first side arm.",
+                "They store huge amounts of water; a fully hydrated saguaro can weigh over 3,000 pounds.",
+                "Saguaro blossoms are Arizona's state flower and bloom only at night."
+            )
         ),
         PlantTemplate(
             name = "Aloe Vera",
@@ -54,7 +60,12 @@ object ClimatePlants {
             wateringNeeds = "Low",
             bloomTime = "Mid Summer",
             pestsDiseases = "Snails, Root rot from overwatering",
-            compatibleClimate = "Arid (Desert)"
+            compatibleClimate = "Arid (Desert)",
+            funFacts = listOf(
+                "Aloe vera has been used medicinally for over 6,000 years, beginning in ancient Egypt.",
+                "It consists of 99% water, which allows it to survive in extremely arid climates.",
+                "In ancient times, Egyptians called aloe the 'plant of immortality' and gave it as funeral gifts."
+            )
         ),
         PlantTemplate(
             name = "Desert Marigold",
@@ -70,7 +81,12 @@ object ClimatePlants {
             wateringNeeds = "Low to Moderate",
             bloomTime = "Spring to Autumn",
             pestsDiseases = "Spider mites, Powdery mildew",
-            compatibleClimate = "Arid (Desert)"
+            compatibleClimate = "Arid (Desert)",
+            funFacts = listOf(
+                "Its leaves are covered in dense, woolly hairs that reflect sunlight and reduce water loss.",
+                "Wild desert marigolds bloom so densely they can turn entire hillsides solid yellow.",
+                "Indigenous tribes used the plant's sticky sap as an organic adhesive."
+            )
         ),
         PlantTemplate(
             name = "Rosemary",
@@ -86,7 +102,12 @@ object ClimatePlants {
             wateringNeeds = "Low to Moderate",
             bloomTime = "Spring to Summer",
             pestsDiseases = "Spittlebugs, Root rot in soggy soil",
-            compatibleClimate = "Arid (Desert)"
+            compatibleClimate = "Arid (Desert)",
+            funFacts = listOf(
+                "Rosemary is historically associated with memory; ancient scholars wore it in their hair during exams.",
+                "It belongs to the mint family and is highly resistant to common garden pests.",
+                "The name rosemary comes from Latin 'ros marinus,' meaning 'dew of the sea.'"
+            )
         ),
         PlantTemplate(
             name = "Prickly Pear Cactus",
@@ -102,7 +123,12 @@ object ClimatePlants {
             wateringNeeds = "Very Low",
             bloomTime = "Late Spring",
             pestsDiseases = "Cochineal scale, Broad mites",
-            compatibleClimate = "Arid (Desert)"
+            compatibleClimate = "Arid (Desert)",
+            funFacts = listOf(
+                "Both the flat pads (nopales) and the bright red fruits (tunas) are fully edible and delicious.",
+                "Prickly pear sap can be used to purify dirty drinking water organically.",
+                "The plant was imported to Australia in the 1800s and took over millions of acres of farmland."
+            )
         ),
 
         // Tropical Climate Plants
@@ -120,7 +146,12 @@ object ClimatePlants {
             wateringNeeds = "Moderate to High",
             bloomTime = "Winter to Spring",
             pestsDiseases = "Scale, Mealybugs",
-            compatibleClimate = "Tropical (Humid)"
+            compatibleClimate = "Tropical (Humid)",
+            funFacts = listOf(
+                "The unique flower shape resembles a colorful bird in flight, designed to attract pollinating birds.",
+                "In Hawaii, the flower is considered a symbol of magnificence and royalty.",
+                "It is closely related to the banana plant and shares similar large, glossy leaves."
+            )
         ),
         PlantTemplate(
             name = "Orchid",
@@ -136,7 +167,12 @@ object ClimatePlants {
             wateringNeeds = "Moderate",
             bloomTime = "Winter to Spring",
             pestsDiseases = "Aphids, Crown rot",
-            compatibleClimate = "Tropical (Humid)"
+            compatibleClimate = "Tropical (Humid)",
+            funFacts = listOf(
+                "Orchids represent the largest family of flowering plants, with over 25,000 species.",
+                "Vanilla flavoring is derived directly from the seed pods of the Vanilla Orchid.",
+                "Orchid seeds are microscopic, resembling fine dust, with a single pod containing millions."
+            )
         ),
         PlantTemplate(
             name = "Monstera Deliciosa",
@@ -152,7 +188,12 @@ object ClimatePlants {
             wateringNeeds = "Moderate",
             bloomTime = "Summer (Rare indoors)",
             pestsDiseases = "Fungus gnats, Spider mites",
-            compatibleClimate = "Tropical (Humid)"
+            compatibleClimate = "Tropical (Humid)",
+            funFacts = listOf(
+                "The fenestrations (holes) in its leaves allow jungle winds and light to pass through without tearing them.",
+                "The name Deliciosa refers to the delicious edible fruit it produces in the wild.",
+                "In Chinese culture, the Monstera is a symbol of long life and honoring elders."
+            )
         ),
         PlantTemplate(
             name = "Golden Pothos",
@@ -168,7 +209,12 @@ object ClimatePlants {
             wateringNeeds = "Moderate",
             bloomTime = "Non-flowering",
             pestsDiseases = "Mealybugs, Root rot in standing water",
-            compatibleClimate = "Tropical (Humid)"
+            compatibleClimate = "Tropical (Humid)",
+            funFacts = listOf(
+                "Nicknamed 'Devil's Ivy' because it is nearly impossible to kill and stays green even in the dark.",
+                "It is a highly efficient air purifier, removing airborne toxins like formaldehyde and carbon monoxide.",
+                "Pothos vines can grow up to 40 feet long in tropical forests."
+            )
         ),
         PlantTemplate(
             name = "Red Ginger",
@@ -184,7 +230,12 @@ object ClimatePlants {
             wateringNeeds = "High",
             bloomTime = "Year-round (Warm climates)",
             pestsDiseases = "Nematodes, Leaf spot",
-            compatibleClimate = "Tropical (Humid)"
+            compatibleClimate = "Tropical (Humid)",
+            funFacts = listOf(
+                "The showy red 'flower' is actually a series of colored bracts; the true flower is small and white inside.",
+                "It is the national flower of Samoa, known locally as 'teuila.'",
+                "It can spread rapidly in humid rainforests via underground rhizomes."
+            )
         ),
 
         // Mediterranean Climate Plants
@@ -202,7 +253,12 @@ object ClimatePlants {
             wateringNeeds = "Low",
             bloomTime = "Non-flowering",
             pestsDiseases = "Spider mites, Cypress aphids",
-            compatibleClimate = "Mediterranean"
+            compatibleClimate = "Mediterranean",
+            funFacts = listOf(
+                "Cypress wood is exceptionally durable; the doors of St. Peter's Basilica in Rome lasted over 1,000 years.",
+                "Ancient Romans planted cypress trees to protect homes from bad energy and welcome friends.",
+                "Cypress trees can live for thousands of years; the oldest known is over 4,000 years old."
+            )
         ),
         PlantTemplate(
             name = "Lavender",
@@ -218,7 +274,12 @@ object ClimatePlants {
             wateringNeeds = "Low",
             bloomTime = "Summer (June - August)",
             pestsDiseases = "Root rot, Spittlebugs",
-            compatibleClimate = "Mediterranean"
+            compatibleClimate = "Mediterranean",
+            funFacts = listOf(
+                "Lavender has been used for over 2,500 years as a natural remedy for anxiety and sleep disorders.",
+                "The name comes from Latin 'lavare,' which means 'to wash,' as Romans used it in their baths.",
+                "Lavender flowers are fully edible and commonly used in teas, desserts, and spices."
+            )
         ),
         PlantTemplate(
             name = "Bougainvillea",
@@ -234,7 +295,12 @@ object ClimatePlants {
             wateringNeeds = "Moderate",
             bloomTime = "Year-round in warm cycles",
             pestsDiseases = "Caterpillars, Leaf miners",
-            compatibleClimate = "Mediterranean"
+            compatibleClimate = "Mediterranean",
+            funFacts = listOf(
+                "The vibrant magenta petals are actually leaf-like bracts; the true flowers are tiny white tubes inside.",
+                "Discovered in 1768 in Brazil by French botanist Philibert Commerson, named after explorer Louis de Bougainville.",
+                "It is highly salt-tolerant, making it a favorite decorative plant for coastal homes."
+            )
         ),
         PlantTemplate(
             name = "Jacaranda Tree",
@@ -250,7 +316,12 @@ object ClimatePlants {
             wateringNeeds = "Moderate",
             bloomTime = "Late Spring (May - June)",
             pestsDiseases = "Aphids, Mushroom root rot",
-            compatibleClimate = "Mediterranean"
+            compatibleClimate = "Mediterranean",
+            funFacts = listOf(
+                "Jacaranda trees turn entire cities purple when they bloom in late spring.",
+                "According to college lore, if a jacaranda blossom falls on your head, you will pass all your exams.",
+                "It is native to South America but has been planted globally in warm climates as an ornamental tree."
+            )
         ),
         PlantTemplate(
             name = "Mealy Cup Sage",
@@ -266,7 +337,12 @@ object ClimatePlants {
             wateringNeeds = "Moderate",
             bloomTime = "Summer to Autumn",
             pestsDiseases = "Whiteflies, Powdery mildew",
-            compatibleClimate = "Mediterranean"
+            compatibleClimate = "Mediterranean",
+            funFacts = listOf(
+                "The name 'Mealy Cup' comes from the powdery white hairs that coat the plant's calyx.",
+                "It is a magnet for native bumblebees, honeybees, and beneficial butterflies.",
+                "Its aromatic leaves act as a natural deer and rabbit repellent in Mediterranean gardens."
+            )
         ),
 
         // Mountainous Climate Plants
@@ -284,7 +360,12 @@ object ClimatePlants {
             wateringNeeds = "Moderate",
             bloomTime = "Mid Spring to Early Summer",
             pestsDiseases = "Leaf miners, Aphids",
-            compatibleClimate = "Mountainous"
+            compatibleClimate = "Mountainous",
+            funFacts = listOf(
+                "The name Columbine is derived from Latin 'columba,' meaning 'dove,' because the flower resembles five doves.",
+                "It is the state flower of Colorado and thrives in rocky mountain soils.",
+                "The long spurs on the back of the flower contain sweet nectar that only long-tongued moths can reach."
+            )
         ),
         PlantTemplate(
             name = "Alpine Aster",
@@ -300,7 +381,12 @@ object ClimatePlants {
             wateringNeeds = "Moderate",
             bloomTime = "Late Summer",
             pestsDiseases = "Slugs, Powdery mildew",
-            compatibleClimate = "Mountainous"
+            compatibleClimate = "Mountainous",
+            funFacts = listOf(
+                "Derived from the Greek word for 'star,' referring to the flower's radiating purple petals.",
+                "It grows natively above the tree line in extreme wind, rocky terrains, and chilly climates.",
+                "In ancient times, people burned aster leaves to repel evil spirits and snakes."
+            )
         ),
         PlantTemplate(
             name = "Creeping Thyme",
@@ -316,7 +402,12 @@ object ClimatePlants {
             wateringNeeds = "Low",
             bloomTime = "Early Summer",
             pestsDiseases = "Root rot in soggy environments",
-            compatibleClimate = "Mountainous"
+            compatibleClimate = "Mountainous",
+            funFacts = listOf(
+                "Creeping thyme forms a dense, springy green mat that releases a sweet, herbal scent when stepped on.",
+                "It was used by ancient Greeks in their baths and temples to symbolize courage.",
+                "It acts as an excellent, low-maintenance organic turf replacement that requires zero mowing."
+            )
         ),
         PlantTemplate(
             name = "Edelweiss",
@@ -332,7 +423,12 @@ object ClimatePlants {
             wateringNeeds = "Low",
             bloomTime = "Mid Summer",
             pestsDiseases = "Root damp rot, crown mildew",
-            compatibleClimate = "Mountainous"
+            compatibleClimate = "Mountainous",
+            funFacts = listOf(
+                "Its velvet-like white hairs act as natural sunblock and insulator against high-altitude UV radiation.",
+                "In the Swiss Alps, giving an edelweiss flower is a traditional symbol of daring, deep love and devotion.",
+                "It is strictly protected by law in European alpine regions to prevent extinction."
+            )
         ),
 
         // Temperate Climate Plants
@@ -350,7 +446,12 @@ object ClimatePlants {
             wateringNeeds = "High (Deep watering)",
             bloomTime = "Late Spring to Frost",
             pestsDiseases = "Black spot, Aphids, Beetles",
-            compatibleClimate = "Temperate"
+            compatibleClimate = "Temperate",
+            funFacts = listOf(
+                "Roses are one of the oldest species of plants, with fossils dating back 35 million years.",
+                "The rose hip (fruit) contains more vitamin C than an equivalent weight of oranges.",
+                "In ancient Rome, roses were hung from ceilings during confidential meetings to declare secrecy."
+            )
         ),
         PlantTemplate(
             name = "Japanese Maple",
@@ -366,7 +467,12 @@ object ClimatePlants {
             wateringNeeds = "Moderate",
             bloomTime = "Spring (Inconspicuous)",
             pestsDiseases = "Scale wood bugs, Verticillium wilt",
-            compatibleClimate = "Temperate"
+            compatibleClimate = "Temperate",
+            funFacts = listOf(
+                "Japanese maples are highly prized in the art of Bonsai, representing visual elegance and peace.",
+                "In Japan, viewing autumn maple leaves is a cultural tradition called 'Momijigari.'",
+                "The scientific genus name 'Acer' comes from the Latin word for 'sharp,' referring to the pointed leaves."
+            )
         ),
         PlantTemplate(
             name = "English Ivy",
@@ -382,7 +488,12 @@ object ClimatePlants {
             wateringNeeds = "Moderate",
             bloomTime = "Non-flowering",
             pestsDiseases = "Spider mites, Leaf spot bacteria",
-            compatibleClimate = "Temperate"
+            compatibleClimate = "Temperate",
+            funFacts = listOf(
+                "Ivy vines climb using tiny clinging rootlets that secrete a strong organic glue.",
+                "In ancient Greece, ivy was dedicated to Dionysus and believed to prevent alcohol intoxication.",
+                "English ivy remains fully evergreen even during the harshest temperate winters."
+            )
         ),
         PlantTemplate(
             name = "Boston Fern",
@@ -398,7 +509,12 @@ object ClimatePlants {
             wateringNeeds = "High",
             bloomTime = "Non-flowering",
             pestsDiseases = "Frond bugs, low humidity leaf drops",
-            compatibleClimate = "Temperate"
+            compatibleClimate = "Temperate",
+            funFacts = listOf(
+                "Boston Ferns were highly popular in the Victorian era, occupying pride of place in parlor windows.",
+                "They are excellent humidifiers, releasing moisture and restoring humidity to dry indoor spaces.",
+                "Ferns reproduce using microscopic spores on the undersides of their leaves rather than seeds."
+            )
         ),
         PlantTemplate(
             name = "Bonsai Juniper",
@@ -414,10 +530,15 @@ object ClimatePlants {
             wateringNeeds = "Moderate",
             bloomTime = "Non-flowering",
             pestsDiseases = "Juniper scale, Cedar-apple rust",
-            compatibleClimate = "Temperate"
+            compatibleClimate = "Temperate",
+            funFacts = listOf(
+                "Juniper Bonsai can live for hundreds of years under careful wiring and shaping care.",
+                "Junipers secrete phytoncides, airborne chemicals that reduce human stress and blood pressure.",
+                "The word 'Bonsai' literally translates to 'planted in a tray' in Japanese."
+            )
         )
     )
-
+    
     fun getTemplatesForClimate(climate: String): List<PlantTemplate> {
         return ALL_TEMPLATES.filter { it.compatibleClimate.contains(climate, ignoreCase = true) }
     }

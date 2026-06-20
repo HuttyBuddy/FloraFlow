@@ -141,6 +141,10 @@ fun PlannerScreen(
     var showCellConfigDialog by remember { mutableStateOf<Pair<Int, Int>?>(null) } // Row, Col of clicked cell
     var highlightedPlantName by remember { mutableStateOf<String?>(null) }
     var showBlueprintDialog by remember { mutableStateOf(false) }
+    var showTimelapseDialog by remember { mutableStateOf(false) }
+    var triggerLeafFlutter by remember { mutableStateOf(false) }
+    var hasTriggeredFullGarden by remember(activeLayout?.id) { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -176,6 +180,49 @@ fun PlannerScreen(
     val currentLayout = activeLayout
     val activeGridItems = remember(currentLayout?.gridString) {
         parseGridString(currentLayout?.gridString ?: "")
+    }
+
+    LaunchedEffect(activeGridItems.size) {
+        if (activeGridItems.size == 25 && !hasTriggeredFullGarden) {
+            hasTriggeredFullGarden = true
+            triggerLeafFlutter = true
+        } else if (activeGridItems.size < 25) {
+            hasTriggeredFullGarden = false
+        }
+    }
+
+    val particles = remember { mutableStateListOf<LeafParticle>() }
+    LaunchedEffect(triggerLeafFlutter) {
+        if (triggerLeafFlutter) {
+            particles.clear()
+            for (i in 0 until 30) {
+                particles.add(
+                    LeafParticle(
+                        x = (0..100).random().toFloat() / 100f,
+                        y = -0.2f - (0..50).random().toFloat() / 100f,
+                        vx = ((0..40).random() - 20).toFloat() / 300f,
+                        vy = (30..80).random().toFloat() / 300f,
+                        scale = (5..15).random().toFloat() / 10f,
+                        rotation = (0..360).random().toFloat(),
+                        rotationSpeed = ((0..10).random() - 5).toFloat()
+                    )
+                )
+            }
+            val start = System.currentTimeMillis()
+            while (System.currentTimeMillis() - start < 3500) {
+                val updated = particles.map { p ->
+                    p.copy(
+                        x = (p.x + p.vx).coerceIn(0f, 1f),
+                        y = p.y + p.vy,
+                        rotation = p.rotation + p.rotationSpeed
+                    )
+                }
+                particles.clear()
+                particles.addAll(updated)
+                kotlinx.coroutines.delay(16)
+            }
+            triggerLeafFlutter = false
+        }
     }
 
     if (currentLayout == null) {
@@ -239,6 +286,35 @@ fun PlannerScreen(
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
+                        }
+                        val snapshots = remember(currentLayout.id, currentLayout.gridString) {
+                            viewModel.getGridSnapshots(currentLayout.id)
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (snapshots.size >= 4) {
+                                IconButton(
+                                    onClick = { showTimelapseDialog = true },
+                                    modifier = Modifier.testTag("timelapse_garden_button")
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.History,
+                                        contentDescription = "See your garden grow",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                            IconButton(
+                                onClick = {
+                                    shareGardenSnapshot(context, currentLayout, activeGridItems, currentSoilTheme)
+                                },
+                                modifier = Modifier.testTag("share_garden_button")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Share,
+                                    contentDescription = "Share My Garden",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
 
@@ -490,125 +566,153 @@ fun PlannerScreen(
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
 
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        for (r in 0..4) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                for (c in 0..4) {
-                                    val item = activeGridItems.firstOrNull { it.x == r && it.y == c }
-                                    val emoji = getEmojiForPlantName(item?.plantName ?: "")
-                                    val isHighlighted = highlightedPlantName != null && item?.plantName == highlightedPlantName
-                                    val hasSynergy = item != null && hasNeighborSynergy(r, c, activeGridItems)
-                                    val hasConflict = item != null && hasNeighborConflict(r, c, activeGridItems)
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            for (r in 0..4) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    for (c in 0..4) {
+                                        val item = activeGridItems.firstOrNull { it.x == r && it.y == c }
+                                        val emoji = getEmojiForPlantName(item?.plantName ?: "")
+                                        val isHighlighted = highlightedPlantName != null && item?.plantName == highlightedPlantName
+                                        val hasSynergy = item != null && hasNeighborSynergy(r, c, activeGridItems)
+                                        val hasConflict = item != null && hasNeighborConflict(r, c, activeGridItems)
 
-                                    val scaleVal by animateFloatAsState(
-                                        targetValue = if (isHighlighted) 1.08f else 1f,
-                                        animationSpec = spring(
-                                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                                            stiffness = Spring.StiffnessLow
-                                        ),
-                                        label = "gridHighlighter"
-                                    )
+                                        val scaleVal by animateFloatAsState(
+                                            targetValue = if (isHighlighted) 1.08f else 1f,
+                                            animationSpec = spring(
+                                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                                stiffness = Spring.StiffnessLow
+                                            ),
+                                            label = "gridHighlighter"
+                                        )
 
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .aspectRatio(1f)
-                                            .scale(scaleVal)
-                                            .clip(RoundedCornerShape(16.dp))
-                                            .background(
-                                                if (item != null) {
-                                                    if (isHighlighted) Color(0xFFFFD54F).copy(alpha = 0.5f)
-                                                     else if (hasConflict) Color(0xFFFFEBEE)
-                                                     else if (hasSynergy) Color(0xFFE8F5E9)
-                                                     else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-                                                } else {
-                                                    currentSoilTheme.slotBgColor
-                                                }
-                                            )
-                                            .border(
-                                                width = if (isHighlighted) 3.dp else if (hasConflict) 2.2.dp else if (hasSynergy) 2.2.dp else if (item != null) 2.dp else 1.dp,
-                                                color = if (isHighlighted) Color(0xFFF57F17)
-                                                else if (hasConflict) Color(0xFFE53935)
-                                                else if (hasSynergy) Color(0xFF4CAF50)
-                                                else if (item != null) MaterialTheme.colorScheme.primary
-                                                else currentSoilTheme.outlineColor.copy(alpha = 0.4f),
-                                                shape = RoundedCornerShape(16.dp)
-                                            )
-                                            .clickable { showCellConfigDialog = Pair(r, c) }
-                                            .testTag("grid_cell_${r}_${c}"),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        if (item != null) {
-                                             Column(
-                                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                                 verticalArrangement = Arrangement.Center,
-                                                 modifier = Modifier.padding(2.dp)
-                                             ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .aspectRatio(1f)
+                                                .scale(scaleVal)
+                                                .clip(RoundedCornerShape(16.dp))
+                                                .background(
+                                                    if (item != null) {
+                                                        if (isHighlighted) Color(0xFFFFD54F).copy(alpha = 0.5f)
+                                                         else if (hasConflict) Color(0xFFFFEBEE)
+                                                         else if (hasSynergy) Color(0xFFE8F5E9)
+                                                         else MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                                                    } else {
+                                                        currentSoilTheme.slotBgColor
+                                                    }
+                                                )
+                                                .border(
+                                                    width = if (isHighlighted) 3.dp else if (hasConflict) 2.2.dp else if (hasSynergy) 2.2.dp else if (item != null) 2.dp else 1.dp,
+                                                    color = if (isHighlighted) Color(0xFFF57F17)
+                                                    else if (hasConflict) Color(0xFFE53935)
+                                                    else if (hasSynergy) Color(0xFF4CAF50)
+                                                    else if (item != null) MaterialTheme.colorScheme.primary
+                                                    else currentSoilTheme.outlineColor.copy(alpha = 0.4f),
+                                                    shape = RoundedCornerShape(16.dp)
+                                                )
+                                                .clickable { showCellConfigDialog = Pair(r, c) }
+                                                .testTag("grid_cell_${r}_${c}"),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (item != null) {
+                                                 Column(
+                                                     horizontalAlignment = Alignment.CenterHorizontally,
+                                                     verticalArrangement = Arrangement.Center,
+                                                     modifier = Modifier.padding(2.dp)
+                                                 ) {
+                                                     Box(
+                                                         modifier = Modifier
+                                                             .size(38.dp)
+                                                             .border(
+                                                                 width = 1.dp,
+                                                                 color = if (hasConflict) Color(0xFFE53935).copy(alpha = 0.4f)
+                                                                 else if (hasSynergy) Color(0xFF4CAF50).copy(alpha = 0.4f)
+                                                                 else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                                                 shape = CircleShape
+                                                             )
+                                                             .background(
+                                                                 if (hasConflict) Color(0xFFFFCDD2).copy(alpha = 0.4f)
+                                                                 else if (hasSynergy) Color(0xFFC8E6C9).copy(alpha = 0.4f)
+                                                                 else MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
+                                                                 CircleShape
+                                                             ),
+                                                         contentAlignment = Alignment.Center
+                                                     ) {
+                                                         Text(emoji, fontSize = 22.sp)
+                                                     }
+                                                     Spacer(modifier = Modifier.height(2.dp))
+                                                     Row(
+                                                         verticalAlignment = Alignment.CenterVertically,
+                                                         horizontalArrangement = Arrangement.Center
+                                                     ) {
+                                                         Text(
+                                                             text = item.plantName.take(6),
+                                                             fontSize = 8.5.sp,
+                                                             fontWeight = FontWeight.ExtraBold,
+                                                             color = if (hasConflict) Color(0xFFC62828) else if (hasSynergy) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
+                                                             textAlign = TextAlign.Center
+                                                         )
+                                                         if (hasConflict) {
+                                                             Text("⚠️", fontSize = 7.sp, modifier = Modifier.padding(start = 1.dp))
+                                                         } else if (hasSynergy) {
+                                                             Text("✨", fontSize = 7.sp, modifier = Modifier.padding(start = 1.dp))
+                                                         }
+                                                     }
+                                                 }
+                                            } else {
                                                  Box(
                                                      modifier = Modifier
-                                                         .size(38.dp)
+                                                         .size(26.dp)
                                                          .border(
                                                              width = 1.dp,
-                                                             color = if (hasConflict) Color(0xFFE53935).copy(alpha = 0.4f)
-                                                             else if (hasSynergy) Color(0xFF4CAF50).copy(alpha = 0.4f)
-                                                             else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                                             color = currentSoilTheme.outlineColor.copy(alpha = 0.15f),
                                                              shape = CircleShape
-                                                         )
-                                                         .background(
-                                                             if (hasConflict) Color(0xFFFFCDD2).copy(alpha = 0.4f)
-                                                             else if (hasSynergy) Color(0xFFC8E6C9).copy(alpha = 0.4f)
-                                                             else MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
-                                                             CircleShape
                                                          ),
                                                      contentAlignment = Alignment.Center
                                                  ) {
-                                                     Text(emoji, fontSize = 22.sp)
-                                                 }
-                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                 Row(
-                                                     verticalAlignment = Alignment.CenterVertically,
-                                                     horizontalArrangement = Arrangement.Center
-                                                 ) {
-                                                     Text(
-                                                         text = item.plantName.take(6),
-                                                         fontSize = 8.5.sp,
-                                                         fontWeight = FontWeight.ExtraBold,
-                                                         color = if (hasConflict) Color(0xFFC62828) else if (hasSynergy) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
-                                                         textAlign = TextAlign.Center
+                                                     Icon(
+                                                         Icons.Default.Add,
+                                                         contentDescription = "Empty Plot",
+                                                         tint = currentSoilTheme.outlineColor.copy(alpha = 0.5f),
+                                                         modifier = Modifier.size(12.dp)
                                                      )
-                                                     if (hasConflict) {
-                                                         Text("⚠️", fontSize = 7.sp, modifier = Modifier.padding(start = 1.dp))
-                                                     } else if (hasSynergy) {
-                                                         Text("✨", fontSize = 7.sp, modifier = Modifier.padding(start = 1.dp))
-                                                     }
                                                  }
-                                             }
-                                        } else {
-                                             Box(
-                                                 modifier = Modifier
-                                                     .size(26.dp)
-                                                     .border(
-                                                         width = 1.dp,
-                                                         color = currentSoilTheme.outlineColor.copy(alpha = 0.15f),
-                                                         shape = CircleShape
-                                                     ),
-                                                 contentAlignment = Alignment.Center
-                                             ) {
-                                                 Icon(
-                                                     Icons.Default.Add,
-                                                     contentDescription = "Empty Plot",
-                                                     tint = currentSoilTheme.outlineColor.copy(alpha = 0.5f),
-                                                     modifier = Modifier.size(12.dp)
-                                                 )
-                                             }
+                                            }
                                         }
                                     }
+                                }
+                            }
+                        }
+
+                        if (triggerLeafFlutter) {
+                            androidx.compose.foundation.Canvas(
+                                modifier = Modifier.matchParentSize()
+                            ) {
+                                particles.forEach { p ->
+                                    val px = p.x * size.width
+                                    val py = p.y * size.height
+                                    
+                                    drawContext.canvas.save()
+                                    drawContext.canvas.translate(px, py)
+                                    drawContext.canvas.rotate(p.rotation)
+                                    drawContext.canvas.scale(p.scale, p.scale)
+                                    
+                                    val path = androidx.compose.ui.graphics.Path().apply {
+                                        moveTo(0f, -10f)
+                                        quadraticTo(10f, 0f, 0f, 10f)
+                                        quadraticTo(-10f, 0f, 0f, -10f)
+                                        close()
+                                    }
+                                    drawPath(path, color = Color(0xFF4CAF50).copy(alpha = 0.7f))
+                                    
+                                    drawContext.canvas.restore()
                                 }
                             }
                         }
@@ -1122,6 +1226,16 @@ fun PlannerScreen(
              }
          }
      }
+
+     if (showTimelapseDialog && currentLayout != null) {
+          val snapshots = remember(currentLayout.id, currentLayout.gridString) {
+              viewModel.getGridSnapshots(currentLayout.id)
+          }
+          TimelapseDialog(
+              snapshots = snapshots,
+              onDismiss = { showTimelapseDialog = false }
+          )
+      }
 }
 
 // Utility to assign emojis based on plant name keywords
@@ -1151,4 +1265,317 @@ fun getEmojiForPlantName(name: String): String {
          low.contains("basil") || low.contains("rosemary") || low.contains("herb") || low.contains("thyme") -> "🌱"
          else -> "🌱"
     }
+}
+
+fun shareGardenSnapshot(
+    context: android.content.Context,
+    layout: GardenLayout,
+    gridItems: List<GridPlantItem>,
+    soilTheme: SoilTheme
+) {
+    val size = 1000
+    val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+    val canvas = android.graphics.Canvas(bitmap)
+    
+    val bgPaint = android.graphics.Paint().apply {
+        color = 0xFFFCF9F1.toInt()
+        style = android.graphics.Paint.Style.FILL
+    }
+    canvas.drawRect(0f, 0f, size.toFloat(), size.toFloat(), bgPaint)
+    
+    val borderPaint = android.graphics.Paint().apply {
+        color = 0xFF1F483E.toInt()
+        style = android.graphics.Paint.Style.STROKE
+        strokeWidth = 16f
+    }
+    canvas.drawRect(20f, 20f, size.toFloat() - 20f, size.toFloat() - 20f, borderPaint)
+    
+    val thinBorderPaint = android.graphics.Paint().apply {
+        color = 0xFF1F483E.toInt()
+        style = android.graphics.Paint.Style.STROKE
+        strokeWidth = 4f
+    }
+    canvas.drawRect(32f, 32f, size.toFloat() - 32f, size.toFloat() - 32f, thinBorderPaint)
+
+    val titlePaint = android.graphics.Paint().apply {
+        color = 0xFF1F483E.toInt()
+        textSize = 48f
+        isFakeBoldText = true
+        isAntiAlias = true
+    }
+    canvas.drawText("FloraFlow Botanical Layout", 60f, 100f, titlePaint)
+    
+    val namePaint = android.graphics.Paint().apply {
+        color = 0xFF1B1C17.toInt()
+        textSize = 36f
+        isFakeBoldText = true
+        isAntiAlias = true
+    }
+    canvas.drawText("Garden: ${layout.name}", 60f, 150f, namePaint)
+    
+    val subtitlePaint = android.graphics.Paint().apply {
+        color = 0xFF43493E.toInt()
+        textSize = 28f
+        isAntiAlias = true
+    }
+    canvas.drawText("Theme: ${layout.style} | Climate: ${layout.climate}", 60f, 190f, subtitlePaint)
+    canvas.drawText("Substrate: ${soilTheme.name}", 60f, 225f, subtitlePaint)
+
+    val gridStartX = 150f
+    val gridStartY = 280f
+    val gridWidth = 700f
+    val cellSize = gridWidth / 5f
+    
+    val gridBgPaint = android.graphics.Paint().apply {
+        color = 0xFFE2E6D5.toInt()
+        style = android.graphics.Paint.Style.FILL
+    }
+    canvas.drawRect(gridStartX, gridStartY, gridStartX + gridWidth, gridStartY + gridWidth, gridBgPaint)
+    
+    val gridLinePaint = android.graphics.Paint().apply {
+        color = 0xFFCBD0BE.toInt()
+        style = android.graphics.Paint.Style.STROKE
+        strokeWidth = 6f
+    }
+    
+    for (r in 0..5) {
+        val y = gridStartY + r * cellSize
+        canvas.drawLine(gridStartX, y, gridStartX + gridWidth, y, gridLinePaint)
+    }
+    for (c in 0..5) {
+        val x = gridStartX + c * cellSize
+        canvas.drawLine(x, gridStartY, x, gridStartY + gridWidth, gridLinePaint)
+    }
+    
+    val emojiPaint = android.graphics.Paint().apply {
+        textSize = 64f
+        isAntiAlias = true
+        textAlign = android.graphics.Paint.Align.CENTER
+    }
+    
+    val cellLabelPaint = android.graphics.Paint().apply {
+        color = 0xFF1F483E.toInt()
+        textSize = 16f
+        isFakeBoldText = true
+        isAntiAlias = true
+        textAlign = android.graphics.Paint.Align.CENTER
+    }
+
+    for (item in gridItems) {
+        val cellCenterX = gridStartX + item.y * cellSize + cellSize / 2f
+        val cellCenterY = gridStartY + item.x * cellSize + cellSize / 2f
+        
+        val emoji = getEmojiForPlantName(item.plantName)
+        canvas.drawText(emoji, cellCenterX, cellCenterY + 12f, emojiPaint)
+        
+        val displayName = if (item.plantName.length > 8) item.plantName.take(7) + ".." else item.plantName
+        canvas.drawText(displayName, cellCenterX, cellCenterY + cellSize / 2f - 12f, cellLabelPaint)
+    }
+    
+    try {
+        val logoSrc = android.graphics.BitmapFactory.decodeResource(context.resources, com.example.R.drawable.ic_logo_heart)
+        if (logoSrc != null) {
+            val scaledLogo = android.graphics.Bitmap.createScaledBitmap(logoSrc, 80, 80, true)
+            canvas.drawBitmap(scaledLogo, size - 260f, size - 140f, null)
+        }
+    } catch (_: Exception) {}
+    
+    val watermarkTitlePaint = android.graphics.Paint().apply {
+        color = 0xFF1F483E.toInt()
+        textSize = 30f
+        isFakeBoldText = true
+        isAntiAlias = true
+    }
+    canvas.drawText("FloraFlow", size - 160f, size - 100f, watermarkTitlePaint)
+    
+    val watermarkSubPaint = android.graphics.Paint().apply {
+        color = 0xFF43493E.toInt()
+        textSize = 18f
+        isAntiAlias = true
+    }
+    canvas.drawText("Therapeutic Garden", size - 220f, size - 50f, watermarkSubPaint)
+    
+    val totalPlants = gridItems.size
+    val synergyCount = gridItems.count { hasNeighborSynergy(it.x, it.y, gridItems) }
+    
+    val statsPaint = android.graphics.Paint().apply {
+        color = 0xFF1F483E.toInt()
+        textSize = 24f
+        isFakeBoldText = true
+        isAntiAlias = true
+    }
+    canvas.drawText("Tended Plants: $totalPlants", 60f, size - 110f, statsPaint)
+    canvas.drawText("Active Synergies: $synergyCount ✨", 60f, size - 70f, statsPaint)
+    
+    try {
+        val cachePath = java.io.File(context.cacheDir, "shared_gardens")
+        cachePath.mkdirs()
+        val file = java.io.File(cachePath, "garden_snapshot.png")
+        val stream = java.io.FileOutputStream(file)
+        bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+        stream.close()
+        
+        val uri = androidx.core.content.FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        
+        val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+            type = "image/png"
+            putExtra(android.content.Intent.EXTRA_STREAM, uri)
+            putExtra(android.content.Intent.EXTRA_SUBJECT, "My FloraFlow Sanctuary")
+            putExtra(android.content.Intent.EXTRA_TEXT, "Look at the therapeutic sanctuary I just designed using FloraFlow! 🌸🌿 #FloraFlow")
+            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        
+        context.startActivity(android.content.Intent.createChooser(shareIntent, "Share My Garden"))
+    } catch (e: Exception) {
+        android.widget.Toast.makeText(context, "Failed to share: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+    }
+}
+
+data class LeafParticle(
+    val x: Float,
+    val y: Float,
+    val vx: Float,
+    val vy: Float,
+    val scale: Float,
+    val rotation: Float,
+    val rotationSpeed: Float
+)
+
+@Composable
+fun TimelapseDialog(
+    snapshots: List<Pair<Long, String>>,
+    onDismiss: () -> Unit
+) {
+    var currentIndex by remember { mutableIntStateOf(0) }
+    var isPlaying by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isPlaying) {
+        if (isPlaying) {
+            while (true) {
+                kotlinx.coroutines.delay(1000)
+                currentIndex = (currentIndex + 1) % snapshots.size
+            }
+        }
+    }
+
+    val currentSnapshot = snapshots.getOrNull(currentIndex)
+    val gridItems = remember(currentSnapshot) {
+        parseGridString(currentSnapshot?.second ?: "")
+    }
+    val timestamp = currentSnapshot?.first ?: 0L
+    val dateStr = remember(timestamp) {
+        if (timestamp == 0L) "" else {
+            val sdf = java.text.SimpleDateFormat("MMM dd, yyyy HH:mm", java.util.Locale.getDefault())
+            sdf.format(java.util.Date(timestamp))
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Close") }
+        },
+        title = {
+            Text("See Your Garden Grow 🌿", fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = "Snapshot ${currentIndex + 1} of ${snapshots.size} • $dateStr",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+
+                // Render 5x5 preview grid
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.9f)
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color(0xFFE2E6D5))
+                        .padding(8.dp)
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        for (r in 0..4) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                for (c in 0..4) {
+                                    val item = gridItems.firstOrNull { it.x == r && it.y == c }
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxHeight()
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(
+                                                if (item != null) Color(0xFFC8E6C9)
+                                                else Color(0xFFCBD0BE).copy(alpha = 0.5f)
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        if (item != null) {
+                                            Text(getEmojiForPlantName(item.plantName), fontSize = 16.sp)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Controls
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    IconButton(
+                        onClick = {
+                            currentIndex = (currentIndex - 1 + snapshots.size) % snapshots.size
+                            isPlaying = false
+                        }
+                    ) {
+                        Icon(Icons.Default.SkipPrevious, contentDescription = "Previous")
+                    }
+                    IconButton(
+                        onClick = { isPlaying = !isPlaying }
+                    ) {
+                        Icon(
+                            imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                            contentDescription = if (isPlaying) "Pause" else "Play"
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            currentIndex = (currentIndex + 1) % snapshots.size
+                            isPlaying = false
+                        }
+                    ) {
+                        Icon(Icons.Default.SkipNext, contentDescription = "Next")
+                    }
+                }
+
+                // Slider
+                Slider(
+                    value = currentIndex.toFloat(),
+                    onValueChange = {
+                        currentIndex = it.toInt().coerceIn(0, snapshots.size - 1)
+                        isPlaying = false
+                    },
+                    valueRange = 0f..(snapshots.size - 1).toFloat(),
+                    steps = if (snapshots.size > 2) snapshots.size - 2 else 0,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    )
 }

@@ -835,6 +835,37 @@ fun PlantCareTrackerCard(
                         SeasonCareBadge("Winter", plant.careWinter, modifier = Modifier.weight(1f))
                     }
 
+                    val template = remember(plant.name) {
+                        com.example.data.model.ClimatePlants.ALL_TEMPLATES.find { it.name.equals(plant.name, ignoreCase = true) }
+                    }
+                    val funFact = remember(template) {
+                        template?.funFacts?.randomOrNull() ?: ""
+                    }
+                    if (funFact.isNotEmpty()) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = "💡 Did you know?",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.tertiary
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = funFact,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
+                        }
+                    }
+
                     // Growth Progress Adjustment Slider
                     Text("Update Live Growth progress index:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
                     Row(
@@ -1014,6 +1045,34 @@ fun SpeciesEncyclopediaCard(
                     ) {
                         SeasonCareBadge("Autumn", template.careAutumn, modifier = Modifier.weight(1f))
                         SeasonCareBadge("Winter", template.careWinter, modifier = Modifier.weight(1f))
+                    }
+
+                    val funFact = remember(template.name) {
+                        template.funFacts.randomOrNull() ?: ""
+                    }
+                    if (funFact.isNotEmpty()) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = "💡 Did you know?",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.tertiary
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = funFact,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
+                        }
                     }
 
                     // Add button to inventory
