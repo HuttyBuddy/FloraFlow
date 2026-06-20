@@ -131,7 +131,7 @@ fun DashboardScreen(
                     )
                     Text(
                         text = if (activeLayout != null) {
-                            "Project: ${activeLayout?.name} | Style: ${activeLayout?.style}"
+                            "Project: ${activeLayout?.name}"
                         } else {
                             "Your garden beds are ready to be planted"
                         },
@@ -163,11 +163,12 @@ fun DashboardScreen(
                     .height(48.dp)
                     .testTag("action_create_layout"),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                contentPadding = PaddingValues(horizontal = 8.dp)
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Create layout", modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("Plant a New Seed", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Plant a New Seed", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
             }
             
             Button(
@@ -177,11 +178,12 @@ fun DashboardScreen(
                     .height(48.dp)
                     .testTag("action_choose_layout"),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                contentPadding = PaddingValues(horizontal = 8.dp)
             ) {
                 Icon(Icons.Default.Eco, contentDescription = "Choose layout", modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("Visit a Garden", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("Visit a Garden", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
             }
         }
     }

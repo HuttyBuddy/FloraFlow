@@ -242,6 +242,21 @@ class MainActivity : ComponentActivity() {
                                 )
                             },
                             bottomBar = {
+                                val density = androidx.compose.ui.platform.LocalDensity.current
+                                val labelFontSize = remember(density) { with(density) { 8.5.dp.toSp() } }
+                                val uniformTextStyle = MaterialTheme.typography.labelSmall.copy(
+                                    fontSize = labelFontSize,
+                                    letterSpacing = 0.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                val uniformColors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MaterialTheme.colorScheme.onSurface,
+                                    unselectedIconColor = MaterialTheme.colorScheme.onSurface,
+                                    selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    unselectedTextColor = MaterialTheme.colorScheme.onSurface,
+                                    indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                                )
+
                                 NavigationBar(
                                     modifier = Modifier.testTag("app_navigation_bar"),
                                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -250,16 +265,18 @@ class MainActivity : ComponentActivity() {
                                     NavigationBarItem(
                                         selected = currentTab == 0,
                                         onClick = { viewModel.setCurrentTab(0) },
-                                        icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard") },
-                                        label = { Text("Dashboard", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = (-0.3).sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, softWrap = false) },
+                                        icon = { Icon(Icons.Default.Dashboard, contentDescription = "Dashboard", modifier = Modifier.size(24.dp)) },
+                                        label = { Text("Dashboard", style = uniformTextStyle, maxLines = 1, softWrap = false) },
+                                        colors = uniformColors,
                                         modifier = Modifier.testTag("nav_tab_dashboard"),
                                         alwaysShowLabel = true
                                     )
                                     NavigationBarItem(
                                         selected = currentTab == 1,
                                         onClick = { viewModel.setCurrentTab(1) },
-                                        icon = { Icon(Icons.Default.Explore, contentDescription = "My Plot") },
-                                        label = { Text("My Plot", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = (-0.3).sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, softWrap = false) },
+                                        icon = { Icon(Icons.Default.Explore, contentDescription = "My Plot", modifier = Modifier.size(24.dp)) },
+                                        label = { Text("My Plot", style = uniformTextStyle, maxLines = 1, softWrap = false) },
+                                        colors = uniformColors,
                                         modifier = Modifier
                                             .testTag("nav_tab_planner")
                                             .onGloballyPositioned { coordinates ->
@@ -274,16 +291,18 @@ class MainActivity : ComponentActivity() {
                                     NavigationBarItem(
                                         selected = currentTab == 2,
                                         onClick = { viewModel.setCurrentTab(2) },
-                                        icon = { Icon(Icons.Default.Spa, contentDescription = "Greenhouse") },
-                                        label = { Text("Greenhouse", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = (-0.3).sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, softWrap = false) },
+                                        icon = { Icon(Icons.Default.Spa, contentDescription = "Greenhouse", modifier = Modifier.size(24.dp)) },
+                                        label = { Text("Greenhouse", style = uniformTextStyle, maxLines = 1, softWrap = false) },
+                                        colors = uniformColors,
                                         modifier = Modifier.testTag("nav_tab_greenhouse"),
                                         alwaysShowLabel = true
                                     )
                                     NavigationBarItem(
                                         selected = currentTab == 3,
                                         onClick = { viewModel.setCurrentTab(3) },
-                                        icon = { Icon(Icons.Default.SmartToy, contentDescription = "Garden Counsel") },
-                                        label = { Text("Garden Counsel", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = (-0.3).sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, softWrap = false) },
+                                        icon = { Icon(Icons.Default.SmartToy, contentDescription = "Garden Counsel", modifier = Modifier.size(24.dp)) },
+                                        label = { Text("Garden Counsel", style = uniformTextStyle, maxLines = 1, softWrap = false) },
+                                        colors = uniformColors,
                                         modifier = Modifier
                                             .testTag("nav_tab_ai")
                                             .onGloballyPositioned { coordinates ->
@@ -303,8 +322,9 @@ class MainActivity : ComponentActivity() {
                                                 viewModel.upgradeToPremium()
                                             }
                                         },
-                                        icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Garden") },
-                                        label = { Text("AR Garden", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, letterSpacing = (-0.3).sp), textAlign = androidx.compose.ui.text.style.TextAlign.Center, maxLines = 1, softWrap = false) },
+                                        icon = { Icon(Icons.Default.Videocam, contentDescription = "AR Garden", modifier = Modifier.size(24.dp)) },
+                                        label = { Text("AR Garden", style = uniformTextStyle, maxLines = 1, softWrap = false) },
+                                        colors = uniformColors,
                                         modifier = Modifier.testTag("nav_tab_ar"),
                                         alwaysShowLabel = true
                                     )

@@ -441,7 +441,7 @@ class GardenViewModel @JvmOverloads constructor(
                 val existing = repository.allLayouts.firstOrNull() ?: emptyList()
                 if (existing.isEmpty()) {
                     val defaultLayout = GardenLayout(
-                        name = "My First Zen Space",
+                        name = "My First Space",
                         style = "Zen Garden",
                         climate = "Temperate",
                         gridString = "0,0,Bonsai Juniper|4,4,English Lavender",
