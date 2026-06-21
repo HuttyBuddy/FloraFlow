@@ -891,7 +891,7 @@ fun PlantCareTrackerCard(
                 IconButton(onClick = onExpandClick) {
                     Icon(
                         if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = "Expand details"
+                        contentDescription = if (isExpanded) "Collapse details" else "Expand details"
                     )
                 }
             }
@@ -1186,7 +1186,7 @@ fun SpeciesEncyclopediaCard(
                 IconButton(onClick = onExpandClick) {
                     Icon(
                         if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = "Expand details"
+                        contentDescription = if (isExpanded) "Collapse details" else "Expand details"
                     )
                 }
             }
