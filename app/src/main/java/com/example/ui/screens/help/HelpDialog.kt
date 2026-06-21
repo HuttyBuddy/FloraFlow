@@ -257,7 +257,8 @@ fun FaqTabContent() {
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(filteredFaqs) { faq ->
+                // Optimization: Provided unique 'key' to prevent unnecessary recompositions when the list changes.
+                items(filteredFaqs, key = { it.id }) { faq ->
                     val isExpanded = expandedFaqId == faq.id
                     FAQCard(
                         faq = faq,

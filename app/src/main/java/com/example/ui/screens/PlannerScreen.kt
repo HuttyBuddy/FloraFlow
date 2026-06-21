@@ -1057,7 +1057,8 @@ fun PlannerScreen(
                                  )
                              }
                         } else {
-                             items(distinctPlanted) { name ->
+                             // Optimization: Provided unique 'key' to prevent unnecessary recompositions when the list changes.
+                             items(distinctPlanted, key = { it }) { name ->
                                  val isSelected = highlightedPlantName == name
                                  val emoji = getEmojiForPlantName(name)
                                  Row(
@@ -1370,7 +1371,8 @@ fun PlannerScreen(
                         val defaultRecommendations = ClimatePlants.getTemplatesForClimate(activeLayout?.climate ?: "")
                         val allAvailablePlants = (activePlants.map { it.name } + defaultRecommendations.map { it.name }).distinct()
 
-                        items(allAvailablePlants) { pName ->
+                        // Optimization: Provided unique 'key' to prevent unnecessary recompositions when the list changes.
+                        items(allAvailablePlants, key = { it }) { pName ->
                             val tpl = defaultRecommendations.firstOrNull { it.name == pName }
                             val emoji = getEmojiForPlantName(pName)
 
