@@ -70,7 +70,15 @@ class SoundscapeService : Service() {
         startBinauralGeneration()
         
         // 3. Promote to foreground
-        startForeground(NOTIFICATION_ID, createNotification())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID,
+                createNotification(),
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, createNotification())
+        }
     }
 
     fun pauseSoundscape() {
@@ -140,52 +148,58 @@ class SoundscapeService : Service() {
     private fun startBinauralGeneration() {
         toneJob?.cancel()
         
-        val sampleRate = 44100
-        val minBufferSize = AudioTrack.getMinBufferSize(
-            sampleRate,
-            AudioFormat.CHANNEL_OUT_STEREO,
-            AudioFormat.ENCODING_PCM_16BIT
-        )
-        
-        audioTrack = AudioTrack(
-            AudioManager.STREAM_MUSIC,
-            sampleRate,
-            AudioFormat.CHANNEL_OUT_STEREO,
-            AudioFormat.ENCODING_PCM_16BIT,
-            minBufferSize,
-            AudioTrack.MODE_STREAM
-        ).apply {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                setVolume(binauralVolume)
-            } else {
-                setStereoVolume(binauralVolume, binauralVolume)
-            }
-            play()
-        }
-
-        toneJob = serviceScope.launch {
-            val freqLeft = baseFrequency
-            val freqRight = baseFrequency + diffFrequency
-            val bufferSize = minBufferSize / 2 // in Shorts
-            val buffer = ShortArray(bufferSize)
-            var angleLeft = 0.0
-            var angleRight = 0.0
+        try {
+            val sampleRate = 44100
+            val minBufferSize = AudioTrack.getMinBufferSize(
+                sampleRate,
+                AudioFormat.CHANNEL_OUT_STEREO,
+                AudioFormat.ENCODING_PCM_16BIT
+            )
             
-            while (isActive && isPlaying) {
-                for (i in 0 until bufferSize step 2) {
-                    // Left channel
-                    buffer[i] = (sin(angleLeft) * Short.MAX_VALUE).toInt().toShort()
-                    angleLeft += 2.0 * Math.PI * freqLeft / sampleRate
-                    
-                    // Right channel
-                    if (i + 1 < bufferSize) {
-                        buffer[i + 1] = (sin(angleRight) * Short.MAX_VALUE).toInt().toShort()
-                        angleRight += 2.0 * Math.PI * freqRight / sampleRate
-                    }
+            if (minBufferSize <= 0) return
+            
+            audioTrack = AudioTrack(
+                AudioManager.STREAM_MUSIC,
+                sampleRate,
+                AudioFormat.CHANNEL_OUT_STEREO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                minBufferSize,
+                AudioTrack.MODE_STREAM
+            ).apply {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    setVolume(binauralVolume)
+                } else {
+                    setStereoVolume(binauralVolume, binauralVolume)
                 }
-                audioTrack?.write(buffer, 0, bufferSize)
-                yield()
+                play()
             }
+
+            toneJob = serviceScope.launch {
+                val freqLeft = baseFrequency
+                val freqRight = baseFrequency + diffFrequency
+                val bufferSize = minBufferSize / 2 // in Shorts
+                val buffer = ShortArray(bufferSize)
+                var angleLeft = 0.0
+                var angleRight = 0.0
+                
+                while (isActive && isPlaying) {
+                    for (i in 0 until bufferSize step 2) {
+                        // Left channel
+                        buffer[i] = (sin(angleLeft) * Short.MAX_VALUE).toInt().toShort()
+                        angleLeft += 2.0 * Math.PI * freqLeft / sampleRate
+                        
+                        // Right channel
+                        if (i + 1 < bufferSize) {
+                            buffer[i + 1] = (sin(angleRight) * Short.MAX_VALUE).toInt().toShort()
+                            angleRight += 2.0 * Math.PI * freqRight / sampleRate
+                        }
+                    }
+                    audioTrack?.write(buffer, 0, bufferSize)
+                    yield()
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
