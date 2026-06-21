@@ -89,7 +89,7 @@ class SoundscapeService : Service() {
         try {
             mediaPlayer?.pause()
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("SoundscapeService", "Error occurred: ${e.message}")
         }
         
         // 2. Stop tone generator
@@ -125,7 +125,7 @@ class SoundscapeService : Service() {
         try {
             mediaPlayer?.setVolume(vol, vol)
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("SoundscapeService", "Error occurred: ${e.message}")
         }
     }
 
@@ -155,7 +155,7 @@ class SoundscapeService : Service() {
             mediaPlayer?.setVolume(ambientVolume, ambientVolume)
             mediaPlayer?.start()
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("SoundscapeService", "Error occurred: ${e.message}")
         }
     }
 
@@ -213,7 +213,7 @@ class SoundscapeService : Service() {
                 }
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("SoundscapeService", "Error occurred: ${e.message}")
         }
     }
 
@@ -292,7 +292,7 @@ class SoundscapeService : Service() {
             mediaPlayer?.stop()
             mediaPlayer?.release()
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("SoundscapeService", "Error occurred: ${e.message}")
         }
         mediaPlayer = null
         stopBinauralGeneration()
