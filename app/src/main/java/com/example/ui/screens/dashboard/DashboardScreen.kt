@@ -84,15 +84,22 @@ fun DashboardScreen(
     val isWideScreen = configuration.screenWidthDp >= 600
 
     val skippedAssessmentBanner = @Composable {
+        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+        val bannerBg = if (isDark) Color(0xFF2D2517) else Color(0xFFFFF8E1)
+        val bannerBorder = if (isDark) Color(0xFF4E3D20) else Color(0xFFFFE082)
+        val bannerText = if (isDark) Color(0xFFFFD54F) else Color(0xFF5D4037)
+        val buttonBg = if (isDark) Color(0xFF4E3D20) else Color(0xFFFFF3CD)
+        val buttonText = if (isDark) Color(0xFFFFD54F) else Color(0xFF856404)
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("skipped_assessment_banner"),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer
+                containerColor = bannerBg
             ),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.2f))
+            border = BorderStroke(1.dp, bannerBorder)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -103,21 +110,21 @@ fun DashboardScreen(
                     text = "You haven't taken your Neural Load assessment yet. Take a 2-minute assessment to personalize your space.",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    color = bannerText,
                     textAlign = TextAlign.Center
                 )
                 Button(
                     onClick = { viewModel.resetAssessment() },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
+                        containerColor = buttonBg,
+                        contentColor = buttonText
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
                         text = "Begin Your Garden Journey",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onError
+                        fontSize = 12.sp
                     )
                 }
             }

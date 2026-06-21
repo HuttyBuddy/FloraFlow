@@ -135,15 +135,15 @@ fun RestorationJournalScreen(
     // Local checklist state
     val availableTasks = remember(activePlants) {
         val tasks = mutableListOf(
-            "🫁 Practise 4-7-8 rhythmic breathing (inhale 4s, hold 7s, exhale 8s)",
+            "🫁 Practice 4-7-8 rhythmic breathing (inhale 4s, hold 7s, exhale 8s)",
             "🍃 Close your eyes and focus on the natural breeze or ambient wind chimes"
         )
         val plantNames = activePlants.map { it.name.lowercase() }
         if (plantNames.any { it.contains("lavender") }) {
-            tasks.add("🌿 Inhale your Lavender's sweet aroma to trigger direct parasympathetic calming")
+            tasks.add("🌿 Inhale your Lavender's sweet aroma to trigger a natural sense of calm")
         }
         if (plantNames.any { it.contains("rose") }) {
-            tasks.add("🌹 Trace a Rose petal's geometry slowly to rest your visual attention filters")
+            tasks.add("🌹 Trace a Rose petal's geometry slowly to gently rest your eyes and focus")
         }
         if (plantNames.any { it.contains("fern") || it.contains("ivy") }) {
             tasks.add("🌿 Visual scanning: Follow the veins of a fern leaf from base to tip")
@@ -260,8 +260,8 @@ fun RestorationJournalScreen(
                     // Soundscape Player Controller
                     Card(
                         shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E352F).copy(alpha = 0.7f)),
-                        border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.15f)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)
@@ -1072,8 +1072,8 @@ fun NriHistoryChart(
 
     Card(
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E352F).copy(alpha = 0.5f)),
-        border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.1f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
@@ -1237,8 +1237,8 @@ fun RestorationLogItem(log: com.example.data.model.RestorationLog) {
 
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF162D27)),
-        border = BorderStroke(0.5.dp, Color(0xFF81C784).copy(alpha = 0.1f)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)

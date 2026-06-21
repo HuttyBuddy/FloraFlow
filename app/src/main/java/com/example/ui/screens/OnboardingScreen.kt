@@ -110,14 +110,14 @@ fun OnboardingScreen(
             "NATURAL LIGHT" to NextStepInfo(
                 "NATURAL LIGHT",
                 "Reposition toward natural light",
-                "You scored 1 on Natural Light. Even partial repositioning toward a window reduces sympathetic nervous system activation.",
+                "You scored 1 on Natural Light. Even partial repositioning toward a window helps lower stress and restore calm.",
                 "Design my layout →",
                 1
             ),
             "ACOUSTIC CALM" to NextStepInfo(
                 "ACOUSTIC CALM",
                 "Introduce acoustic masking",
-                "You scored low on Acoustic Calm. Mask background hums with natural soundscapes (water, wind) to rest your auditory cortex.",
+                "You scored low on Acoustic Calm. Mask distracting background noise to quiet your mind.",
                 "Find soothing soundscapes →",
                 3
             ),
@@ -145,14 +145,14 @@ fun OnboardingScreen(
             "WATER FEATURES" to NextStepInfo(
                 "WATER FEATURES",
                 "Add sound of moving water",
-                "You scored low on Water Features. A small tabletop fountain or rain sound machine lowers heart rate variability.",
+                "You scored low on Water Features. A small tabletop fountain or rain sound machine helps soothe stress and slow down a racing mind.",
                 "Explore water elements →",
                 3
             ),
             "SENSORY RICHNESS" to NextStepInfo(
                 "SENSORY RICHNESS",
                 "Stimulate with natural scents",
-                "You scored low on Sensory Richness. Use natural cedarwood, pine, or lavender oils to signal safety to your limbic system.",
+                "You scored low on Sensory Richness. Use natural cedarwood, pine, or lavender oils to signal calm and safety to your brain.",
                 "Get aromatic tips →",
                 3
             ),
@@ -354,7 +354,7 @@ fun QuestionFlowScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF7F9F6)) // light background
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
     ) {
         // Top Bar: Back navigation & 10-segmented progress bar
@@ -366,7 +366,7 @@ fun QuestionFlowScreen(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = Color(0xFF1D3C28)
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
             
@@ -386,8 +386,8 @@ fun QuestionFlowScreen(
                             .fillMaxHeight()
                             .clip(CircleShape)
                             .background(
-                                if (i <= currentIndex) Color(0xFF6E8B7E) // filled (sage green)
-                                else Color(0xFFE2E8E5) // empty
+                                if (i <= currentIndex) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.outlineVariant
                             )
                     )
                 }
@@ -400,7 +400,7 @@ fun QuestionFlowScreen(
             text = "Question ${currentIndex + 1} of 10",
             style = MaterialTheme.typography.labelLarge.copy(
                 fontSize = 14.sp,
-                color = Color(0xFF6E8B7E),
+                color = MaterialTheme.colorScheme.secondary,
                 fontWeight = FontWeight.Bold
             )
         )
@@ -410,14 +410,14 @@ fun QuestionFlowScreen(
         // Category Badge
         Box(
             modifier = Modifier
-                .background(Color(0xFFE8EFEA), RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp))
                 .padding(horizontal = 12.dp, vertical = 6.dp)
         ) {
             Text(
                 text = currentQuestion.category,
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontSize = 11.sp,
-                    color = Color(0xFF1D3C28),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.ExtraBold
                 )
             )
@@ -431,7 +431,7 @@ fun QuestionFlowScreen(
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1D3C28),
+                color = MaterialTheme.colorScheme.onBackground,
                 lineHeight = 32.sp
             ),
             modifier = Modifier.weight(1f)
@@ -450,7 +450,7 @@ fun QuestionFlowScreen(
                         .testTag("question_${currentIndex}_option_$score"),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.surface
                     ),
                     border = borderStroke()
                 ) {
@@ -466,13 +466,13 @@ fun QuestionFlowScreen(
                             style = MaterialTheme.typography.bodyLarge.copy(
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1D3C28)
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         )
                         Icon(
                             imageVector = Icons.Default.ChevronRight,
                             contentDescription = null,
-                            tint = Color(0xFF6E8B7E)
+                            tint = MaterialTheme.colorScheme.secondary
                         )
                     }
                 }
@@ -486,7 +486,7 @@ fun QuestionFlowScreen(
 @Composable
 fun borderStroke() = androidx.compose.foundation.BorderStroke(
     width = 1.dp,
-    color = Color(0xFFE2E8E5)
+    color = MaterialTheme.colorScheme.outlineVariant
 )
 
 @Composable
@@ -642,8 +642,8 @@ fun ResultScreen(
         Text(
             text = when (score) {
                 in 15..20 -> "Your environment is highly supportive of your nervous system. Biophilic cues are abundant, promoting natural calm, focus, and restoration. Maintain this healthy balance!"
-                in 8..14 -> "Your environment has meaningful biophilic gaps that are quietly costing you focus, mood, and resilience. The good news: the highest-impact fixes are specific and achievable."
-                else -> "Your environment is creating significant sensory strain. A lack of natural inputs may be contributing to fatigue, stress, or brain fog. A few key adjustments can transform this space."
+                in 8..14 -> "Your space has a few natural elements missing, which might be quietly draining your energy and focus. The good news is that small, simple changes can make a big difference."
+                else -> "Your space might be adding to your daily stress. Without enough natural light, plants, or fresh air, it's easy to feel tired and unfocused. Let's make a few simple adjustments to turn your room into a restorative sanctuary."
             },
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = 16.sp,
@@ -777,7 +777,7 @@ fun StepsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF7F9F6))
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
     ) {
         Text(
@@ -785,7 +785,7 @@ fun StepsScreen(
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1D3C28),
+                color = MaterialTheme.colorScheme.primary,
                 lineHeight = 32.sp
             ),
             modifier = Modifier.padding(top = 16.dp)
@@ -797,7 +797,7 @@ fun StepsScreen(
             text = "Click a step below to expand details and begin styling your environment.",
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontSize = 14.sp,
-                color = Color(0xFF6E8B7E)
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
         )
         
@@ -819,7 +819,7 @@ fun StepsScreen(
                         .testTag("step_card_$index"),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (isExpanded) Color.White else Color(0xFFEAEFEA)
+                        containerColor = if (isExpanded) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
                     ),
                     border = borderStroke()
                 ) {
@@ -842,12 +842,12 @@ fun StepsScreen(
                                     modifier = Modifier
                                         .size(28.dp)
                                         .clip(CircleShape)
-                                        .background(Color(0xFF1D3C28)),
+                                        .background(MaterialTheme.colorScheme.primary),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = "${index + 1}",
-                                        color = Color.White,
+                                        color = MaterialTheme.colorScheme.onPrimary,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 12.sp
                                     )
@@ -858,7 +858,7 @@ fun StepsScreen(
                                     style = MaterialTheme.typography.bodyLarge.copy(
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1D3C28)
+                                        color = MaterialTheme.colorScheme.onSurface
                                     ),
                                     modifier = Modifier.weight(1f)
                                 )
@@ -867,7 +867,7 @@ fun StepsScreen(
                             Icon(
                                 imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                                 contentDescription = null,
-                                tint = Color(0xFF1D3C28)
+                                tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                         
@@ -879,7 +879,7 @@ fun StepsScreen(
                                     text = step.detail,
                                     style = MaterialTheme.typography.bodyMedium.copy(
                                         fontSize = 14.sp,
-                                        color = Color(0xFF1D3C28).copy(alpha = 0.8f),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         lineHeight = 22.sp
                                     )
                                 )
@@ -889,8 +889,8 @@ fun StepsScreen(
                                 Button(
                                     onClick = { onFinish(step.targetTab) },
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF1D3C28),
-                                        contentColor = Color.White
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
                                     ),
                                     shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier
@@ -923,7 +923,7 @@ fun StepsScreen(
             Text(
                 text = "Go to Floral Space Dashboard",
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1D3C28)
+                color = MaterialTheme.colorScheme.primary
             )
         }
         

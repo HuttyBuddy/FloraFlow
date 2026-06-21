@@ -315,7 +315,7 @@ fun WalkthroughOverlay(
                                                 viewModel.nextWalkthroughStep()
                                             }
                                             WalkthroughStep.AI_ADVISOR_TAB -> {
-                                                onTabChange(0) // Return to Dashboard
+                                                onTabChange(4) // Transition to Restoration Journal
                                                 viewModel.nextWalkthroughStep()
                                             }
                                             WalkthroughStep.AR_LENS_TAB -> {

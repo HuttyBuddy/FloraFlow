@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Spa
+import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.DarkMode
@@ -335,10 +336,18 @@ class MainActivity : ComponentActivity() {
                                          onClick = {
                                              viewModel.setCurrentTab(4)
                                          },
-                                        icon = { Icon(Icons.Default.Spa, contentDescription = "Restoration", modifier = Modifier.size(24.dp)) },
+                                        icon = { Icon(Icons.Default.SelfImprovement, contentDescription = "Restoration", modifier = Modifier.size(24.dp)) },
                                         label = { Text("Restoration", style = uniformTextStyle, maxLines = 1, softWrap = false) },
                                         colors = uniformColors,
-                                        modifier = Modifier.testTag("nav_tab_ar"),
+                                        modifier = Modifier
+                                            .testTag("nav_tab_ar")
+                                            .onGloballyPositioned { coordinates ->
+                                                val rect = coordinates.boundsInRoot()
+                                                viewModel.updateWalkthroughTarget(
+                                                    WalkthroughStep.AR_LENS_TAB,
+                                                    ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
+                                                )
+                                            },
                                         alwaysShowLabel = true
                                     )
                                 }
