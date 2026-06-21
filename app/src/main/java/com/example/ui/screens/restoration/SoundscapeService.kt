@@ -86,7 +86,11 @@ class SoundscapeService : Service() {
         isPlaying = false
         
         // 1. Pause media player
-        mediaPlayer?.pause()
+        try {
+            mediaPlayer?.pause()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         
         // 2. Stop tone generator
         stopBinauralGeneration()
@@ -118,7 +122,11 @@ class SoundscapeService : Service() {
 
     fun setAmbientVolume(vol: Float) {
         ambientVolume = vol
-        mediaPlayer?.setVolume(vol, vol)
+        try {
+            mediaPlayer?.setVolume(vol, vol)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     fun setBinauralVolume(vol: Float) {
@@ -136,13 +144,19 @@ class SoundscapeService : Service() {
     fun getBinauralVolume(): Float = binauralVolume
 
     private fun playAmbientLoop() {
-        if (mediaPlayer == null) {
-            mediaPlayer = MediaPlayer.create(this, R.raw.wind_chime).apply {
-                isLooping = true
+        try {
+            if (mediaPlayer == null) {
+                val mp = MediaPlayer.create(this, R.raw.wind_chime)
+                if (mp != null) {
+                    mp.isLooping = true
+                    mediaPlayer = mp
+                }
             }
+            mediaPlayer?.setVolume(ambientVolume, ambientVolume)
+            mediaPlayer?.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
-        mediaPlayer?.setVolume(ambientVolume, ambientVolume)
-        mediaPlayer?.start()
     }
 
     private fun startBinauralGeneration() {
@@ -274,8 +288,12 @@ class SoundscapeService : Service() {
 
     override fun onDestroy() {
         isPlaying = false
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
+        try {
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         mediaPlayer = null
         stopBinauralGeneration()
         serviceScope.cancel()
