@@ -27,6 +27,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.text.intl.Locale as ComposeLocale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -1462,8 +1463,9 @@ fun MonthlyWellnessDigestCard(
     moodLogs: List<MoodLog>,
     modifier: Modifier = Modifier
 ) {
+    val currentLocale = ComposeLocale.current.platformLocale
     val calendar = java.util.Calendar.getInstance()
-    val currentMonthName = java.text.SimpleDateFormat("MMMM", Locale.getDefault()).format(calendar.time)
+    val currentMonthName = java.text.SimpleDateFormat("MMMM", currentLocale).format(calendar.time)
     
     val currentMonthLogs = remember(moodLogs) {
         moodLogs.filter { log ->
@@ -1531,7 +1533,7 @@ fun MonthlyWellnessDigestCard(
                 )
             } else {
                 Text(
-                    text = "You gardened $totalGardened times, felt Peaceful $peacefulCount times, and your wellness bloom average went from ${String.format(Locale.getDefault(), "%.1f", startAvg)} to ${String.format(Locale.getDefault(), "%.1f", endAvg)}.",
+                    text = "You gardened $totalGardened times, felt Peaceful $peacefulCount times, and your wellness bloom average went from ${String.format(currentLocale, "%.1f", startAvg)} to ${String.format(currentLocale, "%.1f", endAvg)}.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer,
                     fontWeight = FontWeight.Medium
