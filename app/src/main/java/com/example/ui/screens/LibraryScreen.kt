@@ -213,7 +213,7 @@ fun LibraryScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(companionTemplates) { tpl ->
+            items(companionTemplates, key = { it.name }) { tpl ->
                 val isCultivated = activePlants.any { it.name.lowercase() == tpl.name.lowercase() }
                 
                 InputChip(
@@ -417,7 +417,7 @@ fun LibraryScreen(
                 Spacer(modifier = Modifier.height(4.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     val types = listOf("All", "Flower", "Shrub", "Succulent", "Herb", "Tree", "Fern")
-                    items(types) { t ->
+                    items(types, key = { it }) { t ->
                         FilterChip(
                             selected = selectedTypeFilter == t,
                             onClick = { selectedTypeFilter = t },
@@ -434,7 +434,7 @@ fun LibraryScreen(
                 Spacer(modifier = Modifier.height(4.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     val climates = listOf("All", "Temperate", "Arid", "Tropical", "Mediterranean", "Mountainous")
-                    items(climates) { c ->
+                    items(climates, key = { it }) { c ->
                         FilterChip(
                             selected = selectedClimateFilter == c,
                             onClick = { selectedClimateFilter = c },
@@ -451,7 +451,7 @@ fun LibraryScreen(
                 Spacer(modifier = Modifier.height(4.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     val waterFilters = listOf("All", "Low", "Moderate", "High")
-                    items(waterFilters) { w ->
+                    items(waterFilters, key = { it }) { w ->
                         FilterChip(
                             selected = selectedWaterFilter == w,
                             onClick = { selectedWaterFilter = w },
@@ -468,7 +468,7 @@ fun LibraryScreen(
                 Spacer(modifier = Modifier.height(4.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     val bloomFilters = listOf("All", "Spring", "Summer", "Autumn", "Winter", "Year-round")
-                    items(bloomFilters) { b ->
+                    items(bloomFilters, key = { it }) { b ->
                         FilterChip(
                             selected = selectedBloomFilter == b,
                             onClick = { selectedBloomFilter = b },
@@ -891,7 +891,7 @@ fun PlantCareTrackerCard(
                 IconButton(onClick = onExpandClick) {
                     Icon(
                         if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = "Expand details"
+                        contentDescription = if (isExpanded) "Collapse details" else "Expand details"
                     )
                 }
             }
@@ -1186,7 +1186,7 @@ fun SpeciesEncyclopediaCard(
                 IconButton(onClick = onExpandClick) {
                     Icon(
                         if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = "Expand details"
+                        contentDescription = if (isExpanded) "Collapse details" else "Expand details"
                     )
                 }
             }
@@ -1429,7 +1429,7 @@ fun AddCustomPlantDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
-                    items(typeOptions) { opt ->
+                    items(typeOptions, key = { it }) { opt ->
                         val isSelected = type == opt
                         FilterChip(
                             selected = isSelected,

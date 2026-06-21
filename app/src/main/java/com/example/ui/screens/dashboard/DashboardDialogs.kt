@@ -203,7 +203,7 @@ fun ChooseLayoutDialog(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.heightIn(max = 300.dp)
                     ) {
-                        items(layouts) { lay ->
+                        items(layouts, key = { it.id }) { lay ->
                             val isSelected = activeLayout?.id == lay.id
                             Card(
                                 modifier = Modifier

@@ -866,8 +866,8 @@ fun StepsScreen(
                             
                             Icon(
                                 imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface
+                                contentDescription = if (isExpanded) "Collapse details" else "Expand details",
+                                tint = Color(0xFF1D3C28)
                             )
                         }
                         
