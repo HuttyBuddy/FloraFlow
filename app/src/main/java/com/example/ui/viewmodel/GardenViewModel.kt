@@ -592,7 +592,7 @@ class GardenViewModel @JvmOverloads constructor(
                     )
                 }
             } catch (e: Exception) {
-                Log.e("GardenViewModel", "Failed to initialize default data", e)
+                Log.e("GardenViewModel", "Failed to initialize default data: ${e.message}")
             }
         }
 
@@ -1114,7 +1114,7 @@ class GardenViewModel @JvmOverloads constructor(
                     android.util.Log.e("FloraFlow", "Google Forms Sync returned non-success code: ${response.code}. Saved locally.")
                 }
             } catch (e: Exception) {
-                android.util.Log.e("FloraFlow", "Google Forms Sync failed: ${e.message}. Saved locally as offline fallback.", e)
+                android.util.Log.e("FloraFlow", "Google Forms Sync failed: ${e.message}. Saved locally as offline fallback.")
             } finally {
                 _isSubmittingFeedback.value = false
                 _feedbackSuccess.value = true

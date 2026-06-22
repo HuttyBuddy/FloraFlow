@@ -29,7 +29,7 @@ class CareSyncWorker(
 
             return Result.success()
         } catch (e: Exception) {
-            Log.e("CareSyncWorker", "Error running care scheduler sync: ${e.message}", e)
+            Log.e("CareSyncWorker", "Error running care scheduler sync: ${e.message}")
             return Result.retry()
         }
     }
