@@ -77,7 +77,7 @@ floraflow-garden-designer/
 
 ### Prerequisites
 *   [Android Studio](https://developer.android.com/studio) (Koala or newer recommended)
-*   Android SDK 35 (Target & Compile SDK)
+*   Android SDK 37 (Target & Compile SDK)
 *   JDK 17 or higher
 
 ### Installation & Local Setup
