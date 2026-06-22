@@ -720,12 +720,13 @@ class GardenViewModel @JvmOverloads constructor(
             available.shuffle()
             val slotsToSow = available.take(countToSow)
 
+            val newPlantsToInsert = mutableListOf<Plant>()
             for (slot in slotsToSow) {
                 val tpl = templates.random()
                 items.add(GridPlantItem(slot.first, slot.second, tpl.name))
                 
-                if (_activePlants.value.none { it.name == tpl.name }) {
-                    repository.insertPlant(
+                if (_activePlants.value.none { it.name == tpl.name } && newPlantsToInsert.none { it.name == tpl.name }) {
+                    newPlantsToInsert.add(
                         Plant(
                             layoutId = current.id,
                             name = tpl.name,
@@ -744,6 +745,13 @@ class GardenViewModel @JvmOverloads constructor(
                         )
                     )
                 }
+            }
+            if (newPlantsToInsert.isNotEmpty()) {
+                // ⚡ Bolt Performance Optimization:
+                // Use batch insertion to avoid the Room Database N+1 query problem.
+                // This executes a single database transaction instead of multiple
+                // separate transactions, reducing I/O overhead significantly.
+                repository.insertPlants(newPlantsToInsert)
             }
 
             val newGridString = toGridString(items)
@@ -1177,6 +1185,7 @@ class GardenViewModel @JvmOverloads constructor(
             val existingActivePlants = repository.getPlantsForLayout(current.id).first()
             val existingNames = existingActivePlants.map { it.name }.toSet()
             
+            val newPlantsToInsert = mutableListOf<Plant>()
             for (plantName in uniquePlantNames) {
                 if (plantName.isNotBlank() && plantName != "Empty" && !existingNames.contains(plantName)) {
                     val tpl = ClimatePlants.ALL_TEMPLATES.find { it.name.equals(plantName, ignoreCase = true) }
@@ -1215,8 +1224,15 @@ class GardenViewModel @JvmOverloads constructor(
                             pestsDiseases = "Aphids"
                         )
                     }
-                    repository.insertPlant(newPlant)
+                    newPlantsToInsert.add(newPlant)
                 }
+            }
+            if (newPlantsToInsert.isNotEmpty()) {
+                // ⚡ Bolt Performance Optimization:
+                // Use batch insertion to avoid the Room Database N+1 query problem.
+                // This executes a single database transaction instead of multiple
+                // separate transactions, reducing I/O overhead significantly.
+                repository.insertPlants(newPlantsToInsert)
             }
             refreshWidget()
         }
