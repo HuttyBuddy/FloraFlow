@@ -80,6 +80,7 @@ fun DashboardScreen(
     var showCreateDialog by remember { mutableStateOf(false) }
     var showLayoutSelector by remember { mutableStateOf(false) }
     var showLogMoodDialog by remember { mutableStateOf(false) }
+    var showZipDialog by remember { mutableStateOf(false) }
 
     val configuration = LocalConfiguration.current
     val isWideScreen = configuration.screenWidthDp >= 600
@@ -614,7 +615,7 @@ fun DashboardScreen(
                 item { skippedAssessmentBanner() }
             }
             item { headerContent() }
-            item { DailyHabitCard(viewModel = viewModel) }
+            item { DailyHabitCard(viewModel = viewModel, onWeatherClick = { showZipDialog = true }) }
             item { MindfulBreathingCard(viewModel = viewModel) }
             item { MonthlyWellnessDigestCard(moodLogs = moodLogs) }
             item { SeasonalCareCoachCard(activePlants = activePlants) }
@@ -643,7 +644,7 @@ fun DashboardScreen(
                     skippedAssessmentBanner()
                 }
                 headerContent()
-                DailyHabitCard(viewModel = viewModel)
+                DailyHabitCard(viewModel = viewModel, onWeatherClick = { showZipDialog = true })
                 MindfulBreathingCard(viewModel = viewModel)
                 MonthlyWellnessDigestCard(moodLogs = moodLogs)
                 SeasonalCareCoachCard(activePlants = activePlants)
@@ -703,6 +704,71 @@ fun DashboardScreen(
                 showLogMoodDialog = false
             }
         )
+    }
+
+    // --- DIALOG: Change Zip Code ---
+    if (showZipDialog) {
+        Dialog(onDismissRequest = { showZipDialog = false }) {
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.background,
+                modifier = Modifier
+                    .padding(16.dp)
+                    .testTag("change_zip_dialog")
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(20.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "Update Location Zip Code",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    var zipInput by remember { mutableStateOf(viewModel.getWeatherLocationZip()) }
+
+                    OutlinedTextField(
+                        value = zipInput,
+                        onValueChange = { zipInput = it },
+                        label = { Text("Zip Code") },
+                        modifier = Modifier.fillMaxWidth().testTag("zip_code_input"),
+                        placeholder = { Text("e.g. 90210") },
+                        shape = RoundedCornerShape(12.dp),
+                        singleLine = true
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(onClick = { showZipDialog = false }) {
+                            Text("Cancel")
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                if (zipInput.isNotBlank()) {
+                                    viewModel.updateWeatherLocation(zipInput.trim())
+                                    showZipDialog = false
+                                }
+                            },
+                            enabled = zipInput.isNotBlank(),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.testTag("submit_zip_code")
+                        ) {
+                            Text("Update")
+                        }
+                    }
+                }
+            }
+        }
     }
 
     // --- Celebration Dialogs ---
@@ -1223,6 +1289,7 @@ fun DailyGrowthRing(
 @Composable
 fun DailyHabitCard(
     viewModel: GardenViewModel,
+    onWeatherClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val pendingTasks by viewModel.pendingCareTasks.collectAsStateWithLifecycle()
@@ -1310,12 +1377,28 @@ fun DailyHabitCard(
                 // Weather and Care checklist column
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     // Local Eco-Zone Weather status
-                    Text(
-                        text = "Weather: ${getWeatherEmoji(weather.condition)} ${weather.cityName} (${weather.temperatureCelsius.toInt()}°C • ${weather.condition})",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { onWeatherClick() }
+                            .padding(vertical = 2.dp, horizontal = 4.dp)
+                            .testTag("weather_section")
+                    ) {
+                        Text(
+                            text = "Weather: ${getWeatherEmoji(weather.condition)} ${weather.cityName} (${weather.temperatureFahrenheit.toInt()}°F • ${weather.condition})",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Icon(
+                            imageVector = androidx.compose.material.icons.Icons.Default.Edit,
+                            contentDescription = "Edit Location",
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(2.dp))
 

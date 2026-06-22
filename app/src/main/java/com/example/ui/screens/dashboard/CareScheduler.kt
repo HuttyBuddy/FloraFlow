@@ -141,7 +141,7 @@ class CareScheduler(
                 NotificationHelper.sendCareReminder(
                     context,
                     "⚠️ Frost Warning Alert!",
-                    "Temperature dropped to ${weather.temperatureCelsius}°C. Protect your sensitive plants like ${tenderPlants.joinToString { it.name }} from frost!"
+                    "Temperature dropped to ${weather.temperatureFahrenheit.toInt()}°F. Protect your sensitive plants like ${tenderPlants.joinToString { it.name }} from frost!"
                 )
             }
         }

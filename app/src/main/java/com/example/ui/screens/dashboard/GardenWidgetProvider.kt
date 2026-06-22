@@ -37,10 +37,10 @@ class GardenWidgetProvider : AppWidgetProvider() {
             }
 
             val sharedPrefs = context.getSharedPreferences("floraflow_weather_prefs", Context.MODE_PRIVATE)
-            val condition = sharedPrefs.getString("condition", "Clear") ?: "Clear"
-            val temp = sharedPrefs.getFloat("temperature", 22.0f)
-            val city = sharedPrefs.getString("city_name", "Garden") ?: "Garden"
-            val weatherStr = "Weather: ${getWeatherEmoji(condition)} $city (${temp.toInt()}°C • $condition)"
+            val condition = sharedPrefs.getString("cached_condition", "Clear") ?: "Clear"
+            val temp = sharedPrefs.getFloat("cached_temp", 71.6f)
+            val city = sharedPrefs.getString("cached_city", "Garden") ?: "Garden"
+            val weatherStr = "Weather: ${getWeatherEmoji(condition)} $city (${temp.toInt()}°F • $condition)"
 
             Triple(streakVal, nextTaskStr, weatherStr)
         }

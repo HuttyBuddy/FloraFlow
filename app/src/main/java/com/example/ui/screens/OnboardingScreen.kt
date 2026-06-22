@@ -276,6 +276,19 @@ fun SplashWelcomeScreen(
             )
         )
         
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Text(
+            text = "Cultivating Calm through Mindful Gardening",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center
+            ),
+            modifier = Modifier.padding(horizontal = 24.dp)
+        )
+        
         Spacer(modifier = Modifier.weight(1f))
         
         Text(

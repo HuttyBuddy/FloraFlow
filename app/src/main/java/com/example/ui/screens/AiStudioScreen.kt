@@ -79,7 +79,7 @@ fun AiStudioScreen(
         val layout = activeLayout
         if (layout != null) {
             val msg = when (metricType) {
-                "soil_temp" -> "Dr. Julian, my current soil temperature is 21.6°C. Is this optimal for my '${layout.style}' garden in '${layout.climate}' climate? What biology-driven suggestions do you have to regulate it?"
+                "soil_temp" -> "Dr. Julian, my current soil temperature is 70.9°F. Is this optimal for my '${layout.style}' garden in '${layout.climate}' climate? What biology-driven suggestions do you have to regulate it?"
                 "moisture" -> {
                     val moistureVal = when (layout.style) {
                         "Desert", "Xeriscaping" -> "18%"
@@ -1353,7 +1353,7 @@ fun BotanistLiveLabConsole(
                     BotanistMetricItem(
                         icon = "🌡️",
                         label = "Soil Temp",
-                        value = "21.6°C",
+                        value = "70.9°F",
                         desc = "Optimal range",
                         onClick = { onMetricClicked("soil_temp") },
                         modifier = Modifier.weight(1f)

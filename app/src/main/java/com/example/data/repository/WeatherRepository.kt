@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 data class WeatherInfo(
-    val temperatureCelsius: Double,
+    val temperatureFahrenheit: Double,
     val humidity: Double,
     val condition: String, // "Rain", "Clear", "Clouds", "Snow", "Heatwave", "Frost"
     val cityName: String
@@ -21,7 +21,7 @@ class WeatherRepository(private val context: Context) {
 
     private val _currentWeather = MutableStateFlow(
         WeatherInfo(
-            temperatureCelsius = sharedPrefs.getFloat("cached_temp", 22.0f).toDouble(),
+            temperatureFahrenheit = sharedPrefs.getFloat("cached_temp", 71.6f).toDouble(),
             humidity = sharedPrefs.getFloat("cached_humidity", 55.0f).toDouble(),
             condition = sharedPrefs.getString("cached_condition", "Clear") ?: "Clear",
             cityName = sharedPrefs.getString("cached_city", "Home Haven") ?: "Home Haven"
@@ -48,13 +48,14 @@ class WeatherRepository(private val context: Context) {
             else -> "Clear"
         }
 
-        val temp = when (condition) {
+        val tempCelsius = when (condition) {
             "Rain" -> 16.0
             "Snow" -> -2.0
             "Heatwave" -> 38.0
             "Frost" -> 1.0
             else -> 23.0
         }
+        val tempFahrenheit = tempCelsius * 9.0 / 5.0 + 32.0
 
         val humidity = when (condition) {
             "Rain" -> 85.0
@@ -65,7 +66,7 @@ class WeatherRepository(private val context: Context) {
         }
 
         val info = WeatherInfo(
-            temperatureCelsius = temp,
+            temperatureFahrenheit = tempFahrenheit,
             humidity = humidity,
             condition = condition,
             cityName = if (location.all { it.isDigit() }) "Zip Code $location" else location
@@ -74,7 +75,7 @@ class WeatherRepository(private val context: Context) {
         // Cache the weather locally
         _currentWeather.value = info
         sharedPrefs.edit {
-            putFloat("cached_temp", temp.toFloat())
+            putFloat("cached_temp", tempFahrenheit.toFloat())
             putFloat("cached_humidity", humidity.toFloat())
             putString("cached_condition", condition)
             putString("cached_city", info.cityName)
@@ -83,16 +84,17 @@ class WeatherRepository(private val context: Context) {
     }
 
     // Allows manual weather overriding for demo/testing of dynamic care adjustments
-    fun simulateWeather(condition: String, temp: Double, humidity: Double) {
+    fun simulateWeather(condition: String, tempCelsius: Double, humidity: Double) {
+        val tempFahrenheit = tempCelsius * 9.0 / 5.0 + 32.0
         val info = WeatherInfo(
-            temperatureCelsius = temp,
+            temperatureFahrenheit = tempFahrenheit,
             humidity = humidity,
             condition = condition,
             cityName = "Simulated Eco-Zone"
         )
         _currentWeather.value = info
         sharedPrefs.edit {
-            putFloat("cached_temp", temp.toFloat())
+            putFloat("cached_temp", tempFahrenheit.toFloat())
             putFloat("cached_humidity", humidity.toFloat())
             putString("cached_condition", condition)
             putString("cached_city", info.cityName)

@@ -465,6 +465,9 @@ class GardenViewModel @JvmOverloads constructor(
 
         viewModelScope.launch(ioDispatcher) {
             try {
+                // Fetch fresh weather on startup using stored zip
+                val currentZip = weatherRepository.getUserLocationZip()
+                weatherRepository.fetchWeather(currentZip)
                 careScheduler.syncCareSchedules()
                 val existingPosts = repository.allPosts.firstOrNull() ?: emptyList()
                 if (existingPosts.isEmpty()) {
@@ -1272,6 +1275,10 @@ class GardenViewModel @JvmOverloads constructor(
         viewModelScope.launch(ioDispatcher) {
             careScheduler.syncCareSchedules()
         }
+    }
+
+    fun getWeatherLocationZip(): String {
+        return weatherRepository.getUserLocationZip()
     }
 
     fun updateWeatherLocation(zip: String) {

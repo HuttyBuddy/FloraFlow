@@ -434,10 +434,10 @@ class MainActivity : ComponentActivity() {
 fun SplashWarmUpScreen() {
     var startAnimation by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0.1f,
+        targetValue = if (startAnimation) 1f else 0.9f,
         animationSpec = spring(
             dampingRatio = 0.6f, // Nice slightly bouncy bloom effect
-            stiffness = Spring.StiffnessLow
+            stiffness = Spring.StiffnessMedium
         ),
         label = "logoScale"
     )
@@ -478,9 +478,11 @@ fun SplashWarmUpScreen() {
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Therapeutic Space & Advisor",
+                text = "Cultivating Calm through Mindful Gardening",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 24.dp)
             )
 
             Spacer(modifier = Modifier.height(48.dp))

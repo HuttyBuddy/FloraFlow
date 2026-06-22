@@ -43,7 +43,7 @@ const screenshotMetadata = {
   // Onboarding screens
   'Screenshot_20260529_152706.png': {
     title: 'WELCOME TO FLORAFLOW',
-    subtitle: 'Coactive space planning and wellness'
+    subtitle: 'Cultivating Calm through Mindful Gardening'
   },
   'Screenshot_20260529_220719.png': {
     title: 'AI ADVISOR CHAT',
@@ -54,7 +54,7 @@ const screenshotMetadata = {
 // Default metadata for unmapped screenshots
 const defaultMetadata = {
   title: 'FLORAFLOW DESIGNER',
-  subtitle: 'Therapeutic spaces, advisor, and AR'
+  subtitle: 'Cultivating Calm through Mindful Gardening'
 };
 
 // Scan the directory for raw screenshots

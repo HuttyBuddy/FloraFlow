@@ -59,7 +59,7 @@
         android:id="@+id/widget_weather"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Weather: ☀️ Clear 20°C"
+        android:text="Weather: ☀️ Clear 68°F"
         android:textColor="#FF43493E"
         android:textSize="11sp" />
 </LinearLayout>
