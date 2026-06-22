@@ -2,6 +2,18 @@
 
 All notable changes to the FloraFlow project will be documented in this file.
 
+## [9.0.1.0] - 2026-06-11
+
+### Added
+- **Soundscape Foundation**: Introduced new Soundscape service architectures for enhanced therapeutic audio experiences.
+
+### Changed
+- **UI Polishing**: Refined layouts for Onboarding, Dashboard, and Restoration Journal screens for better visual consistency.
+- **Merge Sync**: Synchronized with the latest upstream changes including performance optimizations for LazyLists and secure logging.
+
+### Fixed
+- **Screen Flow**: Resolved navigation state issues in the onboarding assessment path.
+
 ## [9.0.0.0] - 2026-06-11
 
 ### Added
