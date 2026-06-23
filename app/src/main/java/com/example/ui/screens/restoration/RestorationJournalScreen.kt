@@ -887,7 +887,7 @@ fun NriGaugeCard(
                 Spacer(modifier = Modifier.width(6.dp))
                 Icon(
                     imageVector = Icons.Default.ExpandMore,
-                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                    contentDescription = if (isExpanded) "Collapse diagnostics" else "Expand diagnostics",
                     tint = Color(0xFFA8E6CF),
                     modifier = Modifier
                         .size(16.dp)
