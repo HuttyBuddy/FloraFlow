@@ -82,4 +82,46 @@ class GardenViewModelTest {
             assertTrue(viewModel.incrementRestorationTrial())
         }
     }
+
+    @Test
+    fun updateArPlant3DPosition_updatesCorrectPlant() {
+        // Setup initial plant
+        viewModel.addArPlant("Rose", "🌹", customX = 1f, customY = 2f, customZ = 3f)
+        val initialPlants = viewModel.arPlacedPlants.value
+        assertEquals(1, initialPlants.size)
+        val plantId = initialPlants.first().id
+
+        // Act
+        viewModel.updateArPlant3DPosition(plantId, x = 10f, y = 20f, z = 30f)
+
+        // Assert
+        val updatedPlants = viewModel.arPlacedPlants.value
+        assertEquals(1, updatedPlants.size)
+        val updatedPlant = updatedPlants.first()
+        assertEquals(10f, updatedPlant.positionX)
+        assertEquals(20f, updatedPlant.positionY)
+        assertEquals(30f, updatedPlant.positionZ)
+    }
+
+    @Test
+    fun updateArPlant3DPosition_ignoresNonexistentId() {
+        // Setup initial plant
+        viewModel.addArPlant("Rose", "🌹", customX = 1f, customY = 2f, customZ = 3f)
+        val initialPlants = viewModel.arPlacedPlants.value
+        assertEquals(1, initialPlants.size)
+        val initialPlant = initialPlants.first()
+
+        // Act - Update with non-existent ID
+        viewModel.updateArPlant3DPosition(999, x = 10f, y = 20f, z = 30f)
+
+        // Assert
+        val updatedPlants = viewModel.arPlacedPlants.value
+        assertEquals(1, updatedPlants.size)
+        val updatedPlant = updatedPlants.first()
+
+        // Ensure values remain unchanged
+        assertEquals(initialPlant.positionX, updatedPlant.positionX)
+        assertEquals(initialPlant.positionY, updatedPlant.positionY)
+        assertEquals(initialPlant.positionZ, updatedPlant.positionZ)
+    }
 }
