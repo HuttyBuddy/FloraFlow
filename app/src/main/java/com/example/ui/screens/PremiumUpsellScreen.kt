@@ -37,232 +37,6 @@ fun PremiumUpsellScreen(
     val isTablet = configuration.smallestScreenWidthDp >= 600
     val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
 
-    val crownBadge = @Composable {
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFFFFD54F), Color(0xFFFFB74D))
-                    )
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                Icons.Default.WorkspacePremium,
-                contentDescription = "Premium Badge",
-                modifier = Modifier.size(48.dp),
-                tint = Color.White
-            )
-        }
-    }
-
-    val titleSection = @Composable {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "FloraFlow PRO",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Point your phone at a space, envision, plan, and bring a garden to life. Unlock premium eco-acoustic soundscapes and biophilic design neuroscience.",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-
-    val featuresList = @Composable {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                PremiumFeatureRow(
-                    title = "Eco-Acoustic Restoration Journal",
-                    description = "Immersive eco-acoustic binaural soundscapes & Neural Restoration Journal with dynamic stress metrics."
-                )
-                PremiumFeatureRow(
-                    title = "Gemini AI Advisor",
-                    description = "Biophilic design neuroscience assistant. Point your phone at any space to envision, plan, and get expert botany advice."
-                )
-                PremiumFeatureRow(
-                    title = "Unlimited Blueprints & Layouts",
-                    description = "Plan professional-grade garden layouts on the interactive grid blueprint without design training."
-                )
-            }
-        }
-    }
-
-    val ctaPricingCard = @Composable {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(
-                    width = 2.dp,
-                    brush = Brush.horizontalGradient(
-                        listOf(Color(0xFFFFD54F), MaterialTheme.colorScheme.primary)
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "$4.99 / month",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Cancel anytime. Billed monthly.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Button(
-                    onClick = onUpgradeClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Icon(
-                        Icons.Default.AutoAwesome,
-                        contentDescription = "Upgrade",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Upgrade to PRO", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-    }
-
-    val restoreButton = @Composable {
-        Text(
-            text = "Restore Purchases",
-            fontSize = 13.sp,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .clickable { onRestoreClick() }
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        )
-    }
-
-    val comparisonGrid = @Composable {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
-            shape = RoundedCornerShape(16.dp),
-            border = androidx.compose.foundation.BorderStroke(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Text(
-                    text = "Plan Comparison Matrix",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-
-                // Grid Headers
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Feature", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("FREE", modifier = Modifier.weight(0.25f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("PRO", modifier = Modifier.weight(0.25f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.primary)
-                }
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                // Feature Row 1
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("2D Space Planner", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Check, contentDescription = "Yes", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                    }
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Check, contentDescription = "Yes", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                    }
-                }
-
-                // Feature Row 2
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("Restoration Journal", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("3 free plays", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
-                    }
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("Full Binaural", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
-                    }
-                }
-
-                // Feature Row 3
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("AI Master Botanist", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("3 free queries", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
-                    }
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("Unlimited", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
-                    }
-                }
-
-                // Feature Row 4
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("Botanical Catalog", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("Basic Only", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
-                    }
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("5000+ Exotic", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
-                    }
-                }
-
-                // Feature Row 5
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("Lab Soundwave Diagnostics", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Close, contentDescription = "No", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
-                    }
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Check, contentDescription = "Yes", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                    }
-                }
-            }
-        }
-    }
-
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -285,15 +59,15 @@ fun PremiumUpsellScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                crownBadge()
+                CrownBadge()
                 Spacer(modifier = Modifier.height(24.dp))
-                titleSection()
+                TitleSection()
                 Spacer(modifier = Modifier.height(32.dp))
-                featuresList()
+                FeaturesList()
                 Spacer(modifier = Modifier.height(32.dp))
-                ctaPricingCard()
+                CtaPricingCard(onUpgradeClick = onUpgradeClick)
                 Spacer(modifier = Modifier.height(16.dp))
-                restoreButton()
+                RestoreButton(onRestoreClick = onRestoreClick)
                 Spacer(modifier = Modifier.height(48.dp))
             }
         } else {
@@ -315,10 +89,10 @@ fun PremiumUpsellScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Spacer(modifier = Modifier.height(12.dp))
-                    crownBadge()
-                    titleSection()
-                    ctaPricingCard()
-                    restoreButton()
+                    CrownBadge()
+                    TitleSection()
+                    CtaPricingCard(onUpgradeClick = onUpgradeClick)
+                    RestoreButton(onRestoreClick = onRestoreClick)
                     Spacer(modifier = Modifier.height(12.dp))
                 }
 
@@ -331,8 +105,8 @@ fun PremiumUpsellScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    featuresList()
-                    comparisonGrid()
+                    FeaturesList()
+                    ComparisonGrid()
                 }
             }
         }
@@ -364,6 +138,239 @@ fun PremiumFeatureRow(title: String, description: String) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+
+@Composable
+private fun CrownBadge(modifier: Modifier = Modifier) {
+    Box(
+        modifier = Modifier
+            .size(80.dp)
+            .clip(CircleShape)
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(Color(0xFFFFD54F), Color(0xFFFFB74D))
+                )
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            Icons.Default.WorkspacePremium,
+            contentDescription = "Premium Badge",
+            modifier = Modifier.size(48.dp),
+            tint = Color.White
+        )
+    }
+}
+
+@Composable
+private fun TitleSection(modifier: Modifier = Modifier) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = "FloraFlow PRO",
+            style = MaterialTheme.typography.headlineLarge,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Point your phone at a space, envision, plan, and bring a garden to life. Unlock premium eco-acoustic soundscapes and biophilic design neuroscience.",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun FeaturesList(modifier: Modifier = Modifier) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            PremiumFeatureRow(
+                title = "Eco-Acoustic Restoration Journal",
+                description = "Immersive eco-acoustic binaural soundscapes & Neural Restoration Journal with dynamic stress metrics."
+            )
+            PremiumFeatureRow(
+                title = "Gemini AI Advisor",
+                description = "Biophilic design neuroscience assistant. Point your phone at any space to envision, plan, and get expert botany advice."
+            )
+            PremiumFeatureRow(
+                title = "Unlimited Blueprints & Layouts",
+                description = "Plan professional-grade garden layouts on the interactive grid blueprint without design training."
+            )
+        }
+    }
+}
+
+@Composable
+private fun CtaPricingCard(onUpgradeClick: () -> Unit, modifier: Modifier = Modifier) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = 2.dp,
+                brush = Brush.horizontalGradient(
+                    listOf(Color(0xFFFFD54F), MaterialTheme.colorScheme.primary)
+                ),
+                shape = RoundedCornerShape(16.dp)
+            ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "$4.99 / month",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "Cancel anytime. Billed monthly.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onUpgradeClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(
+                    Icons.Default.AutoAwesome,
+                    contentDescription = "Upgrade",
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Upgrade to PRO", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RestoreButton(onRestoreClick: () -> Unit, modifier: Modifier = Modifier) {
+    Text(
+        text = "Restore Purchases",
+        fontSize = 13.sp,
+        color = MaterialTheme.colorScheme.primary,
+        fontWeight = FontWeight.ExtraBold,
+        modifier = Modifier
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onRestoreClick() }
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+}
+
+@Composable
+private fun ComparisonGrid(modifier: Modifier = Modifier) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = "Plan Comparison Matrix",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+
+            // Grid Headers
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Feature", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("FREE", modifier = Modifier.weight(0.25f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("PRO", modifier = Modifier.weight(0.25f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.primary)
+            }
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+            // Feature Row 1
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("2D Space Planner", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.Check, contentDescription = "Yes", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                }
+                Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.Check, contentDescription = "Yes", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                }
+            }
+
+            // Feature Row 2
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("Restoration Journal", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
+                    Text("3 free plays", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
+                }
+                Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
+                    Text("Full Binaural", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                }
+            }
+
+            // Feature Row 3
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("AI Master Botanist", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
+                    Text("3 free queries", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
+                }
+                Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
+                    Text("Unlimited", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                }
+            }
+
+            // Feature Row 4
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("Botanical Catalog", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
+                    Text("Basic Only", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
+                }
+                Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
+                    Text("5000+ Exotic", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
+                }
+            }
+
+            // Feature Row 5
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("Lab Soundwave Diagnostics", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.Close, contentDescription = "No", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
+                }
+                Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.Check, contentDescription = "Yes", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                }
+            }
         }
     }
 }
