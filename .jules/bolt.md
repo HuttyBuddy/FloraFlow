@@ -7,3 +7,10 @@
 ## 2024-07-26 - Room Database Batch Insert Optimization
 **Learning:** Inserting multiple items into a Room Database one-by-one inside a loop forces a separate transaction for every insert, leading to significant I/O overhead.
 **Action:** When inserting multiple items, accumulate them in a list and use a single `@Insert` method in the DAO that accepts a `List<Entity>` to perform a batch insert in a single transaction.
+## 2024-08-01 - Jetpack Compose LazyList Key Pitfalls
+**Learning:** Explicitly passing the list index as a key in `LazyColumn` or `LazyRow` is a no-op because Compose defaults to position anyway. Using `System.identityHashCode(it)` is dangerous and ineffective because it risks key collisions and changes whenever an immutable data class is copied during state updates.
+**Action:** Only provide a custom key to Lazy lists if you have a stable, unique property (like a database ID) inside the item's data class.
+
+## 2024-08-01 - Jetpack Compose Allocation Avoidance
+**Learning:** Defining static lists (e.g., `listOf("All", "Flower", "Shrub")`) directly inside a `@Composable` function forces the UI to re-allocate those objects on every recomposition.
+**Action:** Extract static data structures like filter lists to private top-level constants outside the Composable to prevent unnecessary memory allocations and GC overhead.
