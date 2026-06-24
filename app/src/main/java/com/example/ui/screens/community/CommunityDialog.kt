@@ -237,7 +237,7 @@ fun CommunityFeedView(
                 .fillMaxWidth()
                 .testTag("community_search_input"),
             shape = RoundedCornerShape(16.dp),
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
             trailingIcon = {
                 if (searchQuery.isNotEmpty()) {
                     IconButton(onClick = { searchQuery = "" }) {
