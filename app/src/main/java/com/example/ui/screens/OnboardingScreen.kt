@@ -56,6 +56,92 @@ data class NextStepInfo(
     val targetTab: Int
 )
 
+val ASSESSMENT_QUESTIONS = listOf(
+    AssessmentQuestion("NATURE VIEWS", "I can see trees, plants, or open sky from where I most often sit or work."),
+    AssessmentQuestion("LIVING PLANTS", "There are living plants within my immediate indoor workspace or living area."),
+    AssessmentQuestion("NATURAL LIGHT", "My primary space is illuminated by natural daylight rather than artificial light."),
+    AssessmentQuestion("ACOUSTIC CALM", "My space is free from disruptive background noise (traffic, hums) and feels acoustically calm."),
+    AssessmentQuestion("NATURAL MATERIALS", "I am surrounded by natural materials like wood, stone, wool, or clay in my space."),
+    AssessmentQuestion("AIR & VENTILATION", "I feel a gentle breeze or have access to fresh outdoor air circulation in my room."),
+    AssessmentQuestion("ORGANIC FORMS", "My furniture or decor features curved, organic shapes and patterns instead of sharp, rigid angles."),
+    AssessmentQuestion("WATER FEATURES", "I can see or hear water (such as a fountain, rain, or stream) in or near my space."),
+    AssessmentQuestion("SENSORY RICHNESS", "My space includes natural scents (like wood, soil, or flowers) or tactile natural textures."),
+    AssessmentQuestion("SEASONAL AWARENESS", "I feel connected to the current season and weather changes from inside my space.")
+)
+
+val NEXT_STEPS_MAPPING = mapOf(
+    "NATURE VIEWS" to NextStepInfo(
+        "NATURE VIEWS",
+        "Optimize your outdoor view",
+        "You scored low on Nature Views. Clear window blockages or place plants in your direct line of sight to simulate natural depth.",
+        "Design my layout →",
+        1
+    ),
+    "LIVING PLANTS" to NextStepInfo(
+        "LIVING PLANTS",
+        "Add living material to your work area",
+        "You scored 0 on Living Plants. Adding 2-3 plants to your primary space is the single highest-impact change for your score.",
+        "Find plants for my space →",
+        3
+    ),
+    "NATURAL LIGHT" to NextStepInfo(
+        "NATURAL LIGHT",
+        "Reposition toward natural light",
+        "You scored 1 on Natural Light. Even partial repositioning toward a window helps lower stress and restore calm.",
+        "Design my layout →",
+        1
+    ),
+    "ACOUSTIC CALM" to NextStepInfo(
+        "ACOUSTIC CALM",
+        "Introduce acoustic masking",
+        "You scored low on Acoustic Calm. Mask distracting background noise to quiet your mind.",
+        "Find soothing soundscapes →",
+        3
+    ),
+    "NATURAL MATERIALS" to NextStepInfo(
+        "NATURAL MATERIALS",
+        "Introduce one natural texture",
+        "You scored 0 on Natural Materials. A wood surface, woven rug, or stone object changes your sensory baseline immediately.",
+        "Browse material ideas →",
+        2
+    ),
+    "AIR & VENTILATION" to NextStepInfo(
+        "AIR & VENTILATION",
+        "Enhance active airflow",
+        "You scored low on Air & Ventilation. Open windows for 10 minutes twice daily, or use a gentle oscillating fan to mimic natural wind.",
+        "Ask Advisor for advice →",
+        3
+    ),
+    "ORGANIC FORMS" to NextStepInfo(
+        "ORGANIC FORMS",
+        "Introduce organic patterns",
+        "You scored low on Organic Forms. Incorporate curved decor or botanical prints to soften sharp, institutional room angles.",
+        "Browse decoration ideas →",
+        2
+    ),
+    "WATER FEATURES" to NextStepInfo(
+        "WATER FEATURES",
+        "Add sound of moving water",
+        "You scored low on Water Features. A small tabletop fountain or rain sound machine helps soothe stress and slow down a racing mind.",
+        "Explore water elements →",
+        3
+    ),
+    "SENSORY RICHNESS" to NextStepInfo(
+        "SENSORY RICHNESS",
+        "Stimulate with natural scents",
+        "You scored low on Sensory Richness. Use natural cedarwood, pine, or lavender oils to signal calm and safety to your brain.",
+        "Get aromatic tips →",
+        3
+    ),
+    "SEASONAL AWARENESS" to NextStepInfo(
+        "SEASONAL AWARENESS",
+        "Align with current season",
+        "You scored low on Seasonal Awareness. Bring seasonal flowers indoors or adjust light cycles to stay synced with external rhythms.",
+        "Browse seasonal plants →",
+        2
+    )
+)
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun OnboardingScreen(
@@ -66,104 +152,14 @@ fun OnboardingScreen(
     var currentQuestionIdx by remember { mutableIntStateOf(0) }
     val answers = remember { mutableStateMapOf<Int, Int>() } // question index to score (0, 1, or 2)
 
-    val questions = remember {
-        listOf(
-            AssessmentQuestion("NATURE VIEWS", "I can see trees, plants, or open sky from where I most often sit or work."),
-            AssessmentQuestion("LIVING PLANTS", "There are living plants within my immediate indoor workspace or living area."),
-            AssessmentQuestion("NATURAL LIGHT", "My primary space is illuminated by natural daylight rather than artificial light."),
-            AssessmentQuestion("ACOUSTIC CALM", "My space is free from disruptive background noise (traffic, hums) and feels acoustically calm."),
-            AssessmentQuestion("NATURAL MATERIALS", "I am surrounded by natural materials like wood, stone, wool, or clay in my space."),
-            AssessmentQuestion("AIR & VENTILATION", "I feel a gentle breeze or have access to fresh outdoor air circulation in my room."),
-            AssessmentQuestion("ORGANIC FORMS", "My furniture or decor features curved, organic shapes and patterns instead of sharp, rigid angles."),
-            AssessmentQuestion("WATER FEATURES", "I can see or hear water (such as a fountain, rain, or stream) in or near my space."),
-            AssessmentQuestion("SENSORY RICHNESS", "My space includes natural scents (like wood, soil, or flowers) or tactile natural textures."),
-            AssessmentQuestion("SEASONAL AWARENESS", "I feel connected to the current season and weather changes from inside my space.")
-        )
-    }
-
     val totalScore = remember(answers.size, screenState) {
         answers.values.sum()
     }
 
     val lowestCategories = remember(answers.size, screenState) {
-        questions.mapIndexed { idx, q -> q.category to (answers[idx] ?: 0) }
+        ASSESSMENT_QUESTIONS.mapIndexed { idx, q -> q.category to (answers[idx] ?: 0) }
             .sortedBy { it.second }
             .map { it.first }
-    }
-
-    val stepsMapping = remember {
-        mapOf(
-            "NATURE VIEWS" to NextStepInfo(
-                "NATURE VIEWS",
-                "Optimize your outdoor view",
-                "You scored low on Nature Views. Clear window blockages or place plants in your direct line of sight to simulate natural depth.",
-                "Design my layout →",
-                1
-            ),
-            "LIVING PLANTS" to NextStepInfo(
-                "LIVING PLANTS",
-                "Add living material to your work area",
-                "You scored 0 on Living Plants. Adding 2-3 plants to your primary space is the single highest-impact change for your score.",
-                "Find plants for my space →",
-                3
-            ),
-            "NATURAL LIGHT" to NextStepInfo(
-                "NATURAL LIGHT",
-                "Reposition toward natural light",
-                "You scored 1 on Natural Light. Even partial repositioning toward a window helps lower stress and restore calm.",
-                "Design my layout →",
-                1
-            ),
-            "ACOUSTIC CALM" to NextStepInfo(
-                "ACOUSTIC CALM",
-                "Introduce acoustic masking",
-                "You scored low on Acoustic Calm. Mask distracting background noise to quiet your mind.",
-                "Find soothing soundscapes →",
-                3
-            ),
-            "NATURAL MATERIALS" to NextStepInfo(
-                "NATURAL MATERIALS",
-                "Introduce one natural texture",
-                "You scored 0 on Natural Materials. A wood surface, woven rug, or stone object changes your sensory baseline immediately.",
-                "Browse material ideas →",
-                2
-            ),
-            "AIR & VENTILATION" to NextStepInfo(
-                "AIR & VENTILATION",
-                "Enhance active airflow",
-                "You scored low on Air & Ventilation. Open windows for 10 minutes twice daily, or use a gentle oscillating fan to mimic natural wind.",
-                "Ask Advisor for advice →",
-                3
-            ),
-            "ORGANIC FORMS" to NextStepInfo(
-                "ORGANIC FORMS",
-                "Introduce organic patterns",
-                "You scored low on Organic Forms. Incorporate curved decor or botanical prints to soften sharp, institutional room angles.",
-                "Browse decoration ideas →",
-                2
-            ),
-            "WATER FEATURES" to NextStepInfo(
-                "WATER FEATURES",
-                "Add sound of moving water",
-                "You scored low on Water Features. A small tabletop fountain or rain sound machine helps soothe stress and slow down a racing mind.",
-                "Explore water elements →",
-                3
-            ),
-            "SENSORY RICHNESS" to NextStepInfo(
-                "SENSORY RICHNESS",
-                "Stimulate with natural scents",
-                "You scored low on Sensory Richness. Use natural cedarwood, pine, or lavender oils to signal calm and safety to your brain.",
-                "Get aromatic tips →",
-                3
-            ),
-            "SEASONAL AWARENESS" to NextStepInfo(
-                "SEASONAL AWARENESS",
-                "Align with current season",
-                "You scored low on Seasonal Awareness. Bring seasonal flowers indoors or adjust light cycles to stay synced with external rhythms.",
-                "Browse seasonal plants →",
-                2
-            )
-        )
     }
 
     Box(
@@ -191,11 +187,11 @@ fun OnboardingScreen(
                 }
                 AssessmentScreenState.QUESTION -> {
                     QuestionFlowScreen(
-                        questions = questions,
+                        questions = ASSESSMENT_QUESTIONS,
                         currentIndex = currentQuestionIdx,
                         onAnswer = { score ->
                             answers[currentQuestionIdx] = score
-                            if (currentQuestionIdx < questions.size - 1) {
+                            if (currentQuestionIdx < ASSESSMENT_QUESTIONS.size - 1) {
                                 currentQuestionIdx++
                             } else {
                                 screenState = AssessmentScreenState.CALCULATING
@@ -228,7 +224,7 @@ fun OnboardingScreen(
                 AssessmentScreenState.STEPS -> {
                     StepsScreen(
                         lowestCategories = lowestCategories,
-                        stepsMapping = stepsMapping,
+                        stepsMapping = NEXT_STEPS_MAPPING,
                         onFinish = { targetTab ->
                             viewModel.saveAssessmentResult(totalScore, lowestCategories.take(3))
                             viewModel.setCurrentTab(targetTab)
