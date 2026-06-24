@@ -38,7 +38,6 @@ fun SettingsDialog(
     if (!visible) return
 
     val currentThemeMode by viewModel.themeMode.collectAsState()
-    val context = androidx.compose.ui.platform.LocalContext.current
 
     var showRateDialog by remember { mutableStateOf(false) }
     var showPrivacy by remember { mutableStateOf(false) }
@@ -103,131 +102,22 @@ fun SettingsDialog(
                 )
 
                 // Theme selection layout (Row of 3 cards)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    ThemeOptionCard(
-                        title = "System",
-                        icon = Icons.Default.SettingsSuggest,
-                        isSelected = currentThemeMode == ThemeMode.SYSTEM,
-                        onClick = { viewModel.setThemeMode(ThemeMode.SYSTEM) },
-                        modifier = Modifier.weight(1f)
-                    )
-                    ThemeOptionCard(
-                        title = "Light",
-                        icon = Icons.Default.LightMode,
-                        isSelected = currentThemeMode == ThemeMode.LIGHT,
-                        onClick = { viewModel.setThemeMode(ThemeMode.LIGHT) },
-                        modifier = Modifier.weight(1f)
-                    )
-                    ThemeOptionCard(
-                        title = "Dark",
-                        icon = Icons.Default.DarkMode,
-                        isSelected = currentThemeMode == ThemeMode.DARK,
-                        onClick = { viewModel.setThemeMode(ThemeMode.DARK) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                ThemeSelectionRow(
+                    currentThemeMode = currentThemeMode,
+                    onThemeSelected = { viewModel.setThemeMode(it) }
+                )
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
                 // Settings List Actions
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    SettingsActionRow(
-                        title = "Rate Your App",
-                        subtitle = "Help us grow with a store review",
-                        icon = Icons.Default.Star,
-                        iconTint = Color(0xFFFFB300),
-                        onClick = {
-                            val packageName = context.packageName
-                            val marketIntent = Intent(Intent.ACTION_VIEW, "market://details?id=$packageName".toUri()).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
-                            }
-                            val webIntent = Intent(Intent.ACTION_VIEW, "https://play.google.com/store/apps/details?id=$packageName".toUri())
-                            try {
-                                context.startActivity(marketIntent)
-                            } catch (e: Exception) {
-                                context.startActivity(webIntent)
-                            }
-                            viewModel.acceptRatePrompt()
-                        }
-                    )
-
-                    SettingsActionRow(
-                        title = "Share Feedback",
-                        subtitle = "Suggest features or report issues directly",
-                        icon = Icons.Default.Feedback,
-                        onClick = {
-                            onFeedbackClick()
-                        }
-                    )
-
-                    SettingsActionRow(
-                        title = "Replay App Tour",
-                        subtitle = "Launch the walkthrough overlay again",
-                        icon = Icons.Default.AutoAwesome,
-                        onClick = {
-                            onDismiss()
-                            viewModel.startWalkthrough()
-                        }
-                    )
-
-                    SettingsActionRow(
-                        title = "Retake Biophilic Assessment",
-                        subtitle = "Recalculate your Neural Load score & tips",
-                        icon = Icons.Default.Eco,
-                        iconTint = MaterialTheme.colorScheme.primary,
-                        onClick = {
-                            onDismiss()
-                            viewModel.resetAssessment()
-                        }
-                    )
-
-                    SettingsActionRow(
-                        title = "Invite a Garden Buddy",
-                        subtitle = "Share FloraFlow and unlock 5 exotic species",
-                        icon = Icons.Default.Share,
-                        iconTint = MaterialTheme.colorScheme.tertiary,
-                        onClick = {
-                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_SUBJECT, "Plant a Seed on FloraFlow")
-                                putExtra(Intent.EXTRA_TEXT, "Your friend planted a seed for you on FloraFlow! 🌸 Use this link to download the app and unlock a gift of 5 exotic species to cultivate calm: https://floraflow.app/referral?by=buddy")
-                            }
-                            context.startActivity(Intent.createChooser(shareIntent, "Invite a Garden Buddy"))
-                        }
-                    )
-
-                    SettingsActionRow(
-                        title = "Help & FAQs",
-                        subtitle = "Browse tutorials and troubleshooting guides",
-                        icon = Icons.Default.Help,
-                        onClick = {
-                            onDismiss()
-                            onHelpClick()
-                        }
-                    )
-
-                    SettingsActionRow(
-                        title = "Privacy Policy",
-                        subtitle = "Data storage and Gemini AI details",
-                        icon = Icons.Default.Lock,
-                        iconTint = MaterialTheme.colorScheme.secondary,
-                        onClick = { showPrivacy = true }
-                    )
-
-                    SettingsActionRow(
-                        title = "Terms of Service",
-                        subtitle = "Billing terms and app usage licensing",
-                        icon = Icons.Default.Gavel,
-                        iconTint = MaterialTheme.colorScheme.tertiary,
-                        onClick = { showTerms = true }
-                    )
-                }
+                SettingsActionList(
+                    viewModel = viewModel,
+                    onDismiss = onDismiss,
+                    onFeedbackClick = onFeedbackClick,
+                    onHelpClick = onHelpClick,
+                    onShowPrivacyClick = { showPrivacy = true },
+                    onShowTermsClick = { showTerms = true }
+                )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -360,6 +250,147 @@ fun SettingsActionRow(
             contentDescription = null,
             tint = MaterialTheme.colorScheme.outline,
             modifier = Modifier.size(16.dp)
+        )
+    }
+}
+
+@Composable
+fun ThemeSelectionRow(
+    currentThemeMode: ThemeMode,
+    onThemeSelected: (ThemeMode) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        ThemeOptionCard(
+            title = "System",
+            icon = Icons.Default.SettingsSuggest,
+            isSelected = currentThemeMode == ThemeMode.SYSTEM,
+            onClick = { onThemeSelected(ThemeMode.SYSTEM) },
+            modifier = Modifier.weight(1f)
+        )
+        ThemeOptionCard(
+            title = "Light",
+            icon = Icons.Default.LightMode,
+            isSelected = currentThemeMode == ThemeMode.LIGHT,
+            onClick = { onThemeSelected(ThemeMode.LIGHT) },
+            modifier = Modifier.weight(1f)
+        )
+        ThemeOptionCard(
+            title = "Dark",
+            icon = Icons.Default.DarkMode,
+            isSelected = currentThemeMode == ThemeMode.DARK,
+            onClick = { onThemeSelected(ThemeMode.DARK) },
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun SettingsActionList(
+    viewModel: GardenViewModel,
+    onDismiss: () -> Unit,
+    onFeedbackClick: () -> Unit,
+    onHelpClick: () -> Unit,
+    onShowPrivacyClick: () -> Unit,
+    onShowTermsClick: () -> Unit
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        SettingsActionRow(
+            title = "Rate Your App",
+            subtitle = "Help us grow with a store review",
+            icon = Icons.Default.Star,
+            iconTint = Color(0xFFFFB300),
+            onClick = {
+                val packageName = context.packageName
+                val marketIntent = Intent(Intent.ACTION_VIEW, "market://details?id=$packageName".toUri()).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                }
+                val webIntent = Intent(Intent.ACTION_VIEW, "https://play.google.com/store/apps/details?id=$packageName".toUri())
+                try {
+                    context.startActivity(marketIntent)
+                } catch (e: Exception) {
+                    context.startActivity(webIntent)
+                }
+                viewModel.acceptRatePrompt()
+            }
+        )
+
+        SettingsActionRow(
+            title = "Share Feedback",
+            subtitle = "Suggest features or report issues directly",
+            icon = Icons.Default.Feedback,
+            onClick = {
+                onFeedbackClick()
+            }
+        )
+
+        SettingsActionRow(
+            title = "Replay App Tour",
+            subtitle = "Launch the walkthrough overlay again",
+            icon = Icons.Default.AutoAwesome,
+            onClick = {
+                onDismiss()
+                viewModel.startWalkthrough()
+            }
+        )
+
+        SettingsActionRow(
+            title = "Retake Biophilic Assessment",
+            subtitle = "Recalculate your Neural Load score & tips",
+            icon = Icons.Default.Eco,
+            iconTint = MaterialTheme.colorScheme.primary,
+            onClick = {
+                onDismiss()
+                viewModel.resetAssessment()
+            }
+        )
+
+        SettingsActionRow(
+            title = "Invite a Garden Buddy",
+            subtitle = "Share FloraFlow and unlock 5 exotic species",
+            icon = Icons.Default.Share,
+            iconTint = MaterialTheme.colorScheme.tertiary,
+            onClick = {
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, "Plant a Seed on FloraFlow")
+                    putExtra(Intent.EXTRA_TEXT, "Your friend planted a seed for you on FloraFlow! 🌸 Use this link to download the app and unlock a gift of 5 exotic species to cultivate calm: https://floraflow.app/referral?by=buddy")
+                }
+                context.startActivity(Intent.createChooser(shareIntent, "Invite a Garden Buddy"))
+            }
+        )
+
+        SettingsActionRow(
+            title = "Help & FAQs",
+            subtitle = "Browse tutorials and troubleshooting guides",
+            icon = Icons.Default.Help,
+            onClick = {
+                onDismiss()
+                onHelpClick()
+            }
+        )
+
+        SettingsActionRow(
+            title = "Privacy Policy",
+            subtitle = "Data storage and Gemini AI details",
+            icon = Icons.Default.Lock,
+            iconTint = MaterialTheme.colorScheme.secondary,
+            onClick = onShowPrivacyClick
+        )
+
+        SettingsActionRow(
+            title = "Terms of Service",
+            subtitle = "Billing terms and app usage licensing",
+            icon = Icons.Default.Gavel,
+            iconTint = MaterialTheme.colorScheme.tertiary,
+            onClick = onShowTermsClick
         )
     }
 }
