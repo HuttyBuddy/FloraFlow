@@ -1967,6 +1967,245 @@ data class LeafParticle(
     val rotationSpeed: Float
 )
 
+private fun calculatePlantAges(currentIndex: Int, snapshots: List<Pair<Long, String>>): Array<IntArray> {
+    val ages = Array(5) { IntArray(5) { 0 } }
+    for (r in 0..4) {
+        for (c in 0..4) {
+            var age = 0
+            for (i in 0..currentIndex) {
+                val snap = snapshots.getOrNull(i)
+                val snapGrid = parseGridString(snap?.second ?: "")
+                if (snapGrid.any { it.x == r && it.y == c }) {
+                    age++
+                } else {
+                    age = 0 // Reset if it was empty or uprooted
+                }
+            }
+            ages[r][c] = age
+        }
+    }
+    return ages
+}
+
+@Composable
+fun TimelapseHeader(onDismiss: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(
+                text = "TIMELAPSE OBSERVER",
+                color = Color(0xFF81C784),
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+            )
+            Text(
+                text = "See Your Garden Grow",
+                color = Color.White,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Black
+            )
+        }
+        IconButton(onClick = onDismiss) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close",
+                tint = Color.White.copy(alpha = 0.7f)
+            )
+        }
+    }
+}
+
+@Composable
+fun TimelapseInfo(currentIndex: Int, totalSnapshots: Int, dateStr: String) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.4f)),
+        shape = RoundedCornerShape(8.dp),
+        modifier = Modifier.fillMaxWidth(),
+        border = BorderStroke(1.dp, Color(0xFF4CAF50).copy(alpha = 0.15f))
+    ) {
+        Row(
+            modifier = Modifier.padding(10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "FRAME ${currentIndex + 1} OF $totalSnapshots",
+                color = Color(0xFF81C784),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+            )
+            Text(
+                text = dateStr,
+                color = Color.White.copy(alpha = 0.8f),
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
+}
+
+@Composable
+fun TimelapseGrid(gridItems: List<GridPlantItem>, plantAges: Array<IntArray>) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth(0.92f)
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(20.dp))
+            .border(2.dp, Color(0xFF4CAF50).copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+            .background(Color(0xFF0C140D)) // Dark green viewfinder
+            .padding(12.dp)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            for (r in 0..4) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    for (c in 0..4) {
+                        val item = gridItems.firstOrNull { it.x == r && it.y == c }
+                        val age = plantAges[r][c]
+
+                        val cellBg = if (item != null) {
+                            when (age) {
+                                1 -> Color(0xFF1E351F) // Sprout stage
+                                2 -> Color(0xFF2E5430) // Bud stage
+                                else -> Color(0xFF1B4D24) // Fully grown
+                            }
+                        } else {
+                            Color(0xFF1C281D).copy(alpha = 0.4f)
+                        }
+
+                        // Sprout / Growth visual representation
+                        val animatedScale by animateFloatAsState(
+                            targetValue = if (item != null) {
+                                when (age) {
+                                    1 -> 0.7f
+                                    2 -> 0.85f
+                                    else -> 1.0f
+                                }
+                            } else 0f,
+                            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                            label = "timelapseScale"
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(cellBg)
+                                .border(0.5.dp, Color(0xFF4CAF50).copy(alpha = 0.2f), RoundedCornerShape(8.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (item != null) {
+                                val renderEmoji = when (age) {
+                                    1 -> "🌱" // Sprout
+                                    2 -> "🌿" // Leafy growth
+                                    else -> getEmojiForPlantName(item.plantName) // Full flower/emoji
+                                }
+                                Text(
+                                    text = renderEmoji,
+                                    fontSize = 18.sp,
+                                    modifier = Modifier.scale(animatedScale)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TimelapseControls(
+    isPlaying: Boolean,
+    onTogglePlay: () -> Unit,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit
+) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        IconButton(onClick = onPrevious) {
+            Icon(
+                imageVector = Icons.Default.SkipPrevious,
+                contentDescription = "Previous Frame",
+                tint = Color.White,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+
+        // Large Play/Pause Button
+        Box(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .size(54.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF4CAF50))
+                .clickable { onTogglePlay() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                contentDescription = if (isPlaying) "Pause" else "Play",
+                tint = Color.Black,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
+        IconButton(onClick = onNext) {
+            Icon(
+                imageVector = Icons.Default.SkipNext,
+                contentDescription = "Next Frame",
+                tint = Color.White,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun TimelapseTimeline(
+    currentIndex: Int,
+    totalSnapshots: Int,
+    onIndexChanged: (Int) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Slider(
+            value = currentIndex.toFloat(),
+            onValueChange = {
+                onIndexChanged(it.toInt().coerceIn(0, totalSnapshots - 1))
+            },
+            valueRange = 0f..(totalSnapshots - 1).coerceAtLeast(0).toFloat(),
+            steps = if (totalSnapshots > 2) totalSnapshots - 2 else 0,
+            colors = SliderDefaults.colors(
+                activeTrackColor = Color(0xFF4CAF50),
+                inactiveTrackColor = Color(0xFF4CAF50).copy(alpha = 0.24f),
+                thumbColor = Color(0xFF81C784)
+            ),
+            modifier = Modifier.fillMaxWidth()
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("Beginning", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+            Text("Present Day", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+        }
+    }
+}
+
 @Composable
 fun TimelapseDialog(
     snapshots: List<Pair<Long, String>>,
@@ -1998,23 +2237,7 @@ fun TimelapseDialog(
 
     // Helper to calculate age of plant at r,c up to current index
     val plantAges = remember(currentIndex, snapshots) {
-        val ages = Array(5) { IntArray(5) { 0 } }
-        for (r in 0..4) {
-            for (c in 0..4) {
-                var age = 0
-                for (i in 0..currentIndex) {
-                    val snap = snapshots.getOrNull(i)
-                    val snapGrid = parseGridString(snap?.second ?: "")
-                    if (snapGrid.any { it.x == r && it.y == c }) {
-                        age++
-                    } else {
-                        age = 0 // Reset if it was empty or uprooted
-                    }
-                }
-                ages[r][c] = age
-            }
-        }
-        ages
+        calculatePlantAges(currentIndex, snapshots)
     }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -2032,218 +2255,34 @@ fun TimelapseDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(
-                            text = "TIMELAPSE OBSERVER",
-                            color = Color(0xFF81C784),
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                        )
-                        Text(
-                            text = "See Your Garden Grow",
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Black
-                        )
-                    }
-                    IconButton(onClick = onDismiss) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
-                            tint = Color.White.copy(alpha = 0.7f)
-                        )
-                    }
-                }
-
+                TimelapseHeader(onDismiss = onDismiss)
                 HorizontalDivider(color = Color(0xFF4CAF50).copy(alpha = 0.3f))
-
-                // Info row
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color.Black.copy(alpha = 0.4f)),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                    border = BorderStroke(1.dp, Color(0xFF4CAF50).copy(alpha = 0.15f))
-                ) {
-                    Row(
-                        modifier = Modifier.padding(10.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "FRAME ${currentIndex + 1} OF ${snapshots.size}",
-                            color = Color(0xFF81C784),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
-                        )
-                        Text(
-                            text = dateStr,
-                            color = Color.White.copy(alpha = 0.8f),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-
-                // Render 5x5 preview grid (Vintage Viewfinder Style)
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(0.92f)
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(20.dp))
-                        .border(2.dp, Color(0xFF4CAF50).copy(alpha = 0.5f), RoundedCornerShape(20.dp))
-                        .background(Color(0xFF0C140D)) // Dark green viewfinder
-                        .padding(12.dp)
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        for (r in 0..4) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                for (c in 0..4) {
-                                    val item = gridItems.firstOrNull { it.x == r && it.y == c }
-                                    val age = plantAges[r][c]
-                                    
-                                    val cellBg = if (item != null) {
-                                        when (age) {
-                                            1 -> Color(0xFF1E351F) // Sprout stage
-                                            2 -> Color(0xFF2E5430) // Bud stage
-                                            else -> Color(0xFF1B4D24) // Fully grown
-                                        }
-                                    } else {
-                                        Color(0xFF1C281D).copy(alpha = 0.4f)
-                                    }
-
-                                    // Sprout / Growth visual representation
-                                    val animatedScale by animateFloatAsState(
-                                        targetValue = if (item != null) {
-                                            when (age) {
-                                                1 -> 0.7f
-                                                2 -> 0.85f
-                                                else -> 1.0f
-                                            }
-                                        } else 0f,
-                                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                                        label = "timelapseScale"
-                                    )
-
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .fillMaxHeight()
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(cellBg)
-                                            .border(0.5.dp, Color(0xFF4CAF50).copy(alpha = 0.2f), RoundedCornerShape(8.dp)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        if (item != null) {
-                                            val renderEmoji = when (age) {
-                                                1 -> "🌱" // Sprout
-                                                2 -> "🌿" // Leafy growth
-                                                else -> getEmojiForPlantName(item.plantName) // Full flower/emoji
-                                            }
-                                            Text(
-                                                text = renderEmoji,
-                                                fontSize = 18.sp,
-                                                modifier = Modifier.scale(animatedScale)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Controls row
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    IconButton(
-                        onClick = {
+                TimelapseInfo(currentIndex = currentIndex, totalSnapshots = snapshots.size, dateStr = dateStr)
+                TimelapseGrid(gridItems = gridItems, plantAges = plantAges)
+                TimelapseControls(
+                    isPlaying = isPlaying,
+                    onTogglePlay = { isPlaying = !isPlaying },
+                    onPrevious = {
+                        if (snapshots.isNotEmpty()) {
                             currentIndex = (currentIndex - 1 + snapshots.size) % snapshots.size
                             isPlaying = false
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SkipPrevious,
-                            contentDescription = "Previous Frame",
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                    
-                    // Large Play/Pause Button
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .size(54.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFF4CAF50))
-                            .clickable { isPlaying = !isPlaying },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = if (isPlaying) "Pause" else "Play",
-                            tint = Color.Black,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                    
-                    IconButton(
-                        onClick = {
+                    },
+                    onNext = {
+                        if (snapshots.isNotEmpty()) {
                             currentIndex = (currentIndex + 1) % snapshots.size
                             isPlaying = false
                         }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.SkipNext,
-                            contentDescription = "Next Frame",
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp)
-                        )
                     }
-                }
-
-                // Slider Timeline
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Slider(
-                        value = currentIndex.toFloat(),
-                        onValueChange = {
-                            currentIndex = it.toInt().coerceIn(0, snapshots.size - 1)
-                            isPlaying = false
-                        },
-                        valueRange = 0f..(snapshots.size - 1).toFloat(),
-                        steps = if (snapshots.size > 2) snapshots.size - 2 else 0,
-                        colors = SliderDefaults.colors(
-                            activeTrackColor = Color(0xFF4CAF50),
-                            inactiveTrackColor = Color(0xFF4CAF50).copy(alpha = 0.24f),
-                            thumbColor = Color(0xFF81C784)
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Beginning", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
-                        Text("Present Day", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                )
+                TimelapseTimeline(
+                    currentIndex = currentIndex,
+                    totalSnapshots = snapshots.size,
+                    onIndexChanged = { newIndex ->
+                        currentIndex = newIndex
+                        isPlaying = false
                     }
-                }
+                )
             }
         }
     }
