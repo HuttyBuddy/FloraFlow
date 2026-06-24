@@ -82,4 +82,25 @@ class GardenViewModelTest {
             assertTrue(viewModel.incrementRestorationTrial())
         }
     }
+
+    @Test
+    fun updateArPlantPosition_modifiesPlantCoordinatesCorrectly() {
+        // Arrange: Add a plant to AR
+        viewModel.addArPlant(name = "Test Plant", emoji = "🌿", customX = 10f, customY = 20f)
+        val initialPlants = viewModel.arPlacedPlants.value
+        assertEquals(1, initialPlants.size)
+
+        val plantId = initialPlants[0].id
+        assertEquals(10f, initialPlants[0].positionX)
+        assertEquals(20f, initialPlants[0].positionY)
+
+        // Act: Update position
+        viewModel.updateArPlantPosition(id = plantId, dx = 5f, dy = -10f)
+
+        // Assert: Verify position is correctly updated
+        val updatedPlants = viewModel.arPlacedPlants.value
+        assertEquals(1, updatedPlants.size)
+        assertEquals(15f, updatedPlants[0].positionX)
+        assertEquals(10f, updatedPlants[0].positionY)
+    }
 }
