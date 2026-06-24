@@ -224,118 +224,144 @@ fun InteractiveTherapyChart(
             }
         }
 
-        // Legend indicators
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(secondaryColor))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                "Therapy Rating", 
-                style = MaterialTheme.typography.bodySmall, 
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(end = 16.dp)
-            )
+        TherapyChartLegend(
+            primaryColor = primaryColor,
+            secondaryColor = secondaryColor
+        )
 
-            Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(primaryColor))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                "Garden Growth Index", 
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        TherapyChartTooltip(
+            selectedIndex = selectedIndex,
+            logs = logs,
+            primaryColor = primaryColor,
+            secondaryColor = secondaryColor
+        )
+    }
+}
 
-        // Interactive Tooltip Card
-        AnimatedVisibility(
-            visible = selectedIndex != null,
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically()
-        ) {
-            selectedIndex?.let { idx ->
-                val log = logs[idx]
-                val syncPercentage = (100 - abs(((log.moodScore - 1f) / 4f * 100) - log.growthIndex)).toInt().coerceIn(0, 100)
+@Composable
+private fun TherapyChartLegend(
+    primaryColor: Color,
+    secondaryColor: Color
+) {
+    // Legend indicators
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(secondaryColor))
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            "Therapy Rating",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(end = 16.dp)
+        )
 
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Column(modifier = Modifier.padding(14.dp)) {
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+        Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(primaryColor))
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            "Garden Growth Index",
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun TherapyChartTooltip(
+    selectedIndex: Int?,
+    logs: List<MoodLog>,
+    primaryColor: Color,
+    secondaryColor: Color
+) {
+    // Interactive Tooltip Card
+    AnimatedVisibility(
+        visible = selectedIndex != null,
+        enter = fadeIn() + expandVertically(),
+        exit = fadeOut() + shrinkVertically()
+    ) {
+        selectedIndex?.let { idx ->
+            val log = logs[idx]
+            val syncPercentage = (100 - abs(((log.moodScore - 1f) / 4f * 100) - log.growthIndex)).toInt().coerceIn(0, 100)
+
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.2.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Session ${idx + 1} Analytics",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(Color(0xFF00FF66).copy(alpha = 0.2f))
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
                         ) {
                             Text(
-                                text = "Session ${idx + 1} Analytics",
+                                text = "🍀 Sync: $syncPercentage%",
+                                fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.primary
+                                color = Color(0xFF00FF66)
                             )
-                            Box(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0xFF00FF66).copy(alpha = 0.2f))
-                                    .padding(horizontal = 8.dp, vertical = 3.dp)
-                            ) {
-                                Text(
-                                    text = "🍀 Sync: $syncPercentage%",
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF00FF66)
-                                )
-                            }
                         }
-                        
-                        Spacer(modifier = Modifier.height(8.dp))
+                    }
 
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Icon(Icons.Default.SelfImprovement, contentDescription = "Mood", tint = secondaryColor, modifier = Modifier.size(14.dp))
-                                Text(
-                                    text = "Rating: ${log.moodScore}/5 (${log.mood})",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Icon(Icons.Default.Eco, contentDescription = "Growth", tint = primaryColor, modifier = Modifier.size(14.dp))
-                                Text(
-                                    text = "Growth: ${log.growthIndex}%",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Icon(Icons.Default.Info, contentDescription = "Time", tint = Color.Gray, modifier = Modifier.size(14.dp))
-                                Text(
-                                    text = "Duration: ${log.activityMinutes}m",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                        if (log.notes.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Icon(Icons.Default.SelfImprovement, contentDescription = "Mood", tint = secondaryColor, modifier = Modifier.size(14.dp))
                             Text(
-                                text = "\"${log.notes}\"",
+                                text = "Rating: ${log.moodScore}/5 (${log.mood})",
                                 fontSize = 10.sp,
-                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                                fontWeight = FontWeight.Bold
                             )
                         }
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Icon(Icons.Default.Eco, contentDescription = "Growth", tint = primaryColor, modifier = Modifier.size(14.dp))
+                            Text(
+                                text = "Growth: ${log.growthIndex}%",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Icon(Icons.Default.Info, contentDescription = "Time", tint = Color.Gray, modifier = Modifier.size(14.dp))
+                            Text(
+                                text = "Duration: ${log.activityMinutes}m",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    if (log.notes.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "\"${log.notes}\"",
+                            fontSize = 10.sp,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                        )
                     }
                 }
             }
