@@ -1684,130 +1684,154 @@ fun BreathingGardenCircle(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.SelfImprovement,
-                        contentDescription = "Mindfulness icon",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = "Biophilic Breather",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                TextButton(
-                    onClick = { isExpanded = !isExpanded },
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
-                    modifier = Modifier.height(28.dp)
-                ) {
-                    Text(
-                        text = if (isExpanded) "Close" else "Begin",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+            BreathingGardenHeader(
+                isExpanded = isExpanded,
+                onToggle = { isExpanded = !isExpanded }
+            )
 
             AnimatedVisibility(
                 visible = isExpanded,
                 enter = expandVertically() + fadeIn(),
                 exit = shrinkVertically() + fadeOut()
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-                ) {
-                    Text(
-                        text = "Breathe in harmony with your botanical surroundings.",
-                        style = MaterialTheme.typography.bodySmall,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(160.dp)
-                            .padding(16.dp)
-                    ) {
-                        val scale = 0.7f + (breathingProgress * 0.4f)
-                        val alpha = 0.15f + (breathingProgress * 0.35f)
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .graphicsLayer {
-                                    scaleX = scale
-                                    scaleY = scale
-                                    this.alpha = alpha
-                                }
-                                .background(
-                                    brush = Brush.radialGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.primary,
-                                            Color.Transparent
-                                        )
-                                    ),
-                                    shape = CircleShape
-                                )
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .size(80.dp)
-                                .graphicsLayer {
-                                    scaleX = 0.9f + (breathingProgress * 0.2f)
-                                    scaleY = 0.9f + (breathingProgress * 0.2f)
-                                }
-                                .background(
-                                    brush = Brush.linearGradient(
-                                        colors = listOf(
-                                            MaterialTheme.colorScheme.primary,
-                                            MaterialTheme.colorScheme.secondary
-                                        )
-                                    ),
-                                    shape = CircleShape
-                                )
-                                .border(2.dp, Color.White.copy(alpha = 0.8f), CircleShape),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = breathingState,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-
-                    Text(
-                        text = when (breathingState) {
-                            "Inhale" -> "Slowly fill your lungs with fresh air (4s)..."
-                            "Hold" -> "Suspend your breath, feel the calm (4s)..."
-                            "Exhale" -> "Release tension, breathe out completely (4s)..."
-                            else -> "Prepare to align your breath..."
-                        },
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    )
-                }
+                BreathingGardenAnimation(
+                    breathingState = breathingState,
+                    breathingProgress = breathingProgress
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun BreathingGardenHeader(
+    isExpanded: Boolean,
+    onToggle: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.SelfImprovement,
+                contentDescription = "Mindfulness icon",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(
+                text = "Biophilic Breather",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        TextButton(
+            onClick = onToggle,
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+            modifier = Modifier.height(28.dp)
+        ) {
+            Text(
+                text = if (isExpanded) "Close" else "Begin",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun BreathingGardenAnimation(
+    breathingState: String,
+    breathingProgress: Float
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = "Breathe in harmony with your botanical surroundings.",
+            style = MaterialTheme.typography.bodySmall,
+            textAlign = TextAlign.Center,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(160.dp)
+                .padding(16.dp)
+        ) {
+            val scale = 0.7f + (breathingProgress * 0.4f)
+            val alpha = 0.15f + (breathingProgress * 0.35f)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                        this.alpha = alpha
+                    }
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary,
+                                Color.Transparent
+                            )
+                        ),
+                        shape = CircleShape
+                    )
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .graphicsLayer {
+                        scaleX = 0.9f + (breathingProgress * 0.2f)
+                        scaleY = 0.9f + (breathingProgress * 0.2f)
+                    }
+                    .background(
+                        brush = Brush.linearGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.secondary
+                            )
+                        ),
+                        shape = CircleShape
+                    )
+                    .border(2.dp, Color.White.copy(alpha = 0.8f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = breathingState,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    fontSize = 14.sp
+                )
+            }
+        }
+
+        Text(
+            text = when (breathingState) {
+                "Inhale" -> "Slowly fill your lungs with fresh air (4s)..."
+                "Hold" -> "Suspend your breath, feel the calm (4s)..."
+                "Exhale" -> "Release tension, breathe out completely (4s)..."
+                else -> "Prepare to align your breath..."
+            },
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
     }
 }
 
