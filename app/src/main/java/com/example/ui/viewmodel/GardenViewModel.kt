@@ -984,6 +984,7 @@ class GardenViewModel @JvmOverloads constructor(
     private suspend fun parseAndInsertPlants(response: String, layoutId: Int) {
         try {
             val lines = response.lines().filter { it.contains("|") }
+            val plantsToInsert = mutableListOf<Plant>()
             for (line in lines) {
                 val parts = line.split("|").map { it.trim() }
                 if (parts.size >= 2) {
@@ -992,7 +993,7 @@ class GardenViewModel @JvmOverloads constructor(
                     val soil = if (parts.size >= 3) parts[2] else "Standard garden compost"
                     val sun = if (parts.size >= 4) parts[3] else "Full sun to dappled shade"
                     
-                    repository.insertPlant(
+                    plantsToInsert.add(
                         Plant(
                             layoutId = layoutId,
                             name = name,
@@ -1007,6 +1008,9 @@ class GardenViewModel @JvmOverloads constructor(
                         )
                     )
                 }
+            }
+            if (plantsToInsert.isNotEmpty()) {
+                repository.insertPlants(plantsToInsert)
             }
         } catch (_: Exception) {}
     }
