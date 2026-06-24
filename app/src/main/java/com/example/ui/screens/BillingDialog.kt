@@ -166,42 +166,13 @@ fun BillingDialog(
                         .fillMaxSize()
                         .padding(24.dp)
                 ) {
-                    // Title Bar / Close control
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(
-                                text = if (currentStep == 5) "Purchase Successful! ✨" else "Secure Upgrade",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = "Step $currentStep of 5 • Sandbox Test Mode",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                    BillingDialogHeader(
+                        currentStep = currentStep,
+                        onClose = {
+                            viewModel.setBillingDialogVisible(false)
+                            currentStep = 1
                         }
-                        
-                        if (currentStep != 4) {
-                            IconButton(
-                                onClick = {
-                                    viewModel.setBillingDialogVisible(false)
-                                    currentStep = 1
-                                },
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
-                                    .size(36.dp)
-                            ) {
-                                Icon(Icons.Default.Close, contentDescription = "Close Checkout", modifier = Modifier.size(20.dp))
-                            }
-                        }
-                    }
-
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                    )
 
                     // Wizard Step Containers
                     Box(modifier = Modifier.weight(1f)) {
@@ -243,76 +214,141 @@ fun BillingDialog(
                         }
                     }
 
-                    // Navigation Footer buttons (excluding Loading state 4 and Receipt page 5)
-                    if (currentStep in 1..3) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            if (currentStep > 1) {
-                                OutlinedButton(
-                                    onClick = {
-                                        validationError = null
-                                        currentStep--
-                                    },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(52.dp),
-                                    shape = RoundedCornerShape(14.dp)
-                                ) {
-                                    Text("Back", fontWeight = FontWeight.Bold)
-                                }
-                            }
+                    BillingDialogFooter(
+                        currentStep = currentStep,
+                        activePlan = activePlan,
+                        selectedPaymentMethod = selectedPaymentMethod,
+                        cardNumber = cardNumber,
+                        cardExpiry = cardExpiry,
+                        cardCvc = cardCvc,
+                        cardName = cardName,
+                        onValidationError = { validationError = it },
+                        onStepChange = { currentStep = it }
+                    )
+                }
+            }
+        }
+    }
+}
 
-                            Button(
-                                onClick = {
-                                    if (currentStep == 1) {
-                                        currentStep = 2
-                                    } else if (currentStep == 2) {
-                                        if (selectedPaymentMethod == "CreditCard") {
-                                            currentStep = 3
-                                        } else {
-                                            // Directly skip card layout and check out using Google Fast Pay balance
-                                            currentStep = 4
-                                        }
-                                    } else if (currentStep == 3) {
-                                        // Validate mock card input fields
-                                        val digitsOnly = cardNumber.filter { it.isDigit() }
-                                        if (digitsOnly.length < 16) {
-                                            validationError = "Please enter a valid 16-digit card number"
-                                        } else if (cardExpiry.filter { it.isDigit() }.length < 4) {
-                                            validationError = "Please enter expiry MM/YY"
-                                        } else if (cardCvc.filter { it.isDigit() }.length < 3) {
-                                            validationError = "Please enter secure 3-digit CVC"
-                                        } else if (cardName.trim().isEmpty()) {
-                                            validationError = "Please fill in Cardholder name"
-                                        } else {
-                                            validationError = null
-                                            currentStep = 4
-                                        }
-                                    }
-                                },
-                                modifier = Modifier
-                                    .weight(if (currentStep > 1) 1.5f else 1f)
-                                    .height(52.dp)
-                                    .testTag("billing_next_button"),
-                                shape = RoundedCornerShape(14.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                            ) {
-                                Text(
-                                    text = when (currentStep) {
-                                        1 -> "Select Plan"
-                                        2 -> if (selectedPaymentMethod == "CreditCard") "Add Card Details" else "Pay Now (${activePlan.price})"
-                                        else -> "Authorize & Subscribe"
-                                    },
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp
-                                )
-                            }
+@Composable
+fun BillingDialogHeader(
+    currentStep: Int,
+    onClose: () -> Unit
+) {
+    // Title Bar / Close control
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column {
+            Text(
+                text = if (currentStep == 5) "Purchase Successful! ✨" else "Secure Upgrade",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = "Step $currentStep of 5 • Sandbox Test Mode",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (currentStep != 4) {
+            IconButton(
+                onClick = onClose,
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
+                    .size(36.dp)
+            ) {
+                Icon(Icons.Default.Close, contentDescription = "Close Checkout", modifier = Modifier.size(20.dp))
+            }
+        }
+    }
+
+    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+}
+
+@Composable
+fun BillingDialogFooter(
+    currentStep: Int,
+    activePlan: BillingPlan,
+    selectedPaymentMethod: String,
+    cardNumber: String,
+    cardExpiry: String,
+    cardCvc: String,
+    cardName: String,
+    onValidationError: (String?) -> Unit,
+    onStepChange: (Int) -> Unit
+) {
+    // Navigation Footer buttons (excluding Loading state 4 and Receipt page 5)
+    if (currentStep in 1..3) {
+        Spacer(modifier = Modifier.height(16.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (currentStep > 1) {
+                OutlinedButton(
+                    onClick = {
+                        onValidationError(null)
+                        onStepChange(currentStep - 1)
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(52.dp),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Text("Back", fontWeight = FontWeight.Bold)
+                }
+            }
+
+            Button(
+                onClick = {
+                    if (currentStep == 1) {
+                        onStepChange(2)
+                    } else if (currentStep == 2) {
+                        if (selectedPaymentMethod == "CreditCard") {
+                            onStepChange(3)
+                        } else {
+                            // Directly skip card layout and check out using Google Fast Pay balance
+                            onStepChange(4)
+                        }
+                    } else if (currentStep == 3) {
+                        // Validate mock card input fields
+                        val digitsOnly = cardNumber.filter { it.isDigit() }
+                        if (digitsOnly.length < 16) {
+                            onValidationError("Please enter a valid 16-digit card number")
+                        } else if (cardExpiry.filter { it.isDigit() }.length < 4) {
+                            onValidationError("Please enter expiry MM/YY")
+                        } else if (cardCvc.filter { it.isDigit() }.length < 3) {
+                            onValidationError("Please enter secure 3-digit CVC")
+                        } else if (cardName.trim().isEmpty()) {
+                            onValidationError("Please fill in Cardholder name")
+                        } else {
+                            onValidationError(null)
+                            onStepChange(4)
                         }
                     }
-                }
+                },
+                modifier = Modifier
+                    .weight(if (currentStep > 1) 1.5f else 1f)
+                    .height(52.dp)
+                    .testTag("billing_next_button"),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(
+                    text = when (currentStep) {
+                        1 -> "Select Plan"
+                        2 -> if (selectedPaymentMethod == "CreditCard") "Add Card Details" else "Pay Now (${activePlan.price})"
+                        else -> "Authorize & Subscribe"
+                    },
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp
+                )
             }
         }
     }
