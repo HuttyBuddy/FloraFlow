@@ -1494,142 +1494,164 @@ fun NeuralLoadDashboardWidget(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             if (assessmentScore != null) {
-                val zoneColor = when (assessmentScore) {
-                    in 15..20 -> Color(0xFF4CAF50)
-                    in 8..14 -> Color(0xFFFFC107)
-                    else -> Color(0xFFF44336)
-                }
-                val zoneName = when (assessmentScore) {
-                    in 15..20 -> "Green Zone — Low Neural Load"
-                    in 8..14 -> "Yellow Zone — Moderate Load"
-                    else -> "Red Zone — High Neural Load"
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(12.dp)
-                                .background(zoneColor, CircleShape)
-                        )
-                        Text(
-                            text = "Neural Load Score",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    IconButton(
-                        onClick = onStartAssessment,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Retake Assessment",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.size(60.dp)
-                    ) {
-                        CircularProgressIndicator(
-                            progress = { assessmentScore.toFloat() / 20f },
-                            modifier = Modifier.size(60.dp),
-                            color = zoneColor,
-                            strokeWidth = 6.dp,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                            strokeCap = StrokeCap.Round,
-                        )
-                        Text(
-                            text = "$assessmentScore/20",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        Text(
-                            text = zoneName,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 12.sp,
-                            color = zoneColor
-                        )
-                        if (lowestCategories.isNotEmpty()) {
-                            Text(
-                                text = "Focus areas: ${lowestCategories.take(3).joinToString(", ")}",
-                                fontSize = 10.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
+                NeuralLoadScoreContent(
+                    assessmentScore = assessmentScore,
+                    lowestCategories = lowestCategories,
+                    onStartAssessment = onStartAssessment
+                )
             } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Favorite,
-                            contentDescription = "Health scan icon",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "Optimize Biophilic Harmony",
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = "Take a 2-minute neural load scan to personalize Dr. Julian's recommendations.",
-                            fontSize = 10.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            lineHeight = 13.sp
-                        )
-                    }
-
-                    Button(
-                        onClick = onStartAssessment,
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.height(32.dp)
-                    ) {
-                        Text("Scan", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
+                NeuralLoadEmptyContent(
+                    onStartAssessment = onStartAssessment
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun NeuralLoadScoreContent(
+    assessmentScore: Int,
+    lowestCategories: List<String>,
+    onStartAssessment: () -> Unit
+) {
+    val zoneColor = when (assessmentScore) {
+        in 15..20 -> Color(0xFF4CAF50)
+        in 8..14 -> Color(0xFFFFC107)
+        else -> Color(0xFFF44336)
+    }
+    val zoneName = when (assessmentScore) {
+        in 15..20 -> "Green Zone — Low Neural Load"
+        in 8..14 -> "Yellow Zone — Moderate Load"
+        else -> "Red Zone — High Neural Load"
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .background(zoneColor, CircleShape)
+            )
+            Text(
+                text = "Neural Load Score",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        IconButton(
+            onClick = onStartAssessment,
+            modifier = Modifier.size(24.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = "Retake Assessment",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.size(60.dp)
+        ) {
+            CircularProgressIndicator(
+                progress = { assessmentScore.toFloat() / 20f },
+                modifier = Modifier.size(60.dp),
+                color = zoneColor,
+                strokeWidth = 6.dp,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                strokeCap = StrokeCap.Round,
+            )
+            Text(
+                text = "$assessmentScore/20",
+                fontWeight = FontWeight.Bold,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            Text(
+                text = zoneName,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 12.sp,
+                color = zoneColor
+            )
+            if (lowestCategories.isNotEmpty()) {
+                Text(
+                    text = "Focus areas: ${lowestCategories.take(3).joinToString(", ")}",
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun NeuralLoadEmptyContent(
+    onStartAssessment: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Favorite,
+                contentDescription = "Health scan icon",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Optimize Biophilic Harmony",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = "Take a 2-minute neural load scan to personalize Dr. Julian's recommendations.",
+                fontSize = 10.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                lineHeight = 13.sp
+            )
+        }
+
+        Button(
+            onClick = onStartAssessment,
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.height(32.dp)
+        ) {
+            Text("Scan", fontSize = 11.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
