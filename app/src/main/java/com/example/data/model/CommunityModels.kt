@@ -1,9 +1,10 @@
-package com.example.ui.screens.community
+package com.example.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.index.Index
 
-@Entity(tableName = "community_posts")
+@Entity(tableName = "community_posts", indices = [Index(value = ["timestamp"])])
 data class CommunityPost(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
@@ -16,7 +17,7 @@ data class CommunityPost(
     val gridString: String = ""
 )
 
-@Entity(tableName = "community_comments")
+@Entity(tableName = "community_comments", indices = [Index(value = ["postId"])])
 data class CommunityComment(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val postId: Int,

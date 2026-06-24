@@ -6,8 +6,8 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.example.data.database.GardenDatabase
 import com.example.ui.viewmodel.GardenViewModel
-import com.example.ui.screens.community.CommunityPost
-import com.example.ui.screens.community.CommunityComment
+import com.example.data.model.CommunityPost
+import com.example.data.model.CommunityComment
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

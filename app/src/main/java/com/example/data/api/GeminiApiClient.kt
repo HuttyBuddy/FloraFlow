@@ -130,10 +130,25 @@ object GeminiApiClient {
 
         try {
             val response = service.generateContent(apiKey, request)
-            response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text 
+            val candidate = response.candidates?.firstOrNull()
+            if (candidate != null && candidate.finishReason != null) {
+                if (candidate.finishReason.contains("SAFETY", ignoreCase = true)) {
+                    return@withContext "Content was flagged for safety. Please rephrase your request to be more garden-appropriate."
+                }
+            }
+            candidate?.content?.parts?.firstOrNull()?.text 
                 ?: "No advice received. Please try again."
+        } catch (e: java.io.IOException) {
+            "Network Error: Please check your internet connection and try again."
+        } catch (e: retrofit2.HttpException) {
+            when (e.code()) {
+                401 -> "Authentication Error: Your Gemini API key might be invalid."
+                403 -> "Permission Denied: Ensure your API key has the correct permissions."
+                429 -> "Too Many Requests: You're sending requests too quickly."
+                else -> "API Error: The server returned an error (${e.code()})."
+            }
         } catch (e: Exception) {
-            "Botanical Sync Error: ${e.message}. Check your internet connection or API key."
+            "Botanical Sync Error: ${e.localizedMessage}. This might be a persistent issue with the AI service."
         }
     }
 }

@@ -12,8 +12,8 @@ import com.example.data.database.GardenDatabase
 import com.example.data.model.*
 import com.example.data.repository.GardenRepository
 import androidx.core.content.edit
-import com.example.ui.screens.community.CommunityPost
-import com.example.ui.screens.community.CommunityComment
+import com.example.data.model.CommunityPost
+import com.example.data.model.CommunityComment
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*

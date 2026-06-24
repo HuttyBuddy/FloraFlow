@@ -2,6 +2,7 @@ package com.example.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.index.Index
 
 @Entity(tableName = "garden_layouts")
 data class GardenLayout(
@@ -35,7 +36,7 @@ data class Plant(
     val pestsDiseases: String = "Aphids, Powdery Mildew"
 )
 
-@Entity(tableName = "mood_logs")
+@Entity(tableName = "mood_logs", indices = [Index(value = ["timestamp"])])
 data class MoodLog(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val timestamp: Long = System.currentTimeMillis(),
@@ -46,7 +47,7 @@ data class MoodLog(
     val growthIndex: Int = 0 // average growth progress of the garden plants during the session
 )
 
-@Entity(tableName = "care_tasks")
+@Entity(tableName = "care_tasks", indices = [Index(value = ["plantId"]), Index(value = ["dueDate"])])
 data class CareTask(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val plantId: Int, // Refers to Plant.id
