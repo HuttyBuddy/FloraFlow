@@ -217,7 +217,6 @@ fun BillingDialog(
                                 onMethodChange = { selectedPaymentMethod = it }
                             )
                             3 -> CardEntryStep(
-                                activePlan = activePlan,
                                 cardNumber = formattedCardNumber,
                                 cardExpiry = formattedExpiry,
                                 cardCvc = formattedCvc,
@@ -576,10 +575,145 @@ fun PaymentRowItem(
     }
 }
 
+@Composable
+fun CreditCardSimulation(
+    cardNumber: String,
+    cardName: String,
+    cardExpiry: String
+) {
+    // Visual premium credit card simulation component
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(140.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(
+                Brush.linearGradient(
+                    listOf(
+                        Color(0xFF1E261C), // Rich moss
+                        Color(0xFF2E6F40), // Sprout botanical emerald
+                        Color(0xFF4C8D5E)  // Shimmer leaf
+                    )
+                )
+            )
+            .border(1.dp, Color(0xFFFFD54F).copy(alpha = 0.3f), RoundedCornerShape(16.dp))
+            .padding(16.dp)
+    ) {
+        // Shiny visual gold microchip representation
+        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(34.dp, 26.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color(0xFFFFD54F).copy(alpha = 0.8f)) // Gold chips
+                )
+                Text("FLORAFLOW VIP", fontWeight = FontWeight.Black, fontSize = 11.sp, color = Color.White.copy(alpha = 0.8f))
+            }
+
+            Text(
+                text = if (cardNumber.isEmpty()) "•••• •••• •••• ••••" else cardNumber,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                letterSpacing = 1.5.sp
+            )
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Column {
+                    Text("CARD HOLDER", fontSize = 7.sp, color = Color.White.copy(alpha = 0.6f))
+                    Text(
+                        text = if (cardName.isEmpty()) "YOUR NAME" else cardName.uppercase(),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("EXPIRES", fontSize = 7.sp, color = Color.White.copy(alpha = 0.6f))
+                    Text(
+                        text = if (cardExpiry.isEmpty()) "MM/YY" else cardExpiry,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun CreditCardForm(
+    cardName: String,
+    cardNumber: String,
+    cardExpiry: String,
+    cardCvc: String,
+    onCardNameChange: (String) -> Unit,
+    onCardNumberChange: (String) -> Unit,
+    onCardExpiryChange: (String) -> Unit,
+    onCardCvcChange: (String) -> Unit
+) {
+    // Row of text inputs
+    OutlinedTextField(
+        value = cardName,
+        onValueChange = onCardNameChange,
+        label = { Text("Cardholder Name") },
+        placeholder = { Text("e.g. Jane Forester") },
+        singleLine = true,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp)
+    )
+
+    OutlinedTextField(
+        value = cardNumber,
+        onValueChange = onCardNumberChange,
+        label = { Text("Card Number") },
+        placeholder = { Text("1234 5678 1234 5678") },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp)
+    )
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        OutlinedTextField(
+            value = cardExpiry,
+            onValueChange = onCardExpiryChange,
+            label = { Text("Expiry (MM/YY)") },
+            placeholder = { Text("12/29") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(10.dp)
+        )
+
+        OutlinedTextField(
+            value = cardCvc,
+            onValueChange = onCardCvcChange,
+            label = { Text("CVC Code") },
+            placeholder = { Text("381") },
+            singleLine = true,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(10.dp)
+        )
+    }
+}
+
 // STEP 3: Beautiful simulated Credit card entry!
 @Composable
 fun CardEntryStep(
-    activePlan: BillingPlan,
     cardNumber: String,
     cardExpiry: String,
     cardCvc: String,
@@ -596,72 +730,11 @@ fun CardEntryStep(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Visual premium credit card simulation component
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(140.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(
-                    Brush.linearGradient(
-                        listOf(
-                            Color(0xFF1E261C), // Rich moss
-                            Color(0xFF2E6F40), // Sprout botanical emerald
-                            Color(0xFF4C8D5E)  // Shimmer leaf
-                        )
-                    )
-                )
-                .border(1.dp, Color(0xFFFFD54F).copy(alpha = 0.3f), RoundedCornerShape(16.dp))
-                .padding(16.dp)
-        ) {
-            // Shiny visual gold microchip representation
-            Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp, 26.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xFFFFD54F).copy(alpha = 0.8f)) // Gold chips
-                    )
-                    Text("FLORAFLOW VIP", fontWeight = FontWeight.Black, fontSize = 11.sp, color = Color.White.copy(alpha = 0.8f))
-                }
-
-                Text(
-                    text = if (cardNumber.isEmpty()) "•••• •••• •••• ••••" else cardNumber,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    letterSpacing = 1.5.sp
-                )
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Column {
-                        Text("CARD HOLDER", fontSize = 7.sp, color = Color.White.copy(alpha = 0.6f))
-                        Text(
-                            text = if (cardName.isEmpty()) "YOUR NAME" else cardName.uppercase(),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("EXPIRES", fontSize = 7.sp, color = Color.White.copy(alpha = 0.6f))
-                        Text(
-                            text = if (cardExpiry.isEmpty()) "MM/YY" else cardExpiry,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
-        }
+        CreditCardSimulation(
+            cardNumber = cardNumber,
+            cardName = cardName,
+            cardExpiry = cardExpiry
+        )
 
         Text("Billing Method Verification Details", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
 
@@ -683,55 +756,16 @@ fun CardEntryStep(
             }
         }
 
-        // Row of text inputs
-        OutlinedTextField(
-            value = cardName,
-            onValueChange = onCardNameChange,
-            label = { Text("Cardholder Name") },
-            placeholder = { Text("e.g. Jane Forester") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp)
+        CreditCardForm(
+            cardName = cardName,
+            cardNumber = cardNumber,
+            cardExpiry = cardExpiry,
+            cardCvc = cardCvc,
+            onCardNameChange = onCardNameChange,
+            onCardNumberChange = onCardNumberChange,
+            onCardExpiryChange = onCardExpiryChange,
+            onCardCvcChange = onCardCvcChange
         )
-
-        OutlinedTextField(
-            value = cardNumber,
-            onValueChange = onCardNumberChange,
-            label = { Text("Card Number") },
-            placeholder = { Text("1234 5678 1234 5678") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp)
-        )
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            OutlinedTextField(
-                value = cardExpiry,
-                onValueChange = onCardExpiryChange,
-                label = { Text("Expiry (MM/YY)") },
-                placeholder = { Text("12/29") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(10.dp)
-            )
-
-            OutlinedTextField(
-                value = cardCvc,
-                onValueChange = onCardCvcChange,
-                label = { Text("CVC Code") },
-                placeholder = { Text("381") },
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(10.dp)
-            )
-        }
     }
 }
 
