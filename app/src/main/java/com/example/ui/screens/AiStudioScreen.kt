@@ -225,390 +225,33 @@ fun AiStudioScreen(
                     )
                     .padding(8.dp)
             ) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    if (chatHistory.isEmpty()) {
-                        item {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    "🌱 Live Garden Intelligence Consultation",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    text = "Ask anything about companion planting compatibility, Soil temperature variations, microclimate diagnostics, or therapeutic mental benefits of plants.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.padding(horizontal = 8.dp)
-                                )
-
-                                Spacer(modifier = Modifier.height(18.dp))
-
-                                Text(
-                                    "🌿 SELECT QUICK DIAGNOSTIC CHECK:",
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                val suggestions = listOf(
-                                    "🌱 Suggest perfect companion plant matches" to "Suggest highly compatible companion plants for a Zen style Garden design. What thrives alongside Bonsai Juniper and Lavender?",
-                                    "🐛 Analyze yellowing leaves / plant pest diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
-                                    "🧘 Discuss therapy and nature cognitive wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?"
-                                )
-
-                                suggestions.forEach { pair ->
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 4.dp)
-                                            .clickable {
-                                                viewModel.sendAiChatMessage(pair.second)
-                                            },
-                                        shape = RoundedCornerShape(12.dp),
-                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                        border = BorderStroke(
-                                            width = 1.dp,
-                                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                                        )
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(12.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Icon(
-                                                Icons.Default.AutoAwesome,
-                                                contentDescription = "Diagnostic action",
-                                                tint = MaterialTheme.colorScheme.tertiary,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(10.dp))
-                                            Text(
-                                                text = pair.first,
-                                                fontSize = 11.5.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        items(chatHistory) { content ->
-                            val isUser = content.role == "user"
-                            val text = content.parts.firstOrNull()?.text ?: ""
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
-                            ) {
-                                if (!isUser) {
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(end = 8.dp, top = 2.dp)
-                                            .size(32.dp)
-                                            .clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.primary),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("🧑‍🔬", fontSize = 16.sp)
-                                    }
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .widthIn(max = 280.dp)
-                                        .testTag(if (isUser) "user_chat_bubble" else "model_chat_bubble")
-                                        .clip(
-                                            RoundedCornerShape(
-                                                topStart = 16.dp,
-                                                topEnd = 16.dp,
-                                                bottomStart = if (isUser) 16.dp else 4.dp,
-                                                bottomEnd = if (isUser) 4.dp else 16.dp
-                                            )
-                                        )
-                                        .background(
-                                            if (isUser) {
-                                                Brush.horizontalGradient(
-                                                    listOf(
-                                                        Color(0xFF386641),
-                                                        Color(0xFF6A994E)
-                                                    )
-                                                )
-                                            } else {
-                                                Brush.linearGradient(
-                                                    listOf(
-                                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                                        MaterialTheme.colorScheme.surface
-                                                    )
-                                                )
-                                            }
-                                        )
-                                        .border(
-                                            width = 1.dp,
-                                            color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                            shape = RoundedCornerShape(
-                                                topStart = 16.dp,
-                                                topEnd = 16.dp,
-                                                bottomStart = if (isUser) 16.dp else 4.dp,
-                                                bottomEnd = if (isUser) 4.dp else 16.dp
-                                            )
-                                        )
-                                        .padding(horizontal = 14.dp, vertical = 10.dp)
-                                ) {
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        if (!isUser) {
-                                            Text(
-                                                text = "DR. JULIAN GREENLEAF",
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.primary,
-                                                letterSpacing = 0.5.sp
-                                            )
-                                        }
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            verticalAlignment = Alignment.Top,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            if (!isUser) {
-                                                Text("🍃", fontSize = 12.sp)
-                                            }
-                                            Text(
-                                                text = text,
-                                                fontSize = 13.sp,
-                                                color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
-                                                style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
-                                                modifier = Modifier.weight(1f)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                AiChatMessagesList(
+                    chatHistory = chatHistory,
+                    listState = listState,
+                    onSendDiagnostic = { msg -> viewModel.sendAiChatMessage(msg) }
+                )
             }
 
             // Send message or premium wall trigger section
-            if (!isPremium && (userQueriesCount >= 3)) {
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
-                        .testTag("premium_ai_paywall_card"),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
-                    ),
-                    border = BorderStroke(
-                        width = 2.dp,
-                        brush = Brush.horizontalGradient(
-                            listOf(Color(0xFFFFD54F), MaterialTheme.colorScheme.primary)
-                        )
+            AiChatInputArea(
+                isPremium = isPremium,
+                userQueriesCount = userQueriesCount,
+                textInput = textInput,
+                onTextInputChange = { textInput = it },
+                attachedImage = attachedImage,
+                onAttachedImageClear = { attachedImage = null },
+                onShowAttachmentDialog = { showAttachmentDialog = true },
+                onSendChatMessage = { msg, img ->
+                    viewModel.sendAiChatMessage(
+                        message = msg,
+                        imageBytesBase64 = img,
+                        imageMimeType = "image/gif"
                     )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AutoAwesome,
-                                contentDescription = "Premium lock icon",
-                                tint = Color(0xFFFFD54F),
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Text(
-                                text = "Consultation Limit Reached (3/3)",
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                        Text(
-                            text = "You have exhausted your free credentials. Upgrade to PRO to unlock unlimited Live expert analyses, 2D model companions, and diagnostic AR overlays!",
-                            style = MaterialTheme.typography.bodySmall,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
-                        )
-                        Button(
-                            onClick = { viewModel.upgradeToPremium() },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.fillMaxWidth().height(48.dp)
-                        ) {
-                            Text("Unlock Unlimited AI Gemini PRO ✨", fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    if (!isPremium) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 4.dp, vertical = 2.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Live consultations remaining: ${3 - userQueriesCount}/3",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.secondary,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Text(
-                                text = "GO PRO ✨",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.clickable { viewModel.upgradeToPremium() }
-                            )
-                        }
-                    }
-
-                    if (attachedImage != null) {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 4.dp, vertical = 4.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(MaterialTheme.colorScheme.primaryContainer),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        Icons.Default.Spa,
-                                        contentDescription = "Diagnostic leaf",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = "Photo Capture Diagnosis",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = attachedImage?.first ?: "",
-                                        fontSize = 9.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                IconButton(onClick = { attachedImage = null }, modifier = Modifier.size(24.dp)) {
-                                    Icon(Icons.Default.Close, contentDescription = "Clear image attachment", modifier = Modifier.size(16.dp))
-                                }
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        IconButton(
-                            onClick = { showAttachmentDialog = true },
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.AddAPhoto,
-                                contentDescription = "Attach plant photo for diagnosis",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-
-                        OutlinedTextField(
-                            value = textInput,
-                            onValueChange = { textInput = it },
-                            placeholder = { Text("Ask Julian about soil compatibility...", fontSize = 13.sp) },
-                            modifier = Modifier
-                                .weight(1f)
-                                .testTag("ai_chat_text_input"),
-                            shape = RoundedCornerShape(16.dp),
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                            keyboardActions = KeyboardActions(
-                                onSend = {
-                                    if (textInput.isNotBlank() || attachedImage != null) {
-                                        viewModel.sendAiChatMessage(
-                                            message = if (textInput.isBlank() && attachedImage != null) "Diagnose plant: ${attachedImage?.first}" else textInput,
-                                            imageBytesBase64 = attachedImage?.second,
-                                            imageMimeType = "image/gif"
-                                        )
-                                        attachedImage = null
-                                        textInput = ""
-                                    }
-                                }
-                            )
-                        )
-
-                        FloatingActionButton(
-                            onClick = {
-                                if (textInput.isNotBlank() || attachedImage != null) {
-                                    viewModel.sendAiChatMessage(
-                                        message = if (textInput.isBlank() && attachedImage != null) "Diagnose plant: ${attachedImage?.first}" else textInput,
-                                        imageBytesBase64 = attachedImage?.second,
-                                        imageMimeType = "image/gif"
-                                    )
-                                    attachedImage = null
-                                    textInput = ""
-                                }
-                            },
-                            modifier = Modifier
-                                .size(54.dp)
-                                .testTag("send_ai_chat_button"),
-                            shape = RoundedCornerShape(16.dp),
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = Color.White
-                        ) {
-                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send advice query")
-                        }
-                    }
-                }
-            }
+                    attachedImage = null
+                    textInput = ""
+                },
+                onUpgradeToPremium = { viewModel.upgradeToPremium() }
+            )
 
             if (showLabPopup) {
                 Dialog(onDismissRequest = { showLabPopup = false }) {
@@ -662,338 +305,33 @@ fun AiStudioScreen(
                         )
                         .padding(8.dp)
                 ) {
-                    LazyColumn(
-                        state = listState,
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        if (chatHistory.isEmpty()) {
-                            item {
-                                Column(
-                                    modifier = Modifier
-                                        .fillParentMaxSize()
-                                        .padding(16.dp),
-                                    verticalArrangement = Arrangement.Center,
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Text(
-                                        "🌱 Live Garden Intelligence Consultation",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary,
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                    Text(
-                                        text = "Ask anything about companion planting compatibility, Soil temperature variations, microclimate diagnostics, or therapeutic mental benefits of plants.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        textAlign = TextAlign.Center,
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        modifier = Modifier.padding(horizontal = 8.dp)
-                                    )
-                                }
-                            }
-                        } else {
-                            items(chatHistory) { content ->
-                                val isUser = content.role == "user"
-                                val text = content.parts.firstOrNull()?.text ?: ""
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
-                                ) {
-                                    if (!isUser) {
-                                        Box(
-                                            modifier = Modifier
-                                                .padding(end = 8.dp, top = 2.dp)
-                                                .size(32.dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.primary),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text("🧑‍🔬", fontSize = 16.sp)
-                                        }
-                                    }
-
-                                    Box(
-                                        modifier = Modifier
-                                            .widthIn(max = 280.dp)
-                                            .testTag(if (isUser) "user_chat_bubble" else "model_chat_bubble")
-                                            .clip(
-                                                RoundedCornerShape(
-                                                    topStart = 16.dp,
-                                                    topEnd = 16.dp,
-                                                    bottomStart = if (isUser) 16.dp else 4.dp,
-                                                    bottomEnd = if (isUser) 4.dp else 16.dp
-                                                )
-                                            )
-                                            .background(
-                                                if (isUser) {
-                                                    Brush.horizontalGradient(
-                                                        listOf(
-                                                            Color(0xFF386641),
-                                                            Color(0xFF6A994E)
-                                                        )
-                                                    )
-                                                } else {
-                                                    Brush.linearGradient(
-                                                        listOf(
-                                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                                            MaterialTheme.colorScheme.surface
-                                                        )
-                                                    )
-                                                }
-                                            )
-                                            .border(
-                                                width = 1.dp,
-                                                color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                                shape = RoundedCornerShape(
-                                                    topStart = 16.dp,
-                                                    topEnd = 16.dp,
-                                                    bottomStart = if (isUser) 16.dp else 4.dp,
-                                                    bottomEnd = if (isUser) 4.dp else 16.dp
-                                                )
-                                            )
-                                            .padding(horizontal = 14.dp, vertical = 10.dp)
-                                    ) {
-                                        Column(
-                                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                                        ) {
-                                            if (!isUser) {
-                                                Text(
-                                                    text = "DR. JULIAN GREENLEAF",
-                                                    fontSize = 9.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.primary,
-                                                    letterSpacing = 0.5.sp
-                                                )
-                                            }
-                                            Row(
-                                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                                verticalAlignment = Alignment.Top,
-                                                modifier = Modifier.fillMaxWidth()
-                                            ) {
-                                                if (!isUser) {
-                                                    Text("🍃", fontSize = 12.sp)
-                                                }
-                                                Text(
-                                                    text = text,
-                                                    fontSize = 13.sp,
-                                                    color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
-                                                    style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
-                                                    modifier = Modifier.weight(1f)
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    AiChatMessagesList(
+                        chatHistory = chatHistory,
+                        listState = listState,
+                        onSendDiagnostic = { msg -> viewModel.sendAiChatMessage(msg) }
+                    )
                 }
 
                 // Chat Input section
-                if (!isPremium && (userQueriesCount >= 3)) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 4.dp)
-                            .testTag("premium_ai_paywall_card"),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
-                        ),
-                        border = BorderStroke(
-                            width = 2.dp,
-                            brush = Brush.horizontalGradient(
-                                listOf(Color(0xFFFFD54F), MaterialTheme.colorScheme.primary)
-                            )
+                AiChatInputArea(
+                    isPremium = isPremium,
+                    userQueriesCount = userQueriesCount,
+                    textInput = textInput,
+                    onTextInputChange = { textInput = it },
+                    attachedImage = attachedImage,
+                    onAttachedImageClear = { attachedImage = null },
+                    onShowAttachmentDialog = { showAttachmentDialog = true },
+                    onSendChatMessage = { msg, img ->
+                        viewModel.sendAiChatMessage(
+                            message = msg,
+                            imageBytesBase64 = img,
+                            imageMimeType = "image/gif"
                         )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AutoAwesome,
-                                    contentDescription = "Premium lock icon",
-                                    tint = Color(0xFFFFD54F),
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Text(
-                                    text = "Consultation Limit Reached (3/3)",
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            }
-                            Text(
-                                text = "You have exhausted your free credentials. Upgrade to PRO to unlock unlimited Live expert analyses, 2D model companions, and diagnostic AR overlays!",
-                                style = MaterialTheme.typography.bodySmall,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
-                            )
-                            Button(
-                                onClick = { viewModel.upgradeToPremium() },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
-                                ),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier.fillMaxWidth().height(48.dp)
-                            ) {
-                                Text("Unlock Unlimited AI Gemini PRO ✨", fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 6.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        if (!isPremium) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 4.dp, vertical = 2.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Live consultations remaining: ${3 - userQueriesCount}/3",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Text(
-                                    text = "GO PRO ✨",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.clickable { viewModel.upgradeToPremium() }
-                                )
-                            }
-                        }
-
-                        if (attachedImage != null) {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 4.dp, vertical = 4.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(MaterialTheme.colorScheme.primaryContainer),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            Icons.Default.Spa,
-                                            contentDescription = "Diagnostic leaf",
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(20.dp)
-                                        )
-                                    }
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = "Photo Capture Diagnosis",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurface
-                                        )
-                                        Text(
-                                            text = attachedImage?.first ?: "",
-                                            fontSize = 9.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    IconButton(onClick = { attachedImage = null }, modifier = Modifier.size(24.dp)) {
-                                        Icon(Icons.Default.Close, contentDescription = "Clear image attachment", modifier = Modifier.size(16.dp))
-                                    }
-                                }
-                            }
-                        }
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            IconButton(
-                                onClick = { showAttachmentDialog = true },
-                                modifier = Modifier.size(48.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.AddAPhoto,
-                                    contentDescription = "Attach plant photo for diagnosis",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-
-                            OutlinedTextField(
-                                value = textInput,
-                                onValueChange = { textInput = it },
-                                placeholder = { Text("Ask Julian about soil compatibility...", fontSize = 13.sp) },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .testTag("ai_chat_text_input"),
-                                shape = RoundedCornerShape(16.dp),
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                                keyboardActions = KeyboardActions(
-                                    onSend = {
-                                        if (textInput.isNotBlank() || attachedImage != null) {
-                                            viewModel.sendAiChatMessage(
-                                                message = if (textInput.isBlank() && attachedImage != null) "Diagnose plant: ${attachedImage?.first}" else textInput,
-                                                imageBytesBase64 = attachedImage?.second,
-                                                imageMimeType = "image/gif"
-                                            )
-                                            attachedImage = null
-                                            textInput = ""
-                                        }
-                                    }
-                                )
-                            )
-
-                            FloatingActionButton(
-                                onClick = {
-                                    if (textInput.isNotBlank() || attachedImage != null) {
-                                        viewModel.sendAiChatMessage(
-                                            message = if (textInput.isBlank() && attachedImage != null) "Diagnose plant: ${attachedImage?.first}" else textInput,
-                                            imageBytesBase64 = attachedImage?.second,
-                                            imageMimeType = "image/gif"
-                                        )
-                                        attachedImage = null
-                                        textInput = ""
-                                    }
-                                },
-                                modifier = Modifier
-                                    .size(54.dp)
-                                    .testTag("send_ai_chat_button"),
-                                shape = RoundedCornerShape(16.dp),
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = Color.White
-                            ) {
-                                Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send advice query")
-                            }
-                        }
-                    }
-                }
+                        attachedImage = null
+                        textInput = ""
+                    },
+                    onUpgradeToPremium = { viewModel.upgradeToPremium() }
+                )
             }
 
             // Right Column (Sensors, suggestions): Weight 0.45f
@@ -1871,5 +1209,401 @@ fun BotanistLiveSignalWave(
             color = color.copy(alpha = 0.4f),
             style = Stroke(width = 1.dp.toPx(), cap = StrokeCap.Round)
         )
+    }
+}
+
+
+@Composable
+fun AiChatMessagesList(
+    chatHistory: List<com.example.data.api.Content>,
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    onSendDiagnostic: (String) -> Unit
+) {
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        if (chatHistory.isEmpty()) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "🌱 Live Garden Intelligence Consultation",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Ask anything about companion planting compatibility, Soil temperature variations, microclimate diagnostics, or therapeutic mental benefits of plants.",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    Text(
+                        "🌿 SELECT QUICK DIAGNOSTIC CHECK:",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    val suggestions = listOf(
+                        "🌱 Suggest perfect companion plant matches" to "Suggest highly compatible companion plants for a Zen style Garden design. What thrives alongside Bonsai Juniper and Lavender?",
+                        "🐛 Analyze yellowing leaves / plant pest diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
+                        "🧘 Discuss therapy and nature cognitive wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?"
+                    )
+
+                    suggestions.forEach { pair ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                                .clickable { onSendDiagnostic(pair.second) },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.AutoAwesome,
+                                    contentDescription = "Diagnostic action",
+                                    tint = MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = pair.first,
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            items(chatHistory) { content ->
+                val isUser = content.role == "user"
+                val text = content.parts.firstOrNull()?.text ?: ""
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
+                ) {
+                    if (!isUser) {
+                        Box(
+                            modifier = Modifier
+                                .padding(end = 8.dp, top = 2.dp)
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("🧑‍🔬", fontSize = 16.sp)
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .widthIn(max = 280.dp)
+                            .testTag(if (isUser) "user_chat_bubble" else "model_chat_bubble")
+                            .clip(
+                                RoundedCornerShape(
+                                    topStart = 16.dp,
+                                    topEnd = 16.dp,
+                                    bottomStart = if (isUser) 16.dp else 4.dp,
+                                    bottomEnd = if (isUser) 4.dp else 16.dp
+                                )
+                            )
+                            .background(
+                                if (isUser) {
+                                    Brush.horizontalGradient(
+                                        listOf(
+                                            Color(0xFF386641),
+                                            Color(0xFF6A994E)
+                                        )
+                                    )
+                                } else {
+                                    Brush.linearGradient(
+                                        listOf(
+                                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                            MaterialTheme.colorScheme.surface
+                                        )
+                                    )
+                                }
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(
+                                    topStart = 16.dp,
+                                    topEnd = 16.dp,
+                                    bottomStart = if (isUser) 16.dp else 4.dp,
+                                    bottomEnd = if (isUser) 4.dp else 16.dp
+                                )
+                            )
+                            .padding(horizontal = 14.dp, vertical = 10.dp)
+                    ) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            if (!isUser) {
+                                Text(
+                                    text = "DR. JULIAN GREENLEAF",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    letterSpacing = 0.5.sp
+                                )
+                            }
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.Top,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                if (!isUser) {
+                                    Text("🍃", fontSize = 12.sp)
+                                }
+                                Text(
+                                    text = text,
+                                    fontSize = 13.sp,
+                                    color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
+                                    style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AiChatInputArea(
+    isPremium: Boolean,
+    userQueriesCount: Int,
+    textInput: String,
+    onTextInputChange: (String) -> Unit,
+    attachedImage: Pair<String, String>?,
+    onAttachedImageClear: () -> Unit,
+    onShowAttachmentDialog: () -> Unit,
+    onSendChatMessage: (String, String?) -> Unit,
+    onUpgradeToPremium: () -> Unit
+) {
+    if (!isPremium && (userQueriesCount >= 3)) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 4.dp)
+                .testTag("premium_ai_paywall_card"),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
+            ),
+            border = BorderStroke(
+                width = 2.dp,
+                brush = Brush.horizontalGradient(
+                    listOf(Color(0xFFFFD54F), MaterialTheme.colorScheme.primary)
+                )
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = "Premium lock icon",
+                        tint = Color(0xFFFFD54F),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Text(
+                        text = "Consultation Limit Reached (3/3)",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+                Text(
+                    text = "You have exhausted your free credentials. Upgrade to PRO to unlock unlimited Live expert analyses, 2D model companions, and diagnostic AR overlays!",
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
+                )
+                Button(
+                    onClick = onUpgradeToPremium,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                ) {
+                    Text("Unlock Unlimited AI Gemini PRO ✨", fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            if (!isPremium) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Live consultations remaining: ${3 - userQueriesCount}/3",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = "GO PRO ✨",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.clickable { onUpgradeToPremium() }
+                    )
+                }
+            }
+
+            if (attachedImage != null) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Spa,
+                                contentDescription = "Diagnostic leaf",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Photo Capture Diagnosis",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = attachedImage.first,
+                                fontSize = 9.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        IconButton(onClick = onAttachedImageClear, modifier = Modifier.size(24.dp)) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear image attachment", modifier = Modifier.size(16.dp))
+                        }
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                IconButton(
+                    onClick = onShowAttachmentDialog,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AddAPhoto,
+                        contentDescription = "Attach plant photo for diagnosis",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                OutlinedTextField(
+                    value = textInput,
+                    onValueChange = onTextInputChange,
+                    placeholder = { Text("Ask Julian about soil compatibility...", fontSize = 13.sp) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("ai_chat_text_input"),
+                    shape = RoundedCornerShape(16.dp),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(
+                        onSend = {
+                            if (textInput.isNotBlank() || attachedImage != null) {
+                                onSendChatMessage(
+                                    if (textInput.isBlank() && attachedImage != null) "Diagnose plant: ${attachedImage.first}" else textInput,
+                                    attachedImage?.second
+                                )
+                            }
+                        }
+                    )
+                )
+
+                FloatingActionButton(
+                    onClick = {
+                        if (textInput.isNotBlank() || attachedImage != null) {
+                            onSendChatMessage(
+                                if (textInput.isBlank() && attachedImage != null) "Diagnose plant: ${attachedImage.first}" else textInput,
+                                attachedImage?.second
+                            )
+                        }
+                    },
+                    modifier = Modifier
+                        .size(54.dp)
+                        .testTag("send_ai_chat_button"),
+                    shape = RoundedCornerShape(16.dp),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = Color.White
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send advice query")
+                }
+            }
+        }
     }
 }
