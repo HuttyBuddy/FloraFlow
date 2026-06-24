@@ -772,138 +772,16 @@ fun PlantCareTrackerCard(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // Summary header
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onExpandClick() }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(emoji, fontSize = 24.sp)
-                }
+            PlantCareSummaryHeader(
+                plant = plant,
+                emoji = emoji,
+                hydration = hydration,
+                isExpanded = isExpanded,
+                waterTask = waterTask,
+                onExpandClick = onExpandClick,
+                onCompleteTask = onCompleteTask
+            )
 
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                text = plant.name,
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleMedium,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                            )
-                            if (hydration < 0.25f) {
-                                Box(
-                                    modifier = Modifier
-                                        .background(Color(0xFFEF5350).copy(alpha = 0.15f), RoundedCornerShape(4.dp))
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Text("⚠️ Thirsty", fontSize = 8.sp, color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)
-                                }
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                text = "Growth: ${plant.growthProgress}%",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                maxLines = 1
-                            )
-                            GrowthTreeRingsIndicator(
-                                progress = plant.growthProgress.toFloat(),
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = plant.type,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                        Text(
-                            text = "•",
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
-                        )
-                        Text(
-                            text = plant.sunlight,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary,
-                            maxLines = 1
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // Quick Water action droplet
-                if (waterTask != null) {
-                    IconButton(
-                        onClick = { onCompleteTask(waterTask) },
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(Color(0xFF29B6F6).copy(alpha = 0.12f), CircleShape)
-                            .clip(CircleShape)
-                    ) {
-                        Icon(
-                            Icons.Default.WaterDrop,
-                            contentDescription = "Log Water Quick",
-                            tint = Color(0xFF0288D1),
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .background(Color.LightGray.copy(alpha = 0.12f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Check,
-                            contentDescription = "Watered Quick",
-                            tint = Color.Gray,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                IconButton(onClick = onExpandClick) {
-                    Icon(
-                        if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        contentDescription = if (isExpanded) "Collapse details" else "Expand details"
-                    )
-                }
-            }
-
-            // Expandable details (Seasons Care & Growth adjustments)
             AnimatedVisibility(
                 visible = isExpanded,
                 enter = expandVertically() + fadeIn(),
@@ -913,218 +791,414 @@ fun PlantCareTrackerCard(
                     modifier = Modifier.padding(top = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Botanical Vitality Monitor Grid
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        VitalityMetricColumn(
-                            title = "Moisture",
-                            value = "${(hydration * 100).toInt()}%",
-                            status = when {
-                                hydration < 0.25f -> "Dry 🚨"
-                                hydration < 0.5f -> "Thirsty ⚠️"
-                                else -> "Optimal 💧"
-                            },
-                            meter = {
-                                WaterLevelMeter(
-                                    hydration = hydration,
-                                    modifier = Modifier.size(width = 36.dp, height = 70.dp)
-                                )
-                            },
-                            buttonText = "Water",
-                            task = waterTask,
-                            onComplete = onCompleteTask,
-                            modifier = Modifier.weight(1f)
-                        )
+                    BotanicalVitalityMonitorGrid(
+                        hydration = hydration,
+                        nutrients = nutrients,
+                        pruning = pruning,
+                        waterTask = waterTask,
+                        fertilizeTask = fertilizeTask,
+                        pruneTask = pruneTask,
+                        onCompleteTask = onCompleteTask
+                    )
 
-                        VitalityMetricColumn(
-                            title = "Nutrients",
-                            value = "${(nutrients * 100).toInt()}%",
-                            status = when {
-                                nutrients < 0.2f -> "Starved 🧪"
-                                nutrients < 0.5f -> "Depleted ⚠️"
-                                else -> "Rich 🌱"
-                            },
-                            meter = {
-                                VitalityLevelMeter(
-                                    level = nutrients,
-                                    color = Color(0xFF81C784),
-                                    modifier = Modifier.size(width = 36.dp, height = 70.dp)
-                                )
-                            },
-                            buttonText = "Feed",
-                            task = fertilizeTask,
-                            onComplete = onCompleteTask,
-                            modifier = Modifier.weight(1f)
-                        )
+                    BotanicalSpecificationsGrid(plant = plant)
 
-                        VitalityMetricColumn(
-                            title = "Structure",
-                            value = "${(pruning * 100).toInt()}%",
-                            status = when {
-                                pruning < 0.2f -> "Overgrown ✂️"
-                                pruning < 0.5f -> "Untidy ⚠️"
-                                else -> "Pruned ✨"
-                            },
-                            meter = {
-                                VitalityLevelMeter(
-                                    level = pruning,
-                                    color = Color(0xFFBA68C8),
-                                    modifier = Modifier.size(width = 36.dp, height = 70.dp)
-                                )
-                            },
-                            buttonText = "Prune",
-                            task = pruneTask,
-                            onComplete = onCompleteTask,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+                    SeasonTrackersSection(plant = plant)
 
-                    // Core Botanical specifications grid
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
-                            .padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Sunlight Exposure: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(plant.sunlight, style = MaterialTheme.typography.bodySmall)
-                            }
-                            SunExposureIcons(plant.sunlight)
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text("Soil Substrate: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            Text(plant.soilType, style = MaterialTheme.typography.bodySmall)
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Watering Needs: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(plant.wateringNeeds, style = MaterialTheme.typography.bodySmall)
-                            }
-                            WaterNeedsIcons(plant.wateringNeeds)
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text("Bloom Time: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            Text(plant.bloomTime, style = MaterialTheme.typography.bodySmall)
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text("Pests / Hazards: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            Text(plant.pestsDiseases, style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
+                    FunFactCard(plantName = plant.name)
 
-                    // Season trackers
-                    Text("Seasonal Care Guidelines:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        SeasonCareBadge("Spring", plant.careSpring, modifier = Modifier.weight(1f))
-                        SeasonCareBadge("Summer", plant.careSummer, modifier = Modifier.weight(1f))
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        SeasonCareBadge("Autumn", plant.careAutumn, modifier = Modifier.weight(1f))
-                        SeasonCareBadge("Winter", plant.careWinter, modifier = Modifier.weight(1f))
-                    }
+                    GrowthAdjustmentSlider(
+                        plantId = plant.id,
+                        localGrowthProgress = localGrowthProgress,
+                        onLocalGrowthProgressChange = { localGrowthProgress = it },
+                        onGrowthChangeFinished = { onGrowthChange(localGrowthProgress.toInt()) }
+                    )
 
-                    val template = remember(plant.name) {
-                        com.example.data.model.ClimatePlants.ALL_TEMPLATES.find { it.name.equals(plant.name, ignoreCase = true) }
-                    }
-                    val funFact = remember(template) {
-                        template?.funFacts?.randomOrNull() ?: ""
-                    }
-                    if (funFact.isNotEmpty()) {
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
-                            )
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Text(
-                                    text = "💡 Did you know?",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.tertiary
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = funFact,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onTertiaryContainer
-                                )
-                            }
-                        }
-                    }
-
-                    // Growth Progress Adjustment Slider
-                    Text("Update Live Growth progress index:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Slider(
-                            value = localGrowthProgress,
-                            onValueChange = { localGrowthProgress = it },
-                            onValueChangeFinished = {
-                                onGrowthChange(localGrowthProgress.toInt())
-                            },
-                            valueRange = 0f..100f,
-                            modifier = Modifier.weight(1f).testTag("growth_slider_${plant.id}")
-                        )
-                        Text("${localGrowthProgress.toInt()}%", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
-                    }
-
-                    // Card Actions panel
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            onClick = onConsultAi,
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.weight(1.5f).testTag("consult_ai_plant_btn")
-                        ) {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Consult AI Bot", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        }
-
-                        OutlinedButton(
-                            onClick = onDeletePlant,
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier.weight(1f).testTag("delete_plant_btn")
-                        ) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(14.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Uproot", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
+                    PlantCareActionsPanel(
+                        onConsultAi = onConsultAi,
+                        onDeletePlant = onDeletePlant
+                    )
                 }
             }
         }
     }
 }
+
+@Composable
+private fun PlantCareSummaryHeader(
+    plant: Plant,
+    emoji: String,
+    hydration: Float,
+    isExpanded: Boolean,
+    waterTask: CareTask?,
+    onExpandClick: () -> Unit,
+    onCompleteTask: (CareTask) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onExpandClick() }
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(emoji, fontSize = 24.sp)
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = plant.name,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    if (hydration < 0.25f) {
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFEF5350).copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        ) {
+                            Text("⚠️ Thirsty", fontSize = 8.sp, color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = "Growth: ${plant.growthProgress}%",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1
+                    )
+                    GrowthTreeRingsIndicator(
+                        progress = plant.growthProgress.toFloat(),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = plant.type,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                Text(
+                    text = "•",
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                )
+                Text(
+                    text = plant.sunlight,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                    maxLines = 1
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        if (waterTask != null) {
+            IconButton(
+                onClick = { onCompleteTask(waterTask) },
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(Color(0xFF29B6F6).copy(alpha = 0.12f), CircleShape)
+                    .clip(CircleShape)
+            ) {
+                Icon(
+                    Icons.Default.WaterDrop,
+                    contentDescription = "Log Water Quick",
+                    tint = Color(0xFF0288D1),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .background(Color.LightGray.copy(alpha = 0.12f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Check,
+                    contentDescription = "Watered Quick",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        IconButton(onClick = onExpandClick) {
+            Icon(
+                if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = if (isExpanded) "Collapse details" else "Expand details"
+            )
+        }
+    }
+}
+
+@Composable
+private fun BotanicalVitalityMonitorGrid(
+    hydration: Float,
+    nutrients: Float,
+    pruning: Float,
+    waterTask: CareTask?,
+    fertilizeTask: CareTask?,
+    pruneTask: CareTask?,
+    onCompleteTask: (CareTask) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        VitalityMetricColumn(
+            title = "Moisture",
+            value = "${(hydration * 100).toInt()}%",
+            status = when {
+                hydration < 0.25f -> "Dry 🚨"
+                hydration < 0.5f -> "Thirsty ⚠️"
+                else -> "Optimal 💧"
+            },
+            meter = {
+                WaterLevelMeter(
+                    hydration = hydration,
+                    modifier = Modifier.size(width = 36.dp, height = 70.dp)
+                )
+            },
+            buttonText = "Water",
+            task = waterTask,
+            onComplete = onCompleteTask,
+            modifier = Modifier.weight(1f)
+        )
+
+        VitalityMetricColumn(
+            title = "Nutrients",
+            value = "${(nutrients * 100).toInt()}%",
+            status = when {
+                nutrients < 0.2f -> "Starved 🧪"
+                nutrients < 0.5f -> "Depleted ⚠️"
+                else -> "Rich 🌱"
+            },
+            meter = {
+                VitalityLevelMeter(
+                    level = nutrients,
+                    color = Color(0xFF81C784),
+                    modifier = Modifier.size(width = 36.dp, height = 70.dp)
+                )
+            },
+            buttonText = "Feed",
+            task = fertilizeTask,
+            onComplete = onCompleteTask,
+            modifier = Modifier.weight(1f)
+        )
+
+        VitalityMetricColumn(
+            title = "Structure",
+            value = "${(pruning * 100).toInt()}%",
+            status = when {
+                pruning < 0.2f -> "Overgrown ✂️"
+                pruning < 0.5f -> "Untidy ⚠️"
+                else -> "Pruned ✨"
+            },
+            meter = {
+                VitalityLevelMeter(
+                    level = pruning,
+                    color = Color(0xFFBA68C8),
+                    modifier = Modifier.size(width = 36.dp, height = 70.dp)
+                )
+            },
+            buttonText = "Prune",
+            task = pruneTask,
+            onComplete = onCompleteTask,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun BotanicalSpecificationsGrid(plant: Plant) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Sunlight Exposure: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text(plant.sunlight, style = MaterialTheme.typography.bodySmall)
+            }
+            SunExposureIcons(plant.sunlight)
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text("Soil Substrate: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(plant.soilType, style = MaterialTheme.typography.bodySmall)
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Watering Needs: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text(plant.wateringNeeds, style = MaterialTheme.typography.bodySmall)
+            }
+            WaterNeedsIcons(plant.wateringNeeds)
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text("Bloom Time: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(plant.bloomTime, style = MaterialTheme.typography.bodySmall)
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text("Pests / Hazards: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+            Text(plant.pestsDiseases, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
+@Composable
+private fun SeasonTrackersSection(plant: Plant) {
+    Text("Seasonal Care Guidelines:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        SeasonCareBadge("Spring", plant.careSpring, modifier = Modifier.weight(1f))
+        SeasonCareBadge("Summer", plant.careSummer, modifier = Modifier.weight(1f))
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        SeasonCareBadge("Autumn", plant.careAutumn, modifier = Modifier.weight(1f))
+        SeasonCareBadge("Winter", plant.careWinter, modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun FunFactCard(plantName: String) {
+    val template = remember(plantName) {
+        com.example.data.model.ClimatePlants.ALL_TEMPLATES.find { it.name.equals(plantName, ignoreCase = true) }
+    }
+    val funFact = remember(template) {
+        template?.funFacts?.randomOrNull() ?: ""
+    }
+    if (funFact.isNotEmpty()) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
+            )
+        ) {
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = "💡 Did you know?",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = funFact,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun GrowthAdjustmentSlider(
+    plantId: Int,
+    localGrowthProgress: Float,
+    onLocalGrowthProgressChange: (Float) -> Unit,
+    onGrowthChangeFinished: () -> Unit
+) {
+    Text("Update Live Growth progress index:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Slider(
+            value = localGrowthProgress,
+            onValueChange = onLocalGrowthProgressChange,
+            onValueChangeFinished = onGrowthChangeFinished,
+            valueRange = 0f..100f,
+            modifier = Modifier.weight(1f).testTag("growth_slider_${plantId}")
+        )
+        Text("${localGrowthProgress.toInt()}%", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+private fun PlantCareActionsPanel(
+    onConsultAi: () -> Unit,
+    onDeletePlant: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Button(
+            onClick = onConsultAi,
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.weight(1.5f).testTag("consult_ai_plant_btn")
+        ) {
+            Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(14.dp))
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("Consult AI Bot", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        }
+
+        OutlinedButton(
+            onClick = onDeletePlant,
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier.weight(1f).testTag("delete_plant_btn")
+        ) {
+            Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(14.dp))
+            Spacer(modifier = Modifier.width(4.dp))
+            Text("Uproot", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
 
 // --- Specific Plant Encyclopedia Information Card ---
 @Composable
