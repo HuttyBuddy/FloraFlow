@@ -607,30 +607,7 @@ fun ResultScreen(
             )
         )
 
-        val context = androidx.compose.ui.platform.LocalContext.current
-        val sharedPrefs = remember { context.getSharedPreferences("floraflow_prefs", android.content.Context.MODE_PRIVATE) }
-        val prevScore = remember { sharedPrefs.getInt("prev_assessment_score", -1) }
-
-        if (prevScore != -1) {
-            val delta = score - prevScore
-            val textDelta = if (delta > 0) {
-                "Your Neural Load improved from $prevScore/20 to $score/20 (+$delta)!"
-            } else if (delta < 0) {
-                "Your Neural Load went from $prevScore/20 to $score/20 ($delta)."
-            } else {
-                "Your Neural Load remained at $score/20."
-            }
-            Text(
-                text = textDelta,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White.copy(alpha = 0.95f)
-                ),
-                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
-                textAlign = TextAlign.Center
-            )
-        }
+        ScoreComparisonText(score = score)
         
         Spacer(modifier = Modifier.height(16.dp))
         
@@ -718,51 +695,12 @@ fun ResultScreen(
             }
         }
         
-        if (showShareToast) {
-            AlertDialog(
-                onDismissRequest = { showShareToast = false },
-                confirmButton = {
-                    TextButton(onClick = { showShareToast = false }) {
-                        Text("Close", color = Color(0xFF1D3C28))
-                    }
-                },
-                title = { Text("Share Score Card", fontWeight = FontWeight.Bold) },
-                text = {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(zoneInfo.third, RoundedCornerShape(16.dp))
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.ic_logo_heart),
-                                    contentDescription = "FloraFlow Logo",
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("FloraFlow Neural Load", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text("$score / 20", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 32.sp)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(zoneInfo.second, color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text("Take your own assessment: floraflow.app", color = Color(0xFFE8C998), fontSize = 10.sp, fontWeight = FontWeight.Medium)
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("Card generated successfully. Click share to post!", textAlign = TextAlign.Center, fontSize = 12.sp)
-                    }
-                }
-            )
-        }
+        ShareScoreDialog(
+            showDialog = showShareToast,
+            score = score,
+            zoneInfo = zoneInfo,
+            onDismiss = { showShareToast = false }
+        )
         
         Spacer(modifier = Modifier.height(24.dp))
     }
@@ -773,6 +711,88 @@ fun borderStrokeShare() = androidx.compose.foundation.BorderStroke(
     width = 1.dp,
     color = Color.White.copy(alpha = 0.5f)
 )
+
+@Composable
+fun ScoreComparisonText(score: Int) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val sharedPrefs = remember { context.getSharedPreferences("floraflow_prefs", android.content.Context.MODE_PRIVATE) }
+    val prevScore = remember { sharedPrefs.getInt("prev_assessment_score", -1) }
+
+    if (prevScore != -1) {
+        val delta = score - prevScore
+        val textDelta = if (delta > 0) {
+            "Your Neural Load improved from $prevScore/20 to $score/20 (+$delta)!"
+        } else if (delta < 0) {
+            "Your Neural Load went from $prevScore/20 to $score/20 ($delta)."
+        } else {
+            "Your Neural Load remained at $score/20."
+        }
+        Text(
+            text = textDelta,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White.copy(alpha = 0.95f)
+            ),
+            modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+fun ShareScoreDialog(
+    showDialog: Boolean,
+    score: Int,
+    zoneInfo: Triple<String, String, Color>,
+    onDismiss: () -> Unit
+) {
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("Close", color = Color(0xFF1D3C28))
+                }
+            },
+            title = { Text("Share Score Card", fontWeight = FontWeight.Bold) },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(zoneInfo.third, RoundedCornerShape(16.dp))
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_logo_heart),
+                                contentDescription = "FloraFlow Logo",
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("FloraFlow Neural Load", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text("$score / 20", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 32.sp)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(zoneInfo.second, color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text("Take your own assessment: floraflow.app", color = Color(0xFFE8C998), fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Card generated successfully. Click share to post!", textAlign = TextAlign.Center, fontSize = 12.sp)
+                }
+            }
+        )
+    }
+}
 
 @Composable
 fun StepsScreen(
