@@ -2,7 +2,7 @@ package com.example.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.index.Index
+import androidx.room.Index
 
 @Entity(tableName = "community_posts", indices = [Index(value = ["timestamp"])])
 data class CommunityPost(
