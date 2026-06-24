@@ -17,15 +17,11 @@ class CareScheduler(
 
     // Analyzes plants and generates missing care tasks, adjusting due dates based on weather conditions
     suspend fun syncCareSchedules() {
-        val plants = gardenRepository.getPlantsForLayout(-1).first() // We can also retrieve layout specific ones
         val allPlants = mutableListOf<Plant>()
         
-        // Let's get all layouts and gather their plants
-        val layouts = gardenRepository.allLayouts.first()
-        for (layout in layouts) {
-            val layoutPlants = gardenRepository.getPlantsForLayout(layout.id).first()
-            allPlants.addAll(layoutPlants)
-        }
+        // Optimize: Fetch all plants in a single query instead of layout by layout (N+1 anti-pattern fix)
+        val allPlantsFromDb = gardenRepository.allPlants.first()
+        allPlants.addAll(allPlantsFromDb)
 
         val weather = weatherRepository.currentWeather.value
         val isRaining = weather.condition.equals("Rain", ignoreCase = true)
