@@ -1137,109 +1137,137 @@ fun BotanistProfileHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.size(52.dp)
-            ) {
-                // Pulsing glow ring around avatar
-                Box(
-                    modifier = Modifier
-                        .size(46.dp)
-                        .graphicsLayer {
-                            scaleX = glowScale
-                            scaleY = glowScale
-                            alpha = if (isAiLoading) pulseAlpha * 0.4f else 0.15f
-                        }
-                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                )
+            BotanistAvatar(
+                isAiLoading = isAiLoading,
+                pulseAlpha = pulseAlpha,
+                glowScale = glowScale
+            )
 
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.primaryContainer,
-                                    MaterialTheme.colorScheme.tertiaryContainer
-                                )
-                            ),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("🧑‍🔬", fontSize = 20.sp)
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .align(Alignment.BottomEnd)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape)
-                    )
+            BotanistInfo(
+                isAiLoading = isAiLoading,
+                pulseAlpha = pulseAlpha,
+                aiStatus = aiStatus,
+                modifier = Modifier.weight(1f)
+            )
+
+            BotanistActions(
+                hasHistory = hasHistory,
+                onOpenLab = onOpenLab,
+                onClearChat = onClearChat
+            )
+        }
+    }
+}
+
+@Composable
+private fun BotanistAvatar(isAiLoading: Boolean, pulseAlpha: Float, glowScale: Float) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.size(52.dp)
+    ) {
+        // Pulsing glow ring around avatar
+        Box(
+            modifier = Modifier
+                .size(46.dp)
+                .graphicsLayer {
+                    scaleX = glowScale
+                    scaleY = glowScale
+                    alpha = if (isAiLoading) pulseAlpha * 0.4f else 0.15f
                 }
-            }
+                .background(MaterialTheme.colorScheme.primary, CircleShape)
+        )
 
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Text(
-                        text = "Dr. Julian Greenleaf",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleLarge.copy(fontSize = 17.sp),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        lineHeight = 22.sp
-                    )
-                    if (isAiLoading) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .graphicsLayer { alpha = pulseAlpha }
-                                .background(Color(0xFF4CAF50), CircleShape)
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .background(
+                    Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.colorScheme.tertiaryContainer
                         )
-                    }
-                }
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = if (isAiLoading && aiStatus.isNotBlank()) aiStatus else "Live Gemini Agent • PhD in Botanical Systems",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                    lineHeight = 16.sp
-                )
-            }
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                IconButton(
-                    onClick = onOpenLab,
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
                     ),
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Spa,
-                        contentDescription = "Open Lab Console",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
+                    CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("🧑‍🔬", fontSize = 20.sp)
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .align(Alignment.BottomEnd)
+                    .background(MaterialTheme.colorScheme.primary, CircleShape)
+                    .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape)
+            )
+        }
+    }
+}
 
-                if (hasHistory) {
-                    IconButton(
-                        onClick = onClearChat,
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
-                        ),
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DeleteSweep,
-                            contentDescription = "Clear Chat",
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
+@Composable
+private fun BotanistInfo(isAiLoading: Boolean, pulseAlpha: Float, aiStatus: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                text = "Dr. Julian Greenleaf",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleLarge.copy(fontSize = 17.sp),
+                color = MaterialTheme.colorScheme.onSurface,
+                lineHeight = 22.sp
+            )
+            if (isAiLoading) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .graphicsLayer { alpha = pulseAlpha }
+                        .background(Color(0xFF4CAF50), CircleShape)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = if (isAiLoading && aiStatus.isNotBlank()) aiStatus else "Live Gemini Agent • PhD in Botanical Systems",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+            lineHeight = 16.sp
+        )
+    }
+}
+
+@Composable
+private fun BotanistActions(hasHistory: Boolean, onOpenLab: () -> Unit, onClearChat: () -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        IconButton(
+            onClick = onOpenLab,
+            colors = IconButtonDefaults.iconButtonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+            ),
+            modifier = Modifier.size(32.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Spa,
+                contentDescription = "Open Lab Console",
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(16.dp)
+            )
+        }
+
+        if (hasHistory) {
+            IconButton(
+                onClick = onClearChat,
+                colors = IconButtonDefaults.iconButtonColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f)
+                ),
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DeleteSweep,
+                    contentDescription = "Clear Chat",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(16.dp)
+                )
             }
         }
     }
