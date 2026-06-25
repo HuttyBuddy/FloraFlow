@@ -105,7 +105,6 @@ class MainActivity : ComponentActivity() {
                 var showSplash by remember { mutableStateOf(true) }
 
                 LaunchedEffect(Unit) {
-                    kotlinx.coroutines.delay(1000) // Defer heavy layout loading with 1 second of warm organic splash/load timer
                     showSplash = false
                 }
 
