@@ -528,7 +528,7 @@ class GardenViewModel @JvmOverloads constructor(
                     )
                     val layoutId = repository.insertLayout(defaultLayout).toInt()
 
-                    repository.insertPlant(
+                    repository.insertPlants(listOf(
                         Plant(
                             layoutId = layoutId,
                             name = "Bonsai Juniper",
@@ -544,10 +544,7 @@ class GardenViewModel @JvmOverloads constructor(
                             wateringNeeds = "High",
                             bloomTime = "Early Spring",
                             pestsDiseases = "Scale insects, Root rot"
-                        )
-                    )
-
-                    repository.insertPlant(
+                        ),
                         Plant(
                             layoutId = layoutId,
                             name = "English Lavender",
@@ -564,7 +561,7 @@ class GardenViewModel @JvmOverloads constructor(
                             bloomTime = "Mid Summer",
                             pestsDiseases = "Spittlebugs, Damp-off rots"
                         )
-                    )
+                    ))
 
                     repository.insertMoodLog(
                         MoodLog(
@@ -984,6 +981,7 @@ class GardenViewModel @JvmOverloads constructor(
     private suspend fun parseAndInsertPlants(response: String, layoutId: Int) {
         try {
             val lines = response.lines().filter { it.contains("|") }
+            val plantsToInsert = mutableListOf<Plant>()
             for (line in lines) {
                 val parts = line.split("|").map { it.trim() }
                 if (parts.size >= 2) {
@@ -992,7 +990,7 @@ class GardenViewModel @JvmOverloads constructor(
                     val soil = if (parts.size >= 3) parts[2] else "Standard garden compost"
                     val sun = if (parts.size >= 4) parts[3] else "Full sun to dappled shade"
                     
-                    repository.insertPlant(
+                    plantsToInsert.add(
                         Plant(
                             layoutId = layoutId,
                             name = name,
@@ -1007,6 +1005,9 @@ class GardenViewModel @JvmOverloads constructor(
                         )
                     )
                 }
+            }
+            if (plantsToInsert.isNotEmpty()) {
+                repository.insertPlants(plantsToInsert)
             }
         } catch (_: Exception) {}
     }
