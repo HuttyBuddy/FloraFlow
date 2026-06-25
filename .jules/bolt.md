@@ -14,3 +14,6 @@
 ## 2024-08-01 - Jetpack Compose Allocation Avoidance
 **Learning:** Defining static lists (e.g., `listOf("All", "Flower", "Shrub")`) directly inside a `@Composable` function forces the UI to re-allocate those objects on every recomposition.
 **Action:** Extract static data structures like filter lists to private top-level constants outside the Composable to prevent unnecessary memory allocations and GC overhead.
+## 2024-08-01 - Room Database Batch Insert
+**Learning:** Calling `insertPlant` multiple times inside a loop (like parsing Gemini output) creates unnecessary database transactions and degrades performance.
+**Action:** Always accumulate objects in a list (`mutableListOf<Plant>`) and use a batch insert function like `insertPlants(listOf(...))` to perform the insertion in a single transaction.
