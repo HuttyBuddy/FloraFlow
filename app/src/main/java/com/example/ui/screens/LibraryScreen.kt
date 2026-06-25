@@ -191,6 +191,18 @@ fun LibraryScreen(
                         fontSize = 11.sp,
                         textAlign = TextAlign.Center
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            searchQuery = ""
+                            selectedTypeFilter = "All"
+                            selectedClimateFilter = "All"
+                            selectedWaterFilter = "All"
+                            selectedBloomFilter = "All"
+                        }
+                    ) {
+                        Text("Clear All Filters")
+                    }
                 }
             }
         }
