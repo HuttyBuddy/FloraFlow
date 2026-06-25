@@ -181,4 +181,43 @@ class GardenDatabaseTest {
         val endBatchTime = System.currentTimeMillis()
         println("Optimized batch insert time for 50 plants: ${endBatchTime - startBatchTime} ms")
     }
+
+    @Test
+    fun benchmarkGetAllPlants() = runTest {
+        // Setup data: 10 layouts, 10 plants each
+        val layoutIds = (1..10).map { i ->
+            dao.insertLayout(GardenLayout(name = "Layout $i", style = "Test", climate = "Test")).toInt()
+        }
+        val plants = mutableListOf<Plant>()
+        for (layoutId in layoutIds) {
+            for (i in 1..10) {
+                plants.add(Plant(layoutId = layoutId, name = "Plant $i in $layoutId", type = "Test"))
+            }
+        }
+        dao.insertPlants(plants)
+
+        // Benchmark N+1 Query Approach
+        val startNPlusOneTime = System.currentTimeMillis()
+        val layouts = dao.getAllLayouts().first()
+        val nPlusOnePlants = mutableListOf<Plant>()
+        for (layout in layouts) {
+            val layoutPlants = dao.getPlantsForLayout(layout.id).first()
+            nPlusOnePlants.addAll(layoutPlants)
+        }
+        val endNPlusOneTime = System.currentTimeMillis()
+        val timeNPlusOne = endNPlusOneTime - startNPlusOneTime
+
+        // Benchmark Single Query Approach
+        val startSingleQueryTime = System.currentTimeMillis()
+        val singleQueryPlants = dao.getAllPlants().first()
+        val endSingleQueryTime = System.currentTimeMillis()
+        val timeSingleQuery = endSingleQueryTime - startSingleQueryTime
+
+        println("Baseline N+1 Query time to fetch 100 plants: $timeNPlusOne ms")
+        println("Optimized Single Query time to fetch 100 plants: $timeSingleQuery ms")
+
+        // Assert correctness
+        assertEquals(100, nPlusOnePlants.size)
+        assertEquals(100, singleQueryPlants.size)
+    }
 }

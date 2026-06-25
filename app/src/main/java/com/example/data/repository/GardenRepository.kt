@@ -22,6 +22,8 @@ class GardenRepository(private val gardenDao: GardenDao) {
     suspend fun deleteLayout(layout: GardenLayout) = gardenDao.deleteLayout(layout)
 
     // --- Plants ---
+    val allPlants: Flow<List<Plant>> = gardenDao.getAllPlants()
+
     fun getPlantsForLayout(layoutId: Int): Flow<List<Plant>> = gardenDao.getPlantsForLayout(layoutId)
 
     suspend fun insertPlant(plant: Plant): Long = gardenDao.insertPlant(plant)

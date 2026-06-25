@@ -27,6 +27,9 @@ interface GardenDao {
     suspend fun deleteLayout(layout: GardenLayout)
 
     // --- Plants ---
+    @Query("SELECT * FROM plants ORDER BY id ASC")
+    fun getAllPlants(): Flow<List<Plant>>
+
     @Query("SELECT * FROM plants WHERE layoutId = :layoutId ORDER BY id ASC")
     fun getPlantsForLayout(layoutId: Int): Flow<List<Plant>>
 
