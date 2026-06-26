@@ -1392,10 +1392,10 @@ fun DailyHabitCard(
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Your Daily Growth Ring",
                         style = MaterialTheme.typography.titleMedium,
@@ -1549,11 +1549,12 @@ fun DailyHabitCard(
                                         )
                                         Text(
                                             text = "${task.taskType} ${task.plantName}",
+                                            modifier = Modifier.weight(1f),
                                             style = MaterialTheme.typography.bodySmall.copy(
                                                 textDecoration = TextDecoration.LineThrough
                                             ),
                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                            maxLines = 1
+                                            maxLines = 2
                                         )
                                     } else {
                                         var checked by remember { mutableStateOf(false) }
@@ -1576,9 +1577,10 @@ fun DailyHabitCard(
                                         )
                                         Text(
                                             text = "${task.taskType} ${task.plantName}",
+                                            modifier = Modifier.weight(1f),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurface,
-                                            maxLines = 1
+                                            maxLines = 2
                                         )
                                     }
                                 }
@@ -1612,11 +1614,12 @@ fun DailyHabitCard(
                                     )
                                     Text(
                                         text = ritual.text,
+                                        modifier = Modifier.weight(1f),
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             textDecoration = TextDecoration.LineThrough
                                         ),
                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                        maxLines = 1
+                                        maxLines = 2
                                     )
                                 } else {
                                     var checked by remember { mutableStateOf(false) }
@@ -1644,9 +1647,10 @@ fun DailyHabitCard(
                                     )
                                     Text(
                                         text = ritual.text,
+                                        modifier = Modifier.weight(1f),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurface,
-                                        maxLines = 1
+                                        maxLines = 2
                                     )
                                 }
                             }

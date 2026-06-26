@@ -15,7 +15,8 @@ data class PlantTemplate(
     val bloomTime: String,
     val pestsDiseases: String,
     val compatibleClimate: String,
-    val funFacts: List<String> = emptyList()
+    val funFacts: List<String> = emptyList(),
+    val isIndoor: Boolean = false
 )
 
 object ClimatePlants {
@@ -24,26 +25,299 @@ object ClimatePlants {
     val STYLES = listOf("Indoor Area", "Cottage Garden", "English Classic", "Modern Patio", "Botanical Sanctuary")
 
     val ALL_TEMPLATES = listOf(
-        // Arid Climate Plants
+        // === INDOOR PLANTS ===
         PlantTemplate(
-            name = "Saguaro Cactus",
+            name = "Snake Plant",
             type = "Succulent",
-            careSpring = "Water once a month. No pruning needed.",
-            careSummer = "Water every 3 weeks. Full direct sun.",
-            careAutumn = "Withhold watering as temperature drops.",
-            careWinter = "Keep completely dry to prevent frost root rot.",
-            soilType = "Perlite and sand mix",
-            sunlight = "Full Direct Sun",
-            iconEmoji = "🌵",
-            matureSize = "15 - 40 feet tall",
-            wateringNeeds = "Low",
-            bloomTime = "Late Spring (May - June)",
-            pestsDiseases = "Bacterial necrosis, Mealybugs",
-            compatibleClimate = "Arid (Desert)",
+            careSpring = "Water monthly. Wipe leaves to remove dust.",
+            careSummer = "Water every 3 weeks. Enjoys warm air.",
+            careAutumn = "Reduce watering as temperatures cool down.",
+            careWinter = "Water once in 6 weeks. Avoid cold window drafts.",
+            soilType = "Sandy, highly well-drained cactus soil",
+            sunlight = "Low to Bright Indirect Light",
+            iconEmoji = "🪴",
+            matureSize = "2 - 4 feet tall",
+            wateringNeeds = "Very Low",
+            bloomTime = "Rarely (Winter)",
+            pestsDiseases = "Root rot in soggy soil",
+            compatibleClimate = "Arid (Desert) Temperate",
+            isIndoor = true,
             funFacts = listOf(
-                "Saguaro cacti can take up to 75 years to grow their first side arm.",
-                "They store huge amounts of water; a fully hydrated saguaro can weigh over 3,000 pounds.",
-                "Saguaro blossoms are Arizona's state flower and bloom only at night."
+                "Snake plants release oxygen at night, unlike most plants which do so during the day.",
+                "It is also known as Mother-in-Law's Tongue due to its sharp leaf tips."
+            )
+        ),
+        PlantTemplate(
+            name = "Peace Lily",
+            type = "Flower",
+            careSpring = "Keep soil consistently moist. Mist leaves regularly.",
+            careSummer = "Water twice a week. Appreciates high humidity.",
+            careAutumn = "Clean leaves with a damp cloth. Reduce fertilizer.",
+            careWinter = "Water weekly when topsoil is dry.",
+            soilType = "Peat-rich, aerated potting soil",
+            sunlight = "Medium to Low Indirect Light",
+            iconEmoji = "🕊️",
+            matureSize = "1 - 3 feet tall",
+            wateringNeeds = "Moderate to High",
+            bloomTime = "Spring",
+            pestsDiseases = "Aphids, Leaf spot from cold water",
+            compatibleClimate = "Tropical (Humid) Temperate",
+            isIndoor = true,
+            funFacts = listOf(
+                "Peace Lilies are not true lilies, but members of the Araceae family.",
+                "They are famous for 'dramatically' drooping when they need water and rebounding quickly."
+            )
+        ),
+        PlantTemplate(
+            name = "ZZ Plant",
+            type = "Succulent",
+            careSpring = "Water every 3-4 weeks. Fertilize once.",
+            careSummer = "Water bi-weekly if very hot. Keep out of direct sun.",
+            careAutumn = "Reduce watering. Wipe glossy leaves.",
+            careWinter = "Water once a month. Keep in warm room.",
+            soilType = "Standard well-draining soil",
+            sunlight = "Low to Bright Indirect Light",
+            iconEmoji = "🌿",
+            matureSize = "2 - 3 feet tall",
+            wateringNeeds = "Low",
+            bloomTime = "Non-flowering",
+            pestsDiseases = "Mealybugs, Leaf yellowing from overwater",
+            compatibleClimate = "Arid (Desert) Tropical (Humid)",
+            isIndoor = true,
+            funFacts = listOf(
+                "Its waxy leaves are so shiny they are often mistaken for plastic artificial leaves.",
+                "It grows from potato-like rhizomes that store water underground for months."
+            )
+        ),
+        PlantTemplate(
+            name = "Cast Iron Plant",
+            type = "Shrub",
+            careSpring = "Water when top 2 inches of soil are dry.",
+            careSummer = "Water weekly. Wipe leaves to maintain shine.",
+            careAutumn = "Lessen watering. No fertilizer needed.",
+            careWinter = "Keep dry and cool, water monthly.",
+            soilType = "Organic, well-draining loam",
+            sunlight = "Deep Shade to Low Light",
+            iconEmoji = "🍃",
+            matureSize = "2 - 3 feet tall",
+            wateringNeeds = "Low to Moderate",
+            bloomTime = "Rarely (Summer)",
+            pestsDiseases = "Scale insects, Spider mites",
+            compatibleClimate = "Temperate",
+            isIndoor = true,
+            funFacts = listOf(
+                "Earned its name because it survives extreme neglect, low light, and temperature changes.",
+                "It was highly popular in Victorian England as it survived dark, drafty, gas-lit parlors."
+            )
+        ),
+        PlantTemplate(
+            name = "Fiddle Leaf Fig",
+            type = "Tree",
+            careSpring = "Water weekly. Rotate 90 degrees to ensure even growth.",
+            careSummer = "Water deeply twice a week. Mist foliage.",
+            careAutumn = "Clean large leaves. Move away from heaters.",
+            careWinter = "Lessen watering, ensure maximum window light.",
+            soilType = "Fast-draining soil with bark pieces",
+            sunlight = "Bright Consistent Indirect Light",
+            iconEmoji = "🌳",
+            matureSize = "6 - 10 feet tall (indoors)",
+            wateringNeeds = "Moderate",
+            bloomTime = "Non-flowering (indoors)",
+            pestsDiseases = "Fungal leaf spot, Spider mites",
+            compatibleClimate = "Tropical (Humid)",
+            isIndoor = true,
+            funFacts = listOf(
+                "Its leaves are shaped like violins or fiddles, hence the name.",
+                "Native to West African rainforests where it grows up to 50 feet tall."
+            )
+        ),
+        PlantTemplate(
+            name = "Swiss Cheese Plant",
+            type = "Shrub",
+            careSpring = "Water weekly. Provide a moss pole to climb.",
+            careSummer = "Water twice a week. Wipe large leaves to help photosynthesis.",
+            careAutumn = "Reduce watering as light decreases.",
+            careWinter = "Water every 10 days, keep away from cold windows.",
+            soilType = "Chunky aroid potting mix",
+            sunlight = "Medium to Bright Indirect Light",
+            iconEmoji = "🌿",
+            matureSize = "4 - 8 feet tall",
+            wateringNeeds = "Moderate",
+            bloomTime = "Non-flowering (indoors)",
+            pestsDiseases = "Thrips, Root rot",
+            compatibleClimate = "Tropical (Humid)",
+            isIndoor = true,
+            funFacts = listOf(
+                "Monstera Adansonii develops closed holes in its leaves to let light reach lower branches.",
+                "It is a natural climber that uses aerial roots to hold onto tree bark."
+            )
+        ),
+        PlantTemplate(
+            name = "Spider Plant",
+            type = "Flower",
+            careSpring = "Water weekly. Repot if roots burst from pot.",
+            careSummer = "Water deeply twice a week. Prune brown leaf tips.",
+            careAutumn = "Reduce watering. Collect spiderette offsets to propagate.",
+            careWinter = "Water monthly, mist weekly for humidity.",
+            soilType = "Light, sandy organic mix",
+            sunlight = "Bright Filtered Light",
+            iconEmoji = "🪴",
+            matureSize = "1 - 1.5 feet wide",
+            wateringNeeds = "Moderate",
+            bloomTime = "Summer",
+            pestsDiseases = "Tip burn from fluoride, Scale",
+            compatibleClimate = "Temperate",
+            isIndoor = true,
+            funFacts = listOf(
+                "Spider plants produce baby offsets called 'spiderettes' that hang down like spiders on a web.",
+                "It is one of the easiest house plants to propagate in plain water."
+            )
+        ),
+        PlantTemplate(
+            name = "Jade Plant",
+            type = "Succulent",
+            careSpring = "Water only when leaves start to pucker slightly.",
+            careSummer = "Water bi-weekly. Enjoys warm sunny windows.",
+            careAutumn = "withhold watering as temperatures drop.",
+            careWinter = "Keep very dry. Protect from freezing.",
+            soilType = "Gritty, well-aerated succulent soil",
+            sunlight = "Full Sun to Bright Light",
+            iconEmoji = "🪴",
+            matureSize = "1 - 3 feet tall",
+            wateringNeeds = "Low",
+            bloomTime = "Late Winter (rarely)",
+            pestsDiseases = "Mealybugs, Stem rot",
+            compatibleClimate = "Arid (Desert)",
+            isIndoor = true,
+            funFacts = listOf(
+                "Often called the Money Tree or Friendship Plant, believed to bring financial luck in Asia.",
+                "Can live for over 50 years, passing down through generations as a family heirloom."
+            )
+        ),
+        PlantTemplate(
+            name = "Chinese Money Plant",
+            type = "Succulent",
+            careSpring = "Water weekly when soil dries. Rotate for straight stems.",
+            careSummer = "Water twice weekly. Avoid direct midday sun.",
+            careAutumn = "Clean circular leaves. Remove baby pups to propagate.",
+            careWinter = "Water every 2 weeks, keep in bright warm room.",
+            soilType = "Peaty, well-drained potting mix",
+            sunlight = "Bright Indirect Light",
+            iconEmoji = "🪴",
+            matureSize = "1 - 1.2 feet tall",
+            wateringNeeds = "Moderate",
+            bloomTime = "Spring (Rarely)",
+            pestsDiseases = "Fungus gnats, Spider mites",
+            compatibleClimate = "Temperate",
+            isIndoor = true,
+            funFacts = listOf(
+                "Also known as the UFO plant due to its perfectly round, flat, green leaves.",
+                "Originally brought to Europe by a Norwegian missionary in 1946, shared via cuttings."
+            )
+        ),
+        PlantTemplate(
+            name = "String of Pearls",
+            type = "Succulent",
+            careSpring = "Water sparingly when pearls feel slightly soft.",
+            careSummer = "Water bi-weekly. Keep trailing vines in bright window.",
+            careAutumn = "Reduce water, let soil dry completely.",
+            careWinter = "Water once in 6 weeks, keep dry and bright.",
+            soilType = "Cactus mix with extra coarse sand",
+            sunlight = "Bright Light with Some Direct Morning Sun",
+            iconEmoji = "🟢",
+            matureSize = "2 - 3 feet trailing vines",
+            wateringNeeds = "Very Low",
+            bloomTime = "Summer (tiny white flowers)",
+            pestsDiseases = "Root rot, Aphids",
+            compatibleClimate = "Arid (Desert)",
+            isIndoor = true,
+            funFacts = listOf(
+                "Each 'pearl' is a spherical leaf that minimizes surface area to reduce water evaporation.",
+                "The pearls have a narrow green slit called an 'epidermal window' that lets light inside the leaf."
+            )
+        ),
+        PlantTemplate(
+            name = "Rubber Plant",
+            type = "Tree",
+            careSpring = "Water weekly. Wipe leaves to keep glossy.",
+            careSummer = "Water twice weekly. Mist leaves. Apply liquid feed.",
+            careAutumn = "Reduce watering as growth slows down.",
+            careWinter = "Water once in 3 weeks, wipe leaves.",
+            soilType = "Rich organic, well-draining soil",
+            sunlight = "Bright Indirect Light",
+            iconEmoji = "🪴",
+            matureSize = "4 - 8 feet tall (indoors)",
+            wateringNeeds = "Moderate",
+            bloomTime = "Non-flowering (indoors)",
+            pestsDiseases = "Scale, Root rot",
+            compatibleClimate = "Tropical (Humid)",
+            isIndoor = true,
+            funFacts = listOf(
+                "Its white sap contains latex, which was historically used to manufacture rubber.",
+                "Native to India and Malaysia where it grows into huge banyan-like trees."
+            )
+        ),
+        PlantTemplate(
+            name = "Calathea Ornata",
+            type = "Shrub",
+            careSpring = "Keep soil damp. Mist daily or use humidifier.",
+            careSummer = "Water twice weekly. Avoid tap water; use rainwater.",
+            careAutumn = "Ensure temperature is warm. Mist foliage.",
+            careWinter = "Water weekly. Keep away from drafts.",
+            soilType = "Moisture-retentive, peaty mix",
+            sunlight = "Medium Indirect Light / Shade",
+            iconEmoji = "🌿",
+            matureSize = "1.5 - 2 feet tall",
+            wateringNeeds = "High (moist soil)",
+            bloomTime = "Non-flowering (indoors)",
+            pestsDiseases = "Spider mites, Leaf edge curling",
+            compatibleClimate = "Tropical (Humid)",
+            isIndoor = true,
+            funFacts = listOf(
+                "Known as the Pinstripe Calathea because its leaves look like they were hand-painted with pink lines.",
+                "Like other prayer plants, its leaves fold upward at night and open in the morning."
+            )
+        ),
+        PlantTemplate(
+            name = "Parlor Palm",
+            type = "Tree",
+            careSpring = "Water when topsoil feels dry. Mist twice weekly.",
+            careSummer = "Water weekly. Keep out of direct hot sun.",
+            careAutumn = "Reduce watering. Cut off yellow fronds.",
+            careWinter = "Water every 2 weeks. Mist to prevent mites.",
+            soilType = "Standard sandy loam mix",
+            sunlight = "Low to Medium Indirect Light",
+            iconEmoji = "🌴",
+            matureSize = "3 - 5 feet tall",
+            wateringNeeds = "Moderate",
+            bloomTime = "Non-flowering (indoors)",
+            pestsDiseases = "Spider mites, Scale",
+            compatibleClimate = "Tropical (Humid)",
+            isIndoor = true,
+            funFacts = listOf(
+                "One of the first houseplants sold in the Victorian era, prized for surviving dark, chilly halls.",
+                "It is a highly effective air purifier and completely non-toxic to cats and dogs."
+            )
+        ),
+        PlantTemplate(
+            name = "Prayer Plant",
+            type = "Shrub",
+            careSpring = "Keep soil moist. Mist leaves daily.",
+            careSummer = "Water twice weekly with distilled water. Maintain high humidity.",
+            careAutumn = "Clean decorated leaves. Move away from cold spots.",
+            careWinter = "Water weekly, keep in warm humid room.",
+            soilType = "Peaty, well-draining soil",
+            sunlight = "Medium Filtered Light / Dappled Shade",
+            iconEmoji = "🧘",
+            matureSize = "1 - 1.2 feet tall & wide",
+            wateringNeeds = "High",
+            bloomTime = "Spring (small purple blooms)",
+            pestsDiseases = "Spider mites, Leaf spot",
+            compatibleClimate = "Tropical (Humid)",
+            isIndoor = true,
+            funFacts = listOf(
+                "Folds its leaves together at night, resembling hands closed in prayer.",
+                "The botanical name Maranta honors Bartolomeo Maranta, a famous 16th-century Italian botanist."
             )
         ),
         PlantTemplate(
@@ -61,10 +335,79 @@ object ClimatePlants {
             bloomTime = "Mid Summer",
             pestsDiseases = "Snails, Root rot from overwatering",
             compatibleClimate = "Arid (Desert)",
+            isIndoor = true,
             funFacts = listOf(
                 "Aloe vera has been used medicinally for over 6,000 years, beginning in ancient Egypt.",
                 "It consists of 99% water, which allows it to survive in extremely arid climates.",
                 "In ancient times, Egyptians called aloe the 'plant of immortality' and gave it as funeral gifts."
+            )
+        ),
+        PlantTemplate(
+            name = "Golden Pothos",
+            type = "Shrub",
+            careSpring = "Water only when top soil is dry. Prune vine tips.",
+            careSummer = "Loves warmth and bright indirect light. Water weekly.",
+            careAutumn = "Reduce watering as temperatures drop.",
+            careWinter = "Keep in warm indoor room, water monthly.",
+            soilType = "Rich organic potting soil",
+            sunlight = "Filtered Bright Light",
+            iconEmoji = "🌿",
+            matureSize = "1 - 2 feet tall, 6 - 8 feet trailing",
+            wateringNeeds = "Moderate",
+            bloomTime = "Non-flowering",
+            pestsDiseases = "Mealybugs, Root rot in standing water",
+            compatibleClimate = "Tropical (Humid)",
+            isIndoor = true,
+            funFacts = listOf(
+                "Nicknamed 'Devil's Ivy' because it is nearly impossible to kill and stays green even in the dark.",
+                "It is a highly efficient air purifier, removing airborne toxins like formaldehyde and carbon monoxide.",
+                "Pothos vines can grow up to 40 feet long in tropical forests."
+            )
+        ),
+        PlantTemplate(
+            name = "Boston Fern",
+            type = "Fern",
+            careSpring = "Repot with fresh peat moss. Start misting.",
+            careSummer = "Water daily, do not let soil dry out. Avoid midday sun.",
+            careAutumn = "Shedding old fronds. Lessen feeding.",
+            careWinter = "Bring indoors, keep in moist bathroom/washroom.",
+            soilType = "Peat moss loam",
+            sunlight = "Deep to Partial Shade",
+            iconEmoji = "🌿",
+            matureSize = "2 - 3 feet wide",
+            wateringNeeds = "High",
+            bloomTime = "Non-flowering",
+            pestsDiseases = "Frond bugs, low humidity leaf drops",
+            compatibleClimate = "Temperate Tropical (Humid)",
+            isIndoor = true,
+            funFacts = listOf(
+                "Boston Ferns were highly popular in the Victorian era, occupying pride of place in parlor windows.",
+                "They are excellent humidifiers, releasing moisture and restoring humidity to dry indoor spaces.",
+                "Ferns reproduce using microscopic spores on the undersides of their leaves rather than seeds."
+            )
+        ),
+
+        // === OUTDOOR PLANTS ===
+        PlantTemplate(
+            name = "Saguaro Cactus",
+            type = "Succulent",
+            careSpring = "Water once a month. No pruning needed.",
+            careSummer = "Water every 3 weeks. Full direct sun.",
+            careAutumn = "Withhold watering as temperature drops.",
+            careWinter = "Keep completely dry to prevent frost root rot.",
+            soilType = "Perlite and sand mix",
+            sunlight = "Full Direct Sun",
+            iconEmoji = "🌵",
+            matureSize = "15 - 40 feet tall",
+            wateringNeeds = "Low",
+            bloomTime = "Late Spring (May - June)",
+            pestsDiseases = "Bacterial necrosis, Mealybugs",
+            compatibleClimate = "Arid (Desert)",
+            isIndoor = false,
+            funFacts = listOf(
+                "Saguaro cacti can take up to 75 years to grow their first side arm.",
+                "They store huge amounts of water; a fully hydrated saguaro can weigh over 3,000 pounds.",
+                "Saguaro blossoms are Arizona's state flower and bloom only at night."
             )
         ),
         PlantTemplate(
@@ -82,6 +425,7 @@ object ClimatePlants {
             bloomTime = "Spring to Autumn",
             pestsDiseases = "Spider mites, Powdery mildew",
             compatibleClimate = "Arid (Desert)",
+            isIndoor = false,
             funFacts = listOf(
                 "Its leaves are covered in dense, woolly hairs that reflect sunlight and reduce water loss.",
                 "Wild desert marigolds bloom so densely they can turn entire hillsides solid yellow.",
@@ -103,6 +447,7 @@ object ClimatePlants {
             bloomTime = "Spring to Summer",
             pestsDiseases = "Spittlebugs, Root rot in soggy soil",
             compatibleClimate = "Arid (Desert)",
+            isIndoor = false,
             funFacts = listOf(
                 "Rosemary is historically associated with memory; ancient scholars wore it in their hair during exams.",
                 "It belongs to the mint family and is highly resistant to common garden pests.",
@@ -124,14 +469,34 @@ object ClimatePlants {
             bloomTime = "Late Spring",
             pestsDiseases = "Cochineal scale, Broad mites",
             compatibleClimate = "Arid (Desert)",
+            isIndoor = false,
             funFacts = listOf(
                 "Both the flat pads (nopales) and the bright red fruits (tunas) are fully edible and delicious.",
                 "Prickly pear sap can be used to purify dirty drinking water organically.",
                 "The plant was imported to Australia in the 1800s and took over millions of acres of farmland."
             )
         ),
-
-        // Tropical Climate Plants
+        PlantTemplate(
+            name = "Agave Americana",
+            type = "Succulent",
+            careSpring = "Minimal water. Ensure gravel is loose.",
+            careSummer = "Water monthly. Thrives in burning desert heat.",
+            careAutumn = "Cease fertilizing. Mulch base slightly.",
+            careWinter = "Do not water. High frost tolerance.",
+            soilType = "Rocky, sandy alkaline soil",
+            sunlight = "Full Direct Sun",
+            iconEmoji = "🪴",
+            matureSize = "4 - 6 feet tall & wide",
+            wateringNeeds = "Very Low",
+            bloomTime = "Once every 10-15 years",
+            pestsDiseases = "Agave snout weevil",
+            compatibleClimate = "Arid (Desert)",
+            isIndoor = false,
+            funFacts = listOf(
+                "Commonly known as the Century Plant because it blooms so infrequently.",
+                "It dies after blooming, but produces offsets (pups) at its base to carry on."
+            )
+        ),
         PlantTemplate(
             name = "Bird of Paradise",
             type = "Flower",
@@ -147,31 +512,11 @@ object ClimatePlants {
             bloomTime = "Winter to Spring",
             pestsDiseases = "Scale, Mealybugs",
             compatibleClimate = "Tropical (Humid)",
+            isIndoor = false,
             funFacts = listOf(
                 "The unique flower shape resembles a colorful bird in flight, designed to attract pollinating birds.",
                 "In Hawaii, the flower is considered a symbol of magnificence and royalty.",
                 "It is closely related to the banana plant and shares similar large, glossy leaves."
-            )
-        ),
-        PlantTemplate(
-            name = "Orchid",
-            type = "Flower",
-            careSpring = "Mist roots daily. Feed with diluted orchid fertilizer.",
-            careSummer = "Water weekly with misting. Avoid direct intense sun.",
-            careAutumn = "Ensure temperature drop at night to spike new blooms.",
-            careWinter = "Water every 10 days, protect from cold drafts.",
-            soilType = "Fir bark and sphagnum moss",
-            sunlight = "Filtered Bright Light",
-            iconEmoji = "🌸",
-            matureSize = "1 - 1.5 feet tall",
-            wateringNeeds = "Moderate",
-            bloomTime = "Winter to Spring",
-            pestsDiseases = "Aphids, Crown rot",
-            compatibleClimate = "Tropical (Humid)",
-            funFacts = listOf(
-                "Orchids represent the largest family of flowering plants, with over 25,000 species.",
-                "Vanilla flavoring is derived directly from the seed pods of the Vanilla Orchid.",
-                "Orchid seeds are microscopic, resembling fine dust, with a single pod containing millions."
             )
         ),
         PlantTemplate(
@@ -186,34 +531,14 @@ object ClimatePlants {
             iconEmoji = "🌿",
             matureSize = "6 - 10 feet tall",
             wateringNeeds = "Moderate",
-            bloomTime = "Summer (Rare indoors)",
+            bloomTime = "Summer (Rare)",
             pestsDiseases = "Fungus gnats, Spider mites",
             compatibleClimate = "Tropical (Humid)",
+            isIndoor = false,
             funFacts = listOf(
                 "The fenestrations (holes) in its leaves allow jungle winds and light to pass through without tearing them.",
                 "The name Deliciosa refers to the delicious edible fruit it produces in the wild.",
                 "In Chinese culture, the Monstera is a symbol of long life and honoring elders."
-            )
-        ),
-        PlantTemplate(
-            name = "Golden Pothos",
-            type = "Shrub",
-            careSpring = "Water only when top soil is dry. Prune vine tips.",
-            careSummer = "Loves warmth and bright indirect light. Water weekly.",
-            careAutumn = "Reduce watering as temperatures drop.",
-            careWinter = "Keep in warm indoor room, water monthly.",
-            soilType = "Rich organic potting soil",
-            sunlight = "Filtered Bright Light",
-            iconEmoji = "🌿",
-            matureSize = "1 - 2 feet tall, 6 - 8 feet trailing",
-            wateringNeeds = "Moderate",
-            bloomTime = "Non-flowering",
-            pestsDiseases = "Mealybugs, Root rot in standing water",
-            compatibleClimate = "Tropical (Humid)",
-            funFacts = listOf(
-                "Nicknamed 'Devil's Ivy' because it is nearly impossible to kill and stays green even in the dark.",
-                "It is a highly efficient air purifier, removing airborne toxins like formaldehyde and carbon monoxide.",
-                "Pothos vines can grow up to 40 feet long in tropical forests."
             )
         ),
         PlantTemplate(
@@ -231,14 +556,55 @@ object ClimatePlants {
             bloomTime = "Year-round (Warm climates)",
             pestsDiseases = "Nematodes, Leaf spot",
             compatibleClimate = "Tropical (Humid)",
+            isIndoor = false,
             funFacts = listOf(
                 "The showy red 'flower' is actually a series of colored bracts; the true flower is small and white inside.",
                 "It is the national flower of Samoa, known locally as 'teuila.'",
                 "It can spread rapidly in humid rainforests via underground rhizomes."
             )
         ),
-
-        // Mediterranean Climate Plants
+        PlantTemplate(
+            name = "Hibiscus",
+            type = "Flower",
+            careSpring = "Apply high potassium fertilizer to spark blossoms.",
+            careSummer = "Water daily in high heat. Prefers damp, humid air.",
+            careAutumn = "Prune woody branches to maintain shape.",
+            careWinter = "Bring indoors if temperature falls below 50°F.",
+            soilType = "Slightly acidic, organic rich soil",
+            sunlight = "Full Direct Sun",
+            iconEmoji = "🌺",
+            matureSize = "4 - 8 feet tall",
+            wateringNeeds = "High",
+            bloomTime = "Summer to Autumn",
+            pestsDiseases = "Whiteflies, Aphids",
+            compatibleClimate = "Tropical (Humid)",
+            isIndoor = false,
+            funFacts = listOf(
+                "Hibiscus flowers are fully edible and make a popular tart herbal tea rich in Vitamin C.",
+                "Its flowers bloom for only 24 hours, but the bush produces new ones continuously."
+            )
+        ),
+        PlantTemplate(
+            name = "Plumeria",
+            type = "Flower",
+            careSpring = "Water weekly. Apply bloom-booster fertilizer.",
+            careSummer = "Water deeply twice weekly. Loves hot sun.",
+            careAutumn = "Stop fertilizing, reduce water as leaves shed.",
+            careWinter = "Let go dormant; keep dry in frost-free storage.",
+            soilType = "Very sandy, porous soil",
+            sunlight = "Full Sun",
+            iconEmoji = "🌸",
+            matureSize = "5 - 15 feet tall",
+            wateringNeeds = "Moderate",
+            bloomTime = "Early Summer to Autumn",
+            pestsDiseases = "Plumeria rust, Mealybugs",
+            compatibleClimate = "Tropical (Humid)",
+            isIndoor = false,
+            funFacts = listOf(
+                "Commonly known as Frangipani, its intensely sweet scent is strongest at night to attract moths.",
+                "Plumeria flowers are traditionally used to weave Hawaiian leis."
+            )
+        ),
         PlantTemplate(
             name = "Cypress Tree",
             type = "Tree",
@@ -254,6 +620,7 @@ object ClimatePlants {
             bloomTime = "Non-flowering",
             pestsDiseases = "Spider mites, Cypress aphids",
             compatibleClimate = "Mediterranean",
+            isIndoor = false,
             funFacts = listOf(
                 "Cypress wood is exceptionally durable; the doors of St. Peter's Basilica in Rome lasted over 1,000 years.",
                 "Ancient Romans planted cypress trees to protect homes from bad energy and welcome friends.",
@@ -275,6 +642,7 @@ object ClimatePlants {
             bloomTime = "Summer (June - August)",
             pestsDiseases = "Root rot, Spittlebugs",
             compatibleClimate = "Mediterranean",
+            isIndoor = false,
             funFacts = listOf(
                 "Lavender has been used for over 2,500 years as a natural remedy for anxiety and sleep disorders.",
                 "The name comes from Latin 'lavare,' which means 'to wash,' as Romans used it in their baths.",
@@ -296,6 +664,7 @@ object ClimatePlants {
             bloomTime = "Year-round in warm cycles",
             pestsDiseases = "Caterpillars, Leaf miners",
             compatibleClimate = "Mediterranean",
+            isIndoor = false,
             funFacts = listOf(
                 "The vibrant magenta petals are actually leaf-like bracts; the true flowers are tiny white tubes inside.",
                 "Discovered in 1768 in Brazil by French botanist Philibert Commerson, named after explorer Louis de Bougainville.",
@@ -317,6 +686,7 @@ object ClimatePlants {
             bloomTime = "Late Spring (May - June)",
             pestsDiseases = "Aphids, Mushroom root rot",
             compatibleClimate = "Mediterranean",
+            isIndoor = false,
             funFacts = listOf(
                 "Jacaranda trees turn entire cities purple when they bloom in late spring.",
                 "According to college lore, if a jacaranda blossom falls on your head, you will pass all your exams.",
@@ -338,14 +708,76 @@ object ClimatePlants {
             bloomTime = "Summer to Autumn",
             pestsDiseases = "Whiteflies, Powdery mildew",
             compatibleClimate = "Mediterranean",
+            isIndoor = false,
             funFacts = listOf(
                 "The name 'Mealy Cup' comes from the powdery white hairs that coat the plant's calyx.",
                 "It is a magnet for native bumblebees, honeybees, and beneficial butterflies.",
                 "Its aromatic leaves act as a natural deer and rabbit repellent in Mediterranean gardens."
             )
         ),
-
-        // Mountainous Climate Plants
+        PlantTemplate(
+            name = "Olive Tree",
+            type = "Tree",
+            careSpring = "Prune center branches to let light in. Water weekly.",
+            careSummer = "Water bi-weekly. Extremely drought tolerant.",
+            careAutumn = "Collect ripe olives. Apply light compost.",
+            careWinter = "Very cold-resistant, evergreen foliage.",
+            soilType = "Poor, dry, gravelly limestone",
+            sunlight = "Full Direct Sun",
+            iconEmoji = "🫒",
+            matureSize = "15 - 30 feet tall",
+            wateringNeeds = "Low",
+            bloomTime = "Spring",
+            pestsDiseases = "Olive fruit fly, peacock spot",
+            compatibleClimate = "Mediterranean",
+            isIndoor = false,
+            funFacts = listOf(
+                "Olive branches are a global symbol of peace, originating in ancient Greece.",
+                "Some olive trees in the Mediterranean are verified to be over 2,000 years old."
+            )
+        ),
+        PlantTemplate(
+            name = "Sweet Fig Tree",
+            type = "Tree",
+            careSpring = "Mulch root base. Prune leggy winter stems.",
+            careSummer = "Water deeply twice weekly. Harvest ripe figs.",
+            careAutumn = "Prune woody branch tips. Protect roots.",
+            careWinter = "Goes dormant, drops leaves. Can withstand freezes.",
+            soilType = "Rich loamy soil",
+            sunlight = "Full Sun",
+            iconEmoji = "🫒",
+            matureSize = "10 - 20 feet tall",
+            wateringNeeds = "Moderate",
+            bloomTime = "Late Spring to Summer",
+            pestsDiseases = "Fig rust, Mosaic virus",
+            compatibleClimate = "Mediterranean",
+            isIndoor = false,
+            funFacts = listOf(
+                "Fig trees do not have visible blossoms; the flowers actually bloom *inside* the hollow fruit.",
+                "Fossils of cultivated figs have been found dating back to 9000 BC, predating wheat."
+            )
+        ),
+        PlantTemplate(
+            name = "California Poppy",
+            type = "Flower",
+            careSpring = "Sow seeds in gravelly soil. Water lightly.",
+            careSummer = "Water weekly. Very drought tolerant.",
+            careAutumn = "Let go to seed naturally to self-sow for next year.",
+            careWinter = "Dies back in cold weather. Seeds lie dormant.",
+            soilType = "Sandy, poor dry soil",
+            sunlight = "Full Sun",
+            iconEmoji = "🧡",
+            matureSize = "8 - 12 inches tall",
+            wateringNeeds = "Low",
+            bloomTime = "Spring to Summer",
+            pestsDiseases = "Mildew in wet soil",
+            compatibleClimate = "Arid (Desert) Mediterranean",
+            isIndoor = false,
+            funFacts = listOf(
+                "It is the official state flower of California, celebrating its golden orange color.",
+                "Its petals close at night and during cloudy or rainy weather."
+            )
+        ),
         PlantTemplate(
             name = "Columbine",
             type = "Flower",
@@ -361,6 +793,7 @@ object ClimatePlants {
             bloomTime = "Mid Spring to Early Summer",
             pestsDiseases = "Leaf miners, Aphids",
             compatibleClimate = "Mountainous",
+            isIndoor = false,
             funFacts = listOf(
                 "The name Columbine is derived from Latin 'columba,' meaning 'dove,' because the flower resembles five doves.",
                 "It is the state flower of Colorado and thrives in rocky mountain soils.",
@@ -382,6 +815,7 @@ object ClimatePlants {
             bloomTime = "Late Summer",
             pestsDiseases = "Slugs, Powdery mildew",
             compatibleClimate = "Mountainous",
+            isIndoor = false,
             funFacts = listOf(
                 "Derived from the Greek word for 'star,' referring to the flower's radiating purple petals.",
                 "It grows natively above the tree line in extreme wind, rocky terrains, and chilly climates.",
@@ -403,6 +837,7 @@ object ClimatePlants {
             bloomTime = "Early Summer",
             pestsDiseases = "Root rot in soggy environments",
             compatibleClimate = "Mountainous",
+            isIndoor = false,
             funFacts = listOf(
                 "Creeping thyme forms a dense, springy green mat that releases a sweet, herbal scent when stepped on.",
                 "It was used by ancient Greeks in their baths and temples to symbolize courage.",
@@ -424,14 +859,97 @@ object ClimatePlants {
             bloomTime = "Mid Summer",
             pestsDiseases = "Root damp rot, crown mildew",
             compatibleClimate = "Mountainous",
+            isIndoor = false,
             funFacts = listOf(
                 "Its velvet-like white hairs act as natural sunblock and insulator against high-altitude UV radiation.",
                 "In the Swiss Alps, giving an edelweiss flower is a traditional symbol of daring, deep love and devotion.",
                 "It is strictly protected by law in European alpine regions to prevent extinction."
             )
         ),
-
-        // Temperate Climate Plants
+        PlantTemplate(
+            name = "Alpine Gentian",
+            type = "Flower",
+            careSpring = "Keep soil cool and damp. Protect roots.",
+            careSummer = "Water weekly. Prefers cooler afternoon shade.",
+            careAutumn = "Cut down dead flower stalks. Mulch.",
+            careWinter = "Extremely frost hardy, likes snow cover.",
+            soilType = "Sandy, humus-rich acidic soil",
+            sunlight = "Morning Sun / Afternoon Shade",
+            iconEmoji = "💙",
+            matureSize = "4 - 8 inches tall",
+            wateringNeeds = "Moderate to High",
+            bloomTime = "Late Spring to Summer",
+            pestsDiseases = "Slugs, Snails",
+            compatibleClimate = "Mountainous",
+            isIndoor = false,
+            funFacts = listOf(
+                "Famous for its intense, pure electric-blue bell-shaped blossoms.",
+                "Gentian root extract has been used for centuries to brew traditional digestive bitters."
+            )
+        ),
+        PlantTemplate(
+            name = "Snowdrop",
+            type = "Flower",
+            careSpring = "Enjoy early blooms! Keep soil moist.",
+            careSummer = "Bulbs go dormant in summer. Keep soil cool.",
+            careAutumn = "Plant bulbs in groups. Apply mulch.",
+            careWinter = "Blooms right through snow and frost.",
+            soilType = "Moist, humus-rich woodland soil",
+            sunlight = "Dappled Shade",
+            iconEmoji = "🤍",
+            matureSize = "4 - 6 inches tall",
+            wateringNeeds = "Moderate",
+            bloomTime = "Late Winter (February - March)",
+            pestsDiseases = "Narcissus bulb fly",
+            compatibleClimate = "Mountainous Temperate",
+            isIndoor = false,
+            funFacts = listOf(
+                "One of the first flowers to emerge in late winter, signaling the start of spring.",
+                "Its bulbs contain an organic antifreeze protein that prevents ice crystals from breaking cells."
+            )
+        ),
+        PlantTemplate(
+            name = "Heather",
+            type = "Shrub",
+            careSpring = "Trim branch tips lightly to maintain shape.",
+            careSummer = "Water weekly. Mulch with pine bark.",
+            careAutumn = "Fiery pink/purple blossom show. Do not fertilize.",
+            careWinter = "Extremely cold hardy, holds evergreen look.",
+            soilType = "Sandy, highly acidic peat loam",
+            sunlight = "Full Sun",
+            iconEmoji = "🪻",
+            matureSize = "1 - 2 feet tall & wide",
+            wateringNeeds = "Moderate",
+            bloomTime = "Late Summer to Autumn",
+            pestsDiseases = "Powdery mildew, root rot",
+            compatibleClimate = "Mountainous Temperate",
+            isIndoor = false,
+            funFacts = listOf(
+                "Heather is highly resilient and thrives on wild, wind-swept moorlands.",
+                "Traditionally used in Scotland to make brooms, thatch roofs, and flavor ale."
+            )
+        ),
+        PlantTemplate(
+            name = "Fuchsia",
+            type = "Flower",
+            careSpring = "Prune woody stems. Keep soil damp.",
+            careSummer = "Water deeply twice weekly. Mist in dry heat.",
+            careAutumn = "Cut back branches lightly. Mulch root zone.",
+            careWinter = "In severe freeze climates, bring root container indoors.",
+            soilType = "Rich, moist, well-draining soil",
+            sunlight = "Partial Shade / Filtered Light",
+            iconEmoji = "🌺",
+            matureSize = "2 - 4 feet trailing/bush",
+            wateringNeeds = "High",
+            bloomTime = "Summer to Autumn",
+            pestsDiseases = "Whiteflies, Fuchsia rust",
+            compatibleClimate = "Mountainous Temperate",
+            isIndoor = false,
+            funFacts = listOf(
+                "Its hanging, bell-shaped flowers are shaped like teardrops, loved by hummingbirds.",
+                "Named after Leonhart Fuchs, an influential 16th-century German botanist."
+            )
+        ),
         PlantTemplate(
             name = "English Rose",
             type = "Flower",
@@ -447,6 +965,7 @@ object ClimatePlants {
             bloomTime = "Late Spring to Frost",
             pestsDiseases = "Black spot, Aphids, Beetles",
             compatibleClimate = "Temperate",
+            isIndoor = false,
             funFacts = listOf(
                 "Roses are one of the oldest species of plants, with fossils dating back 35 million years.",
                 "The rose hip (fruit) contains more vitamin C than an equivalent weight of oranges.",
@@ -468,6 +987,7 @@ object ClimatePlants {
             bloomTime = "Spring (Inconspicuous)",
             pestsDiseases = "Scale wood bugs, Verticillium wilt",
             compatibleClimate = "Temperate",
+            isIndoor = false,
             funFacts = listOf(
                 "Japanese maples are highly prized in the art of Bonsai, representing visual elegance and peace.",
                 "In Japan, viewing autumn maple leaves is a cultural tradition called 'Momijigari.'",
@@ -489,31 +1009,11 @@ object ClimatePlants {
             bloomTime = "Non-flowering",
             pestsDiseases = "Spider mites, Leaf spot bacteria",
             compatibleClimate = "Temperate",
+            isIndoor = false,
             funFacts = listOf(
                 "Ivy vines climb using tiny clinging rootlets that secrete a strong organic glue.",
                 "In ancient Greece, ivy was dedicated to Dionysus and believed to prevent alcohol intoxication.",
-                "English ivy remains fully evergreen even during the harshest temperate winters."
-            )
-        ),
-        PlantTemplate(
-            name = "Boston Fern",
-            type = "Fern",
-            careSpring = "Repot with fresh peat moss. Start misting.",
-            careSummer = "Water daily, do not let soil dry out. Avoid midday sun.",
-            careAutumn = "Shedding old fronds. Lessen feeding.",
-            careWinter = "Bring indoors, keep in moist bathroom/washroom.",
-            soilType = "Peat moss loam",
-            sunlight = "Deep to Partial Shade",
-            iconEmoji = "🌿",
-            matureSize = "2 - 3 feet wide",
-            wateringNeeds = "High",
-            bloomTime = "Non-flowering",
-            pestsDiseases = "Frond bugs, low humidity leaf drops",
-            compatibleClimate = "Temperate",
-            funFacts = listOf(
-                "Boston Ferns were highly popular in the Victorian era, occupying pride of place in parlor windows.",
-                "They are excellent humidifiers, releasing moisture and restoring humidity to dry indoor spaces.",
-                "Ferns reproduce using microscopic spores on the undersides of their leaves rather than seeds."
+                "English ivy remains fully evergreen even during the destruction of temperate winters."
             )
         ),
         PlantTemplate(
@@ -531,15 +1031,148 @@ object ClimatePlants {
             bloomTime = "Non-flowering",
             pestsDiseases = "Juniper scale, Cedar-apple rust",
             compatibleClimate = "Temperate",
+            isIndoor = false,
             funFacts = listOf(
                 "Juniper Bonsai can live for hundreds of years under careful wiring and shaping care.",
                 "Junipers secrete phytoncides, airborne chemicals that reduce human stress and blood pressure.",
                 "The word 'Bonsai' literally translates to 'planted in a tray' in Japanese."
+            )
+        ),
+        PlantTemplate(
+            name = "Hydrangea",
+            type = "Flower",
+            careSpring = "Water weekly. Apply organic mulch around base.",
+            careSummer = "Water deeply twice weekly. Loves consistent damp soil.",
+            careAutumn = "Trim faded large flower heads.",
+            careWinter = "Prune wood stems down, mulch root base generously.",
+            soilType = "Rich, moist, acidic or alkaline loam",
+            sunlight = "Morning Sun / Afternoon Shade",
+            iconEmoji = "🪻",
+            matureSize = "3 - 5 feet tall & wide",
+            wateringNeeds = "High",
+            bloomTime = "Summer",
+            pestsDiseases = "Powdery mildew, Aphids",
+            compatibleClimate = "Temperate",
+            isIndoor = false,
+            funFacts = listOf(
+                "The flower color changes dynamically based on soil pH: acidic soil yields blue, alkaline yields pink.",
+                "The name Hydrangea comes from Greek 'hydor' (water) and 'angos' (vessel) due to its thirst."
+            )
+        ),
+        PlantTemplate(
+            name = "Peonies",
+            type = "Flower",
+            careSpring = "Support tall stems with rings. Water weekly.",
+            careSummer = "Water deeply. Deadhead spent blooms.",
+            careAutumn = "Cut stems down to ground level post-frost.",
+            careWinter = "Extremely cold hardy bulb, needs winter chill to bloom.",
+            soilType = "Rich, deep, moist well-draining soil",
+            sunlight = "Full Sun",
+            iconEmoji = "🌸",
+            matureSize = "2 - 3 feet tall",
+            wateringNeeds = "Moderate",
+            bloomTime = "Late Spring to Early Summer",
+            pestsDiseases = "Botrytis blight, Ants on buds",
+            compatibleClimate = "Temperate",
+            isIndoor = false,
+            funFacts = listOf(
+                "Peonies can live and bloom for over 100 years in the same spot without needing division.",
+                "Ants on peony buds are beneficial; they eat sweet nectar in exchange for protecting buds from pests."
+            )
+        ),
+        PlantTemplate(
+            name = "Sunflower",
+            type = "Flower",
+            careSpring = "Sow seeds deeply in full sun. Water weekly.",
+            careSummer = "Water deeply twice weekly during bloom. Staking may be needed.",
+            careAutumn = "Harvest seeds when flower head droops and turns yellow.",
+            careWinter = "Annual plant, dies after seed cycle. Save seeds for spring.",
+            soilType = "Deep, loose, fertile soil",
+            sunlight = "Full Direct Sun",
+            iconEmoji = "🌻",
+            matureSize = "6 - 10 feet tall",
+            wateringNeeds = "Moderate to High",
+            bloomTime = "Summer to Early Autumn",
+            pestsDiseases = "Downy mildew, Sunflower moths",
+            compatibleClimate = "Temperate",
+            isIndoor = false,
+            funFacts = listOf(
+                "Young sunflowers exhibit heliotropism, tracing the sun's path from east to west daily.",
+                "A single sunflower head is actually composed of thousands of tiny individual flowers blooming together."
+            )
+        ),
+        PlantTemplate(
+            name = "Marigold",
+            type = "Flower",
+            careSpring = "Sow seeds after last frost. Water lightly to sprout.",
+            careSummer = "Water weekly. Deadhead old blooms regularly.",
+            careAutumn = "Collect dried seed heads for spring sowing.",
+            careWinter = "Annual plant, dies off. Mulch bed to enrich soil.",
+            soilType = "Average, well-draining soil",
+            sunlight = "Full Direct Sun",
+            iconEmoji = "🌼",
+            matureSize = "1 - 2 feet tall",
+            wateringNeeds = "Moderate",
+            bloomTime = "Spring to Frost",
+            pestsDiseases = "Spider mites, Slugs",
+            compatibleClimate = "Temperate",
+            isIndoor = false,
+            funFacts = listOf(
+                "Marigolds secrete a chemical (alpha-terthienyl) that repels harmful root nematodes.",
+                "They are widely used in companion planting to protect vegetable crops like tomatoes."
+            )
+        ),
+        PlantTemplate(
+            name = "Snapdragon",
+            type = "Flower",
+            careSpring = "Plant early in cool soil. Water weekly.",
+            careSummer = "Deadhead old spikes to trigger a second autumn bloom.",
+            careAutumn = "Enjoys cool autumn weather. Collect seedpods.",
+            careWinter = "Cut back. Often behaves as a short-lived perennial.",
+            soilType = "Rich organic, well-draining loam",
+            sunlight = "Full Sun to Light Shade",
+            iconEmoji = "🦁",
+            matureSize = "1.5 - 3 feet tall",
+            wateringNeeds = "Moderate",
+            bloomTime = "Spring and Autumn (prefers cool weather)",
+            pestsDiseases = "Snapdragon rust, Aphids",
+            compatibleClimate = "Temperate",
+            isIndoor = false,
+            funFacts = listOf(
+                "Squeezing the sides of the flower gently makes the 'mouth' snap open and shut like a dragon.",
+                "When the flowers die, the dried seed pods resemble tiny, detailed human skulls."
+            )
+        ),
+        PlantTemplate(
+            name = "Hostas",
+            type = "Shrub",
+            careSpring = "Apply compost around crowns. Protect from slugs.",
+            careSummer = "Water weekly. Keep shaded. Cut tall bloom spikes.",
+            careAutumn = "Cut foliage down to the base as leaves turn yellow.",
+            careWinter = "Requires winter dormancy. High cold resistance.",
+            soilType = "Rich, moist, slightly acidic loam",
+            sunlight = "Dappled to Deep Shade",
+            iconEmoji = "🌿",
+            matureSize = "1.5 - 3 feet wide",
+            wateringNeeds = "Moderate to High",
+            bloomTime = "Mid Summer",
+            pestsDiseases = "Slugs, Snails, Hosta Virus X",
+            compatibleClimate = "Temperate",
+            isIndoor = false,
+            funFacts = listOf(
+                "Highly prized for their large, beautifully variegated green and white leaves rather than flowers.",
+                "Native to Northeast Asia, where young shoots are sometimes harvested as an organic wild vegetable."
             )
         )
     )
     
     fun getTemplatesForClimate(climate: String): List<PlantTemplate> {
         return ALL_TEMPLATES.filter { it.compatibleClimate.contains(climate, ignoreCase = true) }
+    }
+
+    fun getTemplatesForPlanner(climate: String, isIndoor: Boolean): List<PlantTemplate> {
+        return ALL_TEMPLATES.filter { 
+            it.compatibleClimate.contains(climate, ignoreCase = true) && it.isIndoor == isIndoor 
+        }
     }
 }

@@ -153,6 +153,10 @@ fun PlannerScreen(
     var hasTriggeredFullGarden by remember(activeLayout?.id) { mutableStateOf(false) }
     val context = androidx.compose.ui.platform.LocalContext.current
 
+    var selectedSeedTemplate by remember { mutableStateOf<PlantTemplate?>(null) }
+    var isUprootModeActive by remember { mutableStateOf(false) }
+    var selectedTrayTab by remember { mutableStateOf(0) } // 0 = Indoor, 1 = Outdoor
+
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
     val isTablet = configuration.smallestScreenWidthDp >= 600
@@ -751,7 +755,22 @@ fun PlannerScreen(
                                                     else currentSoilTheme.outlineColor.copy(alpha = 0.4f),
                                                     shape = RoundedCornerShape(16.dp)
                                                 )
-                                                .clickable { showCellConfigDialog = Pair(r, c) }
+                                                .clickable {
+                                                    if (isUprootModeActive) {
+                                                        viewModel.placeGridPlant(r, c, "")
+                                                    } else if (selectedSeedTemplate != null) {
+                                                        viewModel.placeGridPlant(r, c, selectedSeedTemplate!!.name)
+                                                        if (activePlants.none { it.name == selectedSeedTemplate!!.name }) {
+                                                            viewModel.addPlant(
+                                                                selectedSeedTemplate!!.name, 
+                                                                selectedSeedTemplate!!.type, 
+                                                                selectedSeedTemplate
+                                                            )
+                                                        }
+                                                    } else {
+                                                        showCellConfigDialog = Pair(r, c)
+                                                    }
+                                                }
                                                 .testTag("grid_cell_${r}_${c}"),
                                             contentAlignment = Alignment.Center
                                         ) {
@@ -1084,6 +1103,138 @@ fun PlannerScreen(
                                      )
                                                  }
                              }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Seed Tray Header
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Seed Tray Selector:",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        // Tabs
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
+                                .padding(2.dp)
+                        ) {
+                            val tabs = listOf("Indoor", "Outdoor")
+                            tabs.forEachIndexed { index, label ->
+                                val isSelected = selectedTrayTab == index
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                        .clickable { 
+                                            selectedTrayTab = index
+                                            selectedSeedTemplate = null
+                                            isUprootModeActive = false
+                                        }
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = label,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // LazyRow Tray
+                    androidx.compose.foundation.lazy.LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        item {
+                            val isSelected = isUprootModeActive
+                            Card(
+                                modifier = Modifier
+                                    .width(76.dp)
+                                    .clickable {
+                                        isUprootModeActive = !isUprootModeActive
+                                        selectedSeedTemplate = null
+                                    },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isSelected) Color(0xFFC62828).copy(alpha = 0.15f) 
+                                                     else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                ),
+                                border = BorderStroke(
+                                    width = if (isSelected) 2.dp else 1.dp,
+                                    color = if (isSelected) Color(0xFFC62828) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text("🧹", fontSize = 16.sp)
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text("Clear", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = if (isSelected) Color(0xFFC62828) else MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                                    Text("Eraser", fontSize = 7.sp, color = if (isSelected) Color(0xFFC62828).copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f), maxLines = 1)
+                                }
+                            }
+                        }
+
+                        val templates = ClimatePlants.getTemplatesForPlanner(
+                            activeLayout?.climate ?: "",
+                            isIndoor = selectedTrayTab == 0
+                        )
+
+                        items(templates, key = { it.name }) { template ->
+                            val isSelected = selectedSeedTemplate?.name == template.name
+                            val accentColor = if (selectedTrayTab == 0) Color(0xFF0284C7) else Color(0xFF10B981)
+                            Card(
+                                modifier = Modifier
+                                    .width(76.dp)
+                                    .clickable {
+                                        if (isSelected) {
+                                            selectedSeedTemplate = null
+                                        } else {
+                                            selectedSeedTemplate = template
+                                            isUprootModeActive = false
+                                        }
+                                    },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isSelected) accentColor.copy(alpha = 0.15f) 
+                                                     else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                ),
+                                border = BorderStroke(
+                                    width = if (isSelected) 2.dp else 1.dp,
+                                    color = if (isSelected) accentColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(template.iconEmoji, fontSize = 16.sp)
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(template.name, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                    Text(template.type, fontSize = 7.sp, color = if (isSelected) accentColor.copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                }
+                            }
                         }
                     }
                 }
