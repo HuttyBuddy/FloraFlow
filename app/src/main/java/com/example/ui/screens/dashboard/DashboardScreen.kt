@@ -76,6 +76,9 @@ fun DashboardScreen(
     val activePlants by viewModel.activePlants.collectAsStateWithLifecycle()
     val moodLogs by viewModel.allMoodLogs.collectAsStateWithLifecycle()
     val isAssessmentSkipped by viewModel.isAssessmentSkipped.collectAsStateWithLifecycle()
+    val assessmentScore by viewModel.assessmentScore.collectAsStateWithLifecycle()
+    val lowestCategories by viewModel.lowestCategories.collectAsStateWithLifecycle()
+    val weather by viewModel.currentWeather.collectAsStateWithLifecycle()
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var showLayoutSelector by remember { mutableStateOf(false) }
@@ -613,10 +616,25 @@ fun DashboardScreen(
         ) {
             if (isAssessmentSkipped) {
                 item { skippedAssessmentBanner() }
+            } else if (assessmentScore != null) {
+                item {
+                    BiophilicProfileCard(
+                        score = assessmentScore ?: 0,
+                        lowestCategories = lowestCategories,
+                        onRetakeClick = { viewModel.resetAssessment() }
+                    )
+                }
             }
             item { headerContent() }
-            item { DailyHabitCard(viewModel = viewModel, onWeatherClick = { showZipDialog = true }) }
+            item {
+                WeatherSyncCard(
+                    weather = weather,
+                    onWeatherClick = { showZipDialog = true }
+                )
+            }
+            item { DailyHabitCard(viewModel = viewModel) }
             item { MindfulBreathingCard(viewModel = viewModel) }
+            item { CompanionSynergyCard(activeLayout = activeLayout) }
             item { MonthlyWellnessDigestCard(moodLogs = moodLogs) }
             item { SeasonalCareCoachCard(activePlants = activePlants) }
             item { quickActionsContent() }
@@ -642,10 +660,21 @@ fun DashboardScreen(
             ) {
                 if (isAssessmentSkipped) {
                     skippedAssessmentBanner()
+                } else if (assessmentScore != null) {
+                    BiophilicProfileCard(
+                        score = assessmentScore ?: 0,
+                        lowestCategories = lowestCategories,
+                        onRetakeClick = { viewModel.resetAssessment() }
+                    )
                 }
                 headerContent()
-                DailyHabitCard(viewModel = viewModel, onWeatherClick = { showZipDialog = true })
+                WeatherSyncCard(
+                    weather = weather,
+                    onWeatherClick = { showZipDialog = true }
+                )
+                DailyHabitCard(viewModel = viewModel)
                 MindfulBreathingCard(viewModel = viewModel)
+                CompanionSynergyCard(activeLayout = activeLayout)
                 MonthlyWellnessDigestCard(moodLogs = moodLogs)
                 SeasonalCareCoachCard(activePlants = activePlants)
                 quickActionsContent()
@@ -1289,13 +1318,12 @@ fun DailyGrowthRing(
 @Composable
 fun DailyHabitCard(
     viewModel: GardenViewModel,
-    onWeatherClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val pendingTasks by viewModel.pendingCareTasks.collectAsStateWithLifecycle()
     val allTasks by viewModel.allCareTasks.collectAsStateWithLifecycle()
-    val weather by viewModel.currentWeather.collectAsStateWithLifecycle()
     val moodLogs by viewModel.allMoodLogs.collectAsStateWithLifecycle()
+    val lowestCategories by viewModel.lowestCategories.collectAsStateWithLifecycle()
 
     val completedTasksToday = remember(allTasks) {
         allTasks.count { it.completedDate != null && isToday(it.completedDate) }
@@ -1304,6 +1332,28 @@ fun DailyHabitCard(
         pendingTasks.count { it.dueDate <= System.currentTimeMillis() }
     }
     val totalTasksToday = completedTasksToday + pendingTasksToday
+
+    // Dynamic sensory rituals based on lowest assessment categories
+    val activeRituals = remember(lowestCategories) {
+        if (lowestCategories.isEmpty()) {
+            listOf(SensoryRitual("GENERAL", "Take 5 deep breaths in your sanctuary", "[Ritual: General Deep Breaths]"))
+        } else {
+            lowestCategories.take(2).map { getRitualForCategory(it) }
+        }
+    }
+
+    val completedRitualMarkers = remember(moodLogs) {
+        moodLogs.asSequence()
+            .filter { isToday(it.timestamp) }
+            .map { it.notes }
+            .toSet()
+    }
+
+    val completedRitualsCount = activeRituals.count { completedRitualMarkers.contains(it.noteMarker) }
+    val totalRitualsCount = activeRituals.size
+
+    val totalCompletedRing = completedTasksToday + completedRitualsCount
+    val totalAllRing = totalTasksToday + totalRitualsCount
 
     // Calculate streak
     val streakCount = remember(moodLogs) {
@@ -1369,51 +1419,25 @@ fun DailyHabitCard(
             ) {
                 // Growth ring
                 DailyGrowthRing(
-                    completedCount = completedTasksToday,
-                    totalCount = totalTasksToday,
+                    completedCount = totalCompletedRing,
+                    totalCount = totalAllRing,
                     modifier = Modifier.padding(8.dp)
                 )
 
-                // Weather and Care checklist column
+                // Care checklist & Eco-Rituals column
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    // Local Eco-Zone Weather status
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onWeatherClick() }
-                            .padding(vertical = 2.dp, horizontal = 4.dp)
-                            .testTag("weather_section")
-                    ) {
+                    if (pendingTasksToday == 0 && completedRitualsCount == totalRitualsCount) {
                         Text(
-                            text = "Weather: ${getWeatherEmoji(weather.condition)} ${weather.cityName} (${weather.temperatureFahrenheit.toInt()}°F • ${weather.condition})",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Icon(
-                            imageVector = androidx.compose.material.icons.Icons.Default.Edit,
-                            contentDescription = "Edit Location",
-                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                            modifier = Modifier.size(14.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    if (pendingTasksToday == 0) {
-                        Text(
-                            text = "✨ All tasks complete! Your garden is thriving.",
+                            text = "✨ All tasks and rituals complete! Your garden is thriving.",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
                         
                         val hasGratitudeToday = remember(moodLogs) {
-                            moodLogs.any { isToday(it.timestamp) && it.mood == "Peaceful" && it.notes.isNotEmpty() }
+                            moodLogs.any { isToday(it.timestamp) && it.mood == "Peaceful" && it.notes.isNotEmpty() && !it.notes.startsWith("[Ritual:") }
                         }
-                        if (totalTasksToday > 0) {
+                        if (totalAllRing > 0) {
                             Spacer(modifier = Modifier.height(8.dp))
                             if (hasGratitudeToday) {
                                 Text(
@@ -1473,24 +1497,90 @@ fun DailyHabitCard(
                             }
                         }
                     } else {
-                        Text(
-                            text = "Due Today:",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        
-                        val completedTodayList = remember(allTasks) {
-                            allTasks.filter { it.completedDate != null && isToday(it.completedDate) }
-                        }
-                        val pendingTodayList = remember(pendingTasks) {
-                            pendingTasks.filter { it.dueDate <= System.currentTimeMillis() }
-                        }
-                        val combinedTasks = remember(pendingTodayList, completedTodayList) {
-                            (pendingTodayList + completedTodayList).take(3)
+                        // Section 1: Care Tasks
+                        if (pendingTasksToday > 0 || completedTasksToday > 0) {
+                            Text(
+                                text = "Plant Care Tasks:",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            
+                            val completedTodayList = remember(allTasks) {
+                                allTasks.filter { it.completedDate != null && isToday(it.completedDate) }
+                            }
+                            val pendingTodayList = remember(pendingTasks) {
+                                pendingTasks.filter { it.dueDate <= System.currentTimeMillis() }
+                            }
+                            val combinedTasks = remember(pendingTodayList, completedTodayList) {
+                                (pendingTodayList + completedTodayList).take(3)
+                            }
+
+                            combinedTasks.forEach { task ->
+                                val isCompleted = task.completedDate != null
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 1.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    if (isCompleted) {
+                                        Icon(
+                                            imageVector = androidx.compose.material.icons.Icons.Default.CheckCircle,
+                                            contentDescription = "Completed",
+                                            tint = Color(0xFF4CAF50),
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Text(
+                                            text = "${task.taskType} ${task.plantName}",
+                                            style = MaterialTheme.typography.bodySmall.copy(
+                                                textDecoration = TextDecoration.LineThrough
+                                            ),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                            maxLines = 1
+                                        )
+                                    } else {
+                                        var checked by remember { mutableStateOf(false) }
+                                        val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+                                        val coroutineScope = rememberCoroutineScope()
+                                        
+                                        Checkbox(
+                                            checked = checked,
+                                            onCheckedChange = { isChecked ->
+                                                if (isChecked) {
+                                                    checked = true
+                                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.Confirm)
+                                                    coroutineScope.launch {
+                                                        delay(300)
+                                                        viewModel.completeCareTask(task)
+                                                    }
+                                                }
+                                            },
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Text(
+                                            text = "${task.taskType} ${task.plantName}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            maxLines = 1
+                                        )
+                                    }
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
                         }
 
-                        combinedTasks.forEach { task ->
-                            val isCompleted = task.completedDate != null
+                        // Section 2: Biophilic Sensory Rituals
+                        Text(
+                            text = "Daily Biophilic Rituals:",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+
+                        activeRituals.forEach { ritual ->
+                            val isCompleted = completedRitualMarkers.contains(ritual.noteMarker)
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -1506,7 +1596,7 @@ fun DailyHabitCard(
                                         modifier = Modifier.size(20.dp)
                                     )
                                     Text(
-                                        text = "${task.taskType} ${task.plantName}",
+                                        text = ritual.text,
                                         style = MaterialTheme.typography.bodySmall.copy(
                                             textDecoration = TextDecoration.LineThrough
                                         ),
@@ -1526,14 +1616,19 @@ fun DailyHabitCard(
                                                 haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.Confirm)
                                                 coroutineScope.launch {
                                                     delay(300)
-                                                    viewModel.completeCareTask(task)
+                                                    viewModel.logMood(
+                                                        mood = "Peaceful",
+                                                        score = 5,
+                                                        duration = 3,
+                                                        notes = ritual.noteMarker
+                                                    )
                                                 }
                                             }
                                         },
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(24.dp).testTag("ritual_checkbox_${ritual.category}")
                                     )
                                     Text(
-                                        text = "${task.taskType} ${task.plantName}",
+                                        text = ritual.text,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurface,
                                         maxLines = 1
@@ -2028,6 +2123,28 @@ fun imageIcons(name: String): androidx.compose.ui.graphics.vector.ImageVector = 
     "eco" -> Icons.Default.Eco
     "spa" -> Icons.Default.Spa
     else -> Icons.Default.Terrain
+}
+
+data class SensoryRitual(
+    val category: String,
+    val text: String,
+    val noteMarker: String
+)
+
+fun getRitualForCategory(category: String): SensoryRitual {
+    return when (category.uppercase()) {
+        "NATURE VIEWS" -> SensoryRitual("NATURE VIEWS", "Look out window at green spaces for 2m", "[Ritual: Nature Views Window Break]")
+        "LIVING PLANTS" -> SensoryRitual("LIVING PLANTS", "Gently inspect your indoor plants' soil", "[Ritual: Plant Touch & Care]")
+        "NATURAL LIGHT" -> SensoryRitual("NATURAL LIGHT", "Spend 5 minutes in natural window light", "[Ritual: Natural Daylight Rest]")
+        "ACOUSTIC CALM" -> SensoryRitual("ACOUSTIC CALM", "Spend 3 minutes in mindful silence", "[Ritual: Acoustic Quiet Break]")
+        "NATURAL MATERIALS" -> SensoryRitual("NATURAL MATERIALS", "Touch a natural texture (wood/clay pot)", "[Ritual: Natural Texture Contact]")
+        "AIR & VENTILATION" -> SensoryRitual("AIR & VENTILATION", "Open window for 10m to aerate room", "[Ritual: Open Window Fresh Air]")
+        "ORGANIC FORMS" -> SensoryRitual("ORGANIC FORMS", "Trace a curved plant leaf boundary", "[Ritual: Leaf Contour Trace]")
+        "WATER FEATURES" -> SensoryRitual("WATER FEATURES", "Listen to water flow/rain sounds for 2m", "[Ritual: Water Soundscape Rest]")
+        "SENSORY RICHNESS" -> SensoryRitual("SENSORY RICHNESS", "Scent break: Smell lavender, pine, or soil", "[Ritual: Natural Scent Breath]")
+        "SEASONAL AWARENESS" -> SensoryRitual("SEASONAL AWARENESS", "Observe one outdoor seasonal change today", "[Ritual: Season Observance]")
+        else -> SensoryRitual("GENERAL", "Take 5 deep breaths in your sanctuary", "[Ritual: General Deep Breaths]")
+    }
 }
 
 

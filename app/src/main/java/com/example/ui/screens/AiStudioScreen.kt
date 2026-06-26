@@ -83,7 +83,7 @@ fun AiStudioScreen(
                 "moisture" -> {
                     val moistureVal = when (layout.style) {
                         "Desert", "Xeriscaping" -> "18%"
-                        "Zen Garden" -> "44%"
+                        "Indoor Area" -> "44%"
                         "Tropical" -> "75%"
                         else -> "52%"
                     }
@@ -266,7 +266,7 @@ fun AiStudioScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 val suggestions = listOf(
-                                    "🌱 Suggest perfect companion plant matches" to "Suggest highly compatible companion plants for a Zen style Garden design. What thrives alongside Bonsai Juniper and Lavender?",
+                                    "🌱 Suggest perfect companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
                                     "🐛 Analyze yellowing leaves / plant pest diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
                                     "🧘 Discuss therapy and nature cognitive wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?"
                                 )
@@ -1043,7 +1043,7 @@ fun AiStudioScreen(
                         )
 
                         val suggestions = listOf(
-                            "🌱 Suggest companion plant matches" to "Suggest highly compatible companion plants for a Zen style Garden design. What thrives alongside Bonsai Juniper and Lavender?",
+                            "🌱 Suggest companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
                             "🐛 Analyze yellowing leaves diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
                             "🧘 Discuss therapy and nature wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?"
                         )
@@ -1363,7 +1363,7 @@ fun BotanistLiveLabConsole(
                         label = "Moisture",
                         value = when (activeLayout.style) {
                             "Desert", "Xeriscaping" -> "18%"
-                            "Zen Garden" -> "44%"
+                            "Indoor Area" -> "44%"
                             "Tropical" -> "75%"
                             else -> "52%"
                         },

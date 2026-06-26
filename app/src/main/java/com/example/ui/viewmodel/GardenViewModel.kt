@@ -437,7 +437,7 @@ class GardenViewModel @JvmOverloads constructor(
             .map { list ->
                 list.map { layout ->
                     if (layout.name == "My First Zen Space") {
-                        layout.copy(name = "My First Space")
+                        layout.copy(name = "My First Indoor Space")
                     } else {
                         layout
                     }
@@ -505,14 +505,14 @@ class GardenViewModel @JvmOverloads constructor(
                     ).toInt()
                     repository.insertComment(CommunityComment(postId = p3Id, author = "RoseLover", content = "Definitely powdery mildew! Try to water the soil directly, not the leaves. Wet leaves invite spores.", likes = 8))
                     repository.insertComment(CommunityComment(postId = p3Id, author = "OrganicGardener", content = "You can spray it with a mixture of milk and water (40/60 ratio) in direct sunlight. It works as a natural fungicide!", likes = 10))
-                    repository.insertComment(CommunityComment(postId = p3Id, author = "ZenMaster", content = "Remember to prune the affected leaves and dispose of them (don't compost them) so the spores don't spread.", likes = 4))
+                    repository.insertComment(CommunityComment(postId = p3Id, author = "BotanicMaster", content = "Remember to prune the affected leaves and dispose of them (don't compost them) so the spores don't spread.", likes = 4))
 
                     val p4Id = repository.insertPost(
                         CommunityPost(
                             title = "Mindful Pruning: How to Connect with Your Plants",
                             content = "Pruning isn't just about maintenance; it's a form of meditation. Approach your plant with quiet focus. Use clean shears, and as you cut dead stems, take a slow breath. Visualize making space for new, healthy growth in your own life.",
                             category = "Tips",
-                            author = "ZenMaster",
+                            author = "BotanicMaster",
                             likes = 18
                         )
                     ).toInt()
@@ -521,8 +521,8 @@ class GardenViewModel @JvmOverloads constructor(
                 val existing = repository.allLayouts.firstOrNull() ?: emptyList()
                 if (existing.isEmpty()) {
                     val defaultLayout = GardenLayout(
-                        name = "My First Space",
-                        style = "Zen Garden",
+                        name = "My First Indoor Space",
+                        style = "Indoor Area",
                         climate = "Temperate",
                         gridString = "0,0,Bonsai Juniper|4,4,English Lavender",
                     )
@@ -533,7 +533,7 @@ class GardenViewModel @JvmOverloads constructor(
                             layoutId = layoutId,
                             name = "Bonsai Juniper",
                             type = "Tree",
-                            careSpring = "Prune branches to maintain classic zen shape. Water regularly.",
+                            careSpring = "Prune branches to maintain classic indoor shape. Water regularly.",
                             careSummer = "Keep in partial shade during intense afternoon sun. Water daily.",
                             careAutumn = "Let foliage change naturally. Clear fallen leaves quickly.",
                             careWinter = "Protect roots from deep freeze. Keep compost moist but not wet.",

@@ -178,7 +178,7 @@ fun PlannerScreen(
             bgColors = listOf(Color(0xFFECEFF1), Color(0xFFCFD8DC)),
             outlineColor = Color(0xFF78909C),
             slotBgColor = Color(0xFF37474F).copy(alpha = 0.08f),
-            description = "Smoothed stones. Best suited for raked Zen spaces."
+            description = "Smoothed stones. Best suited for raked spaces."
         )
     )
     var selectedSoilIdx by remember { mutableIntStateOf(0) }
@@ -543,7 +543,7 @@ fun PlannerScreen(
                                     val specText = when (index) {
                                         0 -> "Rich Nutrients"
                                         1 -> "Rapid Drain"
-                                        else -> "Zen Pebbles"
+                                        else -> "Polished Pebbles"
                                     }
                                     Text(
                                         text = specText,
@@ -795,7 +795,7 @@ fun PlannerScreen(
                                                             )
                                                         }
                                                     }
-                                                    2 -> { // Pebbles - Zen raked paths
+                                                    2 -> { // Pebbles - Raked paths
                                                         val stroke = Stroke(
                                                             width = 1.2f,
                                                             pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(4f, 4f), 0f)

@@ -268,7 +268,7 @@ fun WalkthroughOverlay(
 
                             val description = when (currentStep) {
                                 WalkthroughStep.WELCOME -> "Let's take a quick interactive tour to get familiar with your new therapeutic garden helper."
-                                WalkthroughStep.DASHBOARD_GARDEN -> "This is your Garden Hub. Tap 'Plant a New Seed' to create Zen spaces or switch active layouts via 'Visit a Garden'."
+                                WalkthroughStep.DASHBOARD_GARDEN -> "This is your Garden Hub. Tap 'Plant a New Seed' to create indoor spaces or switch active layouts via 'Visit a Garden'."
                                 WalkthroughStep.DASHBOARD_STATS -> "The Growth Sync chart correlates your physical gardening minutes with rating improvements to track stress reduction."
                                 WalkthroughStep.PLANNER_TAB -> "Switch to My Plot to drag-and-drop crops on a companion planting grid with spacing safety alerts."
                                 WalkthroughStep.AI_ADVISOR_TAB -> "Consult Dr. Julian Greenleaf, your live Garden Counsel, for plant stress diagnostics, soil pH balance, and mindfulness support."

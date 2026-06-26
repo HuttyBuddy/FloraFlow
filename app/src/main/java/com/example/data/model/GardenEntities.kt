@@ -8,7 +8,7 @@ import androidx.room.Index
 data class GardenLayout(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
-    val style: String, // e.g. Zen, Cottage, Desert, Urban Balcony, Sanctuary
+    val style: String, // e.g. Indoor Area, Cottage, Desert, Urban Balcony, Sanctuary
     val climate: String, // e.g. Temperate, Arid, Tropical, Mediterranean, Mountainous
     val gridWidth: Int = 5,
     val gridHeight: Int = 5,

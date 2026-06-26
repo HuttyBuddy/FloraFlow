@@ -21,7 +21,7 @@ data class PlantTemplate(
 object ClimatePlants {
     val CLIMATES = listOf("Temperate", "Arid (Desert)", "Tropical (Humid)", "Mediterranean", "Mountainous")
     
-    val STYLES = listOf("Zen Garden", "Cottage Garden", "English Classic", "Modern Patio", "Botanical Sanctuary")
+    val STYLES = listOf("Indoor Area", "Cottage Garden", "English Classic", "Modern Patio", "Botanical Sanctuary")
 
     val ALL_TEMPLATES = listOf(
         // Arid Climate Plants

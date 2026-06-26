@@ -155,7 +155,7 @@ fun LogMoodDialog(
                     onValueChange = { notes = it },
                     label = { Text("Diary Entry (Optional)") },
                     shape = RoundedCornerShape(12.dp),
-                    placeholder = { Text("Watered lavender and weeded zen space. Felt grounded.") },
+                    placeholder = { Text("Watered lavender and weeded indoor space. Felt grounded.") },
                     modifier = Modifier.fillMaxWidth().testTag("add_log_notes"),
                     maxLines = 3
                 )
