@@ -2,6 +2,20 @@
 
 All notable changes to the FloraFlow project will be documented in this file.
 
+## [9.0.1.1] - 2026-06-26
+
+### Added
+- **Dashboard Widgets**: Introduced Biophilic Profile, Companion Synergy, and Weather Sync cards for a more data-rich landing experience.
+- **Enhanced Testing**: Added comprehensive unit tests for CareScheduler and repository layers.
+
+### Changed
+- **UI Refinement**: Polished AiStudio, Garden Planner, and Dashboard layouts for better usability and modern aesthetics.
+- **Project Documentation**: Updated README with the latest build instructions and project goals.
+
+### Fixed
+- **Startup Stability**: Resolved a critical startup crash by correctly bumping the Room database version following schema changes.
+- **Build Infrastructure**: Fixed KSP compilation failures on Windows environments by programmatically configuring the SQLite temporary directory.
+
 ## [9.0.1.0] - 2026-06-11
 
 ### Added
