@@ -12,7 +12,7 @@ import com.example.data.model.RestorationLog
 import com.example.data.model.CommunityPost
 import com.example.data.model.CommunityComment
 
-@Database(entities = [GardenLayout::class, Plant::class, MoodLog::class, CommunityPost::class, CommunityComment::class, CareTask::class, RestorationLog::class], version = 4, exportSchema = false)
+@Database(entities = [GardenLayout::class, Plant::class, MoodLog::class, CommunityPost::class, CommunityComment::class, CareTask::class, RestorationLog::class], version = 5, exportSchema = false)
 abstract class GardenDatabase : RoomDatabase() {
     abstract fun gardenDao(): GardenDao
 
