@@ -19,7 +19,7 @@ FloraFlow makes professional-grade landscape design accessible to everyday home 
 
 ### 2. 2D Interactive Garden Planner
 *   **Grid-Based Layouts:** Draft layouts on a customizable 5x5 grid.
-*   **Design Styles:** Tailor your gardens to distinct themes, such as Zen, Cottage, Desert, Urban Balcony, or Botanical Sanctuary.
+*   **Design Styles:** Tailor your gardens to distinct themes, such as Indoor Area, Cottage, Desert, Urban Balcony, or Botanical Sanctuary.
 *   **Plant Layouts:** Place, arrange, and manage individual plant types directly on the digital plot.
 
 ### 3. Greenhouse Botanical Database

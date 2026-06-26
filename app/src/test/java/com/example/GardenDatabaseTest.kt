@@ -45,8 +45,8 @@ class GardenDatabaseTest {
     @Test
     fun insertAndRetrieveLayout() = runTest {
         val layout = GardenLayout(
-            name = "Zen Oasis",
-            style = "Zen",
+            name = "Indoor Oasis",
+            style = "Indoor Area",
             climate = "Temperate",
             gridString = "0,0,Bonsai"
         )
@@ -54,7 +54,7 @@ class GardenDatabaseTest {
         val layouts = dao.getAllLayouts().first()
         
         assertEquals(1, layouts.size)
-        assertEquals("Zen Oasis", layouts[0].name)
+        assertEquals("Indoor Oasis", layouts[0].name)
         assertEquals(id.toInt(), layouts[0].id)
     }
 

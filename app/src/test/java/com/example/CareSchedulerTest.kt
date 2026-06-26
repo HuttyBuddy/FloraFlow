@@ -54,7 +54,7 @@ class CareSchedulerTest {
     @Test
     fun testGenerateMissingCareTasks() = runTest {
         // 1. Create layout
-        val layout = GardenLayout(name = "Test Oasis", style = "Zen", climate = "Temperate")
+        val layout = GardenLayout(name = "Test Oasis", style = "Indoor Area", climate = "Temperate")
         val layoutId = gardenRepository.insertLayout(layout).toInt()
 
         // 2. Add plant
@@ -86,7 +86,7 @@ class CareSchedulerTest {
 
     @Test
     fun testRainDelaysWateringTask() = runTest {
-        val layout = GardenLayout(name = "Test Oasis", style = "Zen", climate = "Temperate")
+        val layout = GardenLayout(name = "Test Oasis", style = "Indoor Area", climate = "Temperate")
         val layoutId = gardenRepository.insertLayout(layout).toInt()
         val plant = Plant(layoutId = layoutId, name = "Fern", type = "Fern", wateringNeeds = "High") // Interval = 1 day
         val plantId = gardenRepository.insertPlant(plant).toInt()
@@ -107,7 +107,7 @@ class CareSchedulerTest {
 
     @Test
     fun testCompleteTaskSchedulesNext() = runTest {
-        val layout = GardenLayout(name = "Test Oasis", style = "Zen", climate = "Temperate")
+        val layout = GardenLayout(name = "Test Oasis", style = "Indoor Area", climate = "Temperate")
         val layoutId = gardenRepository.insertLayout(layout).toInt()
         val plant = Plant(layoutId = layoutId, name = "Cactus", type = "Succulent", wateringNeeds = "Low") // Interval = 10 days
         val plantId = gardenRepository.insertPlant(plant).toInt()
