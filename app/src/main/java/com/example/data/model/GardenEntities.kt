@@ -44,7 +44,10 @@ data class MoodLog(
     val moodScore: Int, // 1 to 5 scale
     val activityMinutes: Int, // time spent gardening
     val notes: String = "",
-    val growthIndex: Int = 0 // average growth progress of the garden plants during the session
+    val growthIndex: Int = 0, // average growth progress of the garden plants during the session
+    val waterCompleted: Boolean = false,
+    val pruneCompleted: Boolean = false,
+    val outdoorsCompleted: Boolean = false
 )
 
 @Entity(tableName = "care_tasks", indices = [Index(value = ["plantId"]), Index(value = ["dueDate"])])

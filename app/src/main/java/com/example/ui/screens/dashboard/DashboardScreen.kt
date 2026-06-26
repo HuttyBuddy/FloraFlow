@@ -80,6 +80,15 @@ fun DashboardScreen(
     val lowestCategories by viewModel.lowestCategories.collectAsStateWithLifecycle()
     val weather by viewModel.currentWeather.collectAsStateWithLifecycle()
 
+    val todayLog = remember(moodLogs) {
+        val todayCal = java.util.Calendar.getInstance()
+        moodLogs.find { log ->
+            val logCal = java.util.Calendar.getInstance().apply { timeInMillis = log.timestamp }
+            logCal.get(java.util.Calendar.YEAR) == todayCal.get(java.util.Calendar.YEAR) &&
+            logCal.get(java.util.Calendar.DAY_OF_YEAR) == todayCal.get(java.util.Calendar.DAY_OF_YEAR)
+        }
+    }
+
     var showCreateDialog by remember { mutableStateOf(false) }
     var showLayoutSelector by remember { mutableStateOf(false) }
     var showLogMoodDialog by remember { mutableStateOf(false) }
@@ -488,12 +497,12 @@ fun DashboardScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Therapeutic Growth Sync",
+                            text = "Circular Botanical Rhythm",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Therapeutic Mood Rating vs. Garden Growth Index",
+                            text = "Sync daily habits with mental well-being",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -509,44 +518,11 @@ fun DashboardScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                if (moodLogs.size >= 2) {
-                    InteractiveTherapyChart(logs = moodLogs.take(8).reversed())
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(160.dp)
-                            .background(
-                                MaterialTheme.colorScheme.background,
-                                shape = RoundedCornerShape(12.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Text(
-                                "✨ First insights require at least two logs",
-                                fontWeight = FontWeight.Medium,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                "Log therapeutic session minutes and mood ratings while gardening daily to correlate variables.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Button(
-                                onClick = { showLogMoodDialog = true },
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                            ) {
-                                Text("Log Session Now")
-                            }
-                        }
-                    }
-                }
+                CircularBotanicalRhythm(
+                    todayLog = todayLog,
+                    onToggleHabit = { habit -> viewModel.toggleHabitForToday(habit) },
+                    onLogMoodClick = { showLogMoodDialog = true }
+                )
             }
         }
     }
@@ -951,6 +927,45 @@ fun MoodLogItemCard(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
+                }
+
+                if (log.waterCompleted || log.pruneCompleted || log.outdoorsCompleted) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (log.waterCompleted) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFF0284C7).copy(alpha = 0.15f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text("💧 Watered", fontSize = 9.sp, color = Color(0xFF0284C7), fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        if (log.pruneCompleted) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFFF97316).copy(alpha = 0.15f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text("✂️ Pruned", fontSize = 9.sp, color = Color(0xFFF97316), fontWeight = FontWeight.Bold)
+                            }
+                        }
+                        if (log.outdoorsCompleted) {
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFF10B981).copy(alpha = 0.15f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text("🍃 Outdoors", fontSize = 9.sp, color = Color(0xFF10B981), fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
                 }
 
                 if (log.notes.isNotBlank()) {

@@ -569,7 +569,8 @@ class GardenViewModel @JvmOverloads constructor(
                             moodScore = 4,
                             activityMinutes = 30,
                             notes = "Had a wonderful morning watering the garden.",
-                            growthIndex = 30
+                            growthIndex = 30,
+                            waterCompleted = true
                         )
                     )
                     repository.insertMoodLog(
@@ -578,7 +579,8 @@ class GardenViewModel @JvmOverloads constructor(
                             moodScore = 5,
                             activityMinutes = 45,
                             notes = "Breathed fresh air and spent quality time under the sun.",
-                            growthIndex = 40
+                            growthIndex = 40,
+                            outdoorsCompleted = true
                         )
                     )
                     repository.insertMoodLog(
@@ -587,7 +589,9 @@ class GardenViewModel @JvmOverloads constructor(
                             moodScore = 5,
                             activityMinutes = 40,
                             notes = "Very restful and grounding companion planting session.",
-                            growthIndex = 50
+                            growthIndex = 50,
+                            pruneCompleted = true,
+                            outdoorsCompleted = true
                         )
                     )
                 }
@@ -833,6 +837,51 @@ class GardenViewModel @JvmOverloads constructor(
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteMoodLogById(id)
             refreshWidget()
+        }
+    }
+
+    fun toggleHabitForToday(habit: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val allLogs = allMoodLogs.value
+            val todayLog = findTodayLog(allLogs)
+            if (todayLog != null) {
+                val updatedLog = when (habit.lowercase()) {
+                    "water" -> todayLog.copy(waterCompleted = !todayLog.waterCompleted)
+                    "prune" -> todayLog.copy(pruneCompleted = !todayLog.pruneCompleted)
+                    "outdoors" -> todayLog.copy(outdoorsCompleted = !todayLog.outdoorsCompleted)
+                    else -> todayLog
+                }
+                repository.insertMoodLog(updatedLog)
+            } else {
+                val plants = _activePlants.value
+                val averageGrowth = if (plants.isNotEmpty()) {
+                    plants.asSequence().map { it.growthProgress }.average().toInt()
+                } else {
+                    50
+                }
+                val newLog = MoodLog(
+                    mood = "Refreshed",
+                    moodScore = 3,
+                    activityMinutes = 15,
+                    notes = "",
+                    growthIndex = averageGrowth,
+                    waterCompleted = habit.lowercase() == "water",
+                    pruneCompleted = habit.lowercase() == "prune",
+                    outdoorsCompleted = habit.lowercase() == "outdoors"
+                )
+                repository.insertMoodLog(newLog)
+                recordPositiveInteraction()
+            }
+            refreshWidget()
+        }
+    }
+
+    private fun findTodayLog(logs: List<MoodLog>): MoodLog? {
+        val todayCal = java.util.Calendar.getInstance()
+        return logs.find { log ->
+            val logCal = java.util.Calendar.getInstance().apply { timeInMillis = log.timestamp }
+            logCal.get(java.util.Calendar.YEAR) == todayCal.get(java.util.Calendar.YEAR) &&
+            logCal.get(java.util.Calendar.DAY_OF_YEAR) == todayCal.get(java.util.Calendar.DAY_OF_YEAR)
         }
     }
 

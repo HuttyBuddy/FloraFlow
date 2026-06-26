@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -142,7 +143,10 @@ class GardenDatabaseTest {
             mood = "Refreshed",
             moodScore = 5,
             activityMinutes = 20,
-            notes = "Beautiful morning session"
+            notes = "Beautiful morning session",
+            waterCompleted = true,
+            pruneCompleted = false,
+            outdoorsCompleted = true
         )
 
         val logId = dao.insertMoodLog(moodLog).toInt()
@@ -152,6 +156,9 @@ class GardenDatabaseTest {
         assertEquals("Refreshed", logs[0].mood)
         assertEquals(5, logs[0].moodScore)
         assertEquals("Beautiful morning session", logs[0].notes)
+        assertTrue(logs[0].waterCompleted)
+        assertFalse(logs[0].pruneCompleted)
+        assertTrue(logs[0].outdoorsCompleted)
 
         dao.deleteMoodLogById(logId)
         val currentLogs = dao.getAllMoodLogs().first()
