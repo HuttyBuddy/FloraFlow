@@ -10,7 +10,7 @@ FloraFlow speaks like a knowledgeable friend who loves gardening — warm, encou
 - **Clear** — We translate horticultural, acoustic, and design concepts into plain, approachable language. No unnecessary jargon.
 - **Grounded** — We're rooted in science (biophilic design, plant biology, eco-acoustic neuroscience) but wear it lightly. We educate without lecturing.
 - **Imaginative** — We invite users to envision — and hear — what their space could become, not just what it is.
-- **Restorative** — We speak with calm intentionality. Our copy should feel like a breath out: unhurried, purposeful, and emotionally present.
+|- **Restorative** — We speak with calm intentionality. Our copy should feel like a breath out: unhurried, purposeful, and emotionally present. It should reflect the high-fidelity, immersive audio experience of the Soundscape Foundation—grounded in real-time nature loops and brainwave entrainment.
 
 **What we avoid:**
 - Overly clinical or technical language

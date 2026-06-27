@@ -34,8 +34,11 @@ FloraFlow makes professional-grade landscape design accessible to everyday home 
 *   **Neural Restoration Index (NRI):** Automatically analyze your garden's biophilic design, unique plant types, and companion synergies to calculate a stress-relief recovery percentage.
 *   **Binaural Soundscapes & Nature Loops:** Play procedural, continuous Alpha (focus), Theta (meditation), and Delta (sleep) brainwave entrainment frequencies overlaid with natural wind chimes via a persistent background service.
 
-### 6. Dynamic Walkthrough Tour
-*   **Guided Onboarding:** Step-by-step interactive overlay highlights core features, guiding new users through the Planner, Advisor, and Restoration Journal.
+### 6. Dynamic Immersive Experience
+*   **Guided Exploration:** Seamless interactive overlays highlight core features, guiding new users through the Planner, Advisor, and Restoration Journal.
+*   **Removed Walkthrough Videos:** In favor of a more integrated, interactive onboarding experience.
+*   **Project Status:** The application is currently in its Enhanced & Improved phase.
+*   **Removed Walkthrough Videos:** In favor of a more integrated, interactive onboarding experience.
 
 ---
 

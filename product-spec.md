@@ -1,15 +1,15 @@
 # FloraFlow Product Specification
 
-## Overview
+## Project Status
+**Current Phase:** Enhanced & Improved. The application has undergone significant architectural upgrades, UX refinements, and feature enhancements, moving beyond initial concept to a polished, production-ready experience.
 
+## Overview
 FloraFlow is an advanced mobile application for the Android ecosystem that revolutionizes residential and urban landscape planning. By merging immersive eco-acoustic binaural soundscapes and a Neural Restoration Journal with an AI assistant grounded in biophilic design neuroscience, FloraFlow transforms garden planning from static blueprints into an immersive, emotionally grounding creative experience.
 
 ## Core Value Proposition
-
 FloraFlow makes professional-grade landscape design accessible to everyday home gardeners. Users don't need design training or horticultural expertise — FloraFlow's AI assistant and eco-acoustic tools guide them through envisioning, planning, and emotionally connecting with a garden they build themselves.
 
 ## Platform
-
 - **Primary platform:** Android (mobile)
 - **Target devices:** Android smartphones and tablets supporting background audio services
 
@@ -49,7 +49,6 @@ A comprehensive, searchable database of plants suited to residential and urban g
 - Native/pollinator-friendly tags
 
 ## What FloraFlow Is Not
-
 - Not a general-purpose plant identification tool (that's a secondary use case, not the core)
 - Not a professional landscape architecture platform
 - Not a social/community gardening app (no public feed or UGC focus)
@@ -66,6 +65,10 @@ A comprehensive, searchable database of plants suited to residential and urban g
 | Platform depth | Immersive planning experience | Basic care reminders |
 
 ## Technical Notes
+- Requires a device supporting background audio services and notifications
+- Post-Notification permission required for system media controller interaction
+- Plant recommendations use USDA Hardiness Zones and Köppen climate classification
+- AI assistant uses on-device + cloud hybrid processing
 
 - Requires a device supporting background audio services and notifications
 - Post-Notification permission required for system media controller interaction
