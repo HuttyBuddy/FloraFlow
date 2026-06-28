@@ -282,6 +282,7 @@ class MainActivity : ComponentActivity() {
                                         .fillMaxWidth()
                                         .height(72.dp)
                                         .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .navigationBarsPadding()
                                         .testTag("app_navigation_bar")
                                 ) {
                                     // Sliding indicator pill
