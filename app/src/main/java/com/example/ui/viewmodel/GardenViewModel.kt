@@ -603,7 +603,17 @@ class GardenViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             allLayouts.collect { layouts ->
                 if ((_activeLayout.value == null) && layouts.isNotEmpty()) {
-                    _activeLayout.value = layouts.first()
+                    val firstLayout = layouts.first()
+                    val currentZip = weatherRepository.getUserLocationZip()
+                    val targetClimate = com.example.data.model.ClimatePlants.mapZipToClimate(currentZip)
+                    if (firstLayout.climate != targetClimate) {
+                        viewModelScope.launch(ioDispatcher) {
+                            repository.updateLayoutClimate(firstLayout.id, targetClimate)
+                        }
+                        _activeLayout.value = firstLayout.copy(climate = targetClimate)
+                    } else {
+                        _activeLayout.value = firstLayout
+                    }
                 }
             }
         }
@@ -623,6 +633,17 @@ class GardenViewModel @JvmOverloads constructor(
 
     // --- Garden Layout operations ---
     fun selectLayout(layout: GardenLayout?) {
+        if (layout != null) {
+            val currentZip = weatherRepository.getUserLocationZip()
+            val targetClimate = com.example.data.model.ClimatePlants.mapZipToClimate(currentZip)
+            if (layout.climate != targetClimate) {
+                viewModelScope.launch(ioDispatcher) {
+                    repository.updateLayoutClimate(layout.id, targetClimate)
+                }
+                _activeLayout.value = layout.copy(climate = targetClimate)
+                return
+            }
+        }
         _activeLayout.value = layout
     }
 
@@ -1351,6 +1372,11 @@ class GardenViewModel @JvmOverloads constructor(
         viewModelScope.launch(ioDispatcher) {
             weatherRepository.saveUserLocationZip(zip)
             weatherRepository.fetchWeather(zip)
+            val targetClimate = com.example.data.model.ClimatePlants.mapZipToClimate(zip)
+            _activeLayout.value?.let { currentLayout ->
+                repository.updateLayoutClimate(currentLayout.id, targetClimate)
+                _activeLayout.value = currentLayout.copy(climate = targetClimate)
+            }
             careScheduler.syncCareSchedules()
         }
     }

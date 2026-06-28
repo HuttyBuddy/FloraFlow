@@ -94,6 +94,8 @@ fun LibraryScreen(
     }
 
     // Encyclopedia Search & Filter States
+    val currentWeather by viewModel.currentWeather.collectAsStateWithLifecycle()
+    var zipInput by remember(currentWeather) { mutableStateOf(viewModel.getWeatherLocationZip()) }
     var searchQuery by remember { mutableStateOf("") }
     var selectedTypeFilter by remember { mutableStateOf("All") }
     var selectedClimateFilter by remember { mutableStateOf("All") }
@@ -101,20 +103,24 @@ fun LibraryScreen(
     var selectedBloomFilter by remember { mutableStateOf("All") }
     var expandedSpeciesName by remember { mutableStateOf<String?>(null) }
 
-    val filteredTemplates = remember(searchQuery, selectedTypeFilter, selectedClimateFilter, selectedWaterFilter, selectedBloomFilter) {
+    val filteredTemplates = remember(searchQuery, selectedTypeFilter, selectedClimateFilter, selectedWaterFilter, selectedBloomFilter, zipInput) {
+        val zipClimate = ClimatePlants.mapZipToClimate(zipInput)
+        val zipClimateShort = when {
+            zipClimate.contains("Tropical") -> "Tropical"
+            zipClimate.contains("Arid") -> "Arid"
+            else -> zipClimate
+        }
         ClimatePlants.ALL_TEMPLATES.filter { tpl ->
             val matchesSearch = tpl.name.contains(searchQuery, ignoreCase = true) ||
-                    tpl.type.contains(searchQuery, ignoreCase = true) ||
-                    tpl.soilType.contains(searchQuery, ignoreCase = true) ||
-                    tpl.sunlight.contains(searchQuery, ignoreCase = true) ||
-                    tpl.pestsDiseases.contains(searchQuery, ignoreCase = true)
+                    tpl.type.contains(searchQuery, ignoreCase = true)
             
             val matchesType = selectedTypeFilter == "All" || tpl.type.lowercase() == selectedTypeFilter.lowercase()
+            val matchesZipClimate = zipInput.isBlank() || tpl.compatibleClimate.contains(zipClimateShort, ignoreCase = true)
             val matchesClimate = selectedClimateFilter == "All" || tpl.compatibleClimate.contains(selectedClimateFilter, ignoreCase = true)
             val matchesWater = selectedWaterFilter == "All" || tpl.wateringNeeds.contains(selectedWaterFilter, ignoreCase = true)
             val matchesBloom = selectedBloomFilter == "All" || tpl.bloomTime.contains(selectedBloomFilter, ignoreCase = true)
             
-            matchesSearch && matchesType && matchesClimate && matchesWater && matchesBloom
+            matchesSearch && matchesType && matchesZipClimate && matchesClimate && matchesWater && matchesBloom
         }
     }
 
@@ -191,18 +197,6 @@ fun LibraryScreen(
                         fontSize = 11.sp,
                         textAlign = TextAlign.Center
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            searchQuery = ""
-                            selectedTypeFilter = "All"
-                            selectedClimateFilter = "All"
-                            selectedWaterFilter = "All"
-                            selectedBloomFilter = "All"
-                        }
-                    ) {
-                        Text("Clear All Filters")
-                    }
                 }
             }
         }
@@ -400,29 +394,97 @@ fun LibraryScreen(
             
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Real-Time Search Bar
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder = { Text("Search 23+ species, pests, or soils...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search icon") },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Clear search input")
+            // Row with Zip Code & Real-Time Search Bar
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Zip Code Field
+                OutlinedTextField(
+                    value = zipInput,
+                    onValueChange = { 
+                        zipInput = it
+                        if (it.length == 5 && it.all { c -> c.isDigit() }) {
+                            viewModel.updateWeatherLocation(it)
                         }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("species_search_input"),
-                shape = RoundedCornerShape(14.dp),
-                singleLine = true,
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    },
+                    placeholder = { Text("Zip Code") },
+                    label = { Text("Local Zip") },
+                    leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = "Zip Code Location") },
+                    modifier = Modifier
+                        .width(125.dp)
+                        .testTag("encyclopedia_zip_input"),
+                    shape = RoundedCornerShape(14.dp),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    )
                 )
-            )
+
+                // Search Bar
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("Search 50+ species...") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search icon") },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Clear search input")
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("species_search_input"),
+                    shape = RoundedCornerShape(14.dp),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    )
+                )
+            }
+
+            // Info row showing resolved climate and the Clear All Filters button
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val resolvedClimate = remember(zipInput) { ClimatePlants.mapZipToClimate(zipInput) }
+                Text(
+                    text = if (zipInput.isNotBlank()) "Climate: $resolvedClimate" else "Showing species from all around the world",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+                
+                Button(
+                    onClick = {
+                        searchQuery = ""
+                        selectedTypeFilter = "All"
+                        selectedClimateFilter = "All"
+                        selectedWaterFilter = "All"
+                        selectedBloomFilter = "All"
+                        zipInput = ""
+                        viewModel.updateWeatherLocation("")
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        contentColor = MaterialTheme.colorScheme.onTertiary
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                    modifier = Modifier
+                        .height(32.dp)
+                        .testTag("clear_all_filters_btn")
+                ) {
+                    Text("Clear All Filters", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+            }
         }
     }
 

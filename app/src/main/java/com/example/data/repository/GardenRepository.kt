@@ -19,6 +19,8 @@ class GardenRepository(private val gardenDao: GardenDao) {
 
     suspend fun updateLayoutGrid(id: Int, newGridString: String) = gardenDao.updateLayoutGrid(id, newGridString)
 
+    suspend fun updateLayoutClimate(id: Int, climate: String) = gardenDao.updateLayoutClimate(id, climate)
+
     suspend fun deleteLayout(layout: GardenLayout) = gardenDao.deleteLayout(layout)
 
     // --- Plants ---

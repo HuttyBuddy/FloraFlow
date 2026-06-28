@@ -931,9 +931,9 @@ fun MoodLogItemCard(
 
                 if (log.waterCompleted || log.pruneCompleted || log.outdoorsCompleted) {
                     Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalAlignment = Alignment.Start
                     ) {
                         if (log.waterCompleted) {
                             Box(
@@ -942,7 +942,14 @@ fun MoodLogItemCard(
                                     .background(Color(0xFF0284C7).copy(alpha = 0.15f))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Text("💧 Watered", fontSize = 9.sp, color = Color(0xFF0284C7), fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = "💧 Watered",
+                                    fontSize = 9.sp,
+                                    color = Color(0xFF0284C7),
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
                             }
                         }
                         if (log.pruneCompleted) {
@@ -952,7 +959,14 @@ fun MoodLogItemCard(
                                     .background(Color(0xFFF97316).copy(alpha = 0.15f))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Text("✂️ Pruned", fontSize = 9.sp, color = Color(0xFFF97316), fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = "✂️ Pruned",
+                                    fontSize = 9.sp,
+                                    color = Color(0xFFF97316),
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
                             }
                         }
                         if (log.outdoorsCompleted) {
@@ -962,7 +976,14 @@ fun MoodLogItemCard(
                                     .background(Color(0xFF10B981).copy(alpha = 0.15f))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Text("🍃 Outdoors", fontSize = 9.sp, color = Color(0xFF10B981), fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = "🍃 Outdoors",
+                                    fontSize = 9.sp,
+                                    color = Color(0xFF10B981),
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
                             }
                         }
                     }

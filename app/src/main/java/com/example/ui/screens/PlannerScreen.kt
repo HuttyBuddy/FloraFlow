@@ -183,6 +183,20 @@ fun PlannerScreen(
             outlineColor = Color(0xFF78909C),
             slotBgColor = Color(0xFF37474F).copy(alpha = 0.08f),
             description = "Smoothed stones. Best suited for raked spaces."
+        ),
+        SoilTheme(
+            name = "Clay 🟥",
+            bgColors = listOf(Color(0xFFF4A460), Color(0xFFCD853F)),
+            outlineColor = Color(0xFFD2691E),
+            slotBgColor = Color(0xFF8B4513).copy(alpha = 0.08f),
+            description = "Heavy nutrient-rich clay. Retains moisture for water-loving plants."
+        ),
+        SoilTheme(
+            name = "Mulch 🟫",
+            bgColors = listOf(Color(0xFF4E342E), Color(0xFF271C19)),
+            outlineColor = Color(0xFF6D4C41),
+            slotBgColor = Color(0xFF3E2723).copy(alpha = 0.08f),
+            description = "Organic wood chips and compost. Great for weed prevention and warmth."
         )
     )
     var selectedSoilIdx by remember { mutableIntStateOf(0) }
@@ -480,10 +494,11 @@ fun PlannerScreen(
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (isSelected) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
                                 ),
-                                border = BorderStroke(
-                                    width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) theme.outlineColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                                ),
+                                border = if (isSelected) {
+                                    BorderStroke(2.dp, theme.outlineColor)
+                                } else {
+                                    null
+                                },
                                 elevation = CardDefaults.cardElevation(defaultElevation = animatedElevation)
                             ) {
                                 Column(
@@ -524,12 +539,56 @@ fun PlannerScreen(
                                                         )
                                                     }
                                                 }
-                                                2 -> { // Pebbles pebbles
-                                                    for (i in 0..6) {
+                                                2 -> { // Rocks & Pebbles - draw overlapping smooth stones (ovals/circles with subtle borders)
+                                                    for (i in 0..8) {
+                                                        val centerX = random.nextFloat() * size.width
+                                                        val centerY = random.nextFloat() * size.height
+                                                        val w = 5f + random.nextFloat() * 5f
+                                                        val h = 4f + random.nextFloat() * 4f
+                                                        
+                                                        // Draw pebble body
+                                                        drawOval(
+                                                            color = Color(0xFFB0BEC5),
+                                                            topLeft = Offset(centerX - w/2, centerY - h/2),
+                                                            size = androidx.compose.ui.geometry.Size(w, h)
+                                                        )
+                                                        // Draw pebble highlight/texture
+                                                        drawOval(
+                                                            color = Color(0xFFECEFF1),
+                                                            topLeft = Offset(centerX - w/2 + 1f, centerY - h/2 + 1f),
+                                                            size = androidx.compose.ui.geometry.Size(w * 0.6f, h * 0.6f)
+                                                        )
+                                                        // Draw subtle pebble outline
+                                                        drawOval(
+                                                            color = Color(0xFF78909C),
+                                                            topLeft = Offset(centerX - w/2, centerY - h/2),
+                                                            size = androidx.compose.ui.geometry.Size(w, h),
+                                                            style = Stroke(width = 0.8f)
+                                                        )
+                                                    }
+                                                }
+                                                3 -> { // Clay - Terracotta detail
+                                                    for (i in 0..5) {
                                                         drawCircle(
-                                                            color = Color(0xFF90A4AE).copy(alpha = 0.6f),
-                                                            radius = 2.5f + random.nextFloat() * 2f,
+                                                            color = Color(0xFF8B4513).copy(alpha = 0.4f),
+                                                            radius = 2f + random.nextFloat() * 3f,
                                                             center = Offset(random.nextFloat() * size.width, random.nextFloat() * size.height)
+                                                        )
+                                                    }
+                                                }
+                                                4 -> { // Mulch - wood chips
+                                                    for (i in 0..8) {
+                                                        val x1 = random.nextFloat() * size.width
+                                                        val y1 = random.nextFloat() * size.height
+                                                        val angle = random.nextFloat() * 2 * Math.PI
+                                                        val len = 6f + random.nextFloat() * 6f
+                                                        val x2 = x1 + (Math.cos(angle) * len).toFloat()
+                                                        val y2 = y1 + (Math.sin(angle) * len).toFloat()
+                                                        drawLine(
+                                                            color = Color(0xFF3E2723),
+                                                            start = Offset(x1, y1),
+                                                            end = Offset(x2, y2),
+                                                            strokeWidth = 2.5f
                                                         )
                                                     }
                                                 }
@@ -547,7 +606,9 @@ fun PlannerScreen(
                                     val specText = when (index) {
                                         0 -> "Rich Nutrients"
                                         1 -> "Rapid Drain"
-                                        else -> "Polished Pebbles"
+                                        2 -> "Rocks or Pebbles"
+                                        3 -> "Moisture Heavy"
+                                        else -> "Organic Shield"
                                     }
                                     Text(
                                         text = specText,
@@ -778,7 +839,9 @@ fun PlannerScreen(
                                             val baseSubstrateBgColors = when (selectedSoilIdx) {
                                                 0 -> listOf(Color(0xFF8D6E63).copy(alpha = 0.08f), Color(0xFF5D4037).copy(alpha = 0.14f)) // Loam
                                                 1 -> listOf(Color(0xFFFFF8E1).copy(alpha = 0.6f), Color(0xFFFFECB3).copy(alpha = 0.6f)) // Sand
-                                                else -> listOf(Color(0xFFECEFF1).copy(alpha = 0.7f), Color(0xFFCFD8DC).copy(alpha = 0.7f)) // Pebbles
+                                                2 -> listOf(Color(0xFFECEFF1).copy(alpha = 0.7f), Color(0xFFCFD8DC).copy(alpha = 0.7f)) // Pebbles
+                                                3 -> listOf(Color(0xFFF4A460).copy(alpha = 0.1f), Color(0xFFCD853F).copy(alpha = 0.15f)) // Clay
+                                                else -> listOf(Color(0xFF4E342E).copy(alpha = 0.15f), Color(0xFF271C19).copy(alpha = 0.2f)) // Mulch
                                             }
                                             Box(
                                                 modifier = Modifier
@@ -845,6 +908,35 @@ fun PlannerScreen(
                                                                     pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(floatArrayOf(5f, 5f), 0f)
                                                                 )
                                                             }
+                                                        }
+                                                    }
+                                                    3 -> { // Clay - Terracotta detail
+                                                        val random = java.util.Random((r * 17 + c * 31).toLong())
+                                                        for (i in 0 until 4) {
+                                                            val x = random.nextFloat() * size.width
+                                                            val y = random.nextFloat() * size.height
+                                                            drawCircle(
+                                                                color = Color(0xFF8B4513).copy(alpha = 0.15f),
+                                                                radius = 3f + random.nextFloat() * 3f,
+                                                                center = Offset(x, y)
+                                                            )
+                                                        }
+                                                    }
+                                                    4 -> { // Mulch - Wood chips
+                                                        val random = java.util.Random((r * 23 + c * 19).toLong())
+                                                        for (i in 0 until 6) {
+                                                            val x1 = random.nextFloat() * size.width
+                                                            val y1 = random.nextFloat() * size.height
+                                                            val angle = random.nextFloat() * 2 * Math.PI
+                                                            val len = 4f + random.nextFloat() * 6f
+                                                            val x2 = x1 + (Math.cos(angle) * len).toFloat()
+                                                            val y2 = y1 + (Math.sin(angle) * len).toFloat()
+                                                            drawLine(
+                                                                color = Color(0xFF3E2723).copy(alpha = 0.25f),
+                                                                start = Offset(x1, y1),
+                                                                end = Offset(x2, y2),
+                                                                strokeWidth = 2f
+                                                            )
                                                         }
                                                     }
                                                 }

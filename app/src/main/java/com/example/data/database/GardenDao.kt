@@ -23,6 +23,9 @@ interface GardenDao {
     @Query("UPDATE garden_layouts SET gridString = :newGridString WHERE id = :id")
     suspend fun updateLayoutGrid(id: Int, newGridString: String)
 
+    @Query("UPDATE garden_layouts SET climate = :climate WHERE id = :id")
+    suspend fun updateLayoutClimate(id: Int, climate: String)
+
     @Delete
     suspend fun deleteLayout(layout: GardenLayout)
 

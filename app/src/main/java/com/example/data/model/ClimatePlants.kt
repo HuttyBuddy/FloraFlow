@@ -24,6 +24,43 @@ object ClimatePlants {
     
     val STYLES = listOf("Indoor Area", "Cottage Garden", "English Classic", "Modern Patio", "Botanical Sanctuary")
 
+    fun mapZipToClimate(zip: String): String {
+        if (zip.isBlank()) return "Temperate"
+        val cleanZip = zip.trim()
+        if (!cleanZip.all { it.isDigit() } || cleanZip.length != 5) {
+            val lower = cleanZip.lowercase()
+            return when {
+                lower.contains("phoenix") || lower.contains("desert") || lower.contains("arid") -> "Arid (Desert)"
+                lower.contains("miami") || lower.contains("tropical") || lower.contains("humid") -> "Tropical (Humid)"
+                lower.contains("seattle") || lower.contains("rain") -> "Temperate"
+                lower.contains("denver") || lower.contains("bozeman") || lower.contains("mountain") -> "Mountainous"
+                lower.contains("los angeles") || lower.contains("san diego") || lower.contains("mediterranean") -> "Mediterranean"
+                else -> "Temperate"
+            }
+        }
+        
+        val prefix = cleanZip.substring(0, 3)
+        val prefixInt = prefix.toIntOrNull() ?: return "Temperate"
+        
+        return when {
+            // Tropical: Florida Keys / Southern Florida, Hawaii, Puerto Rico, US Virgin Islands
+            prefixInt in 330..334 || prefixInt in 339..349 || prefixInt in 967..968 || prefixInt in 6..9 -> "Tropical (Humid)"
+            
+            // Arid (Desert): Arizona, Nevada, New Mexico, Utah, West Texas, Inland Southern California
+            prefixInt in 850..865 || prefixInt in 890..898 || prefixInt in 870..884 || prefixInt in 840..847 || 
+            prefixInt in 797..799 || prefixInt in 922..925 || prefixInt in 935..935 -> "Arid (Desert)"
+            
+            // Mediterranean: Southern & Coastal California
+            prefixInt in 900..921 || prefixInt in 926..934 || prefixInt in 936..949 || prefixInt in 954..958 -> "Mediterranean"
+            
+            // Mountainous: Colorado, Wyoming, Montana, Idaho, parts of Utah/Oregon/Washington high altitudes
+            prefixInt in 800..816 || prefixInt in 820..831 || prefixInt in 590..599 || prefixInt in 832..838 -> "Mountainous"
+            
+            // Temperate: Pacific Northwest, Northeast, Midwest, South
+            else -> "Temperate"
+        }
+    }
+
     val ALL_TEMPLATES = listOf(
         // === INDOOR PLANTS ===
         PlantTemplate(
