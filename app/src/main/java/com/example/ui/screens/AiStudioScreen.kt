@@ -64,7 +64,7 @@ fun convertUriToBase64(context: android.content.Context, uri: android.net.Uri): 
             android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
         } else null
     } catch (e: Exception) {
-        e.printStackTrace()
+        android.util.Log.e("AiStudioScreen", "Error: ${e.message}")
         null
     }
 }
@@ -149,7 +149,7 @@ fun AiStudioScreen(
             val file = java.io.File(cachePath, "camera_capture_${System.currentTimeMillis()}.jpg")
             FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         } catch (e: Exception) {
-            e.printStackTrace()
+            android.util.Log.e("AiStudioScreen", "Error: ${e.message}")
             null
         }
     }
