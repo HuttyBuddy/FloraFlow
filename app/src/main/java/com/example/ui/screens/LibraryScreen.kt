@@ -635,6 +635,21 @@ fun LibraryScreen(
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.secondary
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            searchQuery = ""
+                            selectedTypeFilter = "All"
+                            selectedClimateFilter = "All"
+                            selectedWaterFilter = "All"
+                            selectedBloomFilter = "All"
+                            zipInput = ""
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Clear All Filters", fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         } else {
