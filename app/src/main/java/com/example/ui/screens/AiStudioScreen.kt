@@ -49,6 +49,18 @@ import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.sin
 
+private val AI_SUGGESTIONS_PORTRAIT = listOf(
+    "🌱 Suggest perfect companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
+    "🐛 Analyze yellowing leaves / plant pest diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
+    "🧘 Discuss therapy and nature cognitive wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?"
+)
+
+private val AI_SUGGESTIONS_LANDSCAPE = listOf(
+    "🌱 Suggest companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
+    "🐛 Analyze yellowing leaves diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
+    "🧘 Discuss therapy and nature wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?"
+)
+
 data class AttachedImage(
     val name: String,
     val mimeType: String,
@@ -577,11 +589,7 @@ fun AiStudioScreen(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                val suggestions = listOf(
-                                    "🌱 Suggest perfect companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
-                                    "🐛 Analyze yellowing leaves / plant pest diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
-                                    "🧘 Discuss therapy and nature cognitive wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?"
-                                )
+                                val suggestions = AI_SUGGESTIONS_PORTRAIT
 
                                 suggestions.forEach { pair ->
                                     Card(
@@ -1151,11 +1159,7 @@ fun AiStudioScreen(
                             color = MaterialTheme.colorScheme.primary
                         )
 
-                        val suggestions = listOf(
-                            "🌱 Suggest companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
-                            "🐛 Analyze yellowing leaves diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
-                            "🧘 Discuss therapy and nature wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?"
-                        )
+                        val suggestions = AI_SUGGESTIONS_LANDSCAPE
 
                         suggestions.forEach { pair ->
                             Card(
