@@ -133,7 +133,7 @@ class WeatherRepository(private val context: Context) {
                 info = fetchLiveWeather(location)
             }
         } catch (e: Exception) {
-            android.util.Log.e("WeatherRepository", "Failed to fetch live weather, falling back to mock", e)
+            android.util.Log.e("WeatherRepository", "Failed to fetch live weather, falling back to mock: ${e.message}")
         }
 
         if (info == null) {
