@@ -10,3 +10,7 @@
 **Vulnerability:** Full exception objects passed to Android loggers.
 **Learning:** Passing `e` as the last parameter to `Log.e` dumps the entire stack trace to Logcat, exposing internal application paths and potentially sensitive device state.
 **Prevention:** Use string interpolation with `${e.message}` instead of passing the `Throwable` to loggers, ensuring only the sanitized error message is visible in Logcat.
+## 2024-06-28 - [Stack Trace Leakage in Android Logcat for Camera Capture]
+**Vulnerability:** Information Exposure Through Stack Trace via `e.printStackTrace()` when converting URI to Base64 or creating temp camera URI.
+**Learning:** In Android, `e.printStackTrace()` outputs the full stack trace to Logcat. Using it for basic media/file operations like generating URIs exposes implementation details, directory structures, and application flow.
+**Prevention:** Instead of logging the full exception via `e.printStackTrace()`, use `android.util.Log.e` and log only a safe, sanitized error message such as `e.message`.
