@@ -207,6 +207,17 @@ fun PlannerScreen(
         parseGridString(currentLayout?.gridString ?: "")
     }
 
+    var hasConsultedAi by remember { mutableStateOf(false) }
+    var hasExportedBlueprint by remember { mutableStateOf(false) }
+
+    val expandedTasks = remember { mutableStateMapOf<Int, Boolean>().apply {
+        put(1, false)
+        put(2, true)
+        put(3, false)
+        put(4, false)
+        put(5, false)
+    } }
+
     LaunchedEffect(activeGridItems.size) {
         if (activeGridItems.size == 25 && !hasTriggeredFullGarden) {
             hasTriggeredFullGarden = true
@@ -354,101 +365,95 @@ fun PlannerScreen(
         }
 
         val aiArchitectControlsContent = @Composable {
-            Card(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                Text(
+                    "AI Assistant",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        "AI Assistant",
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.askAiForLayoutAdvice()
+                            switchToChatTab()
+                            hasConsultedAi = true
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(36.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
                     ) {
-                        OutlinedButton(
-                            onClick = {
-                                viewModel.askAiForLayoutAdvice()
-                                switchToChatTab()
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(36.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 4.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.primary
-                            ),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Icon(
-                                    Icons.Default.AutoAwesome,
-                                    contentDescription = "AI",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    "Layout Review",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                )
-                            }
+                            Icon(
+                                Icons.Default.AutoAwesome,
+                                contentDescription = "AI",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                "Layout Review",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
                         }
+                    }
 
-                        OutlinedButton(
-                            onClick = {
-                                viewModel.generateAILayoutSuggestion()
-                                switchToChatTab()
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(36.dp),
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 4.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.primary
-                            ),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+                    OutlinedButton(
+                        onClick = {
+                            viewModel.generateAILayoutSuggestion()
+                            switchToChatTab()
+                            hasConsultedAi = true
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(36.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 4.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Icon(
-                                    Icons.Default.Spa,
-                                    contentDescription = "Sow",
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    "Blueprint Suggestion",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                )
-                            }
+                            Icon(
+                                Icons.Default.Spa,
+                                contentDescription = "Sow",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                "Blueprint Suggestion",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
                         }
                     }
                 }
@@ -456,13 +461,7 @@ fun PlannerScreen(
         }
 
         val substrateSelectorContent = @Composable {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f)),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-            ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
                         "Surface Substrate Type",
                         style = MaterialTheme.typography.titleSmall,
@@ -645,24 +644,15 @@ fun PlannerScreen(
                             )
                         }
                     }
-                }
             }
         }
 
         val actionsPanelContent = @Composable {
-            Card(
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
                     // Auto-Sow Seeds button
                     Button(
                         onClick = {
@@ -727,54 +717,33 @@ fun PlannerScreen(
                             Text("Uproot All 🧹", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
-                }
             }
         }
 
         val gridPlannerContent = @Composable {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
+                if (highlightedPlantName != null) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.End
                     ) {
                         Text(
-                            text = "Plot Blueprint Editor",
-                            style = MaterialTheme.typography.titleMedium,
+                            text = "FILTER ACTIVE 🎯",
+                            style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = Color(0xFFC62828),
+                            modifier = Modifier
+                                .clickable { highlightedPlantName = null }
+                                .background(Color(0xFFFFEBEE), RoundedCornerShape(4.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
                         )
-                        if (highlightedPlantName != null) {
-                            Text(
-                                text = "FILTER ACTIVE 🎯",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFC62828),
-                                modifier = Modifier
-                                    .clickable { highlightedPlantName = null }
-                                    .background(Color(0xFFFFEBEE), RoundedCornerShape(4.dp))
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
-                        }
                     }
-                    Text(
-                        text = "Touch any sector block below to choose and assign seeds.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
+                }
 
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Column(
@@ -1329,6 +1298,256 @@ fun PlannerScreen(
                             }
                         }
                     }
+            }
+        }
+
+        val layoutDesignChecklistContent = @Composable {
+            val totalConflicts = activeGridItems.count { hasNeighborConflict(it.x, it.y, activeGridItems) }
+            val totalSynergies = activeGridItems.count { hasNeighborSynergy(it.x, it.y, activeGridItems) }
+            
+            val task1Completed = true
+            val task2Completed = activeGridItems.isNotEmpty()
+            val task3Completed = activeGridItems.isNotEmpty() && totalConflicts == 0
+            val task4Completed = hasConsultedAi
+            val task5Completed = hasExportedBlueprint
+            
+            val completedCount = (if (task1Completed) 1 else 0) +
+                                  (if (task2Completed) 1 else 0) +
+                                  (if (task3Completed) 1 else 0) +
+                                  (if (task4Completed) 1 else 0) +
+                                  (if (task5Completed) 1 else 0)
+            
+            val progressFraction = completedCount.toFloat() / 5f
+            val animatedProgress by animateFloatAsState(
+                targetValue = progressFraction,
+                animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+                label = "checklistProgress"
+            )
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "Layout Design Checklist 📋",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = "Complete each task to optimize your biophilic layout.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        LinearProgressIndicator(
+                            progress = { animatedProgress },
+                            color = if (completedCount == 5) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
+                            trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                        )
+                        Text(
+                            text = "$completedCount / 5 Tasks",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (completedCount == 5) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        ChecklistItem(
+                            title = "1. Select Surface Substrate",
+                            description = "Choose loam, sand, pebbles, clay, or mulch matching your climate.",
+                            statusText = "Selected: ${currentSoilTheme.name}",
+                            isCompleted = task1Completed,
+                            isExpanded = expandedTasks[1] == true,
+                            onToggleExpand = { expandedTasks[1] = !(expandedTasks[1] ?: false) }
+                        ) {
+                            substrateSelectorContent()
+                        }
+
+                        ChecklistItem(
+                            title = "2. Sow Seeds on Sector Grid",
+                            description = "Tap sectors on the 5x5 layout grid to sow and place plants.",
+                            statusText = "${activeGridItems.size} / 25 sectors occupied",
+                            isCompleted = task2Completed,
+                            isExpanded = expandedTasks[2] == true,
+                            onToggleExpand = { expandedTasks[2] = !(expandedTasks[2] ?: false) }
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                actionsPanelContent()
+                                gridPlannerContent()
+                            }
+                        }
+
+                        ChecklistItem(
+                            title = "3. Optimize Companion Synergies",
+                            description = "Arrange neighboring species to activate synergies and clear conflicts.",
+                            statusText = "Synergies: $totalSynergies | Conflicts: $totalConflicts",
+                            isCompleted = task3Completed,
+                            isExpanded = expandedTasks[3] == true,
+                            onToggleExpand = { expandedTasks[3] = !(expandedTasks[3] ?: false) }
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Text(
+                                    text = "Companion planting optimization analyzes neighboring plants in cardinal directions.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontSize = 11.sp
+                                )
+
+                                if (activeGridItems.isEmpty()) {
+                                    Text(
+                                        text = "Please sow plants on the grid in Task 2 to begin companion planting audit.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                } else {
+                                    val synergyPairs = mutableListOf<String>()
+                                    val conflictPairs = mutableListOf<String>()
+                                    
+                                    activeGridItems.forEach { item1 ->
+                                        activeGridItems.forEach { item2 ->
+                                            if (item1 != item2) {
+                                                val isNeighbor = (Math.abs(item1.x - item2.x) == 1 && item1.y == item2.y) || 
+                                                                 (Math.abs(item1.y - item2.y) == 1 && item1.x == item2.x)
+                                                if (isNeighbor) {
+                                                    if (checkPlantSynergy(item1.plantName, item2.plantName)) {
+                                                        val str = "${item1.plantName} ${getEmojiForPlantName(item1.plantName)} + ${item2.plantName} ${getEmojiForPlantName(item2.plantName)}"
+                                                        val reverseStr = "${item2.plantName} ${getEmojiForPlantName(item2.plantName)} + ${item1.plantName} ${getEmojiForPlantName(item1.plantName)}"
+                                                        if (!synergyPairs.contains(str) && !synergyPairs.contains(reverseStr)) {
+                                                            synergyPairs.add(str)
+                                                        }
+                                                    }
+                                                    if (checkPlantConflict(item1.plantName, item2.plantName)) {
+                                                        val str = "${item1.plantName} ${getEmojiForPlantName(item1.plantName)} x ${item2.plantName} ${getEmojiForPlantName(item2.plantName)}"
+                                                        val reverseStr = "${item2.plantName} ${getEmojiForPlantName(item2.plantName)} x ${item1.plantName} ${getEmojiForPlantName(item1.plantName)}"
+                                                        if (!conflictPairs.contains(str) && !conflictPairs.contains(reverseStr)) {
+                                                            conflictPairs.add(str)
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (synergyPairs.isNotEmpty()) {
+                                        Card(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+                                            shape = RoundedCornerShape(10.dp)
+                                        ) {
+                                            Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                Text("✨ Active Synergies (No. $totalSynergies):", fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32), fontSize = 11.sp)
+                                                synergyPairs.forEach { pair ->
+                                                    Text("• $pair", fontSize = 10.sp, color = Color(0xFF1B5E20))
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        Text("No active synergies found yet. Try placing synergistic plants adjacent to each other (e.g. Maple & Rose, Lavender & Rosemary, Cactus & Aloe).", fontSize = 10.sp, color = MaterialTheme.colorScheme.secondary)
+                                    }
+
+                                    if (conflictPairs.isNotEmpty()) {
+                                        Card(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                                            shape = RoundedCornerShape(10.dp)
+                                        ) {
+                                            Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                Text("⚠️ Active Conflicts (No. $totalConflicts):", fontWeight = FontWeight.Bold, color = Color(0xFFC62828), fontSize = 11.sp)
+                                                conflictPairs.forEach { pair ->
+                                                    Text("• $pair", fontSize = 10.sp, color = Color(0xFFB71C1C))
+                                                }
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text("Resolve conflicts by removing or relocating clashing species.", fontSize = 9.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFC62828))
+                                            }
+                                        }
+                                    } else if (activeGridItems.isNotEmpty()) {
+                                        Card(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+                                            shape = RoundedCornerShape(10.dp)
+                                        ) {
+                                            Text(
+                                                "🎉 No planting conflicts! Excellent layout architecture.",
+                                                modifier = Modifier.padding(10.dp),
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF2E7D32),
+                                                fontSize = 11.sp
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        ChecklistItem(
+                            title = "4. Consult AI Advisor",
+                            description = "Ask the AI Architect for custom layout reviews or design ideas.",
+                            statusText = if (hasConsultedAi) "Consulted AI Advisor" else "Pending AI review",
+                            isCompleted = task4Completed,
+                            isExpanded = expandedTasks[4] == true,
+                            onToggleExpand = { expandedTasks[4] = !(expandedTasks[4] ?: false) }
+                        ) {
+                            aiArchitectControlsContent()
+                        }
+
+                        ChecklistItem(
+                            title = "5. Export CAD Blueprint",
+                            description = "Render and download the final layout as an architect CAD vector file.",
+                            statusText = if (hasExportedBlueprint) "Blueprint exported successfully" else "Ready to export",
+                            isCompleted = task5Completed,
+                            isExpanded = expandedTasks[5] == true,
+                            onToggleExpand = { expandedTasks[5] = !(expandedTasks[5] ?: false) }
+                        ) {
+                            Button(
+                                onClick = { showBlueprintDialog = true },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                ),
+                                modifier = Modifier.fillMaxWidth().testTag("view_blueprint_button"),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Default.Layers, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("RENDER ARCHITECT CAD BLUEPRINT 📐", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1461,22 +1680,6 @@ fun PlannerScreen(
             }
         }
 
-        val cadBlueprintExportContent = @Composable {
-            Button(
-                onClick = { showBlueprintDialog = true },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ),
-                modifier = Modifier.fillMaxWidth().testTag("view_blueprint_button"),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Icon(Icons.Default.Layers, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("RENDER ARCHITECT CAD BLUEPRINT 📐", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
-            }
-        }
-
         if (!isWideScreen) {
             Column(
                 modifier = modifier
@@ -1487,12 +1690,8 @@ fun PlannerScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 layoutInfoContent()
-                aiArchitectControlsContent()
-                substrateSelectorContent()
-                actionsPanelContent()
-                gridPlannerContent()
+                layoutDesignChecklistContent()
                 progressDensityContent()
-                cadBlueprintExportContent()
                 Spacer(modifier = Modifier.height(16.dp))
             }
         } else {
@@ -1509,9 +1708,8 @@ fun PlannerScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    gridPlannerContent()
+                    layoutDesignChecklistContent()
                     progressDensityContent()
-                    cadBlueprintExportContent()
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
@@ -1523,9 +1721,6 @@ fun PlannerScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     layoutInfoContent()
-                    aiArchitectControlsContent()
-                    substrateSelectorContent()
-                    actionsPanelContent()
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
@@ -1980,6 +2175,7 @@ fun PlannerScreen(
                                  isSimulatingSave = false
                                  android.widget.Toast.makeText(currentContext, "Blueprint saved as FloraFlow_Blueprint.cad 📂✨", android.widget.Toast.LENGTH_SHORT).show()
                                  showBlueprintDialog = false
+                                 hasExportedBlueprint = true
                              }
                          } else {
                              Icon(Icons.Default.Download, contentDescription = "Download")
@@ -2526,6 +2722,113 @@ fun TimelapseDialog(
                         isPlaying = false
                     }
                 )
+            }
+        }
+    }
+}
+
+// --- Layout Design Checklist helper component ---
+@Composable
+private fun ChecklistItem(
+    title: String,
+    description: String,
+    statusText: String,
+    isCompleted: Boolean,
+    isExpanded: Boolean,
+    onToggleExpand: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isCompleted) {
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f)
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        ),
+        border = BorderStroke(
+            width = if (isExpanded) 1.5.dp else 1.dp,
+            color = if (isExpanded) {
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            } else if (isCompleted) {
+                Color(0xFF4CAF50).copy(alpha = 0.3f)
+            } else {
+                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+            }
+        )
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onToggleExpand() }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                if (isCompleted) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = "Completed",
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(24.dp)
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .border(2.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), CircleShape)
+                    )
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isCompleted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 11.sp
+                    )
+                    if (statusText.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = statusText,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (isCompleted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
+                            fontSize = 10.sp
+                        )
+                    }
+                }
+
+                Icon(
+                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            AnimatedVisibility(
+                visible = isExpanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = 16.dp)
+                ) {
+                    content()
+                }
             }
         }
     }
