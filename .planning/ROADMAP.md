@@ -29,7 +29,7 @@ Redesign FloraFlow to bridge the gap between content promise and app experience 
 **Plans**: 1 plan
 
 Plans:
-- [ ] 01-01: Implement Neural Load Assessment, Score screen, next steps, and AI advisor mode update.
+- [x] 01-01: Implement Neural Load Assessment, Score screen, next steps, and AI advisor mode update.
 
 ### Phase 2: Post-Launch Re-engagement & Diagnosis (P1)
 **Goal**: Drive user retention through home screen widgets, detailed conversational diagnoses, reassessment prompts, and score history.
