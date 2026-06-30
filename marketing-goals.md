@@ -28,13 +28,13 @@ This quarter's primary objective is growing the FloraFlow user base. All marketi
 - **Google UAC** — App install campaigns leveraging in-app event optimization (target: first Restoration session)
 
 ### Secondary Channels
-|- **YouTube Channel (FloraFlow)** — Own channel publishing original video content to build brand authority and drive organic installs. Content pillars:
+- **YouTube Channel (FloraFlow)** — Own channel publishing original video content to build brand authority and drive organic installs. Content pillars:
   - High-fidelity 3D plant model showcases and immersive garden previews
   - Biophilic design explainers — the science behind why greenery and chimes improve wellbeing
   - Garden transformation series — real users' before/after projects built with FloraFlow
   - Seasonal planting guides for urban/small-space gardeners
   - Short-form YouTube Shorts repurposed from long-form content for discovery
-
+- **Content marketing / SEO** — Blog content around biophilic design, urban gardening, and eco-acoustic restoration planning, with YouTube videos embedded to increase time-on-page and dwell signals
 - **Influencer partnerships** — Home & garden creators on Instagram and YouTube (micro-influencers with high engagement preferred over mass reach)
 - **PR** — Tech and lifestyle press angles: Eco-acoustic brainwave entrainment, mental health benefits of biophilic design, urban gardening trend
 
