@@ -1,7 +1,3 @@
-# FloraFlow
-
-## What This Is
-
 An Android application designed to help users design therapeutic gardens, manage plant care, and reduce their environment's Neural Load. It features a Garden Planner, an AI Advisor, a Botanical Database, and a newly-introduced Neural Load Assessment to bridge the gap between content promise and app experience.
 
 ## Core Value
@@ -15,6 +11,8 @@ Empower users to understand and reduce their space-induced stress (Neural Load) 
 - ✓ Garden Planner (2D Layout) — v1.0
 - ✓ Botanical Database — v1.0
 - ✓ AI Advisor (Plant Care) — v1.0
+- ✓ High-Fidelity 3D Plant Assets — v1.0 (Enhanced)
+- ✓ Immersive Soundscape Foundation — v1.0 (Enhanced)
 
 ### Active
 
@@ -22,7 +20,6 @@ Empower users to understand and reduce their space-induced stress (Neural Load) 
 - [ ] **RESULT-01**: Score result screen with zone color and sharing capabilities.
 - [ ] **STEPS-01**: Personalized 3 next steps with deep links to existing features (Planner, Advisor, Database).
 - [ ] **ADVISOR-01**: AI Advisor Biophilic Design mode (updated system prompt referencing Neural Load).
-- [ ] **AR-01**: Remove or hide AR animated icons until high-quality AR rendering is implemented.
 - [ ] **WIDGET-01**: Home screen score widget and step progress tracking.
 - [ ] **DIAG-01**: Conversational Space Diagnosis mode (guided consultation).
 - [ ] **REASSESS-01**: 30-day reassessment prompt.
@@ -50,6 +47,7 @@ The app has existing screens for Onboarding, 2D Planner, Library (Database), AI 
 | Neural Load Assessment Onboarding | Bridge content promise directly to app tools. | — Pending |
 | AI Advisor Reframe | Support plant care, biophilic design, and space diagnosis. | — Pending |
 | Hide AR Animated Icons | Bad AR hurts premium credibility. | — Pending |
+| Walkthrough Videos Removal | Focus on high-fidelity 3D assets and immersive soundscapes for a more premium, self-guided experience. | — Completed |
 
 ## Evolution
 
@@ -69,4 +67,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-17 after initialization*
+*Last updated: 2026-06-17 - Enhanced & Improved Phase Update*

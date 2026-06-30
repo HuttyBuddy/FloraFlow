@@ -15,8 +15,10 @@ Requirements for the initial launch (P0 priority).
 ### AI Advisor
 - [ ] **ADVISOR-01**: AI Advisor Biophilic Design mode (updated system prompt referencing Neural Load scores and categories).
 
-### Polish
+### Polish & Enhanced Features
 - [ ] **AR-01**: Remove or hide AR animated icons until high-quality AR rendering is implemented.
+- [ ] **SOUND-01**: Immersive Soundscape Foundation (high-fidelity binaural audio).
+- [ ] **3D-ASSET-01**: High-fidelity 3D plant model integration.
 
 ## v2 Requirements
 
@@ -32,6 +34,7 @@ Deferred to post-launch milestones (P1 and P2).
 - **AR-02**: Real AR plant visualization (realistic renders, not icons).
 - **PHOTO-01**: Photo-based space analysis (upload a photo, AI scores it).
 - **COMM-01**: Community sharing: share before/after scores.
+- **WALKTHROUGH-02**: Guided exploration overlays (replacing old video walkthroughs).
 
 ## Out of Scope
 
@@ -49,16 +52,19 @@ Deferred to post-launch milestones (P1 and P2).
 | STEPS-01 | Phase 1 | Pending |
 | ADVISOR-01 | Phase 1 | Pending |
 | AR-01 | Phase 1 | Pending |
+| SOUND-01 | Phase 1 | Pending |
+| 3D-ASSET-01 | Phase 1 | Pending |
 | WIDGET-01 | Phase 2 | Pending |
 | DIAG-01 | Phase 2 | Pending |
 | REASSESS-01 | Phase 2 | Pending |
 | HISTORY-01 | Phase 2 | Pending |
+| WALKTHROUGH-02 | Phase 2 | Pending |
 
 **Coverage:**
-- v1 requirements: 5 total
-- Mapped to phases: 5
+- v1 requirements: 7 total
+- Mapped to phases: 7
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-06-17*
-*Last updated: 2026-06-17 after initial definition*
+*Last updated: 2026-06-17 - Enhanced & Improved Phase Update*
