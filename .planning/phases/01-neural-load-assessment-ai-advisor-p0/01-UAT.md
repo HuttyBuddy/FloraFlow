@@ -1,10 +1,9 @@
----
-status: complete
+status: diagnosed
 phase: 01-neural-load-assessment-ai-advisor-p0
 source:
   - .planning/phases/01-neural-load-assessment-ai-advisor-p0/01-01-SUMMARY.md
 started: "2026-06-29T17:21:00Z"
-updated: "2026-06-29T21:35:33Z"
+updated: "2026-06-29T21:37:15Z"
 ---
 
 ## Current Test
@@ -43,17 +42,29 @@ result: pass
 
 ### 8. AR Lens Bottom Tab Hidden
 expected: The bottom navigation bar displays only 4 tabs (Dashboard, My Plot, Greenhouse, Garden Counsel). The AR Lens tab is hidden from bottom navigation, and the walkthrough overlay ends at the AI Advisor (Garden Counsel) tab.
-result: pass
-note: The AR Lens tab was replaced by the Restoration tab (retaining 5 tabs but removing/replacing AR).
+result: issue
+reported: "The AR tab was replaced by the Restoration tab, meaning there are still 5 tabs instead of 4, and the walkthrough overlay has a flow mismatch where it shows 'Finish' on the AI Advisor tab before transitioning to the Restoration tab."
+severity: minor
 
 ## Summary
 
 total: 8
-passed: 8
-issues: 0
+passed: 7
+issues: 1
 pending: 0
 skipped: 0
 
 ## Gaps
 
-[none yet]
+- truth: "The walkthrough overlay flows sequentially through all 5 tabs and only displays 'Finish' on the final (Restoration Journal) tab step."
+  status: failed
+  reason: "User reported: The AR tab was replaced by the Restoration tab (meaning 5 tabs remain), and the walkthrough overlay button incorrectly shows 'Finish' on the AI Advisor step before transitioning to the Restoration tab step."
+  severity: minor
+  test: 8
+  root_cause: "In WalkthroughOverlay.kt, the condition for buttonText and icon checks both AI_ADVISOR_TAB and AR_LENS_TAB for 'Finish' text, causing the label to show prematurely."
+  artifacts:
+    - path: "app/src/main/java/com/example/ui/screens/walkthrough/WalkthroughOverlay.kt"
+      issue: "buttonText and check icon conditions include WalkthroughStep.AI_ADVISOR_TAB"
+  missing:
+    - "Remove WalkthroughStep.AI_ADVISOR_TAB check from finish conditions in WalkthroughOverlay.kt"
+  debug_session: .planning/debug/walkthrough-flow-mismatch.md
