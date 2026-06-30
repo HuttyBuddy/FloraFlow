@@ -26,6 +26,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.intl.Locale as ComposeLocale
 import androidx.compose.ui.platform.testTag
@@ -79,6 +80,13 @@ fun DashboardScreen(
     val assessmentScore by viewModel.assessmentScore.collectAsStateWithLifecycle()
     val lowestCategories by viewModel.lowestCategories.collectAsStateWithLifecycle()
     val weather by viewModel.currentWeather.collectAsStateWithLifecycle()
+
+    val step1Completed by viewModel.step1Completed.collectAsStateWithLifecycle()
+    val step2Completed by viewModel.step2Completed.collectAsStateWithLifecycle()
+    val step3Completed by viewModel.step3Completed.collectAsStateWithLifecycle()
+    val needsReassessment by viewModel.needsReassessment.collectAsStateWithLifecycle()
+    val simulate30Days by viewModel.simulate30Days.collectAsStateWithLifecycle()
+    val assessmentHistory by viewModel.allAssessmentResults.collectAsStateWithLifecycle()
 
     val todayLog = remember(moodLogs) {
         val todayCal = java.util.Calendar.getInstance()
@@ -141,6 +149,223 @@ fun DashboardScreen(
                         fontSize = 12.sp
                     )
                 }
+            }
+        }
+    }
+
+    val reassessmentPromptBanner = @Composable {
+        val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+        val bannerBg = if (isDark) Color(0xFF1B3B32) else Color(0xFFE8F5E9)
+        val bannerBorder = if (isDark) Color(0xFF2E7D32) else Color(0xFFC8E6C9)
+        val bannerText = if (isDark) Color(0xFFA5D6A7) else Color(0xFF1B5E20)
+        val buttonBg = if (isDark) Color(0xFF2E7D32) else Color(0xFFC8E6C9)
+        val buttonText = if (isDark) Color(0xFFE8F5E9) else Color(0xFF1B5E20)
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("reassessment_prompt_banner"),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = bannerBg
+            ),
+            border = BorderStroke(1.dp, bannerBorder)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "Your last Neural Load assessment was completed 30 days ago. Audit your biophilic sanctuary progress now!",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = bannerText,
+                    textAlign = TextAlign.Center
+                )
+                Button(
+                    onClick = { viewModel.resetAssessment() },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = buttonBg,
+                        contentColor = buttonText
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Retake Assessment",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+        }
+    }
+
+    val scoreHistoryCardContent = @Composable {
+        if (assessmentHistory.isNotEmpty()) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("dashboard_score_history_card"),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(
+                    1.5.dp,
+                    Brush.horizontalGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+                        )
+                    )
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Assessment Score History",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Track your biophilic restoration progress over time",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    ScoreHistoryChart(assessmentHistory = assessmentHistory)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = "Past Audits",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        assessmentHistory.take(5).forEach { result ->
+                            val sdf = java.text.SimpleDateFormat("MMMM dd, yyyy - hh:mm a", java.util.Locale.US)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                    .padding(12.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = sdf.format(java.util.Date(result.timestamp)),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = "Lowest: ${result.lowestCategories.split(",").joinToString(", ")}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .background(
+                                            color = when (result.score) {
+                                                in 15..20 -> Color(0xFFE8F5E9)
+                                                in 8..14 -> Color(0xFFFFFDE7)
+                                                else -> Color(0xFFFFEBEE)
+                                            },
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = "${result.score}/20",
+                                        fontWeight = FontWeight.Bold,
+                                        color = when (result.score) {
+                                            in 15..20 -> Color(0xFF2E7D32)
+                                            in 8..14 -> Color(0xFFF57F17)
+                                            else -> Color(0xFFC62828)
+                                        },
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    val spaceDiagnosisPromoContent = @Composable {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    viewModel.setCurrentTab(3) // AI Advisor tab
+                    viewModel.sendAiChatMessage("I want to run a detailed Space Diagnosis of my environment.")
+                }
+                .testTag("dashboard_space_diagnosis_card"),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)),
+            border = BorderStroke(
+                1.5.dp,
+                Brush.horizontalGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                    )
+                )
+            )
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.tertiary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.ManageSearch,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onTertiary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Conversational Space Diagnosis",
+                        fontWeight = FontWeight.ExtraBold,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                    Text(
+                        text = "Let Dr. Julian guide you through an audit of your room's biophilic states",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
+                    )
+                }
+                Icon(
+                    Icons.Default.ArrowForward,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.tertiary,
+                    modifier = Modifier.size(22.dp)
+                )
             }
         }
     }
@@ -590,6 +815,9 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
         ) {
+            if (needsReassessment) {
+                item { reassessmentPromptBanner() }
+            }
             if (isAssessmentSkipped) {
                 item { skippedAssessmentBanner() }
             } else if (assessmentScore != null) {
@@ -597,7 +825,11 @@ fun DashboardScreen(
                     BiophilicProfileCard(
                         score = assessmentScore ?: 0,
                         lowestCategories = lowestCategories,
-                        onRetakeClick = { viewModel.resetAssessment() }
+                        onRetakeClick = { viewModel.resetAssessment() },
+                        step1Completed = step1Completed,
+                        step2Completed = step2Completed,
+                        step3Completed = step3Completed,
+                        onStepToggle = { idx -> viewModel.toggleStepCompleted(idx) }
                     )
                 }
             }
@@ -617,6 +849,8 @@ fun DashboardScreen(
             item { communityPromoContent() }
             item { statisticsContent() }
             item { canvasChartContent() }
+            item { scoreHistoryCardContent() }
+            item { spaceDiagnosisPromoContent() }
             item { logsHeaderContent() }
             item { logsListContent() }
         }
@@ -634,13 +868,20 @@ fun DashboardScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                if (needsReassessment) {
+                    reassessmentPromptBanner()
+                }
                 if (isAssessmentSkipped) {
                     skippedAssessmentBanner()
                 } else if (assessmentScore != null) {
                     BiophilicProfileCard(
                         score = assessmentScore ?: 0,
                         lowestCategories = lowestCategories,
-                        onRetakeClick = { viewModel.resetAssessment() }
+                        onRetakeClick = { viewModel.resetAssessment() },
+                        step1Completed = step1Completed,
+                        step2Completed = step2Completed,
+                        step3Completed = step3Completed,
+                        onStepToggle = { idx -> viewModel.toggleStepCompleted(idx) }
                     )
                 }
                 headerContent()
@@ -666,6 +907,8 @@ fun DashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 canvasChartContent()
+                scoreHistoryCardContent()
+                spaceDiagnosisPromoContent()
                 logsHeaderContent()
                 logsListContent()
                 Spacer(modifier = Modifier.height(16.dp))
@@ -2184,6 +2427,139 @@ fun getRitualForCategory(category: String): SensoryRitual {
         "SENSORY RICHNESS" -> SensoryRitual("SENSORY RICHNESS", "Scent break: Smell lavender, pine, or soil", "[Ritual: Natural Scent Breath]")
         "SEASONAL AWARENESS" -> SensoryRitual("SEASONAL AWARENESS", "Observe one outdoor seasonal change today", "[Ritual: Season Observance]")
         else -> SensoryRitual("GENERAL", "Take 5 deep breaths in your sanctuary", "[Ritual: General Deep Breaths]")
+    }
+}
+
+
+@Composable
+fun ScoreHistoryChart(
+    assessmentHistory: List<com.example.data.model.AssessmentResult>,
+    modifier: Modifier = Modifier
+) {
+    val isDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val lineColor = MaterialTheme.colorScheme.primary
+    val gridColor = if (isDark) Color(0xFF2C2C2C) else Color(0xFFE5E5E5)
+    val dotColor = MaterialTheme.colorScheme.secondary
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+    // Reverse history to display chronologically from left to right
+    val chronologicalHistory = remember(assessmentHistory) {
+        assessmentHistory.reversed()
+    }
+
+    if (chronologicalHistory.size < 2) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Complete at least 2 assessments to visualize your biophilic trend chart.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.secondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+        return
+    }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Canvas(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(160.dp)
+                .padding(horizontal = 8.dp)
+        ) {
+            val width = size.width
+            val height = size.height
+            val pointsCount = chronologicalHistory.size
+            val stepX = width / (pointsCount - 1)
+            val maxScore = 20f
+
+            // Draw Y-axis grids (5, 10, 15, 20)
+            val gridStepY = height / 4
+            for (i in 0..4) {
+                val y = height - (i * gridStepY)
+                drawLine(
+                    color = gridColor,
+                    start = Offset(0f, y),
+                    end = Offset(width, y),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+
+            // Draw trend line and points
+            val path = Path()
+            chronologicalHistory.forEachIndexed { index, result ->
+                val x = index * stepX
+                val normalizedScore = result.score.coerceIn(0, 20).toFloat()
+                val y = height - (normalizedScore / maxScore * height)
+
+                if (index == 0) {
+                    path.moveTo(x, y)
+                } else {
+                    path.lineTo(x, y)
+                }
+            }
+
+            drawPath(
+                path = path,
+                color = lineColor,
+                style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round)
+            )
+
+            // Draw point dots
+            chronologicalHistory.forEachIndexed { index, result ->
+                val x = index * stepX
+                val normalizedScore = result.score.coerceIn(0, 20).toFloat()
+                val y = height - (normalizedScore / maxScore * height)
+
+                drawCircle(
+                    color = dotColor,
+                    radius = 5.dp.toPx(),
+                    center = Offset(x, y)
+                )
+                drawCircle(
+                    color = Color.White,
+                    radius = 2.dp.toPx(),
+                    center = Offset(x, y)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Draw date labels
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            val sdf = java.text.SimpleDateFormat("MMM dd", java.util.Locale.US)
+            Text(
+                text = sdf.format(java.util.Date(chronologicalHistory.first().timestamp)),
+                style = MaterialTheme.typography.bodySmall,
+                color = labelColor,
+                fontSize = 10.sp
+            )
+            if (chronologicalHistory.size > 2) {
+                Text(
+                    text = "Sanctuary Audit Trendline",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = labelColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 10.sp
+                )
+            }
+            Text(
+                text = sdf.format(java.util.Date(chronologicalHistory.last().timestamp)),
+                style = MaterialTheme.typography.bodySmall,
+                color = labelColor,
+                fontSize = 10.sp
+            )
+        }
     }
 }
 

@@ -6,6 +6,7 @@ import com.example.data.model.MoodLog
 import com.example.data.model.Plant
 import com.example.data.model.CareTask
 import com.example.data.model.RestorationLog
+import com.example.data.model.AssessmentResult
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -123,4 +124,11 @@ interface GardenDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRestorationLog(log: RestorationLog): Long
+
+    // --- Assessment Results ---
+    @Query("SELECT * FROM assessment_results ORDER BY timestamp DESC")
+    fun getAllAssessmentResults(): Flow<List<AssessmentResult>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAssessmentResult(result: AssessmentResult): Long
 }

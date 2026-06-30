@@ -27,6 +27,10 @@ fun BiophilicProfileCard(
     score: Int,
     lowestCategories: List<String>,
     onRetakeClick: () -> Unit,
+    step1Completed: Boolean = false,
+    step2Completed: Boolean = false,
+    step3Completed: Boolean = false,
+    onStepToggle: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -186,6 +190,70 @@ fun BiophilicProfileCard(
                         }
                     }
                 }
+            }
+
+            if (lowestCategories.isNotEmpty()) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                
+                Text(
+                    text = "Personalized Next Steps Checklist",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                val stepsToRender = lowestCategories.take(3)
+                stepsToRender.forEachIndexed { index, category ->
+                    val isChecked = when (index) {
+                        0 -> step1Completed
+                        1 -> step2Completed
+                        else -> step3Completed
+                    }
+                    val stepTitle = getBiophilicCategoryTip(category).first
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onStepToggle(index + 1) }
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = isChecked,
+                            onCheckedChange = { onStepToggle(index + 1) },
+                            modifier = Modifier.testTag("step_checkbox_${index + 1}")
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stepTitle,
+                            style = MaterialTheme.typography.bodyMedium,
+                            textDecoration = if (isChecked) androidx.compose.ui.text.style.TextDecoration.LineThrough else null,
+                            color = if (isChecked) MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+                
+                var completedCount = 0
+                if (step1Completed) completedCount++
+                if (step2Completed) completedCount++
+                if (step3Completed) completedCount++
+                
+                LinearProgressIndicator(
+                    progress = { completedCount / 3.0f },
+                    modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.outlineVariant
+                )
+                
+                Text(
+                    text = "Progress: $completedCount/3 steps completed",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.End
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
             OutlinedButton(

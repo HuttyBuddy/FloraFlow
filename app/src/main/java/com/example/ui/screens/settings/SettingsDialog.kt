@@ -187,6 +187,17 @@ fun SettingsDialog(
                         }
                     )
 
+                    val simulate30Days by viewModel.simulate30Days.collectAsState()
+                    SettingsActionRow(
+                        title = if (simulate30Days) "Disable 30-Day Simulation" else "Simulate 30 Days Elapsed",
+                        subtitle = "Toggle the monthly Neural Load audit reminder",
+                        icon = Icons.Default.Timer,
+                        iconTint = if (simulate30Days) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                        onClick = {
+                            viewModel.toggleSimulation30Days()
+                        }
+                    )
+
                     SettingsActionRow(
                         title = "Invite a Garden Buddy",
                         subtitle = "Share FloraFlow and unlock 5 exotic species",

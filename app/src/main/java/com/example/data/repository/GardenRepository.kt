@@ -6,6 +6,7 @@ import com.example.data.model.MoodLog
 import com.example.data.model.Plant
 import com.example.data.model.CareTask
 import com.example.data.model.RestorationLog
+import com.example.data.model.AssessmentResult
 import kotlinx.coroutines.flow.Flow
 
 class GardenRepository(private val gardenDao: GardenDao) {
@@ -81,4 +82,8 @@ class GardenRepository(private val gardenDao: GardenDao) {
     // --- Restoration Logs ---
     val allRestorationLogs: Flow<List<RestorationLog>> = gardenDao.getAllRestorationLogs()
     suspend fun insertRestorationLog(log: RestorationLog): Long = gardenDao.insertRestorationLog(log)
+
+    // --- Assessment Results ---
+    val allAssessmentResults: Flow<List<AssessmentResult>> = gardenDao.getAllAssessmentResults()
+    suspend fun insertAssessmentResult(result: AssessmentResult): Long = gardenDao.insertAssessmentResult(result)
 }

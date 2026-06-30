@@ -54,6 +54,27 @@
         android:singleLine="true"
         android:layout_marginBottom="4dp" />
 
+    <!-- Neural Load score -->
+    <TextView
+        android:id="@+id/widget_neural_load"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Neural Load: --"
+        android:textColor="#FF1F483E"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Next steps progress -->
+    <TextView
+        android:id="@+id/widget_steps_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Next Steps: 0/3 Completed"
+        android:textColor="#FF43493E"
+        android:textSize="12sp"
+        android:layout_marginBottom="4dp" />
+
     <!-- Weather Info -->
     <TextView
         android:id="@+id/widget_weather"

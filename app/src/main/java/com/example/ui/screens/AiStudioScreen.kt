@@ -52,13 +52,15 @@ import kotlin.math.sin
 private val AI_SUGGESTIONS_PORTRAIT = listOf(
     "🌱 Suggest perfect companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
     "🐛 Analyze yellowing leaves / plant pest diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
-    "🧘 Discuss therapy and nature cognitive wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?"
+    "🧘 Discuss therapy and nature cognitive wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?",
+    "🔍 Run a conversational Space Diagnosis" to "I want to run a detailed Space Diagnosis of my environment."
 )
 
 private val AI_SUGGESTIONS_LANDSCAPE = listOf(
     "🌱 Suggest companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
     "🐛 Analyze yellowing leaves diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
-    "🧘 Discuss therapy and nature wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?"
+    "🧘 Discuss therapy and nature wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?",
+    "🔍 Run Space Diagnosis" to "I want to run a detailed Space Diagnosis of my environment."
 )
 
 data class AttachedImage(

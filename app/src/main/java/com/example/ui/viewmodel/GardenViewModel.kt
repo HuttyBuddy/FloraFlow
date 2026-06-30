@@ -69,6 +69,7 @@ class GardenViewModel @JvmOverloads constructor(
     val allCareTasks: StateFlow<List<CareTask>>
     val pendingCareTasks: StateFlow<List<CareTask>>
     val currentWeather: StateFlow<com.example.data.repository.WeatherInfo>
+    val allAssessmentResults: StateFlow<List<AssessmentResult>>
 
     // Active selection states
     private val _activeLayout = MutableStateFlow<GardenLayout?>(null)
@@ -128,17 +129,96 @@ class GardenViewModel @JvmOverloads constructor(
     val firstBloomTrigger: StateFlow<String?> = _firstBloomTrigger.asStateFlow()
     fun clearFirstBloomTrigger() { _firstBloomTrigger.value = null }
 
+    // Step completion tracking
+    private val _step1Completed = MutableStateFlow(false)
+    val step1Completed: StateFlow<Boolean> = _step1Completed.asStateFlow()
+
+    private val _step2Completed = MutableStateFlow(false)
+    val step2Completed: StateFlow<Boolean> = _step2Completed.asStateFlow()
+
+    private val _step3Completed = MutableStateFlow(false)
+    val step3Completed: StateFlow<Boolean> = _step3Completed.asStateFlow()
+
+    fun toggleStepCompleted(index: Int) {
+        val key = "step_${index}_completed"
+        val currentVal = sharedPrefs.getBoolean(key, false)
+        val newVal = !currentVal
+        sharedPrefs.edit { putBoolean(key, newVal) }
+        when (index) {
+            1 -> _step1Completed.value = newVal
+            2 -> _step2Completed.value = newVal
+            3 -> _step3Completed.value = newVal
+        }
+        
+        refreshWidget()
+    }
+
+    // 30-Day Reassessment State
+    private val _needsReassessment = MutableStateFlow(false)
+    val needsReassessment: StateFlow<Boolean> = _needsReassessment.asStateFlow()
+
+    private val _simulate30Days = MutableStateFlow(false)
+    val simulate30Days: StateFlow<Boolean> = _simulate30Days.asStateFlow()
+
+    fun toggleSimulation30Days() {
+        val currentSim = _simulate30Days.value
+        val newSim = !currentSim
+        _simulate30Days.value = newSim
+        sharedPrefs.edit { putBoolean("simulate_30_days", newSim) }
+        updateReassessmentState()
+    }
+
+    fun updateReassessmentState() {
+        val lastTime = sharedPrefs.getLong("last_assessment_timestamp", 0L)
+        val thirtyDaysMillis = 30L * 24 * 60 * 60 * 1000L
+        val passed = lastTime != 0L && (System.currentTimeMillis() - lastTime >= thirtyDaysMillis)
+        _needsReassessment.value = _simulate30Days.value || passed
+    }
+
+    // Conversational Space Diagnosis Mode
+    private val _isSpaceDiagnosisMode = MutableStateFlow(false)
+    val isSpaceDiagnosisMode: StateFlow<Boolean> = _isSpaceDiagnosisMode.asStateFlow()
+
+    fun setSpaceDiagnosisMode(active: Boolean) {
+        _isSpaceDiagnosisMode.value = active
+    }
+
     fun saveAssessmentResult(score: Int, categories: List<String>) {
         val oldScore = sharedPrefs.getInt("assessment_score", -1)
         _assessmentScore.value = score
         _lowestCategories.value = categories
+
+        // Reset step completion states
+        _step1Completed.value = false
+        _step2Completed.value = false
+        _step3Completed.value = false
+
+        val currentTimestamp = System.currentTimeMillis()
+
         sharedPrefs.edit {
             if (oldScore != -1) {
                 putInt("prev_assessment_score", oldScore)
             }
             putInt("assessment_score", score)
             putString("assessment_categories", categories.joinToString(","))
+            putLong("last_assessment_timestamp", currentTimestamp)
+            putBoolean("step_1_completed", false)
+            putBoolean("step_2_completed", false)
+            putBoolean("step_3_completed", false)
         }
+
+        updateReassessmentState()
+
+        viewModelScope.launch(ioDispatcher) {
+            repository.insertAssessmentResult(
+                AssessmentResult(
+                    score = score,
+                    lowestCategories = categories.joinToString(",")
+                )
+            )
+        }
+
+        refreshWidget()
     }
 
     fun skipAssessment() {
@@ -161,7 +241,15 @@ class GardenViewModel @JvmOverloads constructor(
             remove("assessment_score")
             remove("assessment_categories")
             putBoolean("onboarding_completed", false)
+            remove("last_assessment_timestamp")
+            putBoolean("step_1_completed", false)
+            putBoolean("step_2_completed", false)
+            putBoolean("step_3_completed", false)
         }
+        _step1Completed.value = false
+        _step2Completed.value = false
+        _step3Completed.value = false
+        updateReassessmentState()
     }
 
     // Interactive App Walkthrough Anchors Rects mapping
@@ -398,6 +486,12 @@ class GardenViewModel @JvmOverloads constructor(
             _lowestCategories.value = savedCategories.split(",").filter { it.isNotBlank() }
         }
 
+        _step1Completed.value = sharedPrefs.getBoolean("step_1_completed", false)
+        _step2Completed.value = sharedPrefs.getBoolean("step_2_completed", false)
+        _step3Completed.value = sharedPrefs.getBoolean("step_3_completed", false)
+        _simulate30Days.value = sharedPrefs.getBoolean("simulate_30_days", false)
+        updateReassessmentState()
+
         val savedTheme = sharedPrefs.getString("theme_mode", "SYSTEM")
         val mode = try { ThemeMode.valueOf(savedTheme ?: "SYSTEM") } catch (_: Exception) { ThemeMode.SYSTEM }
         _themeMode.value = mode
@@ -457,6 +551,13 @@ class GardenViewModel @JvmOverloads constructor(
             )
 
         allCommunityPosts = repository.allPosts
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList(),
+            )
+
+        allAssessmentResults = repository.allAssessmentResults
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5000),
@@ -913,6 +1014,11 @@ class GardenViewModel @JvmOverloads constructor(
         val upsellMsg = "🔒 Free AI Advisor biophilic limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
         if (checkPremiumLimit(message, upsellMsg, 3)) return
 
+        val isDiagRequest = message.contains("Space Diagnosis", ignoreCase = true) || _isSpaceDiagnosisMode.value
+        if (isDiagRequest) {
+            _isSpaceDiagnosisMode.value = true
+        }
+
         val currentHistory = _aiChatHistory.value.toMutableList()
         val userParts = mutableListOf<Part>()
         if (imageBytesBase64 != null) {
@@ -928,7 +1034,14 @@ class GardenViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             val score = _assessmentScore.value
             val categories = _lowestCategories.value
-            val systemIns = if (score != null) {
+            val systemIns = if (_isSpaceDiagnosisMode.value) {
+                "You are the FloraFlow Space Diagnosis Assistant. Your goal is to guide the user through a friendly, step-by-step conversational audit of their room/space to determine its biophilic conditions.\n\n" +
+                "INSTRUCTIONS:\n" +
+                "1. If this is the start of the diagnosis (e.g. the user asks to run a detailed diagnosis), introduce yourself warmly as Dr. Julian and ask them about their space, specifically focusing on key aspects: Nature Views, Living Plants, Natural Light, Noise levels, and Natural Textures/Materials.\n" +
+                "2. Ask them questions one by one or in a friendly, conversational group so they do not feel overwhelmed.\n" +
+                "3. Once the user provides answers, assess their space. Give them a biophilic score out of 20, map it to a zone (Green: 15-20, Yellow: 8-14, Red: <8), provide a brief analysis of their strengths/weaknesses, and suggest 3 highly specific biophilic improvements.\n" +
+                "4. Keep your responses warm, conversational, encouraging, and brief."
+            } else if (score != null) {
                 val zone = when (score) {
                     in 15..20 -> "Green Zone — Low Neural Load"
                     in 8..14 -> "Yellow Zone — Moderate Neural Load"
