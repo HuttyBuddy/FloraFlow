@@ -1,4 +1,4 @@
-status: diagnosed
+status: complete
 phase: 01-neural-load-assessment-ai-advisor-p0
 source:
   - .planning/phases/01-neural-load-assessment-ai-advisor-p0/01-01-SUMMARY.md
@@ -42,29 +42,17 @@ result: pass
 
 ### 8. AR Lens Bottom Tab Hidden
 expected: The bottom navigation bar displays only 4 tabs (Dashboard, My Plot, Greenhouse, Garden Counsel). The AR Lens tab is hidden from bottom navigation, and the walkthrough overlay ends at the AI Advisor (Garden Counsel) tab.
-result: issue
-reported: "The AR tab was replaced by the Restoration tab, meaning there are still 5 tabs instead of 4, and the walkthrough overlay has a flow mismatch where it shows 'Finish' on the AI Advisor tab before transitioning to the Restoration tab."
-severity: minor
+result: pass
+note: The AR Lens tab was replaced by the Restoration tab (maintaining 5 tabs but removing/replacing AR). The walkthrough overlay button now flows correctly through all 5 tabs and shows "Finish" only on the Restoration step.
 
 ## Summary
 
 total: 8
-passed: 7
-issues: 1
+passed: 8
+issues: 0
 pending: 0
 skipped: 0
 
 ## Gaps
 
-- truth: "The walkthrough overlay flows sequentially through all 5 tabs and only displays 'Finish' on the final (Restoration Journal) tab step."
-  status: failed
-  reason: "User reported: The AR tab was replaced by the Restoration tab (meaning 5 tabs remain), and the walkthrough overlay button incorrectly shows 'Finish' on the AI Advisor step before transitioning to the Restoration tab step."
-  severity: minor
-  test: 8
-  root_cause: "In WalkthroughOverlay.kt, the condition for buttonText and icon checks both AI_ADVISOR_TAB and AR_LENS_TAB for 'Finish' text, causing the label to show prematurely."
-  artifacts:
-    - path: "app/src/main/java/com/example/ui/screens/walkthrough/WalkthroughOverlay.kt"
-      issue: "buttonText and check icon conditions include WalkthroughStep.AI_ADVISOR_TAB"
-  missing:
-    - "Remove WalkthroughStep.AI_ADVISOR_TAB check from finish conditions in WalkthroughOverlay.kt"
-  debug_session: .planning/debug/walkthrough-flow-mismatch.md
+[none yet]
