@@ -32,7 +32,7 @@ val Typography = Typography(
         fontFamily = PlayfairDisplayFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 57.sp,
-        lineHeight = 64.sp
+        lineHeight = 60.sp // Slightly tighter for impact
     ),
     displayMedium = TextStyle(
         fontFamily = PlayfairDisplayFontFamily,
@@ -52,7 +52,7 @@ val Typography = Typography(
         fontFamily = PlayfairDisplayFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 32.sp,
-        lineHeight = 40.sp
+        lineHeight = 38.sp // More relaxed
     ),
     headlineMedium = TextStyle(
         fontFamily = PlayfairDisplayFontFamily,
@@ -93,20 +93,20 @@ val Typography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.2.sp // Slightly wider for readability
     ),
     bodyMedium = TextStyle(
         fontFamily = PlusJakartaSansFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        letterSpacing = 0.25.sp
+        letterSpacing = 0.3.sp
     ),
     bodySmall = TextStyle(
         fontFamily = PlusJakartaSansFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
-        lineHeight = 16.sp,
+        lineHeight = 18.sp, // Slightly taller for small text
         letterSpacing = 0.4.sp
     ),
     
@@ -122,7 +122,7 @@ val Typography = Typography(
         fontFamily = PlusJakartaSansFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 12.sp,
-        lineHeight = 16.sp,
+        lineHeight = 18.sp,
         letterSpacing = 0.5.sp
     ),
     labelSmall = TextStyle(
