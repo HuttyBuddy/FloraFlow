@@ -182,19 +182,39 @@ fun DashboardScreen(
                     color = bannerText,
                     textAlign = TextAlign.Center
                 )
-                Button(
-                    onClick = { viewModel.resetAssessment() },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = buttonBg,
-                        contentColor = buttonText
-                    ),
-                    shape = RoundedCornerShape(12.dp)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "Retake Assessment",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp
-                    )
+                    Button(
+                        onClick = { viewModel.resetAssessment() },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = buttonBg,
+                            contentColor = buttonText
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "Retake Assessment",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
+                    OutlinedButton(
+                        onClick = { viewModel.snoozeReassessment() },
+                        border = BorderStroke(1.dp, bannerText.copy(alpha = 0.5f)),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = bannerText
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.testTag("reassessment_snooze_btn")
+                    ) {
+                        Text(
+                            text = "Remind Me Later",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
         }
@@ -828,7 +848,9 @@ fun DashboardScreen(
                         step1Completed = step1Completed,
                         step2Completed = step2Completed,
                         step3Completed = step3Completed,
-                        onStepToggle = { idx -> viewModel.toggleStepCompleted(idx) }
+                        onStepToggle = { idx -> viewModel.toggleStepCompleted(idx) },
+                        onNavigate = { viewModel.setCurrentTab(it) },
+                        onSearchDatabase = { viewModel.setLibrarySearchQuery(it) }
                     )
                 }
             }
@@ -880,7 +902,9 @@ fun DashboardScreen(
                         step1Completed = step1Completed,
                         step2Completed = step2Completed,
                         step3Completed = step3Completed,
-                        onStepToggle = { idx -> viewModel.toggleStepCompleted(idx) }
+                        onStepToggle = { idx -> viewModel.toggleStepCompleted(idx) },
+                        onNavigate = { viewModel.setCurrentTab(it) },
+                        onSearchDatabase = { viewModel.setLibrarySearchQuery(it) }
                     )
                 }
                 headerContent()
@@ -2434,20 +2458,80 @@ fun ScoreHistoryChart(
         assessmentHistory.reversed()
     }
 
-    if (chronologicalHistory.size < 2) {
+    if (chronologicalHistory.isEmpty()) {
         Box(
             modifier = modifier
                 .fillMaxWidth()
-                .height(180.dp)
+                .height(120.dp)
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Complete at least 2 assessments to visualize your biophilic trend chart.",
+                text = "Take your first assessment to start tracking your progress.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(16.dp)
+            )
+        }
+        return
+    }
+
+    if (chronologicalHistory.size == 1) {
+        val result = chronologicalHistory.first()
+        Column(modifier = modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(horizontal = 8.dp)
+            ) {
+                val width = size.width
+                val height = size.height
+                val maxScore = 20f
+
+                // Draw Y-axis grids (5, 10, 15, 20)
+                val gridStepY = height / 4
+                for (i in 0..4) {
+                    val y = height - (i * gridStepY)
+                    drawLine(
+                        color = gridColor,
+                        start = Offset(0f, y),
+                        end = Offset(width, y),
+                        strokeWidth = 1.dp.toPx()
+                    )
+                }
+
+                // Draw single point in the center
+                val x = width / 2
+                val normalizedScore = result.score.coerceIn(0, 20).toFloat()
+                val y = height - (normalizedScore / maxScore * height)
+
+                drawCircle(
+                    color = dotColor,
+                    radius = 6.dp.toPx(),
+                    center = Offset(x, y)
+                )
+                drawCircle(
+                    color = Color.White,
+                    radius = 2.5.dp.toPx(),
+                    center = Offset(x, y)
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Initial Audit: ${result.score}/20",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Complete future audits to visualize your biophilic trend line.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.secondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
         return

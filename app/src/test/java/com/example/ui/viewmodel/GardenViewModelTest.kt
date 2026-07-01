@@ -110,4 +110,35 @@ class GardenViewModelTest {
         updatedPlants = viewModel.arPlacedPlants.value
         assertEquals(40f, updatedPlants.find { it.id == id2 }?.rotationDegrees)
     }
+
+    @Test
+    fun setLibrarySearchQuery_updatesStateFlow() {
+        assertEquals("", viewModel.librarySearchQuery.value)
+        viewModel.setLibrarySearchQuery("fern")
+        assertEquals("fern", viewModel.librarySearchQuery.value)
+    }
+
+    @Test
+    fun snoozeReassessment_suppressesNeedsReassessment() {
+        // Force simulation active
+        viewModel.toggleSimulation30Days()
+        assertTrue(viewModel.needsReassessment.value)
+
+        // Snooze
+        viewModel.snoozeReassessment()
+        assertFalse(viewModel.needsReassessment.value)
+
+        val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", Context.MODE_PRIVATE)
+        assertTrue(sharedPrefs.getLong("reassessment_snooze_timestamp", 0L) > 0L)
+    }
+
+    @Test
+    fun saveAssessmentResult_resetsSnoozeTimestamp() {
+        viewModel.snoozeReassessment()
+        val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", Context.MODE_PRIVATE)
+        assertTrue(sharedPrefs.getLong("reassessment_snooze_timestamp", 0L) > 0L)
+
+        viewModel.saveAssessmentResult(18, listOf("NATURE VIEWS"))
+        assertEquals(0L, sharedPrefs.getLong("reassessment_snooze_timestamp", 0L))
+    }
 }

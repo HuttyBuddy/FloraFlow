@@ -31,6 +31,8 @@ fun BiophilicProfileCard(
     step2Completed: Boolean = false,
     step3Completed: Boolean = false,
     onStepToggle: (Int) -> Unit = {},
+    onNavigate: (Int) -> Unit = {},
+    onSearchDatabase: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -228,8 +230,40 @@ fun BiophilicProfileCard(
                             text = stepTitle,
                             style = MaterialTheme.typography.bodyMedium,
                             textDecoration = if (isChecked) androidx.compose.ui.text.style.TextDecoration.LineThrough else null,
-                            color = if (isChecked) MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface
+                            color = if (isChecked) MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f)
                         )
+                        val (shortcutIcon, shortcutAction) = remember(category) {
+                            when (category.uppercase()) {
+                                "NATURE VIEWS", "LIVING PLANTS", "NATURAL LIGHT", "NATURAL MATERIALS", "AIR & VENTILATION", "ORGANIC FORMS" -> {
+                                    Pair(Icons.Default.Explore) { onNavigate(1) } // Tab 1: Planner
+                                }
+                                "ACOUSTIC CALM", "WATER FEATURES" -> {
+                                    Pair(Icons.Default.Spa) { onNavigate(4) } // Tab 4: Restoration
+                                }
+                                "SENSORY RICHNESS", "SEASONAL AWARENESS" -> {
+                                    Pair(Icons.Default.Search) {
+                                        val query = if (category.uppercase() == "SENSORY RICHNESS") "lavender" else "summer"
+                                        onSearchDatabase(query)
+                                        onNavigate(2) // Tab 2: Database
+                                    }
+                                }
+                                else -> {
+                                    Pair(Icons.Default.ArrowForward) { onNavigate(0) }
+                                }
+                            }
+                        }
+                        IconButton(
+                            onClick = shortcutAction,
+                            modifier = Modifier.size(36.dp).testTag("step_shortcut_btn_${index + 1}")
+                        ) {
+                            Icon(
+                                imageVector = shortcutIcon,
+                                contentDescription = "Go to corresponding screen",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
                 

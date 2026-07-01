@@ -96,7 +96,7 @@ fun LibraryScreen(
     // Encyclopedia Search & Filter States
     val currentWeather by viewModel.currentWeather.collectAsStateWithLifecycle()
     var zipInput by remember(currentWeather) { mutableStateOf(viewModel.getWeatherLocationZip()) }
-    var searchQuery by remember { mutableStateOf("") }
+    val searchQuery by viewModel.librarySearchQuery.collectAsStateWithLifecycle()
     var selectedTypeFilter by remember { mutableStateOf("All") }
     var selectedClimateFilter by remember { mutableStateOf("All") }
     var selectedWaterFilter by remember { mutableStateOf("All") }
@@ -426,12 +426,12 @@ fun LibraryScreen(
                 // Search Bar
                 OutlinedTextField(
                     value = searchQuery,
-                    onValueChange = { searchQuery = it },
+                    onValueChange = { viewModel.setLibrarySearchQuery(it) },
                     placeholder = { Text("Search 50+ species...") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search icon") },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { searchQuery = "" }) {
+                            IconButton(onClick = { viewModel.setLibrarySearchQuery("") }) {
                                 Icon(Icons.Default.Clear, contentDescription = "Clear search input")
                             }
                         }
@@ -464,7 +464,7 @@ fun LibraryScreen(
                 
                 Button(
                     onClick = {
-                        searchQuery = ""
+                        viewModel.setLibrarySearchQuery("")
                         selectedTypeFilter = "All"
                         selectedClimateFilter = "All"
                         selectedWaterFilter = "All"
@@ -564,7 +564,7 @@ fun LibraryScreen(
             if (selectedTypeFilter != "All" || selectedClimateFilter != "All" || selectedWaterFilter != "All" || selectedBloomFilter != "All" || searchQuery.isNotEmpty()) {
                 TextButton(
                     onClick = {
-                        searchQuery = ""
+                        viewModel.setLibrarySearchQuery("")
                         selectedTypeFilter = "All"
                         selectedClimateFilter = "All"
                         selectedWaterFilter = "All"
@@ -638,7 +638,7 @@ fun LibraryScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
-                            searchQuery = ""
+                            viewModel.setLibrarySearchQuery("")
                             selectedTypeFilter = "All"
                             selectedClimateFilter = "All"
                             selectedWaterFilter = "All"

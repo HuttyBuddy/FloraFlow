@@ -125,6 +125,14 @@ class GardenViewModel @JvmOverloads constructor(
     private val _isAssessmentSkipped = MutableStateFlow(false)
     val isAssessmentSkipped: StateFlow<Boolean> = _isAssessmentSkipped.asStateFlow()
 
+    // Botanical Database Search Query State (Phase 2)
+    private val _librarySearchQuery = MutableStateFlow("")
+    val librarySearchQuery: StateFlow<String> = _librarySearchQuery.asStateFlow()
+
+    fun setLibrarySearchQuery(query: String) {
+        _librarySearchQuery.value = query
+    }
+
     private val _firstBloomTrigger = MutableStateFlow<String?>(null)
     val firstBloomTrigger: StateFlow<String?> = _firstBloomTrigger.asStateFlow()
     fun clearFirstBloomTrigger() { _firstBloomTrigger.value = null }
@@ -168,11 +176,20 @@ class GardenViewModel @JvmOverloads constructor(
         updateReassessmentState()
     }
 
+    fun snoozeReassessment() {
+        val currentTimestamp = System.currentTimeMillis()
+        sharedPrefs.edit { putLong("reassessment_snooze_timestamp", currentTimestamp) }
+        updateReassessmentState()
+    }
+
     fun updateReassessmentState() {
         val lastTime = sharedPrefs.getLong("last_assessment_timestamp", 0L)
+        val snoozeTime = sharedPrefs.getLong("reassessment_snooze_timestamp", 0L)
+        val sevenDaysMillis = 7L * 24 * 60 * 60 * 1000L
         val thirtyDaysMillis = 30L * 24 * 60 * 60 * 1000L
         val passed = lastTime != 0L && (System.currentTimeMillis() - lastTime >= thirtyDaysMillis)
-        _needsReassessment.value = _simulate30Days.value || passed
+        val isSnoozed = snoozeTime != 0L && (System.currentTimeMillis() - snoozeTime < sevenDaysMillis)
+        _needsReassessment.value = (_simulate30Days.value || passed) && !isSnoozed
     }
 
     // Conversational Space Diagnosis Mode
@@ -202,6 +219,7 @@ class GardenViewModel @JvmOverloads constructor(
             putInt("assessment_score", score)
             putString("assessment_categories", categories.joinToString(","))
             putLong("last_assessment_timestamp", currentTimestamp)
+            putLong("reassessment_snooze_timestamp", 0L) // Reset snooze on retake
             putBoolean("step_1_completed", false)
             putBoolean("step_2_completed", false)
             putBoolean("step_3_completed", false)
@@ -1071,6 +1089,24 @@ class GardenViewModel @JvmOverloads constructor(
                 imageBytesBase64 = imageBytesBase64,
                 imageMimeType = imageMimeType
             )
+
+            if (_isSpaceDiagnosisMode.value) {
+                // Parse diagnosis result, e.g. [DIAGNOSIS_RESULT: score=14, lowest=NATURE VIEWS, LIVING PLANTS]
+                val scoreRegex = Regex("\\[DIAGNOSIS_RESULT:\\s*score=(\\d+)(?:,\\s*lowest=(.*?))?\\]", RegexOption.IGNORE_CASE)
+                val match = scoreRegex.find(response)
+                if (match != null) {
+                    val parsedScore = match.groupValues[1].toIntOrNull()
+                    val parsedCategoriesStr = match.groupValues.getOrNull(2) ?: ""
+                    val parsedCategories = parsedCategoriesStr.split(",")
+                        .map { it.trim().uppercase() }
+                        .filter { it.isNotBlank() }
+                    
+                    if (parsedScore != null) {
+                        saveAssessmentResult(parsedScore, parsedCategories)
+                        _isSpaceDiagnosisMode.value = false
+                    }
+                }
+            }
 
             appendAiChatInteraction("", response)
             _isAiLoading.value = false
