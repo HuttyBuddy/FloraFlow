@@ -746,6 +746,10 @@ fun PlannerScreen(
                 }
 
                     Box(modifier = Modifier.fillMaxWidth()) {
+                        val gridMap = remember(activeGridItems) {
+                            activeGridItems.associateBy { (it.x shl 16) or it.y }
+                        }
+
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth()
@@ -756,11 +760,35 @@ fun PlannerScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     for (c in 0..4) {
-                                        val item = activeGridItems.firstOrNull { it.x == r && it.y == c }
+                                        val item = gridMap[(r shl 16) or c]
                                         val emoji = getEmojiForPlantName(item?.plantName ?: "")
                                         val isHighlighted = highlightedPlantName != null && item?.plantName == highlightedPlantName
-                                        val hasSynergy = item != null && hasNeighborSynergy(r, c, activeGridItems)
-                                        val hasConflict = item != null && hasNeighborConflict(r, c, activeGridItems)
+
+                                        var hasSynergy = false
+                                        var hasConflict = false
+                                        if (item != null) {
+                                            val n1 = gridMap[((r - 1) shl 16) or c]
+                                            val n2 = gridMap[((r + 1) shl 16) or c]
+                                            val n3 = gridMap[(r shl 16) or (c - 1)]
+                                            val n4 = gridMap[(r shl 16) or (c + 1)]
+
+                                            if (n1 != null) {
+                                                if (!hasSynergy) hasSynergy = checkPlantSynergy(item.plantName, n1.plantName)
+                                                if (!hasConflict) hasConflict = checkPlantConflict(item.plantName, n1.plantName)
+                                            }
+                                            if (n2 != null && !(hasSynergy && hasConflict)) {
+                                                if (!hasSynergy) hasSynergy = checkPlantSynergy(item.plantName, n2.plantName)
+                                                if (!hasConflict) hasConflict = checkPlantConflict(item.plantName, n2.plantName)
+                                            }
+                                            if (n3 != null && !(hasSynergy && hasConflict)) {
+                                                if (!hasSynergy) hasSynergy = checkPlantSynergy(item.plantName, n3.plantName)
+                                                if (!hasConflict) hasConflict = checkPlantConflict(item.plantName, n3.plantName)
+                                            }
+                                            if (n4 != null && !(hasSynergy && hasConflict)) {
+                                                if (!hasSynergy) hasSynergy = checkPlantSynergy(item.plantName, n4.plantName)
+                                                if (!hasConflict) hasConflict = checkPlantConflict(item.plantName, n4.plantName)
+                                            }
+                                        }
 
                                         val scaleVal by animateFloatAsState(
                                             targetValue = if (isHighlighted) 1.08f else 1f,
