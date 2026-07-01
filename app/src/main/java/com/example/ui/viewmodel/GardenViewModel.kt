@@ -828,13 +828,14 @@ class GardenViewModel @JvmOverloads constructor(
         val current = _activeLayout.value ?: return
         viewModelScope.launch(Dispatchers.IO) {
             val items = parseGridString(current.gridString).toMutableList()
-            val occupied = items.asSequence().map { Pair(it.x, it.y) }.toSet()
+            var occupiedBits = 0
+            for (item in items) {
+                occupiedBits = occupiedBits or (1 shl (item.x * 5 + item.y))
+            }
             val available = mutableListOf<Pair<Int, Int>>()
-            for (r in 0..4) {
-                for (c in 0..4) {
-                    if (!occupied.contains(Pair(r, c))) {
-                        available.add(Pair(r, c))
-                    }
+            for (i in 0..24) {
+                if ((occupiedBits and (1 shl i)) == 0) {
+                    available.add(Pair(i / 5, i % 5))
                 }
             }
             if (available.isEmpty()) return@launch
