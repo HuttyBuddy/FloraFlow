@@ -25,6 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.components.ButtonVariant
+import com.example.ui.components.FloraFlowButton
+import com.example.ui.components.FloraFlowCard
+import com.example.ui.theme.extendedColors
+import com.example.ui.theme.spacing
 
 @Composable
 fun PremiumUpsellScreen(
@@ -66,7 +71,7 @@ fun PremiumUpsellScreen(
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.primary
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
             Text(
                 text = "Point your phone at a space, envision, plan, and bring a garden to life. Unlock premium eco-acoustic soundscapes and biophilic design neuroscience.",
                 style = MaterialTheme.typography.bodyMedium,
@@ -77,17 +82,13 @@ fun PremiumUpsellScreen(
     }
 
     val featuresList = @Composable {
-        Card(
+        FloraFlowCard(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            elevation = 4.dp
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.padding(MaterialTheme.spacing.large),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
             ) {
                 PremiumFeatureRow(
                     title = "Eco-Acoustic Restoration Journal",
@@ -106,7 +107,7 @@ fun PremiumUpsellScreen(
     }
 
     val ctaPricingCard = @Composable {
-        Card(
+        FloraFlowCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .border(
@@ -114,12 +115,12 @@ fun PremiumUpsellScreen(
                     brush = Brush.horizontalGradient(
                         listOf(Color(0xFFFFD54F), MaterialTheme.colorScheme.primary)
                     ),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = MaterialTheme.shapes.medium
                 ),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            elevation = 0.dp
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(MaterialTheme.spacing.medium),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
@@ -134,70 +135,44 @@ fun PremiumUpsellScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
                 
-                Button(
+                FloraFlowButton(
+                    text = "Upgrade to FloraFlow PRO",
                     onClick = onUpgradeClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(28.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Icon(
-                        Icons.Default.AutoAwesome,
-                        contentDescription = "Upgrade",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Upgrade to PRO", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                }
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = Icons.Default.AutoAwesome
+                )
             }
         }
     }
 
     val restoreButton = @Composable {
-        Text(
-            text = "Restore Purchases",
-            fontSize = 13.sp,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .clickable { onRestoreClick() }
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+        FloraFlowButton(
+            text = "Restore Existing Purchase",
+            onClick = onRestoreClick,
+            modifier = Modifier.padding(horizontal = MaterialTheme.spacing.medium, vertical = MaterialTheme.spacing.small),
+            variant = ButtonVariant.Text
         )
     }
 
     val comparisonGrid = @Composable {
-        Card(
+        FloraFlowCard(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)),
-            shape = RoundedCornerShape(16.dp),
-            border = androidx.compose.foundation.BorderStroke(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-            )
+            elevation = 2.dp
         ) {
             Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier.padding(MaterialTheme.spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.mediumSmall)
             ) {
                 Text(
-                    text = "Plan Comparison Matrix",
+                    "Compare Plan Benefits",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-
-                // Grid Headers
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                
+                Row(modifier = Modifier.fillMaxWidth()) {
                     Text("Feature", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("FREE", modifier = Modifier.weight(0.25f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("PRO", modifier = Modifier.weight(0.25f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.primary)
@@ -280,19 +255,19 @@ fun PremiumUpsellScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp)
+                    .padding(MaterialTheme.spacing.large)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 crownBadge()
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
                 titleSection()
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
                 featuresList()
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
                 ctaPricingCard()
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
                 restoreButton()
                 Spacer(modifier = Modifier.height(48.dp))
             }
@@ -301,8 +276,8 @@ fun PremiumUpsellScreen(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    .padding(MaterialTheme.spacing.large),
+                horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.large),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // LEFT COLUMN (Branding, Crown Badge, CTA Pricing Card, Restore Button)
@@ -311,15 +286,15 @@ fun PremiumUpsellScreen(
                         .weight(0.45f)
                         .fillMaxHeight()
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumSmall))
                     crownBadge()
                     titleSection()
                     ctaPricingCard()
                     restoreButton()
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumSmall))
                 }
 
                 // RIGHT COLUMN (Detailed Value Props, Perks Matrix table)
@@ -328,7 +303,7 @@ fun PremiumUpsellScreen(
                         .weight(0.55f)
                         .fillMaxHeight()
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     featuresList()
@@ -348,10 +323,10 @@ fun PremiumFeatureRow(title: String, description: String) {
         Icon(
             Icons.Default.CheckCircle,
             contentDescription = "Check",
-            tint = Color(0xFF4CAF50),
+            tint = MaterialTheme.extendedColors.success,
             modifier = Modifier.size(24.dp)
         )
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
         Column {
             Text(
                 text = title,

@@ -8,29 +8,73 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
+// --- Spacing Scale ---
+data class Spacing(
+    val extraSmall: Dp = 4.dp,
+    val small: Dp = 8.dp,
+    val mediumSmall: Dp = 12.dp,
+    val medium: Dp = 16.dp,
+    val large: Dp = 24.dp,
+    val extraLarge: Dp = 32.dp
+)
+
+val LocalSpacing = compositionLocalOf { Spacing() }
+
+val MaterialTheme.spacing: Spacing
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalSpacing.current
+
+// --- Extended Semantic Status Colors ---
+data class ExtendedColors(
+    val success: Color,
+    val onSuccess: Color,
+    val warning: Color,
+    val onWarning: Color,
+    val error: Color,
+    val onError: Color
+)
+
+val LocalExtendedColors = staticCompositionLocalOf<ExtendedColors> {
+    error("No ExtendedColors provided")
+}
+
+val MaterialTheme.extendedColors: ExtendedColors
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalExtendedColors.current
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF1B4D3E),           // Deep Forest Green
-    secondary = Color(0xFFD4AF37),         // Soft Gold/Amber
-    tertiary = Color(0xFF633B0D),           // Deep Timber
-    background = Color(0xFF141511),         // Dark earth night ground
-    surface = Color(0xFF1B1D17),           // Dark sand surface
-    onPrimary = Color(0xFFFDF5E6),         // Pale Cream
-    onSecondary = Color(0xFFFFFFFF),       // Pure White
-    onTertiary = Color(0xFFFDF5E6),         // Pale Cream
-    onBackground = Color(0xFFFDF5E6),       // Pale Cream
-    onSurface = Color(0xFFFDF5E6),         // Pale Cream
-    primaryContainer = Color(0xFF23261F),   // Tonal night wood
-    secondaryContainer = Color(0xFF2E3228), // Deep night sprout
-    tertiaryContainer = Color(0xFF2A261D),  // Evening campfire shadow
-    surfaceVariant = Color(0xFF1A1C16),     // Dark clay navigation
-    outline = Color(0xFF2E3228),           // Deep mud border
-    onPrimaryContainer = Color(0xFFFDF5E6),
-    onSecondaryContainer = Color(0xFFFDF5E6),
-    onTertiaryContainer = Color(0xFFFDF5E6),
-    onSurfaceVariant = Color(0xFF8D9280)
+    primary = SoilSageDark,
+    secondary = SoilMutedGreenDark,
+    tertiary = SoilWoodDark,
+    background = SoilBgDark,
+    surface = SoilSurfaceDark,
+    onPrimary = SoilBgDark,
+    onSecondary = SoilBgDark,
+    onTertiary = SoilBgDark,
+    onBackground = SoilTextDark,
+    onSurface = SoilTextDark,
+    primaryContainer = SoilCardBgDark,
+    secondaryContainer = SoilPillActiveDark,
+    tertiaryContainer = SoilArBgDark,
+    surfaceVariant = SoilNavBgDark,
+    outline = SoilBorderDark,
+    onPrimaryContainer = SoilTextDark,
+    onSecondaryContainer = SoilTextDark,
+    onTertiaryContainer = SoilTextDark,
+    onSurfaceVariant = SoilMutedDark,
+    error = ErrorRedDark,
+    onError = OnErrorRedDark
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -52,7 +96,9 @@ private val LightColorScheme = lightColorScheme(
     onPrimaryContainer = BiophilicText,
     onSecondaryContainer = BiophilicText,
     onTertiaryContainer = BiophilicText,
-    onSurfaceVariant = BiophilicMuted
+    onSurfaceVariant = BiophilicMuted,
+    error = ErrorRed,
+    onError = OnErrorRed
 )
 
 @Composable
@@ -70,10 +116,38 @@ fun MyApplicationTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        shapes = Shapes,
-        content = content
-    )
+    val extendedColors = if (darkTheme) {
+        ExtendedColors(
+            success = SuccessGreenDark,
+            onSuccess = OnSuccessGreenDark,
+            warning = WarningAmberDark,
+            onWarning = OnWarningAmberDark,
+            error = ErrorRedDark,
+            onError = OnErrorRedDark
+        )
+    } else {
+        ExtendedColors(
+            success = SuccessGreen,
+            onSuccess = OnSuccessGreen,
+            warning = WarningAmber,
+            onWarning = OnWarningAmber,
+            error = ErrorRed,
+            onError = OnErrorRed
+        )
+    }
+
+    val spacing = Spacing()
+
+    CompositionLocalProvider(
+        LocalSpacing provides spacing,
+        LocalExtendedColors provides extendedColors
+    ) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            shapes = Shapes,
+            content = content
+        )
+    }
 }
+

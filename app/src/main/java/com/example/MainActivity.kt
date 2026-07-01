@@ -56,6 +56,7 @@ import com.example.ui.screens.dashboard.DashboardScreen
 import com.example.ui.screens.feedback.FeedbackDialog
 import androidx.activity.viewModels
 import com.example.ui.theme.MyApplicationTheme
+import com.example.ui.theme.spacing
 import com.example.ui.viewmodel.GardenViewModel
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
@@ -160,7 +161,7 @@ class MainActivity : ComponentActivity() {
                                                     .size(28.dp)
                                                     .clip(RoundedCornerShape(6.dp))
                                             )
-                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
                                             Text(
                                                 text = "FloraFlow",
                                                 fontWeight = FontWeight.ExtraBold,
@@ -642,7 +643,7 @@ fun SplashWarmUpScreen() {
                 color = MaterialTheme.colorScheme.primary
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
 
             Text(
                 text = "Cultivating Calm through Mindful Gardening",
@@ -660,7 +661,7 @@ fun SplashWarmUpScreen() {
                 modifier = Modifier.size(32.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
 
             Text(
                 text = "Syncing botanical resources...",

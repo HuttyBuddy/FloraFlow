@@ -35,3 +35,20 @@ val SoilArBgDark = Color(0xFF2A261D)       // Evening campfire shadow
 val SoilBorderDark = Color(0xFF2E3228)     // Deep mud border
 val SoilNavBgDark = Color(0xFF1A1C16)      // Dark clay navigation
 val SoilSurfaceDark = Color(0xFF1B1D17)    // Dark sand surface
+
+// --- Semantic Status Colors ---
+val SuccessGreen = Color(0xFF2E7D32)
+val OnSuccessGreen = Color(0xFFFFFFFF)
+val WarningAmber = Color(0xFFF57C00)
+val OnWarningAmber = Color(0xFFFFFFFF)
+val ErrorRed = Color(0xFFD32F2F)
+val OnErrorRed = Color(0xFFFFFFFF)
+
+// Dark version
+val SuccessGreenDark = Color(0xFF81C784)
+val OnSuccessGreenDark = Color(0xFF0C3813)
+val WarningAmberDark = Color(0xFFFFB74D)
+val OnWarningAmberDark = Color(0xFF4E2600)
+val ErrorRedDark = Color(0xFFE57373)
+val OnErrorRedDark = Color(0xFF4A0000)
+
