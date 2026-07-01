@@ -11,25 +11,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF1B4D3E),           // Deep Forest Green
-    secondary = Color(0xFFD4AF37),         // Soft Gold/Amber
-    tertiary = Color(0xFF633B0D),           // Deep Timber
-    background = Color(0xFF141511),         // Dark earth night ground
-    surface = Color(0xFF1B1D17),           // Dark sand surface
-    onPrimary = Color(0xFFFDF5E6),         // Pale Cream
-    onSecondary = Color(0xFFFFFFFF),       // Pure White
-    onTertiary = Color(0xFFFDF5E6),         // Pale Cream
-    onBackground = Color(0xFFFDF5E6),       // Pale Cream
-    onSurface = Color(0xFFFDF5E6),         // Pale Cream
-    primaryContainer = Color(0xFF23261F),   // Tonal night wood
-    secondaryContainer = Color(0xFF2E3228), // Deep night sprout
-    tertiaryContainer = Color(0xFF2A261D),  // Evening campfire shadow
-    surfaceVariant = Color(0xFF1A1C16),     // Dark clay navigation
-    outline = Color(0xFF2E3228),           // Deep mud border
-    onPrimaryContainer = Color(0xFFFDF5E6),
-    onSecondaryContainer = Color(0xFFFDF5E6),
-    onTertiaryContainer = Color(0xFFFDF5E6),
-    onSurfaceVariant = Color(0xFF8D9280)
+    primary = androidx.compose.ui.graphics.Color(0xFF1B4D3E),           // Deep Forest Green
+    secondary = androidx.compose.ui.graphics.Color(0xFFD4AF37),         // Soft Gold/Amber
+    tertiary = androidx.compose.ui.graphics.Color(0xFF633B0D),           // Deep Timber
+    background = androidx.compose.ui.graphics.Color(0xFF141511),         // Dark earth night ground
+    surface = androidx.compose.ui.graphics.Color(0xFF1B1D17),           // Dark sand surface
+    onPrimary = androidx.compose.ui.graphics.Color(0xFFFDF5E6),         // Pale Cream
+    onSecondary = androidx.compose.ui.graphics.Color(0xFFFFFFFF),       // Pure White
+    onTertiary = androidx.compose.ui.graphics.Color(0xFFFDF5E6),         // Pale Cream
+    onBackground = androidx.compose.ui.graphics.Color(0xFFFDF5E6),       // Pale Cream
+    onSurface = androidx.compose.ui.graphics.Color(0xFFFDF5E6),         // Pale Cream
+    primaryContainer = androidx.compose.ui.graphics.Color(0xFF23261F),   // Tonal night wood
+    secondaryContainer = androidx.compose.ui.graphics.Color(0xFF2E3228), // Deep night sprout
+    tertiaryContainer = androidx.compose.ui.graphics.Color(0xFF2A261D),  // Evening campfire shadow
+    surfaceVariant = androidx.compose.ui.graphics.Color(0xFF1A1C16),     // Dark clay navigation
+    outline = androidx.compose.ui.graphics.Color(0xFF2E3228),           // Deep mud border
+    onPrimaryContainer = androidx.compose.ui.graphics.Color(0xFFFDF5E6),
+    onSecondaryContainer = androidx.compose.ui.graphics.Color(0xFFFDF5E6),
+    onTertiaryContainer = androidx.compose.ui.graphics.Color(0xFFFDF5E6),
+    onSurfaceVariant = androidx.compose.ui.graphics.Color(0xFF8D9280)
 )
 
 private val LightColorScheme = lightColorScheme(
