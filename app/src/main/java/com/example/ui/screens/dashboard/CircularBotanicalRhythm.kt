@@ -10,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.Card
@@ -45,7 +44,7 @@ fun CircularBotanicalRhythm(
     todayLog: MoodLog?,
     onToggleHabit: (String) -> Unit,
     onLogMoodClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     // Habit states
     val isWatered = todayLog?.waterCompleted == true
@@ -129,7 +128,7 @@ fun CircularBotanicalRhythm(
 
                             val dx = offset.x - centerX
                             val dy = offset.y - centerY
-                            val dist = sqrt(dx * dx + dy * dy)
+                            val dist = sqrt((dx * dx) + (dy * dy))
 
                             val strokeWidthPx = strokeWidthDp.toPx()
                             val spacingPx = spacingDp.toPx()

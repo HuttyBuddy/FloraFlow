@@ -35,19 +35,3 @@ val SoilArBgDark = Color(0xFF2A261D)       // Evening campfire shadow
 val SoilBorderDark = Color(0xFF2E3228)     // Deep mud border
 val SoilNavBgDark = Color(0xFF1A1C16)      // Dark clay navigation
 val SoilSurfaceDark = Color(0xFF1B1D17)    // Dark sand surface
-val NaturalWhite = Color(0xFFFFFFFF)       // Crisp white container elements
-
-// --- Natural Tones Dark Palette (Eye-Safe Night Soil) ---
-val SoilBgDark = Color(0xFF141511)         // Dark earth night ground
-val SoilTextDark = Color(0xFFE5E2D9)       // Oatmeal cream text
-val SoilMutedDark = Color(0xFF8D9280)      // Foggy sage green/gray
-val SoilSageDark = Color(0xFFACCFC6)       // Glowing moonlight sage (Primary Dark)
-val SoilMutedGreenDark = Color(0xFF54594D) // Dark moss secondary
-val SoilWoodDark = Color(0xFFE2C4A2)       // Light natural wicker wood (Tertiary Dark)
-
-val SoilCardBgDark = Color(0xFF23261F)     // Tonal night wood container
-val SoilPillActiveDark = Color(0xFF2E3228) // Deep night sprout active pill
-val SoilArBgDark = Color(0xFF2A261D)       // Evening campfire shadow
-val SoilBorderDark = Color(0xFF2E3228)     // Deep mud border
-val SoilNavBgDark = Color(0xFF1A1C16)      // Dark clay navigation
-val SoilSurfaceDark = Color(0xFF1B1D17)    // Dark sand surface

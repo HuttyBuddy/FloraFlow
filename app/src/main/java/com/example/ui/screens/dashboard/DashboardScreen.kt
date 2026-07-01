@@ -1,7 +1,6 @@
 package com.example.ui.screens.dashboard
 
 import androidx.compose.foundation.BorderStroke
-import java.util.Locale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -85,7 +85,6 @@ fun DashboardScreen(
     val step2Completed by viewModel.step2Completed.collectAsStateWithLifecycle()
     val step3Completed by viewModel.step3Completed.collectAsStateWithLifecycle()
     val needsReassessment by viewModel.needsReassessment.collectAsStateWithLifecycle()
-    val simulate30Days by viewModel.simulate30Days.collectAsStateWithLifecycle()
     val assessmentHistory by viewModel.allAssessmentResults.collectAsStateWithLifecycle()
 
     val todayLog = remember(moodLogs) {
@@ -340,7 +339,7 @@ fun DashboardScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        Icons.Default.ManageSearch,
+                        Icons.AutoMirrored.Filled.ManageSearch,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onTertiary,
                         modifier = Modifier.size(22.dp)
@@ -361,7 +360,7 @@ fun DashboardScreen(
                     )
                 }
                 Icon(
-                    Icons.Default.ArrowForward,
+                    Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(22.dp)
@@ -680,7 +679,7 @@ fun DashboardScreen(
                     )
                 }
                 Icon(
-                    Icons.Default.ArrowForward,
+                    Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(22.dp)
@@ -2364,18 +2363,6 @@ private fun isToday(timestamp: Long): Boolean {
     val dayMillis = 24 * 60 * 60 * 1000
     val todayStart = (System.currentTimeMillis() / dayMillis) * dayMillis
     return timestamp >= todayStart
-}
-
-private fun getWeatherEmoji(condition: String): String {
-    return when (condition.lowercase()) {
-        "rain" -> "🌧️"
-        "snow" -> "❄️"
-        "clear" -> "☀️"
-        "clouds" -> "☁️"
-        "heatwave" -> "🥵"
-        "frost" -> "🥶"
-        else -> "⛅"
-    }
 }
 
 private fun calculateStreak(logs: List<MoodLog>): Int {

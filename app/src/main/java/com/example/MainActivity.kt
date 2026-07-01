@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.IntOffset
 import com.example.ui.screens.*
 import com.example.ui.screens.restoration.RestorationJournalScreen
 import com.example.ui.screens.dashboard.DashboardScreen
@@ -104,7 +105,7 @@ class MainActivity : ComponentActivity() {
             }
 
             MyApplicationTheme(darkTheme = useDarkTheme) {
-                var showSplash by remember { mutableStateOf(true) }
+                var showSplash by remember { mutableStateOf(value = true) }
 
                 LaunchedEffect(Unit) {
                     showSplash = false
@@ -254,7 +255,7 @@ class MainActivity : ComponentActivity() {
                                             }
                                         }
                                     },
-                                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                                    colors = TopAppBarDefaults.topAppBarColors(
                                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                                     )
                                 )
@@ -291,7 +292,7 @@ class MainActivity : ComponentActivity() {
                                             .padding(vertical = 10.dp, horizontal = 6.dp)
                                             .width(tabWidth - 12.dp)
                                             .fillMaxHeight()
-                                            .offset(x = indicatorOffset)
+                                            .offset { IntOffset(x = indicatorOffset.roundToPx(), y = 0) }
                                             .clip(RoundedCornerShape(12.dp))
                                             .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f))
                                     )
@@ -307,7 +308,7 @@ class MainActivity : ComponentActivity() {
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
                                                 .clickable(
-                                                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                                    interactionSource = remember { MutableInteractionSource() },
                                                     indication = null
                                                 ) {
                                                     viewModel.setCurrentTab(0)
@@ -346,7 +347,7 @@ class MainActivity : ComponentActivity() {
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
                                                 .clickable(
-                                                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                                    interactionSource = remember { MutableInteractionSource() },
                                                     indication = null
                                                 ) {
                                                     viewModel.setCurrentTab(1)
@@ -392,7 +393,7 @@ class MainActivity : ComponentActivity() {
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
                                                 .clickable(
-                                                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                                    interactionSource = remember { MutableInteractionSource() },
                                                     indication = null
                                                 ) {
                                                     viewModel.setCurrentTab(2)
@@ -431,7 +432,7 @@ class MainActivity : ComponentActivity() {
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
                                                 .clickable(
-                                                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                                    interactionSource = remember { MutableInteractionSource() },
                                                     indication = null
                                                 ) {
                                                     viewModel.setCurrentTab(3)
@@ -477,7 +478,7 @@ class MainActivity : ComponentActivity() {
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
                                                 .clickable(
-                                                    interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                                                    interactionSource = remember { MutableInteractionSource() },
                                                     indication = null
                                                 ) {
                                                     viewModel.setCurrentTab(4)
