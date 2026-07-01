@@ -2499,6 +2499,7 @@ fun TimelapseGrid(gridItems: List<GridPlantItem>, plantAges: Array<IntArray>) {
             .background(Color(0xFF0C140D)) // Dark green viewfinder
             .padding(12.dp)
     ) {
+        val itemsMap = remember(gridItems) { gridItems.associateBy { it.x to it.y } }
         Column(
             verticalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier.fillMaxSize()
@@ -2509,7 +2510,7 @@ fun TimelapseGrid(gridItems: List<GridPlantItem>, plantAges: Array<IntArray>) {
                     modifier = Modifier.weight(1f)
                 ) {
                     for (c in 0..4) {
-                        val item = gridItems.firstOrNull { it.x == r && it.y == c }
+                        val item = itemsMap[r to c]
                         val age = plantAges[r][c]
 
                         val cellBg = if (item != null) {
