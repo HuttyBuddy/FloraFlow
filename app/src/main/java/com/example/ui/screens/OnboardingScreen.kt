@@ -34,6 +34,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.components.FloraFlowButton
+import com.example.ui.components.FloraFlowCard
+import com.example.ui.components.ButtonVariant
+import com.example.ui.theme.BiophilicPrimary
+import com.example.ui.theme.BiophilicSecondary
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.Image
 import com.example.R
@@ -169,7 +174,7 @@ fun OnboardingScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF1D3C28)) // Dark green default
+            .background(BiophilicPrimary) // Soothing forest green brand color
     ) {
         AnimatedContent(
             targetState = screenState,
@@ -296,7 +301,7 @@ fun SplashWelcomeScreen(
             style = MaterialTheme.typography.headlineLarge.copy(
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFE8C998), // sandy warm cream
+                color = BiophilicSecondary, // Soft Gold/Amber accent
                 lineHeight = 40.sp,
                 textAlign = TextAlign.Center
             )
@@ -317,24 +322,13 @@ fun SplashWelcomeScreen(
         
         Spacer(modifier = Modifier.weight(1f))
         
-        Button(
+        FloraFlowButton(
+            text = "Start My Assessment",
             onClick = onStart,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFE8C998),
-                contentColor = Color(0xFF1D3C28)
-            ),
-            shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp)
                 .testTag("onboarding_start_assessment_btn")
-        ) {
-            Text(
-                text = "Start My Assessment",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp
-            )
-        }
+        )
         
         Spacer(modifier = Modifier.height(16.dp))
         
@@ -456,15 +450,13 @@ fun QuestionFlowScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             currentQuestion.options.forEachIndexed { score, text ->
-                Card(
+                FloraFlowCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onAnswer(score) }
                         .testTag("question_${currentIndex}_option_$score"),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    elevation = 2.dp,
                     border = borderStroke()
                 ) {
                     Row(
@@ -532,7 +524,7 @@ fun CalculatingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1D3C28)),
+            .background(BiophilicPrimary),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -754,7 +746,7 @@ fun ResultScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(zoneInfo.second, color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Text("Take your own assessment: floraflow.app", color = Color(0xFFE8C998), fontSize = 10.sp, fontWeight = FontWeight.Medium)
+                                Text("Take your own assessment: floraflow.app", color = BiophilicSecondary, fontSize = 10.sp, fontWeight = FontWeight.Medium)
                             }
                         }
                         Spacer(modifier = Modifier.height(16.dp))
@@ -825,15 +817,13 @@ fun StepsScreen(
             finalSteps.forEachIndexed { index, step ->
                 val isExpanded = expandedIndex == index
                 
-                Card(
+                FloraFlowCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { expandedIndex = if (isExpanded) -1 else index }
                         .testTag("step_card_$index"),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (isExpanded) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant
-                    ),
+                    containerColor = if (isExpanded) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant,
+                    elevation = 2.dp,
                     border = borderStroke()
                 ) {
                     Column(
@@ -899,24 +889,13 @@ fun StepsScreen(
                                 
                                 Spacer(modifier = Modifier.height(16.dp))
                                 
-                                Button(
+                                 FloraFlowButton(
+                                    text = step.cta,
                                     onClick = { onFinish(step.targetTab) },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = MaterialTheme.colorScheme.onPrimary
-                                    ),
-                                    shape = RoundedCornerShape(12.dp),
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(48.dp)
                                         .testTag("step_card_${index}_cta")
-                                ) {
-                                    Text(
-                                        text = step.cta,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp
-                                    )
-                                }
+                                )
                             }
                         }
                     }
@@ -927,18 +906,14 @@ fun StepsScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         // general Skip/Finish button
-        TextButton(
-            onClick = { onFinish(0) }, // Default to home (tab 0)
+        FloraFlowButton(
+            text = "Go to Floral Space Dashboard",
+            onClick = { onFinish(0) },
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .testTag("steps_finish_all_btn")
-        ) {
-            Text(
-                text = "Go to Floral Space Dashboard",
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
+                .testTag("steps_finish_all_btn"),
+            variant = ButtonVariant.Text
+        )
         
         Spacer(modifier = Modifier.height(16.dp))
     }

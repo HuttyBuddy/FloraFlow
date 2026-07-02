@@ -282,7 +282,7 @@ class MainActivity : ComponentActivity() {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(72.dp)
+                                        .height(80.dp)
                                         .background(MaterialTheme.colorScheme.surfaceVariant)
                                         .navigationBarsPadding()
                                         .testTag("app_navigation_bar")

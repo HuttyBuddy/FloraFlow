@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.components.FloraFlowButton
+import com.example.ui.components.FloraFlowCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,16 +85,13 @@ fun FeedbackDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-        Card(
+        FloraFlowCard(
             modifier = Modifier
                 .fillMaxWidth(0.92f)
                 .fillMaxHeight(0.85f)
                 .testTag("feedback_dialog_card"),
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.background
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
+            containerColor = MaterialTheme.colorScheme.background,
+            elevation = 16.dp,
             border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
@@ -316,7 +315,8 @@ fun FeedbackDialog(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         // Submit Button
-                        Button(
+                        FloraFlowButton(
+                            text = "Cultivate Feedback",
                             onClick = {
                                 if (isCommentValid && isEmailValid) {
                                     viewModel.submitFeedback(category, rating, comments, email)
@@ -324,27 +324,10 @@ fun FeedbackDialog(
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(52.dp)
                                 .testTag("feedback_submit_button"),
                             enabled = isCommentValid && isEmailValid,
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Eco,
-                                contentDescription = null,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Cultivate Feedback",
-                                fontWeight = FontWeight.Bold,
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
+                            leadingIcon = Icons.Default.Eco
+                        )
                     }
                 }
             }
@@ -557,14 +540,12 @@ fun SuccessFeedbackView(
         )
 
         // Summary Card
-        Card(
+        FloraFlowCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 4.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            )
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            elevation = 0.dp
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
@@ -602,20 +583,13 @@ fun SuccessFeedbackView(
         }
 
         // Dismiss Action
-        Button(
+        FloraFlowButton(
+            text = "Done",
             onClick = onDone,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp)
-                .testTag("feedback_success_done_button"),
-            shape = RoundedCornerShape(14.dp)
-        ) {
-            Text(
-                text = "Done",
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
+                .testTag("feedback_success_done_button")
+        )
     }
 }
 

@@ -4,8 +4,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material.icons.filled.Terrain
-import com.example.ui.screens.dashboard.imageIcons
-import com.example.ui.screens.dashboard.getRitualForCategory
+import com.example.ui.screens.dashboard.components.imageIcons
+import com.example.ui.screens.dashboard.components.getRitualForCategory
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

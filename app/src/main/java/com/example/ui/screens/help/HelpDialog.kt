@@ -35,6 +35,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.components.FloraFlowCard
+import com.example.ui.components.FloraFlowButton
 
 data class FAQItem(
     val id: Int,
@@ -105,16 +107,13 @@ fun HelpDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-        Card(
+        FloraFlowCard(
             modifier = modifier
                 .fillMaxWidth(0.94f)
                 .fillMaxHeight(0.88f)
                 .testTag("help_dialog_card"),
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.background
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+            containerColor = MaterialTheme.colorScheme.background,
+            elevation = 12.dp,
             border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Column(
@@ -279,15 +278,13 @@ fun FAQCard(
 ) {
     val rotationState by animateFloatAsState(targetValue = if (isExpanded) 180f else 0f)
 
-    Card(
+    FloraFlowCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onToggle() }
             .testTag("faq_card_${faq.id}"),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-        ),
+        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+        elevation = 0.dp,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
     ) {
         Column(

@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.components.FloraFlowButton
+import com.example.ui.components.FloraFlowCard
+import com.example.ui.components.ButtonVariant
 
 @Composable
 fun SubscriptionManagementDialog(
@@ -80,14 +83,13 @@ fun SubscriptionManagementDialog(
     Dialog(
         onDismissRequest = onDismiss
     ) {
-        Card(
+        FloraFlowCard(
             modifier = modifier
                 .fillMaxWidth()
                 .padding(16.dp)
                 .testTag("subscription_management_container"),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            containerColor = MaterialTheme.colorScheme.surface,
+            elevation = 8.dp
         ) {
             Column(
                 modifier = Modifier
@@ -149,42 +151,30 @@ fun SubscriptionManagementDialog(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                 // Action buttons
-                Button(
+                FloraFlowButton(
+                    text = "Change Plan / Upgrade Tier",
                     onClick = {
                         onDismiss()
                         viewModel.upgradeToPremium()
                     },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Icon(Icons.Default.SettingsBackupRestore, contentDescription = "Change Plan", modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Change Plan / Upgrade Tier", fontWeight = FontWeight.Bold)
-                }
-
-                OutlinedButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = Icons.Default.SettingsBackupRestore
+                )
+ 
+                FloraFlowButton(
+                    text = "Cancel Subscription",
                     onClick = { showCancelConfirmation = true },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(
-                        brush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.error.copy(alpha = 0.4f))
-                    )
-                ) {
-                    Icon(Icons.Default.Cancel, contentDescription = "Cancel Subscription", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Cancel Subscription", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
-                }
-
-                TextButton(
-                    onClick = onDismiss
-                ) {
-                    Text("Close Console", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-                }
+                    modifier = Modifier.fillMaxWidth(),
+                    variant = ButtonVariant.Outlined,
+                    leadingIcon = Icons.Default.Cancel
+                )
+ 
+                FloraFlowButton(
+                    text = "Close Console",
+                    onClick = onDismiss,
+                    variant = ButtonVariant.Text,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
         }
     }

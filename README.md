@@ -34,11 +34,15 @@ FloraFlow makes professional-grade landscape design accessible to everyday home 
 *   **Neural Restoration Index (NRI):** Automatically analyze your garden's biophilic design, unique plant types, and companion synergies to calculate a stress-relief recovery percentage.
 *   **Binaural Soundscapes & Nature Loops:** Play procedural, continuous Alpha (focus), Theta (meditation), and Delta (sleep) brainwave entrainment frequencies overlaid with natural wind chimes via a persistent background service.
 
-### 6. Dynamic Immersive Experience
+### 6. Premium Subscriptions & Billing
+*   **Google Play Billing Integration:** Native subscription purchase flow for FloraFlow PRO (Monthly and Annual tiers), each with a 7-day free trial.
+*   **Premium Upsell Screen:** A dedicated screen presenting the full benefits of PRO — unlimited Neural Restoration Journal access, binaural soundscapes, monthly Gemini AI queries, and the companion-planting layout analyzer.
+*   **Subscription Management Dialog:** Users can view their current tier, billing date, and transaction details, and manage or cancel their subscription from within Settings.
+
+### 7. Dynamic Immersive Experience
 *   **Guided Exploration:** Seamless interactive overlays highlight core features, guiding new users through the Planner, Advisor, and Restoration Journal.
 *   **Removed Walkthrough Videos:** In favor of a more integrated, interactive onboarding experience.
 *   **Project Status:** The application is currently in its Enhanced & Improved phase.
-*   **Removed Walkthrough Videos:** In favor of a more integrated, interactive onboarding experience.
 
 ---
 
@@ -65,14 +69,25 @@ floraflow-garden-designer/
 │   │   │   ├── model/                    # Data entities & database tables
 │   │   │   └── repository/               # Repositories mediating local/remote access
 │   │   └── ui/                           # UI Layer
-│   │       ├── screens/                  # Compose Screens (Dashboard, Planner, Greenhouse, etc.)
-│   │       ├── theme/                    # Material 3 Color Schemes & Typography
+│   │       ├── components/               # Shared design-system primitives (FloraFlowButton, FloraFlowCard, FloraFlowChip)
+│   │       ├── screens/                  # Compose Screens (Dashboard, Planner, Greenhouse, Billing, etc.)
+│   │       │   └── dashboard/components/ # Dashboard-specific composables (habit cards, mood log, charts, celebration dialog)
+│   │       ├── theme/                    # Material 3 Color Schemes, Typography, Spacing scale & semantic status colors
 │   │       └── viewmodel/                # GardenViewModel managing application state
 │   └── build.gradle.kts                  # Module dependencies and SDK configurations
 ├── gradle/
 │   └── libs.versions.toml                # Centralized dependency catalog
 └── build.gradle.kts                      # Root Gradle configuration
 ```
+
+### Design System
+
+The `ui/theme` and `ui/components` packages form a small internal design system:
+
+*   **Spacing scale:** A `Spacing` token set (`extraSmall`–`extraLarge`, 4dp–32dp) exposed via `MaterialTheme.spacing`, replacing ad hoc `.dp` literals in new screens.
+*   **Semantic status colors:** An `ExtendedColors` set (`success`, `warning`, `error` + their `on*` pairs) exposed via `MaterialTheme.extendedColors`, themed for both light and dark mode.
+*   **Shared components:** `FloraFlowButton` (Filled/Outlined/Text variants with loading and icon states), `FloraFlowCard`, and `FloraFlowChip` live in `ui/components/` for reuse across screens instead of being reimplemented per screen.
+*   **Dark theme parity:** `Theme.kt`'s dark color scheme is built directly from the `Soil*Dark` constants in `Color.kt`, so light/dark tokens stay in sync by construction.
 
 ---
 

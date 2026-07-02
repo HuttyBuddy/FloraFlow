@@ -34,6 +34,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.components.FloraFlowButton
+import com.example.ui.components.FloraFlowCard
+import com.example.ui.components.ButtonVariant
+import com.example.ui.theme.extendedColors
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,15 +134,15 @@ fun BillingDialog(
             contentAlignment = Alignment.BottomCenter
         ) {
             // Elegant slide-up card layout
-            Card(
+            FloraFlowCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.85f)
                     .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
                     .clickable(enabled = false) {} // Consume drag click
                     .testTag("billing_flow_container"),
-                shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                containerColor = MaterialTheme.colorScheme.surface,
+                elevation = 4.dp
             ) {
                 Column(
                     modifier = Modifier
@@ -216,20 +220,21 @@ fun BillingDialog(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             if (currentStep > 1) {
-                                OutlinedButton(
+                                FloraFlowButton(
+                                    text = "Back",
                                     onClick = {
                                         currentStep--
                                     },
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .height(52.dp),
-                                    shape = RoundedCornerShape(14.dp)
-                                ) {
-                                    Text("Back", fontWeight = FontWeight.Bold)
-                                }
+                                    modifier = Modifier.weight(1f),
+                                    variant = ButtonVariant.Outlined
+                                )
                             }
 
-                            Button(
+                            FloraFlowButton(
+                                text = when (currentStep) {
+                                    1 -> "Select Plan"
+                                    else -> "Pay Now (${activePlan.price})"
+                                },
                                 onClick = {
                                     if (currentStep == 1) {
                                         if (billingManager.inMockMode) {
@@ -250,20 +255,8 @@ fun BillingDialog(
                                 },
                                 modifier = Modifier
                                     .weight(if (currentStep > 1) 1.5f else 1f)
-                                    .height(52.dp)
-                                    .testTag("billing_next_button"),
-                                shape = RoundedCornerShape(14.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                            ) {
-                                Text(
-                                    text = when (currentStep) {
-                                        1 -> "Select Plan"
-                                        else -> "Pay Now (${activePlan.price})"
-                                    },
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp
-                                )
-                            }
+                                    .testTag("billing_next_button")
+                            )
                         }
                     }
                 }
@@ -483,9 +476,10 @@ fun GooglePlayMockSheet(
         }
 
         // Details list
-        Card(
+        FloraFlowCard(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+            elevation = 0.dp
         ) {
             Column(
                 modifier = Modifier.padding(12.dp),
@@ -631,7 +625,7 @@ fun SuccessReceiptStep(
             text = "Payment Entitlements Verified!",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Black,
-            color = Color(0xFF2E7D32)
+            color = MaterialTheme.extendedColors.success
         )
 
         Text(
@@ -643,12 +637,12 @@ fun SuccessReceiptStep(
         )
 
         // Custom receipt paper card style
-        Card(
+        FloraFlowCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .border(2.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp)),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)),
-            shape = RoundedCornerShape(12.dp)
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+            elevation = 0.dp
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -675,17 +669,13 @@ fun SuccessReceiptStep(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(
+        FloraFlowButton(
+            text = "Launch My Premium Garden Tools 🚀",
             onClick = onDismiss,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp)
-                .testTag("billing_dismiss_button"),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-        ) {
-            Text("Launch My Premium Garden Tools 🚀", fontWeight = FontWeight.Bold)
-        }
+                .testTag("billing_dismiss_button")
+        )
     }
 }
 

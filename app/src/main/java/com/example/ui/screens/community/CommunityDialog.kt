@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.components.FloraFlowButton
+import com.example.ui.components.FloraFlowCard
 import com.example.data.model.CommunityPost
 import com.example.data.model.CommunityComment
 import kotlinx.coroutines.flow.Flow
@@ -71,16 +73,13 @@ fun CommunityDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-        Card(
+        FloraFlowCard(
             modifier = modifier
                 .fillMaxWidth(0.94f)
                 .fillMaxHeight(0.88f)
                 .testTag("community_dialog_card"),
-            shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.background
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 12.dp),
+            containerColor = MaterialTheme.colorScheme.background,
+            elevation = 12.dp,
             border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant)
         ) {
             Box(
@@ -284,18 +283,12 @@ fun CommunityFeedView(
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            // New Post Button
-            Button(
+            FloraFlowButton(
+                text = "New Post",
                 onClick = onCreatePostClick,
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
-                modifier = Modifier.testTag("community_new_post_button")
-            ) {
-                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("New Post", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            }
+                modifier = Modifier.testTag("community_new_post_button"),
+                leadingIcon = Icons.Default.Add
+            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -367,13 +360,13 @@ fun CommunityPostCard(
         animationSpec = spring(dampingRatio = 0.5f)
     )
 
-    Card(
+    FloraFlowCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .testTag("post_card_${post.id}"),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        elevation = 2.dp,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -567,12 +560,12 @@ fun CommunityDetailView(
         ) {
             // Post Card Detail
             item {
-                Card(
+                FloraFlowCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    elevation = 4.dp,
                     border = BorderStroke(1.5.dp, MaterialTheme.colorScheme.outlineVariant)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
@@ -608,21 +601,15 @@ fun CommunityDetailView(
 
                         if (post.gridString.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(12.dp))
-                            Button(
+                            FloraFlowButton(
+                                text = if (hasActiveLayout) "Import & Plant This Layout" else "Create/Select a Garden first to Import",
                                 onClick = onImportLayout,
                                 enabled = hasActiveLayout,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("import_blueprint_button"),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Icon(Icons.Default.Eco, contentDescription = "Import blueprint")
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = if (hasActiveLayout) "Import & Plant This Layout" else "Create/Select a Garden first to Import",
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                                leadingIcon = Icons.Default.Eco
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -668,9 +655,10 @@ fun CommunityDetailView(
             // Comments
             if (comments.isEmpty()) {
                 item {
-                    Card(
+                    FloraFlowCard(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f))
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                        elevation = 0.dp
                     ) {
                          Text(
                              text = "The air is still here. Be the first to share your thoughts at the garden gate.",
@@ -689,12 +677,12 @@ fun CommunityDetailView(
 
             // Add Comment Form inside Scroll list
             item {
-                Card(
+                FloraFlowCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 8.dp, bottom = 16.dp),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    elevation = 0.dp
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
@@ -741,7 +729,8 @@ fun CommunityDetailView(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        Button(
+                        FloraFlowButton(
+                            text = "Post Comment",
                             onClick = {
                                 if (isCommentValid) {
                                     val finalAuthor = authorName.trim().ifBlank { "Anonymous Gardener" }
@@ -754,12 +743,8 @@ fun CommunityDetailView(
                                 .align(Alignment.End)
                                 .testTag("comment_submit_button"),
                             enabled = isCommentValid,
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Post Comment", fontWeight = FontWeight.Bold)
-                        }
+                            leadingIcon = Icons.AutoMirrored.Filled.Send
+                        )
                     }
                 }
             }
@@ -777,12 +762,12 @@ fun CommentItemRow(
         animationSpec = spring(dampingRatio = 0.5f)
     )
 
-    Card(
+    FloraFlowCard(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("comment_row_${comment.id}"),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        elevation = 0.dp,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -1029,7 +1014,8 @@ fun CommunityCreatePostView(
 
             // Publish Button
             item {
-                Button(
+                FloraFlowButton(
+                    text = "Publish to Circle",
                     onClick = {
                         if (isFormValid) {
                             onPublishClick(title.trim(), content.trim(), category, author.trim(), attachBlueprint)
@@ -1037,15 +1023,10 @@ fun CommunityCreatePostView(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(52.dp)
                         .testTag("post_publish_button"),
                     enabled = isFormValid,
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Icon(Icons.Default.Eco, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Publish to Circle", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                }
+                    leadingIcon = Icons.Default.Eco
+                )
             }
         }
     }
