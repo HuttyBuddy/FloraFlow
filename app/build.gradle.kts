@@ -173,4 +173,6 @@ dependencies {
       exclude(group = "androidx.core", module = "core")
       exclude(group = "androidx.core", module = "core-ktx")
   }
+  implementation(libs.play.billing)
+  implementation(libs.play.billing.ktx)
 }

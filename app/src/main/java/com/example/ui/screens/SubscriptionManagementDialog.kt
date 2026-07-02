@@ -125,7 +125,7 @@ fun SubscriptionManagementDialog(
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        "ACTIVE (SANDBOX PLAY STORE SYSTEM)",
+                        "ACTIVE (GOOGLE PLAY SUBSCRIPTION)",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF2E7D32)

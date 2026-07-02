@@ -1,5 +1,7 @@
 package com.example.ui.screens
 
+import android.app.Activity
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -64,55 +66,32 @@ fun BillingDialog(
         )
     )
 
-    var currentStep by remember { mutableIntStateOf(1) } // 1: Select Plan, 2: Payment Method, 3: Card Entry, 4: Loading Banking, 5: Receipt Success
+    val billingManager = viewModel.billingManager
+    val context = LocalContext.current
+    val activity = context as? Activity
+    val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
+
+    var currentStep by remember { mutableIntStateOf(1) } // 1: Select Plan, 2: Google Play Mock Sheet, 3: Loading, 4: Success Receipt
     var selectedPlanIndex by remember { mutableIntStateOf(1) } // Default to Annual Plan
-    var selectedPaymentMethod by remember { mutableStateOf("GooglePlay") } // "GooglePlay", "CreditCard", "GooglePay"
-
-    // Card details input values
-    var cardNumber by remember { mutableStateOf("") }
-    var cardExpiry by remember { mutableStateOf("") }
-    var cardCvc by remember { mutableStateOf("") }
-    var cardName by remember { mutableStateOf("") }
-
-    // Validation failures
-    var validationError by remember { mutableStateOf<String?>(null) }
-
-    // Loading pipeline texts state
-    var progressStatusText by remember { mutableStateOf("Contacting transaction host...") }
+    var progressStatusText by remember { mutableStateOf("Connecting with Google Play Billing Client...") }
 
     val activePlan = tiers[selectedPlanIndex]
 
-    // Key stroke parsing helpers to auto-format inputs nicely like a top-tier fintech app
-    val formattedCardNumber = remember(cardNumber) {
-        val digits = cardNumber.filter { it.isDigit() }.take(16)
-        digits.chunked(4).joinToString(" ")
-    }
-
-    val formattedExpiry = remember(cardExpiry) {
-        val digits = cardExpiry.filter { it.isDigit() }.take(4)
-        if (digits.length >= 3) {
-            "${digits.substring(0, 2)}/${digits.substring(2)}"
-        } else {
-            digits
+    // Listen to premium activation to automatically jump to success step
+    LaunchedEffect(isPremium) {
+        if (isPremium && currentStep < 4) {
+            currentStep = 4
         }
     }
 
-    val formattedCvc = remember(cardCvc) {
-        cardCvc.filter { it.isDigit() }.take(4)
-    }
-
-    // Coroutine loader triggered on Step 4 (Processing payment)
-    if (currentStep == 4) {
+    // Coroutine loader triggered on Step 3 (Processing payment)
+    if (currentStep == 3) {
         LaunchedEffect(Unit) {
             progressStatusText = "Connecting with Google Play Billing Client..."
             delay(1000)
-            progressStatusText = "Generating secure one-time token certificate..."
+            progressStatusText = "Generating secure transaction token..."
             delay(900)
-            if (selectedPaymentMethod == "CreditCard") {
-                progressStatusText = "Authorizing credit gateway transaction via SSL..."
-            } else {
-                progressStatusText = "Frictionless checkout processing with Google Pay..."
-            }
+            progressStatusText = "Frictionless checkout processing with Google Play..."
             delay(1100)
             progressStatusText = "Updating system database with tier entitlements..."
             delay(800)
@@ -123,20 +102,20 @@ fun BillingDialog(
                 price = activePlan.price,
                 isAnnual = activePlan.isAnnual
             )
-            currentStep = 5
+            currentStep = 4
         }
     }
 
     Dialog(
         onDismissRequest = {
-            if (currentStep != 4) {
+            if (currentStep != 3) {
                 viewModel.setBillingDialogVisible(false)
                 currentStep = 1
             }
         },
         properties = DialogProperties(
-            dismissOnBackPress = currentStep != 4,
-            dismissOnClickOutside = currentStep != 4,
+            dismissOnBackPress = currentStep != 3,
+            dismissOnClickOutside = currentStep != 3,
             usePlatformDefaultWidth = false
         )
     ) {
@@ -144,7 +123,7 @@ fun BillingDialog(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Black.copy(alpha = 0.65f))
-                .clickable(enabled = currentStep != 4) {
+                .clickable(enabled = currentStep != 3) {
                     viewModel.setBillingDialogVisible(false)
                     currentStep = 1
                 },
@@ -174,19 +153,19 @@ fun BillingDialog(
                     ) {
                         Column {
                             Text(
-                                text = if (currentStep == 5) "Purchase Successful! ✨" else "Secure Upgrade",
+                                text = if (currentStep == 4) "Purchase Successful! ✨" else "Secure Upgrade",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Black,
                                 color = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = "Step $currentStep of 5 • Sandbox Test Mode",
+                                text = if (currentStep == 2) "Google Play Billing" else "Step $currentStep of ${if (billingManager.inMockMode) 4 else 3}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         
-                        if (currentStep != 4) {
+                        if (currentStep != 3) {
                             IconButton(
                                 onClick = {
                                     viewModel.setBillingDialogVisible(false)
@@ -211,28 +190,14 @@ fun BillingDialog(
                                 selectedIndex = selectedPlanIndex,
                                 onIndexChange = { selectedPlanIndex = it }
                             )
-                            2 -> PaymentMethodStep(
-                                activePlan = activePlan,
-                                selectedMethod = selectedPaymentMethod,
-                                onMethodChange = { selectedPaymentMethod = it }
+                            2 -> GooglePlayMockSheet(
+                                activePlan = activePlan
                             )
-                            3 -> CardEntryStep(
-                                activePlan = activePlan,
-                                cardNumber = formattedCardNumber,
-                                cardExpiry = formattedExpiry,
-                                cardCvc = formattedCvc,
-                                cardName = cardName,
-                                onCardNumberChange = { cardNumber = it },
-                                onCardExpiryChange = { cardExpiry = it },
-                                onCardCvcChange = { cardCvc = it },
-                                onCardNameChange = { cardName = it },
-                                validationError = validationError
-                            )
-                            4 -> BankHandshakeLoadingStep(
+                            3 -> BankHandshakeLoadingStep(
                                 statusText = progressStatusText,
                                 activePlan = activePlan
                             )
-                            5 -> SuccessReceiptStep(
+                            4 -> SuccessReceiptStep(
                                 viewModel = viewModel,
                                 activePlan = activePlan,
                                 onDismiss = {
@@ -243,8 +208,8 @@ fun BillingDialog(
                         }
                     }
 
-                    // Navigation Footer buttons (excluding Loading state 4 and Receipt page 5)
-                    if (currentStep in 1..3) {
+                    // Navigation Footer buttons (excluding Loading state 3 and Receipt page 4)
+                    if (currentStep in 1..2) {
                         Spacer(modifier = Modifier.height(16.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -253,7 +218,6 @@ fun BillingDialog(
                             if (currentStep > 1) {
                                 OutlinedButton(
                                     onClick = {
-                                        validationError = null
                                         currentStep--
                                     },
                                     modifier = Modifier
@@ -268,29 +232,20 @@ fun BillingDialog(
                             Button(
                                 onClick = {
                                     if (currentStep == 1) {
-                                        currentStep = 2
+                                        if (billingManager.inMockMode) {
+                                            currentStep = 2
+                                        } else {
+                                            activity?.let { act ->
+                                                val productId = if (activePlan.isAnnual) com.example.billing.BillingManager.PRODUCT_YEARLY else com.example.billing.BillingManager.PRODUCT_MONTHLY
+                                                billingManager.launchPurchaseFlow(act, productId) {
+                                                    currentStep = 2
+                                                }
+                                            } ?: run {
+                                                currentStep = 2
+                                            }
+                                        }
                                     } else if (currentStep == 2) {
-                                        if (selectedPaymentMethod == "CreditCard") {
-                                            currentStep = 3
-                                        } else {
-                                            // Directly skip card layout and check out using Google Fast Pay balance
-                                            currentStep = 4
-                                        }
-                                    } else if (currentStep == 3) {
-                                        // Validate mock card input fields
-                                        val digitsOnly = cardNumber.filter { it.isDigit() }
-                                        if (digitsOnly.length < 16) {
-                                            validationError = "Please enter a valid 16-digit card number"
-                                        } else if (cardExpiry.filter { it.isDigit() }.length < 4) {
-                                            validationError = "Please enter expiry MM/YY"
-                                        } else if (cardCvc.filter { it.isDigit() }.length < 3) {
-                                            validationError = "Please enter secure 3-digit CVC"
-                                        } else if (cardName.trim().isEmpty()) {
-                                            validationError = "Please fill in Cardholder name"
-                                        } else {
-                                            validationError = null
-                                            currentStep = 4
-                                        }
+                                        currentStep = 3
                                     }
                                 },
                                 modifier = Modifier
@@ -303,8 +258,7 @@ fun BillingDialog(
                                 Text(
                                     text = when (currentStep) {
                                         1 -> "Select Plan"
-                                        2 -> if (selectedPaymentMethod == "CreditCard") "Add Card Details" else "Pay Now (${activePlan.price})"
-                                        else -> "Authorize & Subscribe"
+                                        else -> "Pay Now (${activePlan.price})"
                                     },
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 15.sp
@@ -468,12 +422,10 @@ fun PlanSelectionStep(
     }
 }
 
-// STEP 2: Payment options selection
+// STEP 2: Google Play bottom sheet mockup (used in mock mode)
 @Composable
-fun PaymentMethodStep(
-    activePlan: BillingPlan,
-    selectedMethod: String,
-    onMethodChange: (String) -> Unit
+fun GooglePlayMockSheet(
+    activePlan: BillingPlan
 ) {
     Column(
         modifier = Modifier
@@ -481,261 +433,124 @@ fun PaymentMethodStep(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(14.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
-                .padding(16.dp)
-        ) {
-            Text("Selected Purchase:", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(activePlan.name, fontWeight = FontWeight.Black, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
-                Text("${activePlan.price} / ${activePlan.period}", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            }
-            Text("Entitlements start immediately following Sandbox certification approval.", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
-        }
-
-        Text("Select Preferred Payment Channel", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-
-        // Options
-        PaymentRowItem(
-            id = "GooglePlay",
-            title = "Google Play Balance (Sandbox Mock Account)",
-            subtitle = "Sufficient Funds • Dynamic Trial Authorized",
-            icon = Icons.Default.AccountBalanceWallet,
-            iconColor = Color(0xFF34A853),
-            isSelected = selectedMethod == "GooglePlay",
-            onClick = onMethodChange
-        )
-
-        PaymentRowItem(
-            id = "CreditCard",
-            title = "Add Credit or Debit Card",
-            subtitle = "Pays via encrypted checkout pipeline modal",
-            icon = Icons.Default.CreditCard,
-            iconColor = Color(0xFF1A73E8),
-            isSelected = selectedMethod == "CreditCard",
-            onClick = onMethodChange
-        )
-
-        PaymentRowItem(
-            id = "GooglePay",
-            title = "Google Pay Fast-Wallet Connection",
-            subtitle = "Tap to charge dynamic token profile securely",
-            icon = Icons.Default.Payment,
-            iconColor = Color(0xFFEA4335),
-            isSelected = selectedMethod == "GooglePay",
-            onClick = onMethodChange
-        )
-    }
-}
-
-@Composable
-fun PaymentRowItem(
-    id: String,
-    title: String,
-    subtitle: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    iconColor: Color,
-    isSelected: Boolean,
-    onClick: (String) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .border(
-                width = if (isSelected) 2.dp else 1.dp,
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                shape = RoundedCornerShape(14.dp)
-            )
-            .background(if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface)
-            .clickable { onClick(id) }
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(iconColor.copy(alpha = 0.12f), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(icon, contentDescription = title, tint = iconColor, modifier = Modifier.size(20.dp))
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontWeight = FontWeight.Bold, fontSize = 13.5.sp, color = MaterialTheme.colorScheme.onSurface)
-            Text(subtitle, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        RadioButton(selected = isSelected, onClick = { onClick(id) })
-    }
-}
-
-// STEP 3: Beautiful simulated Credit card entry!
-@Composable
-fun CardEntryStep(
-    activePlan: BillingPlan,
-    cardNumber: String,
-    cardExpiry: String,
-    cardCvc: String,
-    cardName: String,
-    onCardNumberChange: (String) -> Unit,
-    onCardExpiryChange: (String) -> Unit,
-    onCardCvcChange: (String) -> Unit,
-    onCardNameChange: (String) -> Unit,
-    validationError: String?
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        // Visual premium credit card simulation component
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(140.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(
-                    Brush.linearGradient(
-                        listOf(
-                            Color(0xFF1E261C), // Rich moss
-                            Color(0xFF2E6F40), // Sprout botanical emerald
-                            Color(0xFF4C8D5E)  // Shimmer leaf
-                        )
-                    )
-                )
-                .border(1.dp, Color(0xFFFFD54F).copy(alpha = 0.3f), RoundedCornerShape(16.dp))
-                .padding(16.dp)
-        ) {
-            // Shiny visual gold microchip representation
-            Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.SpaceBetween) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp, 26.dp)
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xFFFFD54F).copy(alpha = 0.8f)) // Gold chips
-                    )
-                    Text("FLORAFLOW VIP", fontWeight = FontWeight.Black, fontSize = 11.sp, color = Color.White.copy(alpha = 0.8f))
-                }
-
-                Text(
-                    text = if (cardNumber.isEmpty()) "•••• •••• •••• ••••" else cardNumber,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    letterSpacing = 1.5.sp
-                )
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Column {
-                        Text("CARD HOLDER", fontSize = 7.sp, color = Color.White.copy(alpha = 0.6f))
-                        Text(
-                            text = if (cardName.isEmpty()) "YOUR NAME" else cardName.uppercase(),
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("EXPIRES", fontSize = 7.sp, color = Color.White.copy(alpha = 0.6f))
-                        Text(
-                            text = if (cardExpiry.isEmpty()) "MM/YY" else cardExpiry,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-            }
-        }
-
-        Text("Billing Method Verification Details", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
-
-        // Error message if fields invalid
-        if (validationError != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFFFEBEE))
-                    .border(1.dp, Color(0xFFEF5350), RoundedCornerShape(8.dp))
-                    .padding(8.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Error, contentDescription = "Error", tint = Color(0xFFD32F2F), modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(validationError, fontSize = 11.sp, color = Color(0xFFC62828), fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-
-        // Row of text inputs
-        OutlinedTextField(
-            value = cardName,
-            onValueChange = onCardNameChange,
-            label = { Text("Cardholder Name") },
-            placeholder = { Text("e.g. Jane Forester") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp)
-        )
-
-        OutlinedTextField(
-            value = cardNumber,
-            onValueChange = onCardNumberChange,
-            label = { Text("Card Number") },
-            placeholder = { Text("1234 5678 1234 5678") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp)
-        )
-
+        // Play Store Header Mockup
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
-                value = cardExpiry,
-                onValueChange = onCardExpiryChange,
-                label = { Text("Expiry (MM/YY)") },
-                placeholder = { Text("12/29") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(10.dp)
+            Icon(
+                imageVector = Icons.Default.PlayArrow,
+                contentDescription = "Google Play",
+                tint = Color(0xFF34A853),
+                modifier = Modifier.size(24.dp)
             )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Google Play",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
 
-            OutlinedTextField(
-                value = cardCvc,
-                onValueChange = onCardCvcChange,
-                label = { Text("CVC Code") },
-                placeholder = { Text("381") },
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(10.dp)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+        // Purchase Item Info
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = activePlan.name,
+                    fontWeight = FontWeight.Black,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "FloraFlow • Billed by Google Play",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(
+                text = "${activePlan.price} / ${activePlan.period}",
+                fontWeight = FontWeight.Black,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        // Details list
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+        ) {
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = "• Subscription starts immediately.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "• Free Trial period: ${activePlan.trial}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = "• Billed automatically. Cancel anytime in Subscriptions on Google Play.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Payment Method Mockup
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.AccountBalanceWallet,
+                contentDescription = "Wallet",
+                tint = Color(0xFF34A853),
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Google Play Balance",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "kevin@gmail.com",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Text(
+                text = "$50.00",
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
 }
 
-// STEP 4: Bank tunnel loader progress wheel!
+// STEP 3: Bank tunnel loader progress wheel!
 @Composable
 fun BankHandshakeLoadingStep(
     statusText: String,
@@ -759,7 +574,7 @@ fun BankHandshakeLoadingStep(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Executing Sandbox Subscription Flow",
+            text = "Executing Google Play Billing Flow",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -786,7 +601,7 @@ fun BankHandshakeLoadingStep(
     }
 }
 
-// STEP 5: Success Receipt Generation Layout
+// STEP 4: Success Receipt Generation Layout
 @Composable
 fun SuccessReceiptStep(
     viewModel: GardenViewModel,
@@ -820,7 +635,7 @@ fun SuccessReceiptStep(
         )
 
         Text(
-            text = "Congratulations! FloraFlow PRO state is unlocked and persistent on this device. You now have unrestricted access to premium models and visualizers.",
+            text = "Congratulations! FloraFlow PRO state is unlocked and persistent on your Google Play account. You now have unrestricted access to premium models and visualizers.",
             fontSize = 12.sp,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -840,7 +655,7 @@ fun SuccessReceiptStep(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    "GOOGLE PLAY BILLING SANDBOX RECEIPT",
+                    "GOOGLE PLAY SUBSCRIPTION RECEIPT",
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -854,7 +669,7 @@ fun SuccessReceiptStep(
                 ReceiptItemRow(label = "Trial Period Entitlement", value = activePlan.trial)
                 ReceiptItemRow(label = "Payment Authorized price", value = "${activePlan.price} / ${activePlan.period}")
                 ReceiptItemRow(label = "Automatic Renewal Date", value = billingDate ?: "Next Month")
-                ReceiptItemRow(label = "Status State Key", value = "ENTITLED_SANDBOX_STABLE")
+                ReceiptItemRow(label = "Billing Status", value = "ACTIVE")
             }
         }
 

@@ -26,6 +26,7 @@ import android.content.Context
 import android.os.Build
 import com.example.ui.screens.checkPlantSynergy
 import com.example.ui.screens.checkPlantConflict
+import com.example.billing.BillingManager
 
 enum class ThemeMode {
     SYSTEM, LIGHT, DARK
@@ -364,6 +365,7 @@ class GardenViewModel @JvmOverloads constructor(
     val showInAppRatePrompt: StateFlow<Boolean> = _showInAppRatePrompt.asStateFlow()
 
     private val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", android.content.Context.MODE_PRIVATE)
+    val billingManager = BillingManager(application)
 
     fun upgradeToPremium() {
         _showBillingDialog.value = true
@@ -393,87 +395,17 @@ class GardenViewModel @JvmOverloads constructor(
     }
 
     fun processPurchase(tier: String, price: String, isAnnual: Boolean) {
-        val txId = "GPA." + (1000..9999).random().toString() + "-" + 
-                   (1000..9999).random().toString() + "-" + 
-                   (1000..9999).random().toString() + "-" + 
-                   (10000..99999).random().toString()
-        
-        val sdf = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US)
-        val cal = java.util.Calendar.getInstance()
-        if (isAnnual) {
-            cal.add(java.util.Calendar.YEAR, 1)
-        } else {
-            cal.add(java.util.Calendar.MONTH, 1)
-        }
-        val nextBillingDate = sdf.format(cal.time)
-
-        _isPremium.value = true
-        _subscriptionTier.value = tier
-        _subscriptionTransactionId.value = txId
-        _subscriptionBillingDate.value = nextBillingDate
-
-        sharedPrefs.edit {
-            putBoolean("is_premium", true)
-            putString("subscription_tier", tier)
-            putString("subscription_transaction_id", txId)
-            putString("subscription_billing_date", nextBillingDate)
-            putBoolean("purchased_historically", true)
-        }
+        val productId = if (isAnnual) BillingManager.PRODUCT_YEARLY else BillingManager.PRODUCT_MONTHLY
+        billingManager.executeMockPurchase(productId)
     }
 
     fun cancelPremiumSubscription() {
-        _isPremium.value = false
-        _subscriptionTier.value = null
-        _subscriptionTransactionId.value = null
-        _subscriptionBillingDate.value = null
-
-        sharedPrefs.edit {
-            putBoolean("is_premium", false)
-            putString("subscription_tier", null)
-            putString("subscription_transaction_id", null)
-            putString("subscription_billing_date", null)
-        }
+        billingManager.cancelMockSubscription()
     }
 
     fun restorePurchases(): Boolean {
-        val hasHistory = sharedPrefs.getBoolean("purchased_historically", false)
-        return if (hasHistory) {
-            val txId = "GPA.RESTORED-" + (1000..9999).random().toString() + "-RE"
-            val tier = "FloraFlow PRO Annual"
-            val nextDate = "Jun 15, 2027"
-            
-            _isPremium.value = true
-            _subscriptionTier.value = tier
-            _subscriptionTransactionId.value = txId
-            _subscriptionBillingDate.value = nextDate
-
-            sharedPrefs.edit {
-                putBoolean("is_premium", true)
-                putString("subscription_tier", tier)
-                putString("subscription_transaction_id", txId)
-                putString("subscription_billing_date", nextDate)
-            }
-            true
-        } else {
-            // Force seed a standard restored purchase if they don't have local history (makes demo seamless)
-            val txId = "GPA.DEMO-" + (1000..9999).random().toString() + "-RESTORED"
-            val tier = "FloraFlow PRO Monthly"
-            val nextDate = "Jul 21, 2026"
-            
-            _isPremium.value = true
-            _subscriptionTier.value = tier
-            _subscriptionTransactionId.value = txId
-            _subscriptionBillingDate.value = nextDate
-
-            sharedPrefs.edit {
-                putBoolean("is_premium", true)
-                putString("subscription_tier", tier)
-                putString("subscription_transaction_id", txId)
-                putString("subscription_billing_date", nextDate)
-                putBoolean("purchased_historically", true)
-            }
-            true
-        }
+        billingManager.executeMockPurchase(BillingManager.PRODUCT_YEARLY)
+        return true
     }
 
     // Active screen index hoist state for onboarding assessments completion callbacks
@@ -485,14 +417,21 @@ class GardenViewModel @JvmOverloads constructor(
     }
 
     init {
-        // Load persistent billing subscription and onboarding values on start
-        val savedPremium = sharedPrefs.getBoolean("is_premium", false)
-        _isPremium.value = savedPremium
+        // Observe billing manager flows reactively
+        viewModelScope.launch {
+            billingManager.isPremium.collect { _isPremium.value = it }
+        }
+        viewModelScope.launch {
+            billingManager.subscriptionTier.collect { _subscriptionTier.value = it }
+        }
+        viewModelScope.launch {
+            billingManager.subscriptionTransactionId.collect { _subscriptionTransactionId.value = it }
+        }
+        viewModelScope.launch {
+            billingManager.subscriptionBillingDate.collect { _subscriptionBillingDate.value = it }
+        }
         _restorationTrialCount.value = sharedPrefs.getInt("restoration_trial_count", 0)
         _isOnboardingCompleted.value = sharedPrefs.getBoolean("onboarding_completed", false)
-        _subscriptionTier.value = sharedPrefs.getString("subscription_tier", null)
-        _subscriptionTransactionId.value = sharedPrefs.getString("subscription_transaction_id", null)
-        _subscriptionBillingDate.value = sharedPrefs.getString("subscription_billing_date", null)
         _isAssessmentSkipped.value = sharedPrefs.getBoolean("assessment_skipped", false)
 
         val savedScore = sharedPrefs.getInt("assessment_score", -1)
