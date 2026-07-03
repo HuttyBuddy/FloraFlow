@@ -25,7 +25,6 @@ import android.content.Intent
 import android.content.Context
 import android.os.Build
 import com.example.ui.screens.checkPlantSynergy
-import com.example.ui.screens.checkPlantConflict
 import com.example.billing.BillingManager
 
 enum class ThemeMode {
@@ -83,10 +82,10 @@ class GardenViewModel @JvmOverloads constructor(
     private val _aiChatHistory = MutableStateFlow<List<Content>>(emptyList())
     val aiChatHistory: StateFlow<List<Content>> = _aiChatHistory.asStateFlow()
 
-    private val _aiStatus = MutableStateFlow<String>("")
+    private val _aiStatus = MutableStateFlow("")
     val aiStatus: StateFlow<String> = _aiStatus.asStateFlow()
 
-    private val _isAiLoading = MutableStateFlow(false)
+    private val _isAiLoading = MutableStateFlow(value = false)
     val isAiLoading: StateFlow<Boolean> = _isAiLoading.asStateFlow()
 
     // Mock AR Lens Placement States
@@ -174,7 +173,30 @@ class GardenViewModel @JvmOverloads constructor(
         val newSim = !currentSim
         _simulate30Days.value = newSim
         sharedPrefs.edit { putBoolean("simulate_30_days", newSim) }
-        // Removed updateReassessmentState() as it's no longer needed
+        updateReassessmentState()
+    }
+
+    fun snoozeReassessment() {
+        val now = System.currentTimeMillis()
+        sharedPrefs.edit {
+            putLong("reassessment_snooze_timestamp", now)
+        }
+        updateReassessmentState()
+    }
+
+    private fun updateReassessmentState() {
+        val lastAssessment = sharedPrefs.getLong("last_assessment_timestamp", 0L)
+        val snoozeTimestamp = sharedPrefs.getLong("reassessment_snooze_timestamp", 0L)
+        val isSimulating = sharedPrefs.getBoolean("simulate_30_days", false)
+
+        val thirtyDaysMillis = 30L * 24 * 60 * 60 * 1000
+        val oneDayMillis = 24L * 60 * 60 * 1000
+        val now = System.currentTimeMillis()
+
+        val isThirtyDaysPast = (now - lastAssessment) >= thirtyDaysMillis
+        val isSnoozed = (now - snoozeTimestamp) < oneDayMillis
+
+        _needsReassessment.value = (isSimulating || (lastAssessment > 0 && isThirtyDaysPast)) && !isSnoozed
     }
 
     // Daily Reflection State
@@ -197,9 +219,9 @@ class GardenViewModel @JvmOverloads constructor(
             val log = RestorationLog(
                 timestamp = System.currentTimeMillis(),
                 nriScore = nriScore,
-                layoutId = activeLayout?.id,
+                layoutId = activeLayout.value?.id,
                 completedTasks = completedTasks.joinToString(","),
-                soundscapeTrack = currentTrack
+                soundscapeTrack = currentSoundscapeTrack.value
             )
             repository.insertRestorationLog(log)
         }
@@ -301,7 +323,7 @@ class GardenViewModel @JvmOverloads constructor(
 
     fun nextWalkthroughStep() {
         val current = _currentWalkthroughStep.value ?: return
-        val steps = WalkthroughStep.values()
+        val steps = WalkthroughStep.entries
         val nextIdx = current.ordinal + 1
         if (nextIdx < steps.size) {
             _currentWalkthroughStep.value = steps[nextIdx]
@@ -376,7 +398,7 @@ class GardenViewModel @JvmOverloads constructor(
     private val _showInAppRatePrompt = MutableStateFlow(false)
     val showInAppRatePrompt: StateFlow<Boolean> = _showInAppRatePrompt.asStateFlow()
 
-    private val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", android.content.Context.MODE_PRIVATE)
+    private val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", Context.MODE_PRIVATE)
     val billingManager = BillingManager(application)
 
     fun upgradeToPremium() {
@@ -675,7 +697,7 @@ class GardenViewModel @JvmOverloads constructor(
                 if ((_activeLayout.value == null) && layouts.isNotEmpty()) {
                     val firstLayout = layouts.first()
                     val currentZip = weatherRepository.getUserLocationZip()
-                    val targetClimate = com.example.data.model.ClimatePlants.mapZipToClimate(currentZip)
+                    val targetClimate = ClimatePlants.mapZipToClimate(currentZip)
                     if (firstLayout.climate != targetClimate) {
                         viewModelScope.launch(ioDispatcher) {
                             repository.updateLayoutClimate(firstLayout.id, targetClimate)
@@ -972,8 +994,8 @@ class GardenViewModel @JvmOverloads constructor(
         val todayCal = java.util.Calendar.getInstance()
         return logs.find { log ->
             val logCal = java.util.Calendar.getInstance().apply { timeInMillis = log.timestamp }
-            logCal.get(java.util.Calendar.YEAR) == todayCal.get(java.util.Calendar.YEAR) &&
-            logCal.get(java.util.Calendar.DAY_OF_YEAR) == todayCal.get(java.util.Calendar.DAY_OF_YEAR)
+            logCal[java.util.Calendar.YEAR] == todayCal[java.util.Calendar.YEAR] &&
+            logCal[java.util.Calendar.DAY_OF_YEAR] == todayCal[java.util.Calendar.DAY_OF_YEAR]
         }
     }
 
@@ -1044,7 +1066,7 @@ class GardenViewModel @JvmOverloads constructor(
 
             if (_isSpaceDiagnosisMode.value) {
                 // Parse diagnosis result, e.g. [DIAGNOSIS_RESULT: score=14, lowest=NATURE VIEWS, LIVING PLANTS]
-                val scoreRegex = Regex("\\[DIAGNOSIS_RESULT:\\s*score=(\\d+)(?:,\\s*lowest=(.*?))?\\]", RegexOption.IGNORE_CASE)
+                val scoreRegex = Regex("\\[DIAGNOSIS_RESULT:\\s*score=(\\d+)(?:,\\s*lowest=(.*?))?]", RegexOption.IGNORE_CASE)
                 val match = scoreRegex.find(response)
                 if (match != null) {
                     val parsedScore = match.groupValues[1].toIntOrNull()

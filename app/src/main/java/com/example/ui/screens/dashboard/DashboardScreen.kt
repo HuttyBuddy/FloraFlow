@@ -2,11 +2,9 @@ package com.example.ui.screens.dashboard
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,48 +17,30 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.intl.Locale as ComposeLocale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.data.model.GardenLayout
-import com.example.data.model.MoodLog
-import com.example.data.model.CareTask
-import com.example.data.model.Plant
 import androidx.compose.ui.window.Dialog
 import com.example.ui.viewmodel.GardenViewModel
-import com.example.ui.theme.SoilSageDark
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.boundsInRoot
 import com.example.ui.viewmodel.WalkthroughStep
 import com.example.ui.viewmodel.ScreenRect
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.Spring
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.FastOutSlowInEasing
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import androidx.core.content.edit
 
 import com.example.ui.screens.dashboard.components.*
 
@@ -99,8 +79,9 @@ fun DashboardScreen(
     var showLogMoodDialog by remember { mutableStateOf(false) }
     var showZipDialog by remember { mutableStateOf(false) }
 
-    val configuration = LocalConfiguration.current
-    val isWideScreen = configuration.screenWidthDp >= 600
+    val density = LocalDensity.current
+    val windowInfo = LocalWindowInfo.current
+    val isWideScreen = with(density) { windowInfo.containerSize.width.toDp() >= 600.dp }
 
     val skippedAssessmentBanner = @Composable {
         val isDark = androidx.compose.foundation.isSystemInDarkTheme()
@@ -1045,10 +1026,10 @@ fun DashboardScreen(
     val streakCount = remember(moodLogs) { calculateStreak(moodLogs) }
     val context = androidx.compose.ui.platform.LocalContext.current
     val sharedPrefs = remember { context.getSharedPreferences("floraflow_prefs", android.content.Context.MODE_PRIVATE) }
-    var lastCelebratedStreak by remember { mutableStateOf(sharedPrefs.getInt("last_celebrated_streak", 0)) }
+    var lastCelebratedStreak by remember { mutableIntStateOf(sharedPrefs.getInt("last_celebrated_streak", 0)) }
     
     var showStreakCelebration by remember { mutableStateOf(false) }
-    var celebratedStreakValue by remember { mutableStateOf(0) }
+    var celebratedStreakValue by remember { mutableIntStateOf(0) }
     
     LaunchedEffect(streakCount) {
         if ((streakCount == 7 || streakCount == 30 || streakCount == 100) && streakCount > lastCelebratedStreak) {
@@ -1059,11 +1040,11 @@ fun DashboardScreen(
     
     if (showStreakCelebration) {
         CelebrationDialog(
-            title = "${celebratedStreakValue} Day Streak! 🔥",
+            title = "$celebratedStreakValue Day Streak! 🔥",
             subtitle = "I've tended my garden for $celebratedStreakValue days straight on FloraFlow.",
             extraText = "I've tended my garden for $celebratedStreakValue days straight on FloraFlow! 🌸🌿 #FloraFlow",
             onDismiss = {
-                sharedPrefs.edit().putInt("last_celebrated_streak", celebratedStreakValue).apply()
+                sharedPrefs.edit { putInt("last_celebrated_streak", celebratedStreakValue) }
                 lastCelebratedStreak = celebratedStreakValue
                 showStreakCelebration = false
             }
