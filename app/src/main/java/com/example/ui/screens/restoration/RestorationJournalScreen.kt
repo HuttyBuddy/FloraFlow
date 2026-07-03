@@ -422,106 +422,84 @@ fun RestorationJournalScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Mindfulness checklist
+                    // Daily Reflection
                     Card(
                         shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E352F).copy(alpha = 0.7f)),
                         border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.15f)),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 16.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp)
                         ) {
                             Text(
-                                text = "🧘 Today's Mindfulness Tasks",
+                                text = "📝 Daily Reflection",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFA8E6CF)
                             )
                             Text(
-                                text = "Complete layout tasks to train sensory grounding and log progress",
+                                text = "How did your space feel today?",
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.5f),
                                 modifier = Modifier.padding(bottom = 12.dp)
                             )
-
-                            // Grounding progress indicator
-                            val taskProgress = if (availableTasks.isNotEmpty()) {
-                                completedTasksList.size.toFloat() / availableTasks.size
-                            } else 0f
-                            
+                                    
+                            TextField(
+                                value = viewModel.dailyReflection.collectAsState().value,
+                                onValueChange = { viewModel.updateDailyReflection(it) },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = {
+                                    Text("Write your thoughts...", color = Color.White.copy(alpha = 0.3f))
+                                },
+                                colors = TextFieldDefaults.textFieldColors(
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White,
+                                    focusedBackgroundColor = Color(0xFF0F261D).copy(alpha = 0.3f),
+                                    unfocusedBackgroundColor = Color(0xFF0F261D).copy(alpha = 0.3f)
+                                ),
+                                singleLine = false
+                            )
+                                    
+                            Spacer(modifier = Modifier.height(16.dp))
+                                    
+                            Text("Select your mood:", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Grounding Progress: ${completedTasksList.size}/${availableTasks.size}",
-                                    fontSize = 12.sp,
-                                    color = Color(0xFFA8E6CF),
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                                Text(
-                                    text = "${(taskProgress * 100).toInt()}%",
-                                    fontSize = 12.sp,
-                                    color = Color(0xFFA8E6CF),
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            LinearProgressIndicator(
-                                progress = taskProgress,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(6.dp)
-                                    .clip(RoundedCornerShape(3.dp))
+                                    .padding(top = 8.dp)
                                     .padding(bottom = 16.dp),
-                                color = Color(0xFF81C784),
-                                trackColor = Color(0xFF0F261D)
-                            )
-
-                            availableTasks.forEach { task ->
-                                val isChecked = completedTasksList.contains(task)
-                                val category = getTaskCategory(task)
-                                
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 6.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .background(
-                                            if (isChecked) Color(0xFF81C784).copy(alpha = 0.08f) 
-                                            else Color(0xFF0F261D).copy(alpha = 0.4f)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                listOf("Peaceful", "Energized", "Refreshed", "Stressed", "Overwhelmed").forEach { mood ->
+                                    FilterChip(
+                                        selected = viewModel.selectedMood.collectAsState().value == mood,
+                                        onClick = { viewModel.updateSelectedMood(mood) },
+                                        label = { Text(mood) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedColor = Color(0xFF81C784),
+                                            selectedLabelColor = Color.Black,
+                                            unselectedLabelColor = Color.White
                                         )
-                                        .border(
-                                            width = 1.dp,
-                                            color = if (isChecked) Color(0xFF81C784).copy(alpha = 0.3f) else Color.Transparent,
-                                            shape = RoundedCornerShape(12.dp)
-                                        )
-                                        .clickable {
-                                            if (isChecked) {
-                                                completedTasksList.remove(task)
-                                            } else {
-                                                completedTasksList.add(task)
-                                            }
-                                        }
-                                        .padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Checkbox(
-                                        checked = isChecked,
-                                        onCheckedChange = {
-                                            if (isChecked) {
-                                                completedTasksList.remove(task)
-                                            } else {
-                                                completedTasksList.add(task)
-                                            }
-                                        },
-                                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF81C784))
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Column(modifier = Modifier.weight(1f)) {
+                                }
+                            }
+                        }
+                    }
+                            
+                    Spacer(modifier = Modifier.height(24.dp))
+                            
+                    Button(
+                        onClick = { viewModel.saveRestorationLog() },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF81C784)),
+                        shape = RoundedCornerShape(24.dp),
+                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                    ) {
+                        Text("Save Journal Entry", color = Color.Black, fontWeight = FontWeight.Bold)
+                    }
+
                                         // Capsule category badge
                                         Box(
                                             modifier = Modifier

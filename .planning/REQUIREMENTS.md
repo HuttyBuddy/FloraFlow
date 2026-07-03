@@ -16,7 +16,7 @@ Requirements for the initial launch (P0 priority).
 - [ ] **ADVISOR-01**: AI Advisor Biophilic Design mode (updated system prompt referencing Neural Load scores and categories).
 
 ### Polish & Enhanced Features
-- [ ] **AR-01**: Remove or hide AR animated icons until high-quality AR rendering is implemented.
+|- [ ] **RESTORATION-01**: Restoration Journal implementation for documenting space transformation progress.
 - [ ] **SOUND-01**: Immersive Soundscape Foundation (high-fidelity binaural audio).
 - [ ] **3D-ASSET-01**: High-fidelity 3D plant model integration.
 

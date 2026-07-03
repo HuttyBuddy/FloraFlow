@@ -290,7 +290,7 @@ class MainActivity : ComponentActivity() {
                                     // Sliding indicator pill
                                     Box(
                                         modifier = Modifier
-                                            .padding(vertical = 10.dp, horizontal = 6.dp)
+                                            .padding(vertical = 17.5.dp, horizontal = 6.dp)
                                             .width(tabWidth - 12.dp)
                                             .fillMaxHeight()
                                             .offset { IntOffset(x = indicatorOffset.roundToPx(), y = 0) }

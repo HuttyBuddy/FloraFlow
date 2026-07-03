@@ -174,23 +174,35 @@ class GardenViewModel @JvmOverloads constructor(
         val newSim = !currentSim
         _simulate30Days.value = newSim
         sharedPrefs.edit { putBoolean("simulate_30_days", newSim) }
-        updateReassessmentState()
+        // Removed updateReassessmentState() as it's no longer needed
     }
 
-    fun snoozeReassessment() {
-        val currentTimestamp = System.currentTimeMillis()
-        sharedPrefs.edit { putLong("reassessment_snooze_timestamp", currentTimestamp) }
-        updateReassessmentState()
+    // Daily Reflection State
+    private val _dailyReflection = MutableStateFlow("")
+    val dailyReflection: StateFlow<String> = _dailyReflection.asStateFlow()
+
+    private val _selectedMood = MutableStateFlow("Peaceful")
+    val selectedMood: StateFlow<String> = _selectedMood.asStateFlow()
+
+    fun updateDailyReflection(text: String) {
+        _dailyReflection.value = text
     }
 
-    fun updateReassessmentState() {
-        val lastTime = sharedPrefs.getLong("last_assessment_timestamp", 0L)
-        val snoozeTime = sharedPrefs.getLong("reassessment_snooze_timestamp", 0L)
-        val sevenDaysMillis = 7L * 24 * 60 * 60 * 1000L
-        val thirtyDaysMillis = 30L * 24 * 60 * 60 * 1000L
-        val passed = lastTime != 0L && (System.currentTimeMillis() - lastTime >= thirtyDaysMillis)
-        val isSnoozed = snoozeTime != 0L && (System.currentTimeMillis() - snoozeTime < sevenDaysMillis)
-        _needsReassessment.value = (_simulate30Days.value || passed) && !isSnoozed
+    fun updateSelectedMood(mood: String) {
+        _selectedMood.value = mood
+    }
+
+    fun saveRestorationLog(nriScore: Int, completedTasks: List<String>) {
+        viewModelScope.launch(ioDispatcher) {
+            val log = RestorationLog(
+                timestamp = System.currentTimeMillis(),
+                nriScore = nriScore,
+                layoutId = activeLayout?.id,
+                completedTasks = completedTasks.joinToString(","),
+                soundscapeTrack = currentTrack
+            )
+            repository.insertRestorationLog(log)
+        }
     }
 
     // Conversational Space Diagnosis Mode

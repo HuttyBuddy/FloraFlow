@@ -16,14 +16,15 @@ Empower users to understand and reduce their space-induced stress (Neural Load) 
 
 ### Active
 
-- [ ] **ASSESS-01**: 10-question Neural Load Assessment flow in-app.
-- [ ] **RESULT-01**: Score result screen with zone color and sharing capabilities.
-- [ ] **STEPS-01**: Personalized 3 next steps with deep links to existing features (Planner, Advisor, Database).
-- [ ] **ADVISOR-01**: AI Advisor Biophilic Design mode (updated system prompt referencing Neural Load).
-- [ ] **WIDGET-01**: Home screen score widget and step progress tracking.
-- [ ] **DIAG-01**: Conversational Space Diagnosis mode (guided consultation).
-- [ ] **REASSESS-01**: 30-day reassessment prompt.
-- [ ] **HISTORY-01**: Score history and progress tracking over time.
+|- [ ] **RESTORATION-01**: Restoration Journal implementation for documenting space transformation progress.
+|- [ ] **ASSESS-01**: 10-question Neural Load Assessment flow in-app.
+|- [ ] **RESULT-01**: Score result screen with zone color and sharing capabilities.
+|- [ ] **STEPS-01**: Personalized 3 next steps with deep links to existing features (Planner, Advisor, Database).
+|- [ ] **ADVISOR-01**: AI Advisor Biophilic Design mode (updated system prompt referencing Neural Load).
+|- [ ] **WIDGET-01**: Home screen score widget and step progress tracking.
+|- [ ] **DIAG-01**: Conversational Space Diagnosis mode (guided consultation).
+|- [ ] **REASSESS-01**: 30-day reassessment prompt.
+|- [ ] **HISTORY-01**: Score history and progress tracking over time.
 
 ### Out of Scope
 
