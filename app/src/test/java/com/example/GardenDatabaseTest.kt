@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -226,5 +227,14 @@ class GardenDatabaseTest {
         // Assert correctness
         assertEquals(100, nPlusOnePlants.size)
         assertEquals(100, singleQueryPlants.size)
+    }
+
+    @Test
+    fun getDatabase_returnsSingletonInstance() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val db1 = GardenDatabase.getDatabase(context)
+        assertNotNull(db1)
+        val db2 = GardenDatabase.getDatabase(context)
+        assertSame(db1, db2)
     }
 }
