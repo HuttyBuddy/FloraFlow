@@ -2456,19 +2456,25 @@ data class LeafParticle(
 
 private fun calculatePlantAges(currentIndex: Int, snapshots: List<Pair<Long, String>>): Array<IntArray> {
     val ages = Array(5) { IntArray(5) { 0 } }
-    for (r in 0..4) {
-        for (c in 0..4) {
-            var age = 0
-            for (i in 0..currentIndex) {
-                val snap = snapshots.getOrNull(i)
-                val snapGrid = parseGridString(snap?.second ?: "")
-                if (snapGrid.any { it.x == r && it.y == c }) {
-                    age++
+    for (i in 0..currentIndex) {
+        val snap = snapshots.getOrNull(i)
+        val snapGrid = parseGridString(snap?.second ?: "")
+
+        val currentPlants = Array(5) { BooleanArray(5) { false } }
+        for (plant in snapGrid) {
+            if (plant.x in 0..4 && plant.y in 0..4) {
+                currentPlants[plant.x][plant.y] = true
+            }
+        }
+
+        for (r in 0..4) {
+            for (c in 0..4) {
+                if (currentPlants[r][c]) {
+                    ages[r][c]++
                 } else {
-                    age = 0 // Reset if it was empty or uprooted
+                    ages[r][c] = 0 // Reset if it was empty or uprooted
                 }
             }
-            ages[r][c] = age
         }
     }
     return ages
