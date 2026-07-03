@@ -1,4 +1,4 @@
-package com.example.ui.screens
+﻿package com.example.ui.screens
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
@@ -117,70 +117,70 @@ fun OnboardingScreen(
             "NATURE VIEWS" to NextStepInfo(
                 "NATURE VIEWS",
                 "Optimize your outdoor view",
-                "You scored ${categoryScores["NATURE VIEWS"] ?: 0} on Nature Views. Clear window blockages or place plants in your direct line of sight to simulate natural depth.",
+                "You scored ${categoryScores["NATURE VIEWS"] ?: 0}/2 on Nature Views. Clear window blockages or place plants in your direct line of sight to simulate natural depth.",
                 "Design my layout →",
                 1
             ),
             "LIVING PLANTS" to NextStepInfo(
                 "LIVING PLANTS",
                 "Add living material to your work area",
-                "You scored ${categoryScores["LIVING PLANTS"] ?: 0} on Living Plants. Adding 2-3 plants to your primary space is the single highest-impact change for your score.",
+                "You scored ${categoryScores["LIVING PLANTS"] ?: 0}/2 on Living Plants. Adding 2-3 plants to your primary space is the single highest-impact change for your score.",
                 "Find plants for my space →",
                 3
             ),
             "NATURAL LIGHT" to NextStepInfo(
                 "NATURAL LIGHT",
                 "Reposition toward natural light",
-                "You scored ${categoryScores["NATURAL LIGHT"] ?: 0} on Natural Light. Even partial repositioning toward a window helps lower stress and restore calm.",
+                "You scored ${categoryScores["NATURAL LIGHT"] ?: 0}/2 on Natural Light. Even partial repositioning toward a window helps lower stress and restore calm.",
                 "Design my layout →",
                 1
             ),
             "ACOUSTIC CALM" to NextStepInfo(
                 "ACOUSTIC CALM",
                 "Introduce acoustic masking",
-                "You scored ${categoryScores["ACOUSTIC CALM"] ?: 0} on Acoustic Calm. Mask distracting background noise to quiet your mind.",
+                "You scored ${categoryScores["ACOUSTIC CALM"] ?: 0}/2 on Acoustic Calm. Mask distracting background noise to quiet your mind.",
                 "Find soothing soundscapes →",
                 3
             ),
             "NATURAL MATERIALS" to NextStepInfo(
                 "NATURAL MATERIALS",
                 "Introduce one natural texture",
-                "You scored ${categoryScores["NATURAL MATERIALS"] ?: 0} on Natural Materials. A wood surface, woven rug, or stone object changes your sensory baseline immediately.",
+                "You scored ${categoryScores["NATURAL MATERIALS"] ?: 0}/2 on Natural Materials. A wood surface, woven rug, or stone object changes your sensory baseline immediately.",
                 "Browse material ideas →",
                 2
             ),
             "AIR & VENTILATION" to NextStepInfo(
                 "AIR & VENTILATION",
                 "Enhance active airflow",
-                "You scored ${categoryScores["AIR & VENTILATION"] ?: 0} on Air & Ventilation. Open windows for 10 minutes twice daily, or use a gentle oscillating fan to mimic natural wind.",
+                "You scored ${categoryScores["AIR & VENTILATION"] ?: 0}/2 on Air & Ventilation. Open windows for 10 minutes twice daily, or use a gentle oscillating fan to mimic natural wind.",
                 "Ask Advisor for advice →",
                 3
             ),
             "ORGANIC FORMS" to NextStepInfo(
                 "ORGANIC FORMS",
                 "Introduce organic patterns",
-                "You scored ${categoryScores["ORGANIC FORMS"] ?: 0} on Organic Forms. Incorporate curved decor or botanical prints to soften sharp, institutional room angles.",
+                "You scored ${categoryScores["ORGANIC FORMS"] ?: 0}/2 on Organic Forms. Incorporate curved decor or botanical prints to soften sharp, institutional room angles.",
                 "Browse decoration ideas →",
                 2
             ),
             "WATER FEATURES" to NextStepInfo(
                 "WATER FEATURES",
                 "Add sound of moving water",
-                "You scored ${categoryScores["WATER FEATURES"] ?: 0} on Water Features. A small tabletop fountain or rain sound machine helps soothe stress and slow down a racing mind.",
+                "You scored ${categoryScores["WATER FEATURES"] ?: 0}/2 on Water Features. A small tabletop fountain or rain sound machine helps soothe stress and slow down a racing mind.",
                 "Explore water elements →",
                 3
             ),
             "SENSORY RICHNESS" to NextStepInfo(
                 "SENSORY RICHNESS",
                 "Stimulate with natural scents",
-                "You scored ${categoryScores["SENSORY RICHNESS"] ?: 0} on Sensory Richness. Use natural cedarwood, pine, or lavender oils to signal calm and safety to your brain.",
+                "You scored ${categoryScores["SENSORY RICHNESS"] ?: 0}/2 on Sensory Richness. Use natural cedarwood, pine, or lavender oils to signal calm and safety to your brain.",
                 "Get aromatic tips →",
                 3
             ),
             "SEASONAL AWARENESS" to NextStepInfo(
                 "SEASONAL AWARENESS",
                 "Align with current season",
-                "You scored ${categoryScores["SEASONAL AWARENESS"] ?: 0} on Seasonal Awareness. Bring seasonal flowers indoors or adjust light cycles to stay synced with external rhythms.",
+                "You scored ${categoryScores["SEASONAL AWARENESS"] ?: 0}/2 on Seasonal Awareness. Bring seasonal flowers indoors or adjust light cycles to stay synced with external rhythms.",
                 "Browse seasonal plants →",
                 2
             )
@@ -242,11 +242,11 @@ fun OnboardingScreen(
                     ResultScreen(
                         score = totalScore,
                         onSeeSteps = {
-                            if (totalScore < 15) {
-                                screenState = AssessmentScreenState.PERSONALIZED_PAYWALL
-                            } else {
-                                screenState = AssessmentScreenState.STEPS
-                            }
+                            // Every zone sees a paywall moment at peak
+                            // assessment engagement — not just users who
+                            // scored low. Copy adapts to the zone inside
+                            // PersonalizedPaywallScreen (see below).
+                            screenState = AssessmentScreenState.PERSONALIZED_PAYWALL
                         }
                     )
                 }
@@ -255,7 +255,8 @@ fun OnboardingScreen(
                         score = totalScore,
                         lowestCategories = lowestCategories,
                         onUpgradeClick = { isAnnual ->
-                            viewModel.setBillingDialogVisible(true)
+                            val source = if (totalScore >= 15) "onboarding_paywall_green" else "onboarding_paywall_yellow_red"
+                            viewModel.setBillingDialogVisible(true, source = source)
                             screenState = AssessmentScreenState.STEPS
                         },
                         onBypassClick = {
@@ -633,7 +634,11 @@ fun ResultScreen(
         )
 
         val context = androidx.compose.ui.platform.LocalContext.current
-        val sharedPrefs = remember { context.getSharedPreferences("floraflow_prefs", android.content.Context.MODE_PRIVATE) }
+        // Must match the prefs file GardenViewModel actually writes
+        // prev_assessment_score to ("floraflow_billing_prefs") — this
+        // previously read a different, always-empty file, so the
+        // score-improved comparison below could never render.
+        val sharedPrefs = remember { context.getSharedPreferences("floraflow_billing_prefs", android.content.Context.MODE_PRIVATE) }
         val prevScore = remember { sharedPrefs.getInt("prev_assessment_score", -1) }
 
         if (prevScore != -1) {
@@ -765,6 +770,7 @@ fun PersonalizedPaywallScreen(
             else -> Triple("RED ZONE", "HIGH NEURAL LOAD", Color(0xFF702123))
         }
     }
+    val isGreenZone = score >= 15
 
     Box(
         modifier = Modifier
@@ -797,72 +803,127 @@ fun PersonalizedPaywallScreen(
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                text = "Your Personalized Restoration Plan",
+                text = if (isGreenZone) "You've Built a Restorative Sanctuary" else "Your Personalized Restoration Plan",
                 style = MaterialTheme.typography.headlineMedium.copy(
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White
                 ),
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Text(
-                text = "Based on your score of $score/20 (${zoneInfo.second}), we have generated a customized environment restoration plan targeting your lowest areas:",
+                text = if (isGreenZone) {
+                    "Your score of $score/20 (${zoneInfo.second}) shows your space is already supporting your nervous system well. PRO helps you maintain and deepen that with advanced tools:"
+                } else {
+                    "Based on your score of $score/20 (${zoneInfo.second}), we have generated a customized environment restoration plan targeting your lowest areas:"
+                },
                 style = MaterialTheme.typography.bodyMedium.copy(
                     color = Color.White.copy(alpha = 0.85f)
                 ),
                 textAlign = TextAlign.Center
             )
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
-            lowestCategories.take(3).forEach { category ->
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.12f)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp)
-                ) {
-                    Row(
+
+            if (isGreenZone) {
+                val maintenancePerks = listOf(
+                    "Unlimited AI Advisor" to "Get instant expert guidance whenever your space or season changes, with no daily query limit.",
+                    "Full Restoration Journal" to "Unlock every binaural soundscape session to keep your stress metrics trending low.",
+                    "Progress Trends" to "See your Neural Load history over time and catch small dips before they become setbacks."
+                )
+                maintenancePerks.forEach { (title, detail) ->
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.12f)),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .padding(vertical = 6.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.CheckCircle,
-                            contentDescription = "Target",
-                            tint = Color(0xFFFFD54F),
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Column {
-                            Text(
-                                text = "Focus: $category",
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                fontSize = 14.sp
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Perk",
+                                tint = Color(0xFFFFD54F),
+                                modifier = Modifier.size(24.dp)
                             )
-                            Text(
-                                text = when (category) {
-                                    "NATURAL LIGHT" -> "Critical light deprivation. Unlock tailored light-boost layouts to boost your melatonin & circadian rhythm."
-                                    "LIVING PLANTS" -> "Low biophilic plant density. Unlock low-maintenance botanical layouts to oxygenate your room."
-                                    "NOISE" -> "High cognitive noise pollution. Unlock custom binaural soundscapes to decrease cortisol levels."
-                                    "NATURE VIEWS" -> "Sparse nature connectivity. Unlock spatial layouts designed to maximize nature views."
-                                    else -> "Artificial texture dominance. Unlock recommendations for biophilic materials and natural fibers."
-                                },
-                                color = Color.White.copy(alpha = 0.8f),
-                                fontSize = 12.sp
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = title,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = detail,
+                                    color = Color.White.copy(alpha = 0.8f),
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                lowestCategories.take(3).forEach { category ->
+                    Card(
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.12f)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Target",
+                                tint = Color(0xFFFFD54F),
+                                modifier = Modifier.size(24.dp)
                             )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "Focus: $category",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = when (category) {
+                                        "NATURAL LIGHT" -> "Critical light deprivation. Unlock tailored light-boost layouts to boost your melatonin & circadian rhythm."
+                                        "LIVING PLANTS" -> "Low biophilic plant density. Unlock low-maintenance botanical layouts to oxygenate your room."
+                                        "ACOUSTIC CALM" -> "High cognitive noise pollution. Unlock custom binaural soundscapes to decrease cortisol levels."
+                                        "NATURE VIEWS" -> "Sparse nature connectivity. Unlock spatial layouts designed to maximize nature views."
+                                        "NATURAL MATERIALS" -> "Artificial texture dominance. Unlock recommendations for biophilic materials and natural fibers."
+                                        "AIR & VENTILATION" -> "Stale airflow. Unlock guidance on fresh-air rhythms to reset your nervous system."
+                                        "ORGANIC FORMS" -> "Rigid, institutional shapes. Unlock curated organic decor and layout suggestions."
+                                        "WATER FEATURES" -> "Missing the sound of water. Unlock soothing water-feature soundscapes and layout ideas."
+                                        "SENSORY RICHNESS" -> "Sensory-flat environment. Unlock scent and texture recommendations that signal safety to your brain."
+                                        "SEASONAL AWARENESS" -> "Disconnected from seasonal rhythms. Unlock seasonal planting and light-cycle guidance."
+                                        else -> "Unlock a fully personalized biophilic restoration plan tailored to your space."
+                                    },
+                                    color = Color.White.copy(alpha = 0.8f),
+                                    fontSize = 12.sp
+                                )
+                            }
                         }
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             FloraFlowButton(
                 text = "Start 14-Day Free Trial",
                 onClick = { onUpgradeClick(true) },

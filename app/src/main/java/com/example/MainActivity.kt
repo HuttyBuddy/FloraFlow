@@ -134,6 +134,12 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme(darkTheme = useDarkTheme) {
                 val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
 
+                // Composed regardless of onboarding state — it self-hides via
+                // showBillingDialog, but must exist during onboarding too since
+                // the post-assessment paywall can trigger it before the main
+                // Scaffold (and its previous BillingDialog instance) exists.
+                BillingDialog(viewModel = viewModel)
+
                 if (!isOnboardingCompleted) {
                     OnboardingScreen(viewModel = viewModel)
                 } else {
@@ -143,9 +149,6 @@ class MainActivity : ComponentActivity() {
                         var showCommunityDialog by remember { mutableStateOf(false) }
                         var showHelpDialog by remember { mutableStateOf(false) }
                         val isPremium by viewModel.isPremium.collectAsState()
-
-                        // Universal sandbox Billing & Subscription Management Checkout Dialog
-                        BillingDialog(viewModel = viewModel)
 
                         val showInAppRatePrompt by viewModel.showInAppRatePrompt.collectAsState()
                         val showSubscriptionManagement by viewModel.showSubscriptionManagement.collectAsState()

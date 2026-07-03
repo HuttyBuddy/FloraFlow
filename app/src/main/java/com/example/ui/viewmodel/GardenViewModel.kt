@@ -405,6 +405,30 @@ class GardenViewModel @JvmOverloads constructor(
     private val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", Context.MODE_PRIVATE)
     val billingManager = BillingManager(application)
 
+    // Daily free-tier AI query quota. Persisted (not chat-history-derived) so
+    // clearing the chat or restarting the app can't reset it, and only
+    // incremented after a successful (non-error) AI response so failed
+    // requests never cost the user a query.
+    val aiQueryDailyLimit = 3
+    private val _aiQueryCount = MutableStateFlow(0)
+    val aiQueryCount: StateFlow<Int> = _aiQueryCount.asStateFlow()
+
+    private fun todayDateString(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+
+    private fun currentDailyQueryCount(): Int {
+        val storedDate = sharedPrefs.getString("ai_query_date", "")
+        return if (storedDate == todayDateString()) sharedPrefs.getInt("ai_query_count", 0) else 0
+    }
+
+    private fun recordAiQueryUsed() {
+        val newCount = currentDailyQueryCount() + 1
+        sharedPrefs.edit {
+            putString("ai_query_date", todayDateString())
+            putInt("ai_query_count", newCount)
+        }
+        _aiQueryCount.value = newCount
+    }
+
     fun upgradeToPremium() {
         _showBillingDialog.value = true
     }
@@ -524,6 +548,7 @@ class GardenViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             billingManager.subscriptionBillingDate.collect { _subscriptionBillingDate.value = it }
         }
+        _aiQueryCount.value = currentDailyQueryCount()
         val nowRest = System.currentTimeMillis()
         var weekStart = sharedPrefs.getLong("restoration_trial_week_start", 0L)
         if (weekStart == 0L) {
@@ -765,18 +790,12 @@ class GardenViewModel @JvmOverloads constructor(
 
         viewModelScope.launch {
             allLayouts.collect { layouts ->
+                // Just picks an active layout on startup. Must NOT rewrite
+                // its climate here — _activeLayout resets to null on every
+                // process restart, so doing so previously clobbered a
+                // deliberately-chosen climate every time the app relaunched.
                 if ((_activeLayout.value == null) && layouts.isNotEmpty()) {
-                    val firstLayout = layouts.first()
-                    val currentZip = weatherRepository.getUserLocationZip()
-                    val targetClimate = ClimatePlants.mapZipToClimate(currentZip)
-                    if (firstLayout.climate != targetClimate) {
-                        viewModelScope.launch(ioDispatcher) {
-                            repository.updateLayoutClimate(firstLayout.id, targetClimate)
-                        }
-                        _activeLayout.value = firstLayout.copy(climate = targetClimate)
-                    } else {
-                        _activeLayout.value = firstLayout
-                    }
+                    _activeLayout.value = layouts.first()
                 }
             }
         }
@@ -795,18 +814,13 @@ class GardenViewModel @JvmOverloads constructor(
     }
 
     // --- Garden Layout operations ---
+    // Simply switches which layout is active. Does NOT touch climate — a
+    // layout's climate is set explicitly at creation (createLayout) or when
+    // the user deliberately changes their weather location
+    // (updateWeatherLocation). Selecting/viewing a layout must never
+    // silently rewrite a climate the user chose on purpose (e.g. a
+    // deliberately "Tropical" indoor layout while living in a temperate zip).
     fun selectLayout(layout: GardenLayout?) {
-        if (layout != null) {
-            val currentZip = weatherRepository.getUserLocationZip()
-            val targetClimate = com.example.data.model.ClimatePlants.mapZipToClimate(currentZip)
-            if (layout.climate != targetClimate) {
-                viewModelScope.launch(ioDispatcher) {
-                    repository.updateLayoutClimate(layout.id, targetClimate)
-                }
-                _activeLayout.value = layout.copy(climate = targetClimate)
-                return
-            }
-        }
         _activeLayout.value = layout
     }
 
@@ -1101,10 +1115,10 @@ class GardenViewModel @JvmOverloads constructor(
             val systemIns = if (_isSpaceDiagnosisMode.value) {
                 "You are the FloraFlow Space Diagnosis Assistant. Your goal is to guide the user through a friendly, step-by-step conversational audit of their room/space to determine its biophilic conditions.\n\n" +
                 "INSTRUCTIONS:\n" +
-                "1. If this is the start of the diagnosis (e.g. the user asks to run a detailed diagnosis), introduce yourself warmly as Dr. Julian and ask them about their space, specifically focusing on key aspects: Nature Views, Living Plants, Natural Light, Noise levels, and Natural Textures/Materials.\n" +
+                "1. If this is the start of the diagnosis (e.g. the user asks to run a detailed diagnosis), introduce yourself warmly as Dr. Julian and ask them about their space, specifically focusing on: Nature Views, Living Plants, Natural Light, Acoustic Calm, Natural Materials, Air & Ventilation, Organic Forms, Water Features, Sensory Richness, and Seasonal Awareness.\n" +
                 "2. Ask them questions one by one or in a friendly, conversational group so they do not feel overwhelmed.\n" +
                 "3. Once the user provides answers to all of these aspects, assess their space. Give them a biophilic score out of 20, map it to a zone (Green: 15-20, Yellow: 8-14, Red: <8), provide a brief analysis of their strengths/weaknesses, and suggest 3 highly specific biophilic improvements.\n" +
-                "4. CRITICAL: In your final assessment message, you MUST append the token [DIAGNOSIS_RESULT: score=X, lowest=CATEGORY1, CATEGORY2] at the very end of your response, where X is the score and the lowest categories are the names of the aspects they scored lowest on (choose from: NATURE VIEWS, LIVING PLANTS, NATURAL LIGHT, NOISE, NATURAL TEXTURES) separated by commas. Example: [DIAGNOSIS_RESULT: score=12, lowest=LIVING PLANTS, NATURAL LIGHT].\n" +
+                "4. CRITICAL: In your final assessment message, you MUST append the token [DIAGNOSIS_RESULT: score=X, lowest=CATEGORY1, CATEGORY2] at the very end of your response, where X is the score and the lowest categories are the names of the aspects they scored lowest on. You MUST choose category names EXACTLY from this list (spelling and punctuation matter): NATURE VIEWS, LIVING PLANTS, NATURAL LIGHT, ACOUSTIC CALM, NATURAL MATERIALS, AIR & VENTILATION, ORGANIC FORMS, WATER FEATURES, SENSORY RICHNESS, SEASONAL AWARENESS. Separate multiple categories with commas. Example: [DIAGNOSIS_RESULT: score=12, lowest=LIVING PLANTS, NATURAL LIGHT].\n" +
                 "5. Keep your responses warm, conversational, encouraging, and brief."
             } else if (score != null) {
                 val zone = when (score) {
@@ -1148,6 +1162,10 @@ class GardenViewModel @JvmOverloads constructor(
                 imageMimeType = imageMimeType
             )
 
+            if (!GeminiApiClient.isAiError(response)) {
+                recordAiQueryUsed()
+            }
+
             if (_isSpaceDiagnosisMode.value) {
                 // Parse diagnosis result, e.g. [DIAGNOSIS_RESULT: score=14, lowest=NATURE VIEWS, LIVING PLANTS]
                 val scoreRegex = Regex("\\[DIAGNOSIS_RESULT:\\s*score=(\\d+)(?:,\\s*lowest=(.*?))?]", RegexOption.IGNORE_CASE)
@@ -1158,7 +1176,7 @@ class GardenViewModel @JvmOverloads constructor(
                     val parsedCategories = parsedCategoriesStr.split(",")
                         .map { it.trim().uppercase() }
                         .filter { it.isNotBlank() }
-                    
+
                     if (parsedScore != null) {
                         saveAssessmentResult(parsedScore, parsedCategories)
                         _isSpaceDiagnosisMode.value = false
@@ -1191,6 +1209,9 @@ class GardenViewModel @JvmOverloads constructor(
 
         viewModelScope.launch {
             val advice = GeminiApiClient.getGardeningAdvice(prompt)
+            if (!GeminiApiClient.isAiError(advice)) {
+                recordAiQueryUsed()
+            }
             appendAiChatInteraction("Suggest some visual additions and companion compatibility checks!", advice)
             _isAiLoading.value = false
         }
@@ -1198,37 +1219,37 @@ class GardenViewModel @JvmOverloads constructor(
 
     fun generateAILayoutSuggestion() {
         val layout = _activeLayout.value ?: return
-        
+
         val userQuery = "Generate a companion design blueprint for my space!"
         val upsellMsg = "🔒 Free AI Advisor consultation limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock AI garden layout generator, instant database seeding, and dynamic blueprinting! 🌸✨"
         if (checkPremiumLimit(userQuery, upsellMsg, 3)) return
-        
+
         val prompt = buildLayoutSuggestionPrompt(layout)
 
         _isAiLoading.value = true
 
         viewModelScope.launch {
             val response = GeminiApiClient.getGardeningAdvice(prompt)
-            
+            if (!GeminiApiClient.isAiError(response)) {
+                recordAiQueryUsed()
+                parseAndInsertPlants(response, layout.id)
+            }
+
             appendAiChatInteraction(userQuery, response)
-            parseAndInsertPlants(response, layout.id)
 
             _isAiLoading.value = false
         }
     }
 
     // --- Private AI Helper Methods (extracted/refactored) ---
+    // Checks (but does not consume) the daily quota. The quota is only
+    // consumed by recordAiQueryUsed(), called after a request actually
+    // succeeds — a network/API failure must not cost the user a query.
     private fun checkPremiumLimit(userQuery: String, upsellMessage: String, limitCount: Int): Boolean {
         if (_isPremium.value) return false
 
-        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        val today = sdf.format(Date())
-        val storedDate = sharedPrefs.getString("ai_query_date", "")
-        var queryCount = if (storedDate == today) {
-            sharedPrefs.getInt("ai_query_count", 0)
-        } else {
-            0
-        }
+        val queryCount = currentDailyQueryCount()
+        _aiQueryCount.value = queryCount
 
         if (queryCount >= limitCount) {
             val updatedHistory = _aiChatHistory.value.toMutableList()
@@ -1247,12 +1268,6 @@ class GardenViewModel @JvmOverloads constructor(
             return true
         }
 
-        // Increment query count and persist it
-        queryCount++
-        sharedPrefs.edit {
-            putString("ai_query_date", today)
-            putInt("ai_query_count", queryCount)
-        }
         return false
     }
 

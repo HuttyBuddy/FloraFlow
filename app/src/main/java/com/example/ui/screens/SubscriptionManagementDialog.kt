@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.BuildConfig
 import com.example.ui.viewmodel.GardenViewModel
 import com.example.ui.components.FloraFlowButton
 import com.example.ui.components.FloraFlowCard
@@ -56,20 +57,38 @@ fun SubscriptionManagementDialog(
             },
             text = {
                 Text(
-                    "Are you sure you want to cancel your high-speed Master AI insights, exotic species records, and interactive Restoration Journal features? Your custom garden designs will remain saved.",
+                    if (BuildConfig.DEBUG) {
+                        "Are you sure you want to cancel your high-speed Master AI insights, exotic species records, and interactive Restoration Journal features? Your custom garden designs will remain saved."
+                    } else {
+                        "Subscriptions are managed by Google Play. You'll be taken to your Play Store subscriptions page to cancel — your premium access continues until the end of the current billing period."
+                    },
                     style = MaterialTheme.typography.bodyMedium
                 )
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.cancelPremiumSubscription()
                         showCancelConfirmation = false
-                        onDismiss()
-                        android.widget.Toast.makeText(context, "Subscription Downgraded to Free Tier.", android.widget.Toast.LENGTH_LONG).show()
+                        if (BuildConfig.DEBUG) {
+                            viewModel.cancelPremiumSubscription()
+                            onDismiss()
+                            android.widget.Toast.makeText(context, "Subscription Downgraded to Free Tier.", android.widget.Toast.LENGTH_LONG).show()
+                        } else {
+                            val uri = viewModel.billingManager.buildManageSubscriptionUri()
+                            try {
+                                context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, uri))
+                            } catch (e: Exception) {
+                                android.widget.Toast.makeText(context, "Couldn't open Google Play. Please open the Play Store app to manage your subscription.", android.widget.Toast.LENGTH_LONG).show()
+                            }
+                            onDismiss()
+                        }
                     }
                 ) {
-                    Text("Yes, Downgrade Plan", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                    Text(
+                        if (BuildConfig.DEBUG) "Yes, Downgrade Plan" else "Manage on Google Play",
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             },
             dismissButton = {

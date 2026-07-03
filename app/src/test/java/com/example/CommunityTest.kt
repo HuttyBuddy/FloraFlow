@@ -125,13 +125,13 @@ class CommunityTest {
         // Verify we have specific seeded posts
         val succulentPost = posts.find { it.title.contains("Succulents") }
         assertNotNull("Watering succulents post should be seeded", succulentPost)
-        assertEquals("GardenGuru", succulentPost?.author)
+        assertEquals("FloraFlow Team", succulentPost?.author)
         assertEquals("Tips", succulentPost?.category)
 
         // Verify comments are seeded
         val comments = waitForCommentsCount(viewModel, succulentPost!!.id, 2)
-        val cactusComment = comments.find { it.author == "CactusJack" }
-        assertNotNull("CactusJack comment should be present", cactusComment)
+        val cactusComment = comments.find { it.author == "FloraFlow Support" }
+        assertNotNull("FloraFlow Support comment should be present", cactusComment)
     }
 
     @Test

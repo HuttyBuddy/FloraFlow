@@ -96,6 +96,15 @@ android {
   }
 }
 
+// Room schema history — every @Database version bump exports a new JSON
+// snapshot here, which GardenDatabaseMigrationTest uses to verify each
+// migration actually produces the expected schema. Keep this directory
+// committed to git.
+ksp {
+  arg("room.schemaLocation", "$projectDir/schemas")
+}
+
+
 // Ensure the SQLite temp directory exists for Room compiler on Windows
 val sqliteTmpDir = layout.buildDirectory.dir("tmp/sqlite").get().asFile
 if (!sqliteTmpDir.exists()) {
@@ -159,6 +168,7 @@ dependencies {
   testImplementation(libs.androidx.work.testing)
   testImplementation(libs.mockito.core)
   testImplementation(libs.mockito.kotlin)
+  testImplementation(libs.androidx.room.testing)
   androidTestImplementation(platform(libs.androidx.compose.bom))
   androidTestImplementation(libs.androidx.compose.ui.test.junit4)
   androidTestImplementation(libs.androidx.espresso.core)

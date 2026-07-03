@@ -21,3 +21,13 @@ debug.keystore
 node_modules/
 .idea/appInsightsSettings.xml
 .planning/scripts/service-account.json
+
+# Ad-hoc debug/QA artifacts — never source, shouldn't be committed
+.build-outputs/
+/screenshot_*.png
+/screencap*.png
+/uidump*.xml
+/window_dump*.xml
+/diff*.txt
+/diff*.patch
+temp_original*.kt

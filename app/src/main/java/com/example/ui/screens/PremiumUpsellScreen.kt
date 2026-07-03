@@ -37,7 +37,12 @@ fun PremiumUpsellScreen(
     onCloseClick: () -> Unit,
     onUpgradeClick: (isAnnual: Boolean) -> Unit,
     onRestoreClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // Real, Play-verified price + trial length for each plan. Null means
+    // "not yet known" (still loading, or unavailable/mock mode) — the UI
+    // falls back to static placeholder copy in that case rather than block.
+    monthlyOffer: com.example.billing.BillingManager.OfferInfo? = null,
+    annualOffer: com.example.billing.BillingManager.OfferInfo? = null
 ) {
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -110,6 +115,19 @@ fun PremiumUpsellScreen(
         }
     }
 
+    // Fall back to static placeholder copy only while the real Play offer is
+    // unknown (loading, or debug mock mode) — never claim a trial length
+    // that Play Console doesn't actually have configured.
+    val annualPrice = annualOffer?.formattedPrice ?: "$39.99"
+    val annualTrialDays = annualOffer?.trialDays ?: 14
+    val annualTrialLabel = if (annualTrialDays > 0) "$annualTrialDays-Day Free Trial, then $annualPrice/yr" else "$annualPrice/yr"
+
+    val monthlyPrice = monthlyOffer?.formattedPrice ?: "$4.99"
+    val monthlyTrialDays = monthlyOffer?.trialDays ?: 7
+    val monthlyTrialLabel = if (monthlyTrialDays > 0) "$monthlyTrialDays-Day Free Trial, then $monthlyPrice/mo" else "$monthlyPrice/mo"
+
+    val selectedTrialDays = if (selectAnnual) annualTrialDays else monthlyTrialDays
+
     val ctaPricingCard = @Composable {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -141,9 +159,9 @@ fun PremiumUpsellScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Annual Plan (Best Value)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        Text("14-Day Free Trial, then $39.99/yr", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Text(annualTrialLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     }
-                    Text("$3.33/mo", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                    Text(annualPrice, fontWeight = FontWeight.Black, fontSize = 14.sp)
                 }
             }
 
@@ -173,16 +191,16 @@ fun PremiumUpsellScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Monthly Plan", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        Text("7-Day Free Trial, then $4.99/mo", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(monthlyTrialLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Text("$4.99/mo", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                    Text(monthlyPrice, fontWeight = FontWeight.Black, fontSize = 14.sp)
                 }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
             FloraFlowButton(
-                text = if (selectAnnual) "Start 14-Day Free Trial" else "Start 7-Day Free Trial",
+                text = if (selectedTrialDays > 0) "Start $selectedTrialDays-Day Free Trial" else "Subscribe Now",
                 onClick = { onUpgradeClick(selectAnnual) },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = Icons.Default.AutoAwesome

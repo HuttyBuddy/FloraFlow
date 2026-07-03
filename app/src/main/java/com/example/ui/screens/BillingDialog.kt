@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.BuildConfig
 import com.example.ui.viewmodel.GardenViewModel
 import com.example.ui.components.FloraFlowButton
 import com.example.ui.components.FloraFlowCard
@@ -75,21 +76,70 @@ fun BillingDialog(
     val activity = context as? Activity
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
 
-    var currentStep by remember { mutableIntStateOf(1) } // 1: Select Plan, 2: Google Play Mock Sheet, 3: Loading, 4: Success Receipt
+    // Step 2/3 (mock Google Play sheet + loader) only exist to simulate a
+    // purchase in debug builds without real Play products configured. In
+    // release, launchPurchaseFlow hands off to Play's own purchase UI, and
+    // we simply wait for isPremium to flip via onPurchasesUpdated.
+    var currentStep by remember { mutableIntStateOf(1) } // 1: Select Plan, 2: Mock Sheet (debug only), 3: Mock Loading (debug only), 4: Success Receipt
     var selectedPlanIndex by remember { mutableIntStateOf(1) } // Default to Annual Plan
     var progressStatusText by remember { mutableStateOf("Connecting with Google Play Billing Client...") }
+    var purchaseErrorMessage by remember { mutableStateOf<String?>(null) }
+    var isLaunchingRealFlow by remember { mutableStateOf(false) }
+
+    // Real, Play-verified price + trial info for the paywall — queried once
+    // per dialog open so the CTA never advertises a trial Play doesn't have.
+    var monthlyOffer by remember { mutableStateOf<com.example.billing.BillingManager.OfferInfo?>(null) }
+    var annualOffer by remember { mutableStateOf<com.example.billing.BillingManager.OfferInfo?>(null) }
+    LaunchedEffect(Unit) {
+        billingManager.queryOfferDetails(
+            listOf(com.example.billing.BillingManager.PRODUCT_MONTHLY, com.example.billing.BillingManager.PRODUCT_YEARLY)
+        ) { offers ->
+            monthlyOffer = offers[com.example.billing.BillingManager.PRODUCT_MONTHLY]
+            annualOffer = offers[com.example.billing.BillingManager.PRODUCT_YEARLY]
+        }
+    }
 
     val activePlan = tiers[selectedPlanIndex]
 
+    fun startUpgrade(isAnnual: Boolean) {
+        selectedPlanIndex = if (isAnnual) 1 else 0
+        purchaseErrorMessage = null
+        if (BuildConfig.DEBUG && billingManager.inMockMode) {
+            currentStep = 2
+            return
+        }
+        val act = activity
+        if (act == null) {
+            purchaseErrorMessage = "Couldn't start checkout. Please try again from the app."
+            return
+        }
+        val productId = if (isAnnual) com.example.billing.BillingManager.PRODUCT_YEARLY else com.example.billing.BillingManager.PRODUCT_MONTHLY
+        isLaunchingRealFlow = true
+        billingManager.launchPurchaseFlow(
+            activity = act,
+            productId = productId,
+            onMockTrigger = { currentStep = 2 },
+            onError = { message ->
+                isLaunchingRealFlow = false
+                purchaseErrorMessage = message
+            }
+        )
+        // Play's own purchase sheet takes over from here; isLaunchingRealFlow
+        // is cleared once onPurchasesUpdated resolves (success or error).
+    }
+
     // Listen to premium activation to automatically jump to success step
+    // (this is how a REAL purchase completes: Play calls back into
+    // BillingManager, isPremium flips, and we land on the receipt.)
     LaunchedEffect(isPremium) {
         if (isPremium && currentStep < 4) {
+            isLaunchingRealFlow = false
             currentStep = 4
         }
     }
 
-    // Coroutine loader triggered on Step 3 (Processing payment)
-    if (currentStep == 3) {
+    // Coroutine loader triggered on Step 3 — debug-only mock purchase simulation.
+    if (currentStep == 3 && BuildConfig.DEBUG) {
         LaunchedEffect(Unit) {
             progressStatusText = "Connecting with Google Play Billing Client..."
             delay(1000)
@@ -99,7 +149,7 @@ fun BillingDialog(
             delay(1100)
             progressStatusText = "Updating system database with tier entitlements..."
             delay(800)
-            
+
             // Finish purchase action
             viewModel.processPurchase(
                 tier = activePlan.name,
@@ -124,27 +174,29 @@ fun BillingDialog(
         )
     ) {
         if (currentStep == 1) {
-            PremiumUpsellScreen(
-                onCloseClick = { viewModel.setBillingDialogVisible(false) },
-                onUpgradeClick = { isAnnual ->
-                    selectedPlanIndex = if (isAnnual) 1 else 0
-                    if (billingManager.inMockMode) {
-                        currentStep = 2
-                    } else {
-                        activity?.let { act ->
-                            val productId = if (isAnnual) com.example.billing.BillingManager.PRODUCT_YEARLY else com.example.billing.BillingManager.PRODUCT_MONTHLY
-                            billingManager.launchPurchaseFlow(act, productId) {
-                                currentStep = 2
-                            }
-                        } ?: run {
-                            currentStep = 2
-                        }
+            Column {
+                PremiumUpsellScreen(
+                    onCloseClick = { viewModel.setBillingDialogVisible(false) },
+                    onUpgradeClick = { isAnnual -> startUpgrade(isAnnual) },
+                    onRestoreClick = {
+                        viewModel.restorePurchases()
+                    },
+                    monthlyOffer = monthlyOffer,
+                    annualOffer = annualOffer
+                )
+                if (purchaseErrorMessage != null) {
+                    LaunchedEffect(purchaseErrorMessage) {
+                        android.widget.Toast.makeText(context, purchaseErrorMessage, android.widget.Toast.LENGTH_LONG).show()
+                        purchaseErrorMessage = null
                     }
-                },
-                onRestoreClick = {
-                    viewModel.restorePurchases()
                 }
-            )
+            }
+        } else if (currentStep in 2..3 && !BuildConfig.DEBUG) {
+            // Should be unreachable in release (mock steps are debug-only),
+            // but never render a fake receipt if somehow reached.
+            LaunchedEffect(Unit) {
+                currentStep = 1
+            }
         } else {
             Box(
                 modifier = Modifier
@@ -230,49 +282,27 @@ fun BillingDialog(
                             }
                         }
 
-                        // Navigation Footer buttons (excluding Loading state 3 and Receipt page 4)
-                        if (currentStep in 1..2) {
+                        // Navigation footer for the debug-only mock sheet (step 2).
+                        // Real purchases hand off to Play's own UI and resolve via
+                        // isPremium, so this footer is unreachable in release builds.
+                        if (currentStep == 2) {
                             Spacer(modifier = Modifier.height(16.dp))
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                if (currentStep > 1) {
-                                    FloraFlowButton(
-                                        text = "Back",
-                                        onClick = {
-                                            currentStep--
-                                        },
-                                        modifier = Modifier.weight(1f),
-                                        variant = ButtonVariant.Outlined
-                                    )
-                                }
+                                FloraFlowButton(
+                                    text = "Back",
+                                    onClick = { currentStep = 1 },
+                                    modifier = Modifier.weight(1f),
+                                    variant = ButtonVariant.Outlined
+                                )
 
                                 FloraFlowButton(
-                                    text = when (currentStep) {
-                                        1 -> "Select Plan"
-                                        else -> "Pay Now (${activePlan.price})"
-                                    },
-                                    onClick = {
-                                        if (currentStep == 1) {
-                                            if (billingManager.inMockMode) {
-                                                currentStep = 2
-                                            } else {
-                                                activity?.let { act ->
-                                                    val productId = if (activePlan.isAnnual) com.example.billing.BillingManager.PRODUCT_YEARLY else com.example.billing.BillingManager.PRODUCT_MONTHLY
-                                                    billingManager.launchPurchaseFlow(act, productId) {
-                                                        currentStep = 2
-                                                    }
-                                                } ?: run {
-                                                    currentStep = 2
-                                                }
-                                            }
-                                        } else if (currentStep == 2) {
-                                            currentStep = 3
-                                        }
-                                    },
+                                    text = "Pay Now (${activePlan.price})",
+                                    onClick = { currentStep = 3 },
                                     modifier = Modifier
-                                        .weight(if (currentStep > 1) 1.5f else 1f)
+                                        .weight(1.5f)
                                         .testTag("billing_next_button")
                                 )
                             }

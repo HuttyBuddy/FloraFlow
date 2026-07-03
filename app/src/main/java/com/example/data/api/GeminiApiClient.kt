@@ -9,6 +9,7 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Query
 import retrofit2.http.Url
@@ -69,6 +70,7 @@ interface GeminiApiService {
     suspend fun generateContent(
         @Url url: String,
         @Query("key") apiKey: String?,
+        @Header("X-App-Secret") appSecret: String?,
         @Body request: GenerateContentRequest
     ): GenerateContentResponse
 }
@@ -104,11 +106,20 @@ object GeminiApiClient {
         imageMimeType: String? = "image/jpeg",
         apiKey: String = BuildConfig.GEMINI_API_KEY
     ): String = withContext(Dispatchers.IO) {
-        val proxyUrl = try { BuildConfig.GEMINI_PROXY_URL } catch (_: Exception) { "" }
-        val isProxyActive = proxyUrl.isNotEmpty() && proxyUrl != "none" && proxyUrl != "YOUR_PROXY_URL"
+        // Normalize the configured proxy value so it works whether the .env
+        // entry is host-only ("my-proxy.run.app") or was pasted with a scheme
+        // and/or trailing slash ("https://my-proxy.run.app/") — either form
+        // must not produce a malformed "https://https://..." URL.
+        val rawProxyValue = try { BuildConfig.GEMINI_PROXY_URL } catch (_: Exception) { "" }
+        val proxyHost = rawProxyValue
+            .trim()
+            .removePrefix("https://")
+            .removePrefix("http://")
+            .trimEnd('/')
+        val isProxyActive = proxyHost.isNotEmpty() && proxyHost != "none" && proxyHost != "YOUR_PROXY_URL"
 
         val endpointUrl = if (isProxyActive) {
-            "https://$proxyUrl/v1beta/models/gemini-2.5-flash:generateContent"
+            "https://$proxyHost/v1beta/models/gemini-2.5-flash:generateContent"
         } else {
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
         }
@@ -124,6 +135,12 @@ object GeminiApiClient {
                 }
             }
             apiKey
+        }
+
+        val appSecret = if (isProxyActive) {
+            try { BuildConfig.APP_SHARED_SECRET.takeIf { it.isNotBlank() && it != "YOUR_APP_SHARED_SECRET" } } catch (_: Exception) { null }
+        } else {
+            null
         }
 
         val formattedContents = mutableListOf<Content>()
@@ -149,7 +166,7 @@ object GeminiApiClient {
         )
 
         try {
-            val response = service.generateContent(endpointUrl, requestKey, request)
+            val response = service.generateContent(endpointUrl, requestKey, appSecret, request)
             val candidate = response.candidates?.firstOrNull()
             if (candidate != null && candidate.finishReason != null) {
                 if (candidate.finishReason.contains("SAFETY", ignoreCase = true)) {

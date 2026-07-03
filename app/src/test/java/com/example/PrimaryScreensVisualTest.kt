@@ -154,7 +154,7 @@ class PrimaryScreensVisualTest {
     fun testPremiumUpsellScreenVisual() {
         composeTestRule.setContent {
             MyApplicationTheme {
-                PremiumUpsellScreen(onUpgradeClick = {}, onRestoreClick = {})
+                PremiumUpsellScreen(onUpgradeClick = {}, onRestoreClick = {}, onCloseClick = {})
             }
         }
         composeTestRule.waitForIdle()
@@ -166,7 +166,7 @@ class PrimaryScreensVisualTest {
     fun testPremiumUpsellScreenTabletLandscapeVisual() {
         composeTestRule.setContent {
             MyApplicationTheme {
-                PremiumUpsellScreen(onUpgradeClick = {}, onRestoreClick = {})
+                PremiumUpsellScreen(onUpgradeClick = {}, onRestoreClick = {}, onCloseClick = {})
             }
         }
         composeTestRule.waitForIdle()
