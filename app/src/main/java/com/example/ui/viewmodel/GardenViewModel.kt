@@ -779,6 +779,7 @@ class GardenViewModel @JvmOverloads constructor(
 
     fun deleteLayout(layout: GardenLayout) {
         viewModelScope.launch(Dispatchers.IO) {
+            repository.deleteCareTasksByLayout(layout.id)
             repository.deletePlantsByLayout(layout.id)
             repository.deleteLayout(layout)
             if (_activeLayout.value?.id == layout.id) {
@@ -1056,9 +1057,20 @@ class GardenViewModel @JvmOverloads constructor(
                 "Keep answers highly engaging, brief, and structured with clear tips."
             }
 
+            val cleanHistory = currentHistory.filterIndexed { index, content ->
+                if (content.role == "model" && GeminiApiClient.isAiError(content.parts.firstOrNull()?.text ?: "")) {
+                    false
+                } else if (content.role == "user" && index + 1 < currentHistory.size &&
+                           currentHistory[index + 1].role == "model" && GeminiApiClient.isAiError(currentHistory[index + 1].parts.firstOrNull()?.text ?: "")) {
+                    false
+                } else {
+                    true
+                }
+            }
+
             val response = GeminiApiClient.getGardeningAdvice(
                 prompt = message,
-                chatHistory = currentHistory.dropLast(1),
+                chatHistory = cleanHistory.dropLast(1),
                 systemInstruction = systemIns,
                 imageBytesBase64 = imageBytesBase64,
                 imageMimeType = imageMimeType
@@ -1176,6 +1188,14 @@ class GardenViewModel @JvmOverloads constructor(
             val lines = response.lines().filter { it.contains("|") }
             val plantsToInsert = mutableListOf<Plant>()
             for (line in lines) {
+                if (line.contains("Plant Name", ignoreCase = true) || 
+                    line.contains("PlantName", ignoreCase = true) ||
+                    line.contains("PlantType", ignoreCase = true) ||
+                    line.contains("IdealSoil", ignoreCase = true) ||
+                    line.contains("SunExposure", ignoreCase = true) ||
+                    line.contains("---")) {
+                    continue
+                }
                 val parts = line.split("|").map { it.trim() }
                 if (parts.size >= 2) {
                     val name = parts[0].replace(Regex("^[^a-zA-Z0-9]+"), "")
@@ -1335,14 +1355,14 @@ class GardenViewModel @JvmOverloads constructor(
         if (sharedPrefs.getBoolean("has_rated_or_declined", false)) return
         val currentCount = sharedPrefs.getInt("positive_interaction_count", 0) + 1
         sharedPrefs.edit { putInt("positive_interaction_count", currentCount) }
-        if (currentCount >= 2) {
+        if (currentCount >= 10) {
             _showInAppRatePrompt.value = true
         }
     }
 
     fun dismissRatePrompt() {
         _showInAppRatePrompt.value = false
-        sharedPrefs.edit { putInt("positive_interaction_count", 0) }
+        sharedPrefs.edit { putBoolean("has_rated_or_declined", true) }
     }
 
     fun declineRatePrompt() {
@@ -1723,9 +1743,9 @@ data class FeedbackSubmission(
     val timestamp: Long = System.currentTimeMillis()
 ) {
     fun toSerializedString(): String {
-        val safeCategory = category.replace("|", "\\pipe")
-        val safeComments = comments.replace("|", "\\pipe").replace("\n", "\\newline")
-        val safeEmail = email.replace("|", "\\pipe")
+        val safeCategory = category.replace("|", "\\pipe").replace("#", "\\hash")
+        val safeComments = comments.replace("|", "\\pipe").replace("\n", "\\newline").replace("#", "\\hash")
+        val safeEmail = email.replace("|", "\\pipe").replace("#", "\\hash")
         return "$safeCategory|$rating|$safeComments|$safeEmail|$timestamp"
     }
 
@@ -1733,10 +1753,10 @@ data class FeedbackSubmission(
         fun fromSerializedString(str: String): FeedbackSubmission? {
             val parts = str.split("|")
             if (parts.size >= 5) {
-                val category = parts[0].replace("\\pipe", "|")
+                val category = parts[0].replace("\\pipe", "|").replace("\\hash", "#")
                 val rating = parts[1].toIntOrNull() ?: 3
-                val comments = parts[2].replace("\\pipe", "|").replace("\\newline", "\n")
-                val email = parts[3].replace("\\pipe", "|")
+                val comments = parts[2].replace("\\pipe", "|").replace("\\newline", "\n").replace("\\hash", "#")
+                val email = parts[3].replace("\\pipe", "|").replace("\\hash", "#")
                 val timestamp = parts[4].toLongOrNull() ?: System.currentTimeMillis()
                 return FeedbackSubmission(category, rating, comments, email, timestamp)
             }

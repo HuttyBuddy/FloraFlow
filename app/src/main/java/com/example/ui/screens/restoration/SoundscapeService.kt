@@ -256,18 +256,18 @@ class SoundscapeService : Service() {
         )
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_media_play)
+            .setSmallIcon(com.example.R.drawable.ic_notification_heart)
             .setContentTitle("FloraFlow Restoration Journal")
             .setContentText("Listening to: $currentTrackName")
             .setOngoing(isPlaying)
             .setContentIntent(openAppPendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .addAction(
-                if (isPlaying) android.R.drawable.ic_media_pause else android.R.drawable.ic_media_play,
+                if (isPlaying) com.example.R.drawable.ic_pause else com.example.R.drawable.ic_play,
                 if (isPlaying) "Pause" else "Play",
                 playPausePendingIntent
             )
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", stopPendingIntent)
+            .addAction(com.example.R.drawable.ic_close, "Stop", stopPendingIntent)
             
         return builder.build()
     }

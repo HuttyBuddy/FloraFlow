@@ -14,7 +14,7 @@ class GeminiApiClientTest {
         )
 
         assertEquals(
-            "API Key is missing. Please enter your GEMINI_API_KEY in the AI Studio Secrets panel.",
+            "Developer Error: GEMINI_API_KEY is not configured. Please add your key to the .env file.",
             result
         )
     }
@@ -27,7 +27,7 @@ class GeminiApiClientTest {
         )
 
         assertEquals(
-            "API Key is missing. Please enter your GEMINI_API_KEY in the AI Studio Secrets panel.",
+            "Developer Error: GEMINI_API_KEY is not configured. Please add your key to the .env file.",
             result
         )
     }

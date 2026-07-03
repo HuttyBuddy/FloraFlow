@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.window.Dialog
 import com.example.ui.viewmodel.GardenViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
@@ -71,14 +72,36 @@ data class AttachedImage(
 
 fun convertUriToBase64(context: android.content.Context, uri: android.net.Uri): String? {
     return try {
-        val inputStream = context.contentResolver.openInputStream(uri)
-        val bytes = inputStream?.readBytes()
-        inputStream?.close()
-        if (bytes != null) {
-            android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
-        } else null
+        val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+        val originalBitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+        inputStream.close()
+        if (originalBitmap == null) return null
+        
+        val maxDimension = 1024
+        val width = originalBitmap.width
+        val height = originalBitmap.height
+        val scaledBitmap = if (width > maxDimension || height > maxDimension) {
+            val ratio = width.toFloat() / height.toFloat()
+            val newWidth = if (ratio > 1) maxDimension else (maxDimension * ratio).toInt()
+            val newHeight = if (ratio > 1) (maxDimension / ratio).toInt() else maxDimension
+            android.graphics.Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true)
+        } else {
+            originalBitmap
+        }
+        
+        val outputStream = java.io.ByteArrayOutputStream()
+        scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
+        val compressedBytes = outputStream.toByteArray()
+        outputStream.close()
+        
+        if (scaledBitmap != originalBitmap) {
+            scaledBitmap.recycle()
+        }
+        originalBitmap.recycle()
+        
+        android.util.Base64.encodeToString(compressedBytes, android.util.Base64.NO_WRAP)
     } catch (e: Exception) {
-        android.util.Log.e("AiStudioScreen", "Error: ${e.message}")
+        android.util.Log.e("AiStudioScreen", "Error downscaling image: ${e.message}")
         null
     }
 }
@@ -87,6 +110,7 @@ fun getUriMimeType(context: android.content.Context, uri: android.net.Uri): Stri
     return context.contentResolver.getType(uri) ?: "image/jpeg"
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun AiStudioScreen(
     viewModel: GardenViewModel,

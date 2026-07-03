@@ -10,17 +10,11 @@ import com.example.R
 import com.example.data.database.GardenDatabase
 import com.example.data.model.MoodLog
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class GardenWidgetProvider : AppWidgetProvider() {
-
-    private data class WidgetData(
-        val streak: Int,
-        val nextTask: String,
-        val weather: String,
-        val neuralLoad: String,
-        val stepsProgress: String
-    )
 
     override fun onUpdate(
         context: Context,
@@ -30,7 +24,7 @@ class GardenWidgetProvider : AppWidgetProvider() {
         val database = GardenDatabase.getDatabase(context)
         val dao = database.gardenDao()
 
-        val widgetData = runBlocking {
+        CoroutineScope(Dispatchers.IO).launch {
             val moodLogs = dao.getAllMoodLogs().first()
             val pendingTasks = dao.getPendingCareTasks().first()
             val assessments = dao.getAllAssessmentResults().first()
@@ -64,7 +58,7 @@ class GardenWidgetProvider : AppWidgetProvider() {
                 "Neural Load: Not Taken"
             }
 
-            val appPrefs = context.getSharedPreferences("floraflow_billing_prefs", Context.MODE_PRIVATE)
+            val appPrefs = context.getSharedPreferences("floraflow_prefs", Context.MODE_PRIVATE)
             val isAssessmentSkipped = appPrefs.getBoolean("assessment_skipped", false)
             val finalNeuralStr = if (isAssessmentSkipped) "Neural Load: Skipped" else neuralStr
 
@@ -77,48 +71,51 @@ class GardenWidgetProvider : AppWidgetProvider() {
             if (step3) completedCount++
             val stepsStr = "Next Steps: $completedCount/3 Completed"
 
-            WidgetData(streakVal, nextTaskStr, weatherStr, finalNeuralStr, stepsStr)
-        }
+            for (appWidgetId in appWidgetIds) {
+                val views = RemoteViews(context.packageName, R.layout.garden_widget)
+                views.setTextViewText(R.id.widget_streak, "🔥 $streakVal Day Streak")
+                views.setTextViewText(R.id.widget_next_task, nextTaskStr)
+                views.setTextViewText(R.id.widget_weather, weatherStr)
+                views.setTextViewText(R.id.widget_neural_load, finalNeuralStr)
+                views.setTextViewText(R.id.widget_steps_progress, stepsStr)
 
-        for (appWidgetId in appWidgetIds) {
-            val views = RemoteViews(context.packageName, R.layout.garden_widget)
-            views.setTextViewText(R.id.widget_streak, "🔥 ${widgetData.streak} Day Streak")
-            views.setTextViewText(R.id.widget_next_task, widgetData.nextTask)
-            views.setTextViewText(R.id.widget_weather, widgetData.weather)
-            views.setTextViewText(R.id.widget_neural_load, widgetData.neuralLoad)
-            views.setTextViewText(R.id.widget_steps_progress, widgetData.stepsProgress)
+                val intent = Intent(context, com.example.MainActivity::class.java)
+                val pendingIntent = PendingIntent.getActivity(
+                    context,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                views.setOnClickPendingIntent(R.id.widget_streak, pendingIntent)
+                views.setOnClickPendingIntent(R.id.widget_next_task, pendingIntent)
+                views.setOnClickPendingIntent(R.id.widget_weather, pendingIntent)
+                views.setOnClickPendingIntent(R.id.widget_neural_load, pendingIntent)
+                views.setOnClickPendingIntent(R.id.widget_steps_progress, pendingIntent)
 
-            val intent = Intent(context, com.example.MainActivity::class.java)
-            val pendingIntent = PendingIntent.getActivity(
-                context,
-                0,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            views.setOnClickPendingIntent(R.id.widget_streak, pendingIntent)
-            views.setOnClickPendingIntent(R.id.widget_next_task, pendingIntent)
-            views.setOnClickPendingIntent(R.id.widget_weather, pendingIntent)
-            views.setOnClickPendingIntent(R.id.widget_neural_load, pendingIntent)
-            views.setOnClickPendingIntent(R.id.widget_steps_progress, pendingIntent)
-
-            appWidgetManager.updateAppWidget(appWidgetId, views)
+                appWidgetManager.updateAppWidget(appWidgetId, views)
+            }
         }
     }
 
     private fun calculateStreak(logs: List<MoodLog>): Int {
         if (logs.isEmpty()) return 0
-        val dayMillis = 24 * 60 * 60 * 1000
-        val days = logs.map { it.timestamp / dayMillis }.distinct().sortedDescending()
+        val localZone = java.time.ZoneId.systemDefault()
+        val today = java.time.LocalDate.now(localZone)
 
-        var streak = 1
-        val today = System.currentTimeMillis() / dayMillis
+        val dates = logs.map { 
+            java.time.Instant.ofEpochMilli(it.timestamp).atZone(localZone).toLocalDate() 
+        }.distinct().sortedDescending()
 
-        if (days.first() < today - 1) {
+        if (dates.isEmpty()) return 0
+
+        val firstDate = dates.first()
+        if (firstDate != today && firstDate != today.minusDays(1)) {
             return 0
         }
 
-        for (i in 0 until days.size - 1) {
-            if (days[i] - days[i+1] == 1L) {
+        var streak = 1
+        for (i in 0 until dates.size - 1) {
+            if (dates[i].minusDays(1) == dates[i+1]) {
                 streak++
             } else {
                 break

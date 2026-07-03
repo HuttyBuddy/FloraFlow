@@ -96,6 +96,9 @@ class CareScheduler(
         val now = System.currentTimeMillis()
         val dueTodayCount = pendingTasks.count { it.dueDate <= now }
 
+        val notifiedPrefs = context.getSharedPreferences("floraflow_notifications", Context.MODE_PRIVATE)
+        val notifiedIds = notifiedPrefs.getStringSet("notified_task_ids", emptySet())?.toMutableSet() ?: mutableSetOf()
+
         // Check for Plant Rescue Alerts (WATER task overdue by 3+ days)
         val overdueWaterTasks = pendingTasks.filter {
             it.taskType == "WATER" && (now - it.dueDate) >= TimeUnit.DAYS.toMillis(3)
@@ -103,30 +106,47 @@ class CareScheduler(
 
         if (overdueWaterTasks.isNotEmpty()) {
             val task = overdueWaterTasks.minByOrNull { it.dueDate }!!
-            val overdueDays = TimeUnit.MILLISECONDS.toDays(now - task.dueDate)
-            val totalDays = task.intervalDays + overdueDays
-            val title = "🚨 Plant Rescue Alert!"
-            val message = "Your ${task.plantName} hasn't been watered in $totalDays days — it might be getting thirsty."
-            NotificationHelper.sendCareReminder(context, title, message, androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+            val taskIdStr = task.id.toString()
+            val notifKey = "rescue_$taskIdStr"
+            if (!notifiedIds.contains(notifKey)) {
+                val overdueDays = TimeUnit.MILLISECONDS.toDays(now - task.dueDate)
+                val totalDays = task.intervalDays + overdueDays
+                val title = "🚨 Plant Rescue Alert!"
+                val message = "Your ${task.plantName} hasn't been watered in $totalDays days — it might be getting thirsty."
+                NotificationHelper.sendCareReminder(context, title, message, androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+                
+                notifiedIds.add(notifKey)
+                notifiedPrefs.edit().putStringSet("notified_task_ids", notifiedIds).apply()
+            }
         } else if (dueTodayCount > 0) {
             // Weather-aware notification copies
             val firstTask = pendingTasks.firstOrNull { it.dueDate <= now }
-            val plantName = firstTask?.plantName ?: "plants"
-            val title = "🌸 FloraFlow Garden Care"
-            
-            val message = when {
-                isRaining -> {
-                    "Rain tonight in ${weather.cityName} — your $plantName can skip watering today."
-                }
-                isHeatwave -> {
-                    "Heatwave alert! Give your $plantName extra shade and a deep soak."
-                }
-                else -> {
-                    "Clear skies in ${weather.cityName} — your $plantName is ready for care!"
+            if (firstTask != null) {
+                val taskIdStr = firstTask.id.toString()
+                val notifKey = "due_$taskIdStr"
+                if (!notifiedIds.contains(notifKey)) {
+                    val plantName = firstTask.plantName
+                    val title = "🌸 FloraFlow Garden Care"
+                    val message = when {
+                        isRaining -> "Rain tonight in ${weather.cityName} — your $plantName can skip watering today."
+                        isHeatwave -> "Heatwave alert! Give your $plantName extra shade and a deep soak."
+                        else -> "Clear skies in ${weather.cityName} — your $plantName is ready for care!"
+                    }
+                    NotificationHelper.sendCareReminder(context, title, message)
+                    
+                    notifiedIds.add(notifKey)
+                    notifiedPrefs.edit().putStringSet("notified_task_ids", notifiedIds).apply()
                 }
             }
-            NotificationHelper.sendCareReminder(context, title, message)
         }
+
+        // Clean up old notified IDs to avoid SharedPreferences bloating
+        val currentPendingIds = pendingTasks.map { it.id.toString() }.toSet()
+        val prunedNotifiedIds = notifiedIds.filter { id ->
+            val actualId = id.substringAfter("_")
+            currentPendingIds.contains(actualId)
+        }.toSet()
+        notifiedPrefs.edit().putStringSet("notified_task_ids", prunedNotifiedIds).apply()
 
         // Special weather alerts (e.g. Frost warnings)
         if (isFrost) {

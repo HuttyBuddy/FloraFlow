@@ -63,12 +63,30 @@ import androidx.work.WorkManager
 import androidx.work.ExistingPeriodicWorkPolicy
 import java.util.concurrent.TimeUnit
 import com.example.ui.screens.dashboard.CareSyncWorker
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     private val viewModel: GardenViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            val requestPermissionLauncher = registerForActivityResult(
+                androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+            ) { isGranted: Boolean ->
+                if (isGranted) {
+                    android.util.Log.d("MainActivity", "Notification permission granted.")
+                }
+            }
+            if (androidx.core.content.ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
 
         try {
             val workRequest = PeriodicWorkRequestBuilder<CareSyncWorker>(12, TimeUnit.HOURS).build()
@@ -109,6 +127,7 @@ class MainActivity : ComponentActivity() {
                 var showSplash by remember { mutableStateOf(value = true) }
 
                 LaunchedEffect(Unit) {
+                    delay(1500)
                     showSplash = false
                 }
 
@@ -262,8 +281,7 @@ class MainActivity : ComponentActivity() {
                                 )
                             },
                             bottomBar = {
-                                val density = androidx.compose.ui.platform.LocalDensity.current
-                                val labelFontSize = remember(density) { with(density) { 8.5.dp.toSp() } }
+                                val labelFontSize = 10.sp
                                 val uniformTextStyle = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = labelFontSize,
                                     letterSpacing = 0.sp,
@@ -282,9 +300,9 @@ class MainActivity : ComponentActivity() {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(80.dp)
                                         .background(MaterialTheme.colorScheme.surfaceVariant)
                                         .navigationBarsPadding()
+                                        .height(80.dp)
                                         .testTag("app_navigation_bar")
                                 ) {
                                     // Sliding indicator pill

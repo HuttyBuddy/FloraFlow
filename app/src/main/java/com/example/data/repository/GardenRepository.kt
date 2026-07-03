@@ -78,6 +78,7 @@ class GardenRepository(private val gardenDao: GardenDao) {
     suspend fun completeCareTask(id: Int, completedDate: Long) = gardenDao.completeCareTask(id, completedDate)
     suspend fun deleteCareTaskById(id: Int) = gardenDao.deleteCareTaskById(id)
     suspend fun deleteCareTasksByPlant(plantId: Int) = gardenDao.deleteCareTasksByPlant(plantId)
+    suspend fun deleteCareTasksByLayout(layoutId: Int) = gardenDao.deleteCareTasksByLayout(layoutId)
 
     // --- Restoration Logs ---
     val allRestorationLogs: Flow<List<RestorationLog>> = gardenDao.getAllRestorationLogs()

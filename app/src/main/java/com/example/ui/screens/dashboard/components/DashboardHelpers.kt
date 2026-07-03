@@ -9,25 +9,30 @@ import com.example.data.model.MoodLog
 
 // Helpers
 fun isToday(timestamp: Long): Boolean {
-    val dayMillis = 24 * 60 * 60 * 1000
-    val todayStart = (System.currentTimeMillis() / dayMillis) * dayMillis
-    return timestamp >= todayStart
+    val localDate = java.time.Instant.ofEpochMilli(timestamp).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+    val todayDate = java.time.LocalDate.now(java.time.ZoneId.systemDefault())
+    return localDate == todayDate
 }
 
 fun calculateStreak(logs: List<MoodLog>): Int {
     if (logs.isEmpty()) return 0
-    val dayMillis = 24 * 60 * 60 * 1000
-    val days = logs.map { it.timestamp / dayMillis }.distinct().sortedDescending()
+    val localZone = java.time.ZoneId.systemDefault()
+    val today = java.time.LocalDate.now(localZone)
     
-    var streak = 1
-    val today = System.currentTimeMillis() / dayMillis
+    val dates = logs.map { 
+        java.time.Instant.ofEpochMilli(it.timestamp).atZone(localZone).toLocalDate() 
+    }.distinct().sortedDescending()
     
-    if (days.first() < today - 1) {
-        return 0 // Streak broken
+    if (dates.isEmpty()) return 0
+    
+    val firstDate = dates.first()
+    if (firstDate != today && firstDate != today.minusDays(1)) {
+        return 0
     }
     
-    for (i in 0 until days.size - 1) {
-        if (days[i] - days[i+1] == 1L) {
+    var streak = 1
+    for (i in 0 until dates.size - 1) {
+        if (dates[i].minusDays(1) == dates[i+1]) {
             streak++
         } else {
             break

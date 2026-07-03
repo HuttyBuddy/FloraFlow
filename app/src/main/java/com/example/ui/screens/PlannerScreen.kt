@@ -42,6 +42,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.nativeCanvas
 
+fun plantMatchesRule(plantName: String, ruleName: String): Boolean {
+    val words = plantName.lowercase().split(Regex("[^a-zA-Z0-9]+")).filter { it.isNotBlank() }
+    return words.contains(ruleName.lowercase())
+}
+
 // Companion Planting Synergy Checking Logic
 fun checkPlantSynergy(plant1: String, plant2: String): Boolean {
     val p1 = plant1.lowercase()
@@ -62,7 +67,7 @@ fun checkPlantSynergy(plant1: String, plant2: String): Boolean {
     )
     
     return companionRules.any { rule ->
-        rule.any { r -> p1.contains(r) } && rule.any { r -> p2.contains(r) }
+        rule.any { r -> plantMatchesRule(p1, r) } && rule.any { r -> plantMatchesRule(p2, r) }
     }
 }
 
@@ -85,7 +90,7 @@ fun checkPlantConflict(plant1: String, plant2: String): Boolean {
     )
     
     return conflictRules.any { rule ->
-        rule.any { r -> p1.contains(r) } && rule.any { r -> p2.contains(r) }
+        rule.any { r -> plantMatchesRule(p1, r) } && rule.any { r -> plantMatchesRule(p2, r) }
     }
 }
 

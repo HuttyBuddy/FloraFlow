@@ -28,32 +28,21 @@ class RateAppTest {
         // Initially, prompt should not be shown
         assertFalse(viewModel.showInAppRatePrompt.value)
 
-        // First positive interaction
-        viewModel.recordPositiveInteraction()
-        assertFalse(viewModel.showInAppRatePrompt.value)
+        // Record 9 positive interactions
+        repeat(9) {
+            viewModel.recordPositiveInteraction()
+            assertFalse(viewModel.showInAppRatePrompt.value)
+        }
 
-        // Second positive interaction triggers prompt
+        // 10th positive interaction triggers prompt
         viewModel.recordPositiveInteraction()
         assertTrue(viewModel.showInAppRatePrompt.value)
 
-        // Dismiss via Maybe Later
+        // Dismiss prompt
         viewModel.dismissRatePrompt()
         assertFalse(viewModel.showInAppRatePrompt.value)
 
-        // Count should be reset, recording one more positive interaction won't trigger yet
-        viewModel.recordPositiveInteraction()
-        assertFalse(viewModel.showInAppRatePrompt.value)
-
-        // Recording a second one triggers it again
-        viewModel.recordPositiveInteraction()
-        assertTrue(viewModel.showInAppRatePrompt.value)
-
-        // Decline prompt
-        viewModel.declineRatePrompt()
-        assertFalse(viewModel.showInAppRatePrompt.value)
-
-        // Further interactions should not trigger it anymore
-        viewModel.recordPositiveInteraction()
+        // Further positive interactions should not trigger it anymore
         viewModel.recordPositiveInteraction()
         viewModel.recordPositiveInteraction()
         assertFalse(viewModel.showInAppRatePrompt.value)

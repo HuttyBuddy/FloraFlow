@@ -51,7 +51,7 @@ object NotificationHelper {
         val soundUri = android.net.Uri.parse("android.resource://${context.packageName}/raw/wind_chime")
 
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(com.example.R.drawable.ic_logo_heart)
+            .setSmallIcon(com.example.R.drawable.ic_notification_heart)
             .setContentTitle(title)
             .setContentText(message)
             .setPriority(priority)

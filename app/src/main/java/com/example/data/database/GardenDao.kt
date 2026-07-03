@@ -90,6 +90,9 @@ interface GardenDao {
     @Query("DELETE FROM care_tasks WHERE plantId = :plantId")
     suspend fun deleteCareTasksByPlant(plantId: Int)
 
+    @Query("DELETE FROM care_tasks WHERE plantId IN (SELECT id FROM plants WHERE layoutId = :layoutId)")
+    suspend fun deleteCareTasksByLayout(layoutId: Int)
+
     // --- Community ---
     @Query("SELECT * FROM community_posts ORDER BY timestamp DESC")
     fun getAllPosts(): Flow<List<com.example.data.model.CommunityPost>>

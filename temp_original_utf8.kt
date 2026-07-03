@@ -422,133 +422,83 @@ fun RestorationJournalScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Daily Reflection
+                    // Mindfulness checklist
                     Card(
                         shape = RoundedCornerShape(24.dp),
                         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E352F).copy(alpha = 0.7f)),
                         border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.15f)),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 16.dp)
+                            .padding(vertical = 8.dp)
                     ) {
                         Column(
                             modifier = Modifier.padding(20.dp)
                         ) {
                             Text(
-                                text = "📝 Daily Reflection",
+                                text = "🧘 Today's Mindfulness Tasks",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFA8E6CF)
                             )
                             Text(
-                                text = "How did your space feel today?",
+                                text = "Complete layout tasks to train sensory grounding and log progress",
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.5f),
                                 modifier = Modifier.padding(bottom = 12.dp)
                             )
-                                    
-                            TextField(
-                                value = viewModel.dailyReflection.collectAsState().value,
-                                onValueChange = { viewModel.updateDailyReflection(it) },
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text("Write your thoughts...", color = Color.White.copy(alpha = 0.3f))
-                                },
-                                colors = TextFieldDefaults.colors(
-                                    focusedTextColor = Color.White,
-                                    unfocusedTextColor = Color.White,
-                                    focusedContainerColor = Color(0xFF0F261D).copy(alpha = 0.3f),
-                                    unfocusedContainerColor = Color(0xFF0F261D).copy(alpha = 0.3f),
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent
-                                ),
-                                singleLine = false
-                            )
-                                    
-                            Spacer(modifier = Modifier.height(16.dp))
-                                    
-                            Text("Select your mood:", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+
+                            // Grounding progress indicator
+                            val taskProgress = if (availableTasks.isNotEmpty()) {
+                                completedTasksList.size.toFloat() / availableTasks.size
+                            } else 0f
+                            
                             Row(
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Grounding Progress: ${completedTasksList.size}/${availableTasks.size}",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFFA8E6CF),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Text(
+                                    text = "${(taskProgress * 100).toInt()}%",
+                                    fontSize = 12.sp,
+                                    color = Color(0xFFA8E6CF),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            LinearProgressIndicator(
+                                progress = taskProgress,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 8.dp)
+                                    .height(6.dp)
+                                    .clip(RoundedCornerShape(3.dp))
                                     .padding(bottom = 16.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                listOf("Peaceful", "Energized", "Refreshed", "Stressed", "Overwhelmed").forEach { mood ->
-                                    FilterChip(
-                                        selected = viewModel.selectedMood.collectAsState().value == mood,
-                                        onClick = { viewModel.updateSelectedMood(mood) },
-                                        label = { Text(mood) },
-                                        colors = FilterChipDefaults.filterChipColors(
-                                            selectedContainerColor = Color(0xFF81C784),
-                                            selectedLabelColor = Color.Black,
-                                            labelColor = Color.White
-                                        )
-                                    )
-                                }
-                            }
-
-                            Button(
-                                onClick = {
-                                    viewModel.saveRestorationLog(
-                                        nriScore = if (activeLayout != null && activePlants.isNotEmpty()) nriScore else 30,
-                                        completedTasks = completedTasksList.toList()
-                                    )
-                                    viewModel.logMood(
-                                        mood = viewModel.selectedMood.value,
-                                        score = when (viewModel.selectedMood.value) {
-                                            "Peaceful" -> 5
-                                            "Refreshed" -> 5
-                                            "Energized" -> 4
-                                            "Stressed" -> 2
-                                            "Overwhelmed" -> 1
-                                            else -> 3
-                                        },
-                                        duration = 15,
-                                        notes = viewModel.dailyReflection.value
-                                    )
-                                    viewModel.updateDailyReflection("")
-                                    Toast.makeText(context, "Reflection saved successfully!", Toast.LENGTH_SHORT).show()
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF81C784)),
-                                shape = RoundedCornerShape(24.dp),
-                                modifier = Modifier.fillMaxWidth().height(48.dp)
-                            ) {
-                                Text("Save Journal Entry", color = Color.Black, fontWeight = FontWeight.Bold)
-                            }
-                        }
-                    }
-                            
-                    Spacer(modifier = Modifier.height(24.dp))
-                            
-                    Card(
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E352F).copy(alpha = 0.7f)),
-                        border = BorderStroke(1.dp, Color(0xFF81C784).copy(alpha = 0.15f)),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp)
-                        ) {
-                            Text(
-                                text = "🧘 Mindfulness Exercises",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFA8E6CF)
-                            )
-                            Text(
-                                text = "Complete these exercises to boost your Neural Restoration Index.",
-                                fontSize = 12.sp,
-                                color = Color.White.copy(alpha = 0.5f),
-                                modifier = Modifier.padding(bottom = 12.dp)
+                                color = Color(0xFF81C784),
+                                trackColor = Color(0xFF0F261D)
                             )
 
                             availableTasks.forEach { task ->
                                 val isChecked = completedTasksList.contains(task)
+                                val category = getTaskCategory(task)
+                                
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
+                                        .padding(vertical = 6.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(
+                                            if (isChecked) Color(0xFF81C784).copy(alpha = 0.08f) 
+                                            else Color(0xFF0F261D).copy(alpha = 0.4f)
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (isChecked) Color(0xFF81C784).copy(alpha = 0.3f) else Color.Transparent,
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
                                         .clickable {
                                             if (isChecked) {
                                                 completedTasksList.remove(task)
@@ -556,29 +506,44 @@ fun RestorationJournalScreen(
                                                 completedTasksList.add(task)
                                             }
                                         }
-                                        .padding(vertical = 8.dp),
+                                        .padding(12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Checkbox(
                                         checked = isChecked,
-                                        onCheckedChange = { checked ->
-                                            if (checked == true) {
-                                                completedTasksList.add(task)
-                                            } else {
+                                        onCheckedChange = {
+                                            if (isChecked) {
                                                 completedTasksList.remove(task)
+                                            } else {
+                                                completedTasksList.add(task)
                                             }
                                         },
-                                        colors = CheckboxDefaults.colors(
-                                            checkedColor = Color(0xFF81C784),
-                                            uncheckedColor = Color.White.copy(alpha = 0.5f)
-                                        )
+                                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF81C784))
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = task,
-                                        fontSize = 13.sp,
-                                        color = if (isChecked) Color.White.copy(alpha = 0.5f) else Color.White
-                                    )
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        // Capsule category badge
+                                        Box(
+                                            modifier = Modifier
+                                                .background(category.color.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                                .border(0.5.dp, category.color.copy(alpha = 0.4f), RoundedCornerShape(4.dp))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = category.name,
+                                                fontSize = 8.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = category.color
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = task,
+                                            fontSize = 12.sp,
+                                            color = if (isChecked) Color.White.copy(alpha = 0.5f) else Color.White,
+                                            lineHeight = 16.sp
+                                        )
+                                    }
                                 }
                             }
 

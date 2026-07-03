@@ -64,7 +64,7 @@ data class Candidate(
 // --- Retrofit Service ---
 
 interface GeminiApiService {
-    @POST("v1beta/models/gemini-3.5-flash:generateContent")
+    @POST("v1beta/models/gemini-1.5-flash:generateContent")
     suspend fun generateContent(
         @Query("key") apiKey: String,
         @Body request: GenerateContentRequest
@@ -103,7 +103,11 @@ object GeminiApiClient {
         apiKey: String = BuildConfig.GEMINI_API_KEY
     ): String = withContext(Dispatchers.IO) {
         if (apiKey.isEmpty() || apiKey == "MY_GEMINI_API_KEY") {
-            return@withContext "API Key is missing. Please enter your GEMINI_API_KEY in the AI Studio Secrets panel."
+            return@withContext if (com.example.BuildConfig.DEBUG) {
+                "Developer Error: GEMINI_API_KEY is not configured. Please add your key to the .env file."
+            } else {
+                "AI features are temporarily unavailable. Please try again later."
+            }
         }
 
         val formattedContents = mutableListOf<Content>()
@@ -150,5 +154,18 @@ object GeminiApiClient {
         } catch (e: Exception) {
             "Botanical Sync Error: ${e.localizedMessage}. This might be a persistent issue with the AI service."
         }
+    }
+
+    fun isAiError(response: String): Boolean {
+        return response.startsWith("Network Error:") ||
+               response.startsWith("Authentication Error:") ||
+               response.startsWith("Permission Denied:") ||
+               response.startsWith("Too Many Requests:") ||
+               response.startsWith("API Error:") ||
+               response.startsWith("Botanical Sync Error:") ||
+               response.contains("API Key is missing") ||
+               response.startsWith("Developer Error:") ||
+               response.startsWith("AI features are temporarily") ||
+               response.startsWith("Content was flagged for safety.")
     }
 }
