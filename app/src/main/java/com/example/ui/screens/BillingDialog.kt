@@ -123,140 +123,159 @@ fun BillingDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.65f))
-                .clickable(enabled = currentStep != 3) {
-                    viewModel.setBillingDialogVisible(false)
-                    currentStep = 1
-                },
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            // Elegant slide-up card layout
-            FloraFlowCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(0.85f)
-                    .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
-                    .clickable(enabled = false) {} // Consume drag click
-                    .testTag("billing_flow_container"),
-                containerColor = MaterialTheme.colorScheme.surface,
-                elevation = 4.dp
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp)
-                ) {
-                    // Title Bar / Close control
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(
-                                text = if (currentStep == 4) "Purchase Successful! ✨" else "Secure Upgrade",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Black,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Text(
-                                text = if (currentStep == 2) "Google Play Billing" else "Step $currentStep of ${if (billingManager.inMockMode) 4 else 3}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        
-                        if (currentStep != 3) {
-                            IconButton(
-                                onClick = {
-                                    viewModel.setBillingDialogVisible(false)
-                                    currentStep = 1
-                                },
-                                modifier = Modifier
-                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
-                                    .size(36.dp)
-                            ) {
-                                Icon(Icons.Default.Close, contentDescription = "Close Checkout", modifier = Modifier.size(20.dp))
+        if (currentStep == 1) {
+            PremiumUpsellScreen(
+                onCloseClick = { viewModel.setBillingDialogVisible(false) },
+                onUpgradeClick = { isAnnual ->
+                    selectedPlanIndex = if (isAnnual) 1 else 0
+                    if (billingManager.inMockMode) {
+                        currentStep = 2
+                    } else {
+                        activity?.let { act ->
+                            val productId = if (isAnnual) com.example.billing.BillingManager.PRODUCT_YEARLY else com.example.billing.BillingManager.PRODUCT_MONTHLY
+                            billingManager.launchPurchaseFlow(act, productId) {
+                                currentStep = 2
                             }
+                        } ?: run {
+                            currentStep = 2
                         }
                     }
-
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
-
-                    // Wizard Step Containers
-                    Box(modifier = Modifier.weight(1f)) {
-                        when (currentStep) {
-                            1 -> PlanSelectionStep(
-                                plans = tiers,
-                                selectedIndex = selectedPlanIndex,
-                                onIndexChange = { selectedPlanIndex = it }
-                            )
-                            2 -> GooglePlayMockSheet(
-                                activePlan = activePlan
-                            )
-                            3 -> BankHandshakeLoadingStep(
-                                statusText = progressStatusText,
-                                activePlan = activePlan
-                            )
-                            4 -> SuccessReceiptStep(
-                                viewModel = viewModel,
-                                activePlan = activePlan,
-                                onDismiss = {
-                                    viewModel.setBillingDialogVisible(false)
-                                    currentStep = 1
-                                }
-                            )
-                        }
-                    }
-
-                    // Navigation Footer buttons (excluding Loading state 3 and Receipt page 4)
-                    if (currentStep in 1..2) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                },
+                onRestoreClick = {
+                    viewModel.restorePurchases()
+                }
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.65f))
+                    .clickable(enabled = currentStep != 3) {
+                        viewModel.setBillingDialogVisible(false)
+                        currentStep = 1
+                    },
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                // Elegant slide-up card layout
+                FloraFlowCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(0.85f)
+                        .clip(RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp))
+                        .clickable(enabled = false) {} // Consume drag click
+                        .testTag("billing_flow_container"),
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    elevation = 4.dp
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp)
+                    ) {
+                        // Title Bar / Close control
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            if (currentStep > 1) {
-                                FloraFlowButton(
-                                    text = "Back",
-                                    onClick = {
-                                        currentStep--
-                                    },
-                                    modifier = Modifier.weight(1f),
-                                    variant = ButtonVariant.Outlined
+                            Column {
+                                Text(
+                                    text = if (currentStep == 4) "Purchase Successful! ✨" else "Secure Upgrade",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Black,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = if (currentStep == 2) "Google Play Billing" else "Step $currentStep of ${if (billingManager.inMockMode) 4 else 3}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
+                            
+                            if (currentStep != 3) {
+                                IconButton(
+                                    onClick = {
+                                        viewModel.setBillingDialogVisible(false)
+                                        currentStep = 1
+                                    },
+                                    modifier = Modifier
+                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f), CircleShape)
+                                        .size(36.dp)
+                                ) {
+                                    Icon(Icons.Default.Close, contentDescription = "Close Checkout", modifier = Modifier.size(20.dp))
+                                }
+                            }
+                        }
 
-                            FloraFlowButton(
-                                text = when (currentStep) {
-                                    1 -> "Select Plan"
-                                    else -> "Pay Now (${activePlan.price})"
-                                },
-                                onClick = {
-                                    if (currentStep == 1) {
-                                        if (billingManager.inMockMode) {
-                                            currentStep = 2
-                                        } else {
-                                            activity?.let { act ->
-                                                val productId = if (activePlan.isAnnual) com.example.billing.BillingManager.PRODUCT_YEARLY else com.example.billing.BillingManager.PRODUCT_MONTHLY
-                                                billingManager.launchPurchaseFlow(act, productId) {
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = MaterialTheme.colorScheme.outlineVariant)
+
+                        // Wizard Step Containers
+                        Box(modifier = Modifier.weight(1f)) {
+                            when (currentStep) {
+                                2 -> GooglePlayMockSheet(
+                                    activePlan = activePlan
+                                )
+                                3 -> BankHandshakeLoadingStep(
+                                    statusText = progressStatusText,
+                                    activePlan = activePlan
+                                )
+                                4 -> SuccessReceiptStep(
+                                    viewModel = viewModel,
+                                    activePlan = activePlan,
+                                    onDismiss = {
+                                        viewModel.setBillingDialogVisible(false)
+                                        currentStep = 1
+                                    }
+                                )
+                            }
+                        }
+
+                        // Navigation Footer buttons (excluding Loading state 3 and Receipt page 4)
+                        if (currentStep in 1..2) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                if (currentStep > 1) {
+                                    FloraFlowButton(
+                                        text = "Back",
+                                        onClick = {
+                                            currentStep--
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        variant = ButtonVariant.Outlined
+                                    )
+                                }
+
+                                FloraFlowButton(
+                                    text = when (currentStep) {
+                                        1 -> "Select Plan"
+                                        else -> "Pay Now (${activePlan.price})"
+                                    },
+                                    onClick = {
+                                        if (currentStep == 1) {
+                                            if (billingManager.inMockMode) {
+                                                currentStep = 2
+                                            } else {
+                                                activity?.let { act ->
+                                                    val productId = if (activePlan.isAnnual) com.example.billing.BillingManager.PRODUCT_YEARLY else com.example.billing.BillingManager.PRODUCT_MONTHLY
+                                                    billingManager.launchPurchaseFlow(act, productId) {
+                                                        currentStep = 2
+                                                    }
+                                                } ?: run {
                                                     currentStep = 2
                                                 }
-                                            } ?: run {
-                                                currentStep = 2
                                             }
+                                        } else if (currentStep == 2) {
+                                            currentStep = 3
                                         }
-                                    } else if (currentStep == 2) {
-                                        currentStep = 3
-                                    }
-                                },
-                                modifier = Modifier
-                                    .weight(if (currentStep > 1) 1.5f else 1f)
-                                    .testTag("billing_next_button")
-                            )
+                                    },
+                                    modifier = Modifier
+                                        .weight(if (currentStep > 1) 1.5f else 1f)
+                                        .testTag("billing_next_button")
+                                )
+                            }
                         }
                     }
                 }

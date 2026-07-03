@@ -6,6 +6,8 @@ plugins {
   alias(libs.plugins.google.devtools.ksp)
   alias(libs.plugins.roborazzi)
   alias(libs.plugins.secrets)
+  alias(libs.plugins.google.services)
+  alias(libs.plugins.firebase.crashlytics.plugin)
 }
 
 android {
@@ -22,7 +24,7 @@ android {
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     ndk {
-      abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+      abiFilters.addAll(listOf("arm64-v8a"))
       debugSymbolLevel = "FULL"
     }
   }
@@ -70,9 +72,6 @@ android {
     }
   }
   packaging {
-    jniLibs {
-      useLegacyPackaging = true
-    }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -169,10 +168,9 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.tooling)
   "ksp"(libs.androidx.room.compiler)
   "ksp"(libs.moshi.kotlin.codegen)
-  implementation(libs.arsceneview) {
-      exclude(group = "androidx.core", module = "core")
-      exclude(group = "androidx.core", module = "core-ktx")
-  }
+  implementation(libs.firebase.analytics)
+  implementation(libs.firebase.crashlytics)
+  implementation(libs.androidx.core.splashscreen)
   implementation(libs.play.billing)
   implementation(libs.play.billing.ktx)
 }

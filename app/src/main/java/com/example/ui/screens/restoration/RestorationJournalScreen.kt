@@ -40,6 +40,7 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+import androidx.compose.ui.draw.blur
 import com.example.data.model.parseGridString
 import com.example.data.model.GridPlantItem
 import com.example.ui.screens.checkPlantSynergy
@@ -710,10 +711,31 @@ fun RestorationJournalScreen(
 
             // Restoration logs list
             if (restorationLogs.isNotEmpty()) {
-                NriHistoryChart(
-                    logs = restorationLogs,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .padding(bottom = 16.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .run {
+                                if (!isPremium) blur(4.dp) else this
+                            }
+                    ) {
+                        NriHistoryChart(
+                            logs = restorationLogs,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                    if (!isPremium) {
+                        com.example.ui.components.PremiumLockOverlay(
+                            onUpgradeClick = { viewModel.setBillingDialogVisible(true, "restoration_nri_history") },
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
 
                 Text(
                     text = "Restoration Logs",

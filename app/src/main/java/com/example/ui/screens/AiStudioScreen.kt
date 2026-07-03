@@ -43,6 +43,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.window.Dialog
 import com.example.ui.viewmodel.GardenViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
@@ -138,6 +140,9 @@ fun AiStudioScreen(
     var attachedImage by remember { mutableStateOf<AttachedImage?>(null) }
     var showAttachmentDialog by remember { mutableStateOf(false) }
     var tempPhotoUri by remember { mutableStateOf<android.net.Uri?>(null) }
+    val cameraPermissionState = rememberPermissionState(
+        permission = android.Manifest.permission.CAMERA
+    )
 
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
@@ -232,10 +237,15 @@ fun AiStudioScreen(
                     
                     Button(
                         onClick = {
-                            val uri = createTempPictureUri()
-                            if (uri != null) {
-                                tempPhotoUri = uri
-                                cameraLauncher.launch(uri)
+                            if (cameraPermissionState.status.isGranted) {
+                                val uri = createTempPictureUri()
+                                if (uri != null) {
+                                    tempPhotoUri = uri
+                                    cameraLauncher.launch(uri)
+                                }
+                            } else {
+                                cameraPermissionState.launchPermissionRequest()
+                                android.widget.Toast.makeText(context, "Camera permission is required to take a plant photo.", android.widget.Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth(),

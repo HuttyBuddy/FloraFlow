@@ -28,7 +28,6 @@ abstract class GardenDatabase : RoomDatabase() {
                     GardenDatabase::class.java,
                     "garden_database"
                 )
-                .fallbackToDestructiveMigration(true)
                 .build()
                 INSTANCE = instance
                 instance

@@ -206,13 +206,13 @@ fun CommunityFeedView(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "FloraFlow Circle",
+                    text = "FloraFlow Team Tips",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "Share tips, swap stories, and grow together",
+                    text = "Verified advice and biophilic layout strategies from our team",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -221,7 +221,7 @@ fun CommunityFeedView(
                 onClick = onDismiss,
                 modifier = Modifier.testTag("community_close_button")
             ) {
-                Icon(Icons.Default.Close, contentDescription = "Close Community")
+                Icon(Icons.Default.Close, contentDescription = "Close Team Tips")
             }
         }
 

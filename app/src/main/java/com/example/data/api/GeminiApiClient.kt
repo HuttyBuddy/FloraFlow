@@ -11,6 +11,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.Query
+import retrofit2.http.Url
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
@@ -64,9 +65,10 @@ data class Candidate(
 // --- Retrofit Service ---
 
 interface GeminiApiService {
-    @POST("v1beta/models/gemini-1.5-flash:generateContent")
+    @POST
     suspend fun generateContent(
-        @Query("key") apiKey: String,
+        @Url url: String,
+        @Query("key") apiKey: String?,
         @Body request: GenerateContentRequest
     ): GenerateContentResponse
 }
@@ -102,12 +104,26 @@ object GeminiApiClient {
         imageMimeType: String? = "image/jpeg",
         apiKey: String = BuildConfig.GEMINI_API_KEY
     ): String = withContext(Dispatchers.IO) {
-        if (apiKey.isEmpty() || apiKey == "MY_GEMINI_API_KEY") {
-            return@withContext if (com.example.BuildConfig.DEBUG) {
-                "Developer Error: GEMINI_API_KEY is not configured. Please add your key to the .env file."
-            } else {
-                "AI features are temporarily unavailable. Please try again later."
+        val proxyUrl = try { BuildConfig.GEMINI_PROXY_URL } catch (_: Exception) { "" }
+        val isProxyActive = proxyUrl.isNotEmpty() && proxyUrl != "none" && proxyUrl != "YOUR_PROXY_URL"
+
+        val endpointUrl = if (isProxyActive) {
+            "https://$proxyUrl/v1beta/models/gemini-2.5-flash:generateContent"
+        } else {
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+        }
+
+        val requestKey = if (isProxyActive) {
+            null
+        } else {
+            if (apiKey.isEmpty() || apiKey == "MY_GEMINI_API_KEY") {
+                return@withContext if (com.example.BuildConfig.DEBUG) {
+                    "Developer Error: GEMINI_API_KEY is not configured. Please add your key to the .env file."
+                } else {
+                    "AI features are temporarily unavailable. Please try again later."
+                }
             }
+            apiKey
         }
 
         val formattedContents = mutableListOf<Content>()
@@ -133,7 +149,7 @@ object GeminiApiClient {
         )
 
         try {
-            val response = service.generateContent(apiKey, request)
+            val response = service.generateContent(endpointUrl, requestKey, request)
             val candidate = response.candidates?.firstOrNull()
             if (candidate != null && candidate.finishReason != null) {
                 if (candidate.finishReason.contains("SAFETY", ignoreCase = true)) {

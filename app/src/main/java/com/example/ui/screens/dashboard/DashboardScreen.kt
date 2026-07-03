@@ -42,6 +42,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.core.content.edit
 
+import androidx.compose.ui.draw.blur
 import com.example.ui.screens.dashboard.components.*
 
 @Composable
@@ -64,6 +65,7 @@ fun DashboardScreen(
     val step3Completed by viewModel.step3Completed.collectAsStateWithLifecycle()
     val needsReassessment by viewModel.needsReassessment.collectAsStateWithLifecycle()
     val assessmentHistory by viewModel.allAssessmentResults.collectAsStateWithLifecycle()
+    val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
 
     val todayLog = remember(moodLogs) {
         val todayCal = java.util.Calendar.getInstance()
@@ -201,103 +203,119 @@ fun DashboardScreen(
 
     val scoreHistoryCardContent = @Composable {
         if (assessmentHistory.isNotEmpty()) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("dashboard_score_history_card"),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(
-                    1.5.dp,
-                    Brush.horizontalGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                            MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("dashboard_score_history_card"),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(
+                        1.5.dp,
+                        Brush.horizontalGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+                            )
                         )
                     )
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Assessment Score History",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Track your biophilic restoration progress over time",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .run {
+                                if (!isPremium) blur(4.dp) else this
+                            }
+                    ) {
+                        Text(
+                            text = "Assessment Score History",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Track your biophilic restoration progress over time",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    ScoreHistoryChart(assessmentHistory = assessmentHistory)
+                        ScoreHistoryChart(assessmentHistory = assessmentHistory)
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
-                        text = "Past Audits",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                        Text(
+                            text = "Past Audits",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
 
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        assessmentHistory.take(5).forEach { result ->
-                            val sdf = java.text.SimpleDateFormat("MMMM dd, yyyy - hh:mm a", java.util.Locale.US)
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                                    .padding(12.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column {
-                                    Text(
-                                        text = sdf.format(java.util.Date(result.timestamp)),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    Text(
-                                        text = "Lowest: ${result.lowestCategories.split(",").joinToString(", ")}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        fontSize = 11.sp
-                                    )
-                                }
-                                Box(
+                        val sdf = remember { java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.US) }
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            assessmentHistory.take(5).forEach { result ->
+                                Row(
                                     modifier = Modifier
-                                        .background(
-                                            color = when (result.score) {
-                                                in 15..20 -> Color(0xFFE8F5E9)
-                                                in 8..14 -> Color(0xFFFFFDE7)
-                                                else -> Color(0xFFFFEBEE)
-                                            },
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                                        .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                                        .padding(12.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(
-                                        text = "${result.score}/20",
-                                        fontWeight = FontWeight.Bold,
-                                        color = when (result.score) {
-                                            in 15..20 -> Color(0xFF2E7D32)
-                                            in 8..14 -> Color(0xFFF57F17)
-                                            else -> Color(0xFFC62828)
-                                        },
-                                        fontSize = 12.sp
-                                    )
+                                    Column {
+                                        Text(
+                                            text = sdf.format(java.util.Date(result.timestamp)),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        Text(
+                                            text = "Lowest: ${result.lowestCategories.split(",").joinToString(", ")}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.secondary,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .background(
+                                                color = when (result.score) {
+                                                    in 15..20 -> Color(0xFFE8F5E9)
+                                                    in 8..14 -> Color(0xFFFFFDE7)
+                                                    else -> Color(0xFFFFEBEE)
+                                                },
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = "${result.score}/20",
+                                            fontWeight = FontWeight.Bold,
+                                            color = when (result.score) {
+                                                in 15..20 -> Color(0xFF2E7D32)
+                                                in 8..14 -> Color(0xFFF57F17)
+                                                else -> Color(0xFFC62828)
+                                            },
+                                            fontSize = 12.sp
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
+                }
+
+                if (!isPremium) {
+                    com.example.ui.components.PremiumLockOverlay(
+                        onUpgradeClick = { viewModel.setBillingDialogVisible(true, "dashboard_score_history") },
+                        modifier = Modifier.matchParentSize()
+                    )
                 }
             }
         }
@@ -843,7 +861,25 @@ fun DashboardScreen(
             item { DailyHabitCard(viewModel = viewModel) }
             item { MindfulBreathingCard(viewModel = viewModel) }
             item { CompanionSynergyCard(activeLayout = activeLayout) }
-            item { MonthlyWellnessDigestCard(moodLogs = moodLogs) }
+            item {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .run {
+                                if (!isPremium) blur(4.dp) else this
+                            }
+                    ) {
+                        MonthlyWellnessDigestCard(moodLogs = moodLogs)
+                    }
+                    if (!isPremium) {
+                        com.example.ui.components.PremiumLockOverlay(
+                            onUpgradeClick = { viewModel.setBillingDialogVisible(true, "dashboard_wellness_digest") },
+                            modifier = Modifier.matchParentSize()
+                        )
+                    }
+                }
+            }
             item { SeasonalCareCoachCard(activePlants = activePlants) }
             item { quickActionsContent() }
             item { communityPromoContent() }
@@ -894,7 +930,23 @@ fun DashboardScreen(
                 DailyHabitCard(viewModel = viewModel)
                 MindfulBreathingCard(viewModel = viewModel)
                 CompanionSynergyCard(activeLayout = activeLayout)
-                MonthlyWellnessDigestCard(moodLogs = moodLogs)
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .run {
+                                if (!isPremium) blur(4.dp) else this
+                            }
+                    ) {
+                        MonthlyWellnessDigestCard(moodLogs = moodLogs)
+                    }
+                    if (!isPremium) {
+                        com.example.ui.components.PremiumLockOverlay(
+                            onUpgradeClick = { viewModel.setBillingDialogVisible(true, "dashboard_wellness_digest") },
+                            modifier = Modifier.matchParentSize()
+                        )
+                    }
+                }
                 SeasonalCareCoachCard(activePlants = activePlants)
                 quickActionsContent()
                 communityPromoContent()

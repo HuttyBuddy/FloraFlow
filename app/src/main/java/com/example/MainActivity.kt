@@ -38,6 +38,7 @@ import com.example.ui.screens.settings.InAppRatePromptDialog
 import com.example.ui.screens.walkthrough.WalkthroughOverlay
 import com.example.ui.screens.help.HelpDialog
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.ui.layout.boundsInRoot
 import com.example.ui.viewmodel.WalkthroughStep
 import com.example.ui.viewmodel.ScreenRect
@@ -68,7 +69,14 @@ import kotlinx.coroutines.delay
 class MainActivity : ComponentActivity() {
     private val viewModel: GardenViewModel by viewModels()
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.billingManager.queryPurchases()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+        com.example.analytics.AnalyticsHelper.initialize(applicationContext)
         super.onCreate(savedInstanceState)
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -124,22 +132,12 @@ class MainActivity : ComponentActivity() {
             }
 
             MyApplicationTheme(darkTheme = useDarkTheme) {
-                var showSplash by remember { mutableStateOf(value = true) }
+                val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
 
-                LaunchedEffect(Unit) {
-                    delay(1500)
-                    showSplash = false
-                }
-
-                if (showSplash) {
-                    SplashWarmUpScreen()
+                if (!isOnboardingCompleted) {
+                    OnboardingScreen(viewModel = viewModel)
                 } else {
-                    val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
-
-                    if (!isOnboardingCompleted) {
-                        OnboardingScreen(viewModel = viewModel)
-                    } else {
-                        val currentTab by viewModel.currentTab.collectAsState()
+                    val currentTab by viewModel.currentTab.collectAsState()
                         var showFeedbackDialog by remember { mutableStateOf(false) }
                         var showSettingsDialog by remember { mutableStateOf(false) }
                         var showCommunityDialog by remember { mutableStateOf(false) }
@@ -614,78 +612,5 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
 
-@Composable
-fun SplashWarmUpScreen() {
-    var startAnimation by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (startAnimation) 1f else 0.9f,
-        animationSpec = spring(
-            dampingRatio = 0.6f, // Nice slightly bouncy bloom effect
-            stiffness = Spring.StiffnessMedium
-        ),
-        label = "logoScale"
-    )
-    
-    LaunchedEffect(Unit) {
-        startAnimation = true
-    }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Elegant pulsing organic icon container
-            Image(
-                painter = painterResource(id = R.drawable.ic_logo_heart),
-                contentDescription = "FloraFlow Logo",
-                modifier = Modifier
-                    .size(110.dp)
-                    .scale(scale)
-                    .clip(RoundedCornerShape(28.dp))
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "FloraFlow",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
-
-            Text(
-                text = "Cultivating Calm through Mindful Gardening",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.primary,
-                strokeWidth = 3.dp,
-                modifier = Modifier.size(32.dp)
-            )
-
-            Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-
-            Text(
-                text = "Syncing botanical resources...",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-            )
-        }
-    }
-}

@@ -26,6 +26,10 @@ import android.content.Context
 import android.os.Build
 import com.example.ui.screens.checkPlantSynergy
 import com.example.billing.BillingManager
+import com.example.BuildConfig
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 enum class ThemeMode {
     SYSTEM, LIGHT, DARK
@@ -407,7 +411,21 @@ class GardenViewModel @JvmOverloads constructor(
 
     fun incrementRestorationTrial(): Boolean {
         if (_isPremium.value) return true
-        val currentCount = _restorationTrialCount.value
+        val now = System.currentTimeMillis()
+        var weekStart = sharedPrefs.getLong("restoration_trial_week_start", 0L)
+        if (weekStart == 0L) {
+            weekStart = now
+            sharedPrefs.edit { putLong("restoration_trial_week_start", now) }
+        }
+        var currentCount = _restorationTrialCount.value
+        if (now - weekStart >= 7 * 24 * 60 * 60 * 1000L) {
+            currentCount = 0
+            weekStart = now
+            sharedPrefs.edit {
+                putLong("restoration_trial_week_start", now)
+                putInt("restoration_trial_count", 0)
+            }
+        }
         if (currentCount >= 3) {
             upgradeToPremium()
             return false
@@ -420,8 +438,11 @@ class GardenViewModel @JvmOverloads constructor(
         return true
     }
 
-    fun setBillingDialogVisible(visible: Boolean) {
+    fun setBillingDialogVisible(visible: Boolean, source: String = "unknown") {
         _showBillingDialog.value = visible
+        if (visible) {
+            com.example.analytics.AnalyticsHelper.logPaywallView(source)
+        }
     }
 
     fun setSubscriptionManagementVisible(visible: Boolean) {
@@ -430,16 +451,55 @@ class GardenViewModel @JvmOverloads constructor(
 
     fun processPurchase(tier: String, price: String, isAnnual: Boolean) {
         val productId = if (isAnnual) BillingManager.PRODUCT_YEARLY else BillingManager.PRODUCT_MONTHLY
-        billingManager.executeMockPurchase(productId)
+        if (BuildConfig.DEBUG) {
+            billingManager.executeMockPurchase(productId)
+        }
+        com.example.analytics.AnalyticsHelper.logTrialStart()
+        com.example.analytics.AnalyticsHelper.logPurchaseSuccess(productId)
     }
 
     fun cancelPremiumSubscription() {
-        billingManager.cancelMockSubscription()
+        if (BuildConfig.DEBUG) {
+            billingManager.cancelMockSubscription()
+        }
     }
 
     fun restorePurchases(): Boolean {
-        billingManager.executeMockPurchase(BillingManager.PRODUCT_YEARLY)
+        if (BuildConfig.DEBUG && billingManager.inMockMode) {
+            billingManager.executeMockPurchase(BillingManager.PRODUCT_YEARLY)
+        } else {
+            billingManager.queryPurchases()
+        }
         return true
+    }
+
+    private var soundscapeStartTime: Long = 0L
+
+    fun toggleSoundscapePlay() {
+        val service = soundscapeService ?: return
+        val context = getApplication<Application>().applicationContext
+        if (service.isPlaying()) {
+            service.pauseSoundscape()
+            _isSoundscapePlaying.value = false
+            if (soundscapeStartTime > 0L) {
+                val durationSecs = ((System.currentTimeMillis() - soundscapeStartTime) / 1000).toInt()
+                com.example.analytics.AnalyticsHelper.logRestorationSession(durationSecs)
+                soundscapeStartTime = 0L
+            }
+        } else {
+            if (!incrementRestorationTrial()) return
+            val intent = Intent(context, com.example.ui.screens.restoration.SoundscapeService::class.java).apply {
+                action = "ACTION_PLAY"
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+            bindSoundscapeService()
+            _isSoundscapePlaying.value = true
+            soundscapeStartTime = System.currentTimeMillis()
+        }
     }
 
     // Active screen index hoist state for onboarding assessments completion callbacks
@@ -464,7 +524,18 @@ class GardenViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             billingManager.subscriptionBillingDate.collect { _subscriptionBillingDate.value = it }
         }
-        _restorationTrialCount.value = sharedPrefs.getInt("restoration_trial_count", 0)
+        val nowRest = System.currentTimeMillis()
+        var weekStart = sharedPrefs.getLong("restoration_trial_week_start", 0L)
+        if (weekStart == 0L) {
+            weekStart = nowRest
+            sharedPrefs.edit().putLong("restoration_trial_week_start", nowRest).apply()
+        }
+        var restorationCount = sharedPrefs.getInt("restoration_trial_count", 0)
+        if (nowRest - weekStart >= 7 * 24 * 60 * 60 * 1000L) {
+            restorationCount = 0
+            sharedPrefs.edit().putLong("restoration_trial_week_start", nowRest).putInt("restoration_trial_count", 0).apply()
+        }
+        _restorationTrialCount.value = restorationCount
         _isOnboardingCompleted.value = sharedPrefs.getBoolean("onboarding_completed", false)
         _isAssessmentSkipped.value = sharedPrefs.getBoolean("assessment_skipped", false)
 
@@ -568,43 +639,43 @@ class GardenViewModel @JvmOverloads constructor(
                             title = "The Golden Rule of Watering Succulents",
                             content = "Always wait until the soil is bone dry before watering again. Stick a wooden skewer or your finger about 2 inches deep. If it's damp, hold off! Overwatering is the #1 killer of succulents.",
                             category = "Tips",
-                            author = "GardenGuru",
+                            author = "FloraFlow Team",
                             likes = 12
                         )
                     ).toInt()
-                    repository.insertComment(CommunityComment(postId = p1Id, author = "CactusJack", content = "Totally agree. In winter, I only water mine once a month and they thrive!", likes = 5))
-                    repository.insertComment(CommunityComment(postId = p1Id, author = "MonsteraMom", content = "I learned this the hard way after losing my first zebra plant. Great advice!", likes = 3))
+                    repository.insertComment(CommunityComment(postId = p1Id, author = "FloraFlow Support", content = "Totally agree. In winter, I only water mine once a month and they thrive!", likes = 5))
+                    repository.insertComment(CommunityComment(postId = p1Id, author = "FloraFlow Expert", content = "I learned this the hard way after losing my first zebra plant. Great advice!", likes = 3))
 
                     val p2Id = repository.insertPost(
                         CommunityPost(
                             title = "My Monstera Deliciosa got its first fenestration!",
                             content = "I've been keeping it in bright, indirect light near my east-facing window and feeding it dilute fertilizer once a month. The leaf just uncurled this morning and it's perfect! Don't lose hope if yours takes a while; consistency is key.",
                             category = "Experiences",
-                            author = "MonsteraMom",
+                            author = "FloraFlow Expert",
                             likes = 24
                         )
                     ).toInt()
-                    repository.insertComment(CommunityComment(postId = p2Id, author = "PlantBae", content = "Congratulations! It's the best feeling ever. Can't wait for my propagation to fenestrate.", likes = 6))
+                    repository.insertComment(CommunityComment(postId = p2Id, author = "FloraFlow Ally", content = "Congratulations! It's the best feeling ever. Can't wait for my propagation to fenestrate.", likes = 6))
 
                     val p3Id = repository.insertPost(
                         CommunityPost(
                             title = "White spots on Rose leaves - help?",
                             content = "My miniature rose bush has developed a dusty white coating on its lower leaves. Is this powdery mildew? I'm watering it from the top daily. Any tips to treat it organically would be super appreciated!",
                             category = "Questions",
-                            author = "GreenNoob",
+                            author = "Gardening Novice",
                             likes = 5
                         )
                     ).toInt()
-                    repository.insertComment(CommunityComment(postId = p3Id, author = "RoseLover", content = "Definitely powdery mildew! Try to water the soil directly, not the leaves. Wet leaves invite spores.", likes = 8))
-                    repository.insertComment(CommunityComment(postId = p3Id, author = "OrganicGardener", content = "You can spray it with a mixture of milk and water (40/60 ratio) in direct sunlight. It works as a natural fungicide!", likes = 10))
-                    repository.insertComment(CommunityComment(postId = p3Id, author = "BotanicMaster", content = "Remember to prune the affected leaves and dispose of them (don't compost them) so the spores don't spread.", likes = 4))
+                    repository.insertComment(CommunityComment(postId = p3Id, author = "FloraFlow Botanist", content = "Definitely powdery mildew! Try to water the soil directly, not the leaves. Wet leaves invite spores.", likes = 8))
+                    repository.insertComment(CommunityComment(postId = p3Id, author = "FloraFlow Advisor", content = "You can spray it with a mixture of milk and water (40/60 ratio) in direct sunlight. It works as a natural fungicide!", likes = 10))
+                    repository.insertComment(CommunityComment(postId = p3Id, author = "FloraFlow Coach", content = "Remember to prune the affected leaves and dispose of them (don't compost them) so the spores don't spread.", likes = 4))
 
                     val p4Id = repository.insertPost(
                         CommunityPost(
                             title = "Mindful Pruning: How to Connect with Your Plants",
                             content = "Pruning isn't just about maintenance; it's a form of meditation. Approach your plant with quiet focus. Use clean shears, and as you cut dead stems, take a slow breath. Visualize making space for new, healthy growth in your own life.",
                             category = "Tips",
-                            author = "BotanicMaster",
+                            author = "FloraFlow Coach",
                             likes = 18
                         )
                     ).toInt()
@@ -1032,8 +1103,9 @@ class GardenViewModel @JvmOverloads constructor(
                 "INSTRUCTIONS:\n" +
                 "1. If this is the start of the diagnosis (e.g. the user asks to run a detailed diagnosis), introduce yourself warmly as Dr. Julian and ask them about their space, specifically focusing on key aspects: Nature Views, Living Plants, Natural Light, Noise levels, and Natural Textures/Materials.\n" +
                 "2. Ask them questions one by one or in a friendly, conversational group so they do not feel overwhelmed.\n" +
-                "3. Once the user provides answers, assess their space. Give them a biophilic score out of 20, map it to a zone (Green: 15-20, Yellow: 8-14, Red: <8), provide a brief analysis of their strengths/weaknesses, and suggest 3 highly specific biophilic improvements.\n" +
-                "4. Keep your responses warm, conversational, encouraging, and brief."
+                "3. Once the user provides answers to all of these aspects, assess their space. Give them a biophilic score out of 20, map it to a zone (Green: 15-20, Yellow: 8-14, Red: <8), provide a brief analysis of their strengths/weaknesses, and suggest 3 highly specific biophilic improvements.\n" +
+                "4. CRITICAL: In your final assessment message, you MUST append the token [DIAGNOSIS_RESULT: score=X, lowest=CATEGORY1, CATEGORY2] at the very end of your response, where X is the score and the lowest categories are the names of the aspects they scored lowest on (choose from: NATURE VIEWS, LIVING PLANTS, NATURAL LIGHT, NOISE, NATURAL TEXTURES) separated by commas. Example: [DIAGNOSIS_RESULT: score=12, lowest=LIVING PLANTS, NATURAL LIGHT].\n" +
+                "5. Keep your responses warm, conversational, encouraging, and brief."
             } else if (score != null) {
                 val zone = when (score) {
                     in 15..20 -> "Green Zone — Low Neural Load"
@@ -1147,8 +1219,18 @@ class GardenViewModel @JvmOverloads constructor(
 
     // --- Private AI Helper Methods (extracted/refactored) ---
     private fun checkPremiumLimit(userQuery: String, upsellMessage: String, limitCount: Int): Boolean {
-        val userCount = _aiChatHistory.value.count { it.role == "user" }
-        if (!_isPremium.value && userCount >= limitCount) {
+        if (_isPremium.value) return false
+
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val today = sdf.format(Date())
+        val storedDate = sharedPrefs.getString("ai_query_date", "")
+        var queryCount = if (storedDate == today) {
+            sharedPrefs.getInt("ai_query_count", 0)
+        } else {
+            0
+        }
+
+        if (queryCount >= limitCount) {
             val updatedHistory = _aiChatHistory.value.toMutableList()
             if (userQuery.isNotBlank()) {
                 updatedHistory.add(Content(role = "user", parts = listOf(Part(text = userQuery))))
@@ -1163,6 +1245,13 @@ class GardenViewModel @JvmOverloads constructor(
             )
             _aiChatHistory.value = updatedHistory
             return true
+        }
+
+        // Increment query count and persist it
+        queryCount++
+        sharedPrefs.edit {
+            putString("ai_query_date", today)
+            putInt("ai_query_count", queryCount)
         }
         return false
     }
@@ -1677,26 +1766,7 @@ class GardenViewModel @JvmOverloads constructor(
         }
     }
     
-    fun toggleSoundscapePlay() {
-        val service = soundscapeService ?: return
-        val context = getApplication<Application>().applicationContext
-        if (service.isPlaying()) {
-            service.pauseSoundscape()
-            _isSoundscapePlaying.value = false
-        } else {
-            if (!incrementRestorationTrial()) return
-            val intent = Intent(context, com.example.ui.screens.restoration.SoundscapeService::class.java).apply {
-                action = "ACTION_PLAY"
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
-            } else {
-                context.startService(intent)
-            }
-            bindSoundscapeService()
-            _isSoundscapePlaying.value = true
-        }
-    }
+
     
     fun changeSoundscapeTrack(name: String, baseFreq: Float, diffFreq: Float) {
         val service = soundscapeService ?: return

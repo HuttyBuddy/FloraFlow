@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
@@ -15,7 +16,7 @@ import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,7 +34,8 @@ import com.example.ui.theme.spacing
 
 @Composable
 fun PremiumUpsellScreen(
-    onUpgradeClick: () -> Unit,
+    onCloseClick: () -> Unit,
+    onUpgradeClick: (isAnnual: Boolean) -> Unit,
     onRestoreClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -41,6 +43,8 @@ fun PremiumUpsellScreen(
     val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
     val isTablet = configuration.smallestScreenWidthDp >= 600
     val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
+
+    var selectAnnual by remember { mutableStateOf(true) }
 
     val crownBadge = @Composable {
         Box(
@@ -107,43 +111,82 @@ fun PremiumUpsellScreen(
     }
 
     val ctaPricingCard = @Composable {
-        FloraFlowCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(
-                    width = 2.dp,
-                    brush = Brush.horizontalGradient(
-                        listOf(Color(0xFFFFD54F), MaterialTheme.colorScheme.primary)
-                    ),
-                    shape = MaterialTheme.shapes.medium
-                ),
-            elevation = 0.dp
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(MaterialTheme.spacing.medium),
-                horizontalAlignment = Alignment.CenterHorizontally
+            // Annual Plan Choice Card
+            Card(
+                onClick = { selectAnnual = true },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (selectAnnual) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surface
+                ),
+                border = BorderStroke(
+                    width = if (selectAnnual) 2.dp else 1.dp,
+                    color = if (selectAnnual) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                ),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "$4.99 / month",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = "Cancel anytime. Billed monthly.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-                
-                FloraFlowButton(
-                    text = "Upgrade to FloraFlow PRO",
-                    onClick = onUpgradeClick,
-                    modifier = Modifier.fillMaxWidth(),
-                    leadingIcon = Icons.Default.AutoAwesome
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = selectAnnual,
+                        onClick = { selectAnnual = true }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Annual Plan (Best Value)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("14-Day Free Trial, then $39.99/yr", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                    }
+                    Text("$3.33/mo", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                }
             }
+
+            // Monthly Plan Choice Card
+            Card(
+                onClick = { selectAnnual = false },
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (!selectAnnual) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surface
+                ),
+                border = BorderStroke(
+                    width = if (!selectAnnual) 2.dp else 1.dp,
+                    color = if (!selectAnnual) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = !selectAnnual,
+                        onClick = { selectAnnual = false }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Monthly Plan", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("7-Day Free Trial, then $4.99/mo", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Text("$4.99/mo", fontWeight = FontWeight.Black, fontSize = 14.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            FloraFlowButton(
+                text = if (selectAnnual) "Start 14-Day Free Trial" else "Start 7-Day Free Trial",
+                onClick = { onUpgradeClick(selectAnnual) },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = Icons.Default.AutoAwesome
+            )
         }
     }
 
@@ -195,7 +238,7 @@ fun PremiumUpsellScreen(
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("Restoration Journal", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
                     Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("3 free plays", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
+                        Text("3 free plays/wk", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
                     }
                     Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
                         Text("Full Binaural", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
@@ -206,7 +249,7 @@ fun PremiumUpsellScreen(
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("AI Master Botanist", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
                     Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("3 free queries", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
+                        Text("3 free queries/day", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
                     }
                     Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
                         Text("Unlimited", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
@@ -260,6 +303,7 @@ fun PremiumUpsellScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
+                Spacer(modifier = Modifier.height(28.dp))
                 crownBadge()
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
                 titleSection()
@@ -289,7 +333,7 @@ fun PremiumUpsellScreen(
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumSmall))
+                    Spacer(modifier = Modifier.height(36.dp))
                     crownBadge()
                     titleSection()
                     ctaPricingCard()
@@ -306,10 +350,28 @@ fun PremiumUpsellScreen(
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Spacer(modifier = Modifier.height(36.dp))
                     featuresList()
                     comparisonGrid()
                 }
             }
+        }
+
+        // Close button at top end (absolute positioned overlay)
+        IconButton(
+            onClick = onCloseClick,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(16.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), CircleShape)
+                .size(36.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Close paywall",
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }

@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.android.billingclient.api.*
+import com.example.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -70,14 +71,14 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
                     onComplete(true)
                 } else {
                     Log.w("BillingManager", "Billing Client connection failed: ${billingResult.debugMessage}. Falling back to Mock Play Store mode.")
-                    inMockMode = true
+                    inMockMode = BuildConfig.DEBUG
                     onComplete(false)
                 }
             }
 
             override fun onBillingServiceDisconnected() {
                 Log.w("BillingManager", "Billing Client disconnected. Falling back to Mock Play Store mode.")
-                inMockMode = true
+                inMockMode = BuildConfig.DEBUG
             }
         })
     }
@@ -137,6 +138,8 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
                     cal.add(Calendar.MONTH, 1)
                 }
                 billingDate = sdf.format(cal.time)
+            } else if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
+                Log.i("BillingManager", "Purchase is pending. Waiting for completion.")
             }
         }
 
@@ -154,11 +157,25 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
                 putBoolean("purchased_historically", true)
                 apply()
             }
+        } else {
+            // Revoke premium when the purchases list is empty or doesn't have an active subscription
+            _isPremium.value = false
+            _subscriptionTier.value = null
+            _subscriptionTransactionId.value = null
+            _subscriptionBillingDate.value = null
+
+            sharedPrefs.edit().apply {
+                putBoolean("is_premium", false)
+                putString("subscription_tier", null)
+                putString("subscription_transaction_id", null)
+                putString("subscription_billing_date", null)
+                apply()
+            }
         }
     }
 
     fun launchPurchaseFlow(activity: Activity, productId: String, onMockTrigger: (productId: String) -> Unit) {
-        if (inMockMode) {
+        if (BuildConfig.DEBUG && inMockMode) {
             onMockTrigger(productId)
             return
         }
@@ -176,7 +193,15 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
         billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
                 val productDetails = productDetailsList[0]
-                val offerToken = productDetails.subscriptionOfferDetails?.firstOrNull()?.offerToken ?: ""
+                
+                // Find offer details that has a free trial pricing phase (price == 0), otherwise fallback to first
+                val offerDetails = productDetails.subscriptionOfferDetails?.firstOrNull { offer ->
+                    offer.pricingPhases.pricingPhaseList.any { phase ->
+                        phase.priceAmountMicros == 0L
+                    }
+                } ?: productDetails.subscriptionOfferDetails?.firstOrNull()
+                
+                val offerToken = offerDetails?.offerToken ?: ""
 
                 val productDetailsParamsList = listOf(
                     BillingFlowParams.ProductDetailsParams.newBuilder()
@@ -191,13 +216,17 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
 
                 billingClient.launchBillingFlow(activity, billingFlowParams)
             } else {
-                Log.e("BillingManager", "Failed to query product details: ${billingResult.debugMessage}. Falling back to mock flow.")
-                onMockTrigger(productId)
+                Log.e("BillingManager", "Failed to query product details: ${billingResult.debugMessage}.")
+                if (BuildConfig.DEBUG) {
+                    Log.w("BillingManager", "Falling back to mock flow in debug build.")
+                    onMockTrigger(productId)
+                }
             }
         }
     }
 
     fun executeMockPurchase(productId: String) {
+        if (!BuildConfig.DEBUG) return
         val tier = if (productId == PRODUCT_YEARLY) "FloraFlow PRO Annual" else "FloraFlow PRO Monthly"
         val txId = "GPA." + (1000..9999).random().toString() + "-" +
                 (1000..9999).random().toString() + "-" +
@@ -229,6 +258,7 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     }
 
     fun cancelMockSubscription() {
+        if (!BuildConfig.DEBUG) return
         _isPremium.value = false
         _subscriptionTier.value = null
         _subscriptionTransactionId.value = null
@@ -243,3 +273,4 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
         }
     }
 }
+

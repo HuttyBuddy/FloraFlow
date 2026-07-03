@@ -26,7 +26,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,10 +43,15 @@ import com.example.ui.theme.BiophilicPrimary
 import com.example.ui.theme.BiophilicSecondary
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.Image
+import android.app.Activity
 import com.example.R
+import androidx.compose.material.icons.filled.WorkspacePremium
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.ui.graphics.Brush
 
 enum class AssessmentScreenState {
-    SPLASH, QUESTION, CALCULATING, RESULT, STEPS
+    SPLASH, QUESTION, CALCULATING, RESULT, PERSONALIZED_PAYWALL, STEPS
 }
 
 data class AssessmentQuestion(
@@ -86,85 +93,94 @@ fun OnboardingScreen(
         )
     }
 
-    val totalScore = remember(answers.size, screenState) {
-        answers.values.sum()
+    val categoryScores = remember(answers.size, screenState) {
+        val scores = mutableMapOf<String, Int>()
+        questions.forEachIndexed { index, question ->
+            val valScore = answers[index] ?: 0
+            scores[question.category] = (scores[question.category] ?: 0) + valScore
+        }
+        scores
     }
 
-    val lowestCategories = remember(answers.size, screenState) {
-        questions.mapIndexed { idx, q -> q.category to (answers[idx] ?: 0) }
+    val lowestCategories = remember(categoryScores) {
+        categoryScores.toList()
             .sortedBy { it.second }
             .map { it.first }
     }
 
-    val stepsMapping = remember {
+    val totalScore = remember(answers.size, screenState) {
+        answers.values.sum()
+    }
+
+    val stepsMapping = remember(categoryScores) {
         mapOf(
             "NATURE VIEWS" to NextStepInfo(
                 "NATURE VIEWS",
                 "Optimize your outdoor view",
-                "You scored low on Nature Views. Clear window blockages or place plants in your direct line of sight to simulate natural depth.",
+                "You scored ${categoryScores["NATURE VIEWS"] ?: 0} on Nature Views. Clear window blockages or place plants in your direct line of sight to simulate natural depth.",
                 "Design my layout →",
                 1
             ),
             "LIVING PLANTS" to NextStepInfo(
                 "LIVING PLANTS",
                 "Add living material to your work area",
-                "You scored 0 on Living Plants. Adding 2-3 plants to your primary space is the single highest-impact change for your score.",
+                "You scored ${categoryScores["LIVING PLANTS"] ?: 0} on Living Plants. Adding 2-3 plants to your primary space is the single highest-impact change for your score.",
                 "Find plants for my space →",
                 3
             ),
             "NATURAL LIGHT" to NextStepInfo(
                 "NATURAL LIGHT",
                 "Reposition toward natural light",
-                "You scored 1 on Natural Light. Even partial repositioning toward a window helps lower stress and restore calm.",
+                "You scored ${categoryScores["NATURAL LIGHT"] ?: 0} on Natural Light. Even partial repositioning toward a window helps lower stress and restore calm.",
                 "Design my layout →",
                 1
             ),
             "ACOUSTIC CALM" to NextStepInfo(
                 "ACOUSTIC CALM",
                 "Introduce acoustic masking",
-                "You scored low on Acoustic Calm. Mask distracting background noise to quiet your mind.",
+                "You scored ${categoryScores["ACOUSTIC CALM"] ?: 0} on Acoustic Calm. Mask distracting background noise to quiet your mind.",
                 "Find soothing soundscapes →",
                 3
             ),
             "NATURAL MATERIALS" to NextStepInfo(
                 "NATURAL MATERIALS",
                 "Introduce one natural texture",
-                "You scored 0 on Natural Materials. A wood surface, woven rug, or stone object changes your sensory baseline immediately.",
+                "You scored ${categoryScores["NATURAL MATERIALS"] ?: 0} on Natural Materials. A wood surface, woven rug, or stone object changes your sensory baseline immediately.",
                 "Browse material ideas →",
                 2
             ),
             "AIR & VENTILATION" to NextStepInfo(
                 "AIR & VENTILATION",
                 "Enhance active airflow",
-                "You scored low on Air & Ventilation. Open windows for 10 minutes twice daily, or use a gentle oscillating fan to mimic natural wind.",
+                "You scored ${categoryScores["AIR & VENTILATION"] ?: 0} on Air & Ventilation. Open windows for 10 minutes twice daily, or use a gentle oscillating fan to mimic natural wind.",
                 "Ask Advisor for advice →",
                 3
             ),
             "ORGANIC FORMS" to NextStepInfo(
                 "ORGANIC FORMS",
                 "Introduce organic patterns",
-                "You scored low on Organic Forms. Incorporate curved decor or botanical prints to soften sharp, institutional room angles.",
+                "You scored ${categoryScores["ORGANIC FORMS"] ?: 0} on Organic Forms. Incorporate curved decor or botanical prints to soften sharp, institutional room angles.",
                 "Browse decoration ideas →",
                 2
             ),
             "WATER FEATURES" to NextStepInfo(
                 "WATER FEATURES",
                 "Add sound of moving water",
-                "You scored low on Water Features. A small tabletop fountain or rain sound machine helps soothe stress and slow down a racing mind.",
+                "You scored ${categoryScores["WATER FEATURES"] ?: 0} on Water Features. A small tabletop fountain or rain sound machine helps soothe stress and slow down a racing mind.",
                 "Explore water elements →",
                 3
             ),
             "SENSORY RICHNESS" to NextStepInfo(
                 "SENSORY RICHNESS",
                 "Stimulate with natural scents",
-                "You scored low on Sensory Richness. Use natural cedarwood, pine, or lavender oils to signal calm and safety to your brain.",
+                "You scored ${categoryScores["SENSORY RICHNESS"] ?: 0} on Sensory Richness. Use natural cedarwood, pine, or lavender oils to signal calm and safety to your brain.",
                 "Get aromatic tips →",
                 3
             ),
             "SEASONAL AWARENESS" to NextStepInfo(
                 "SEASONAL AWARENESS",
                 "Align with current season",
-                "You scored low on Seasonal Awareness. Bring seasonal flowers indoors or adjust light cycles to stay synced with external rhythms.",
+                "You scored ${categoryScores["SEASONAL AWARENESS"] ?: 0} on Seasonal Awareness. Bring seasonal flowers indoors or adjust light cycles to stay synced with external rhythms.",
                 "Browse seasonal plants →",
                 2
             )
@@ -198,7 +214,7 @@ fun OnboardingScreen(
                     QuestionFlowScreen(
                         questions = questions,
                         currentIndex = currentQuestionIdx,
-                        onAnswer = { score ->
+                        onAnswer = { score: Int ->
                             answers[currentQuestionIdx] = score
                             if (currentQuestionIdx < questions.size - 1) {
                                 currentQuestionIdx++
@@ -226,6 +242,23 @@ fun OnboardingScreen(
                     ResultScreen(
                         score = totalScore,
                         onSeeSteps = {
+                            if (totalScore < 15) {
+                                screenState = AssessmentScreenState.PERSONALIZED_PAYWALL
+                            } else {
+                                screenState = AssessmentScreenState.STEPS
+                            }
+                        }
+                    )
+                }
+                AssessmentScreenState.PERSONALIZED_PAYWALL -> {
+                    PersonalizedPaywallScreen(
+                        score = totalScore,
+                        lowestCategories = lowestCategories,
+                        onUpgradeClick = { isAnnual ->
+                            viewModel.setBillingDialogVisible(true)
+                            screenState = AssessmentScreenState.STEPS
+                        },
+                        onBypassClick = {
                             screenState = AssessmentScreenState.STEPS
                         }
                     )
@@ -574,7 +607,8 @@ fun ResultScreen(
             .background(zoneInfo.third)
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Spacer(modifier = Modifier.height(48.dp))
         
@@ -589,7 +623,6 @@ fun ResultScreen(
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Large score number 48pt+ bold
         Text(
             text = "$score / 20",
             style = MaterialTheme.typography.displayLarge.copy(
@@ -626,7 +659,6 @@ fun ResultScreen(
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Zone label badge
         Box(
             modifier = Modifier
                 .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(24.dp))
@@ -674,7 +706,7 @@ fun ResultScreen(
                 .testTag("result_see_steps_btn")
         ) {
             Text(
-                text = "See My 3 Next Steps",
+                text = "See My Next Steps",
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
@@ -682,11 +714,10 @@ fun ResultScreen(
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Fake share button
-        var showShareToast by remember { mutableStateOf(false) }
-        
         OutlinedButton(
-            onClick = { showShareToast = true },
+            onClick = {
+                shareScoreCard(context, score, zoneInfo.first, zoneInfo.second, zoneInfo.third.toArgb())
+            },
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = Color.White
             ),
@@ -703,57 +734,11 @@ fun ResultScreen(
             ) {
                 Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                 Text(
-                    text = "Share My Score",
+                    text = "Share My Score Card",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
             }
-        }
-        
-        if (showShareToast) {
-            AlertDialog(
-                onDismissRequest = { showShareToast = false },
-                confirmButton = {
-                    TextButton(onClick = { showShareToast = false }) {
-                        Text("Close", color = Color(0xFF1D3C28))
-                    }
-                },
-                title = { Text("Share Score Card", fontWeight = FontWeight.Bold) },
-                text = {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(zoneInfo.third, RoundedCornerShape(16.dp))
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.ic_logo_heart),
-                                    contentDescription = "FloraFlow Logo",
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text("FloraFlow Neural Load", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Text("$score / 20", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 32.sp)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(zoneInfo.second, color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text("Take your own assessment: floraflow.app", color = BiophilicSecondary, fontSize = 10.sp, fontWeight = FontWeight.Medium)
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("Card generated successfully. Click share to post!", textAlign = TextAlign.Center, fontSize = 12.sp)
-                    }
-                }
-            )
         }
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -765,6 +750,233 @@ fun borderStrokeShare() = androidx.compose.foundation.BorderStroke(
     width = 1.dp,
     color = Color.White.copy(alpha = 0.5f)
 )
+
+@Composable
+fun PersonalizedPaywallScreen(
+    score: Int,
+    lowestCategories: List<String>,
+    onUpgradeClick: (isAnnual: Boolean) -> Unit,
+    onBypassClick: () -> Unit
+) {
+    val zoneInfo = remember(score) {
+        when (score) {
+            in 15..20 -> Triple("GREEN ZONE", "LOW NEURAL LOAD", Color(0xFF1B4A2F))
+            in 8..14 -> Triple("YELLOW ZONE", "MODERATE NEURAL LOAD", Color(0xFF825E1B))
+            else -> Triple("RED ZONE", "HIGH NEURAL LOAD", Color(0xFF702123))
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        zoneInfo.third,
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                    )
+                )
+            )
+            .padding(24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Spacer(modifier = Modifier.height(24.dp))
+            Icon(
+                imageVector = Icons.Default.WorkspacePremium,
+                contentDescription = "Premium Benefit",
+                tint = Color(0xFFFFD54F),
+                modifier = Modifier.size(64.dp)
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Text(
+                text = "Your Personalized Restoration Plan",
+                style = MaterialTheme.typography.headlineMedium.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                ),
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = "Based on your score of $score/20 (${zoneInfo.second}), we have generated a customized environment restoration plan targeting your lowest areas:",
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = Color.White.copy(alpha = 0.85f)
+                ),
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            lowestCategories.take(3).forEach { category ->
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.12f)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "Target",
+                            tint = Color(0xFFFFD54F),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Focus: $category",
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = when (category) {
+                                    "NATURAL LIGHT" -> "Critical light deprivation. Unlock tailored light-boost layouts to boost your melatonin & circadian rhythm."
+                                    "LIVING PLANTS" -> "Low biophilic plant density. Unlock low-maintenance botanical layouts to oxygenate your room."
+                                    "NOISE" -> "High cognitive noise pollution. Unlock custom binaural soundscapes to decrease cortisol levels."
+                                    "NATURE VIEWS" -> "Sparse nature connectivity. Unlock spatial layouts designed to maximize nature views."
+                                    else -> "Artificial texture dominance. Unlock recommendations for biophilic materials and natural fibers."
+                                },
+                                color = Color.White.copy(alpha = 0.8f),
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(32.dp))
+            
+            FloraFlowButton(
+                text = "Start 14-Day Free Trial",
+                onClick = { onUpgradeClick(true) },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = Icons.Default.AutoAwesome
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            TextButton(
+                onClick = onBypassClick,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    text = "Continue with Basic Free Tips",
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+    }
+}
+
+fun shareScoreCard(context: android.content.Context, score: Int, zoneName: String, zoneDesc: String, bgColorInt: Int) {
+    val size = 512
+    val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+    val canvas = android.graphics.Canvas(bitmap)
+    
+    // Draw background color
+    canvas.drawColor(bgColorInt)
+    
+    // Draw decorative border
+    val borderPaint = android.graphics.Paint().apply {
+        color = 0xFFFFFFFF.toInt()
+        style = android.graphics.Paint.Style.STROKE
+        strokeWidth = 10f
+        isAntiAlias = true
+    }
+    canvas.drawRect(20f, 20f, size - 20f, size - 20f, borderPaint)
+    
+    // Draw title
+    val titlePaint = android.graphics.Paint().apply {
+        color = 0xFFFFFFFF.toInt()
+        textSize = 28f
+        isFakeBoldText = true
+        textAlign = android.graphics.Paint.Align.CENTER
+        isAntiAlias = true
+    }
+    canvas.drawText("FloraFlow Neural Load", size / 2f, 100f, titlePaint)
+    
+    // Draw score number "X / 20"
+    val scorePaint = android.graphics.Paint().apply {
+        color = 0xFFFFFFFF.toInt()
+        textSize = 80f
+        isFakeBoldText = true
+        textAlign = android.graphics.Paint.Align.CENTER
+        isAntiAlias = true
+    }
+    canvas.drawText("$score / 20", size / 2f, 240f, scorePaint)
+    
+    // Draw zone name
+    val zonePaint = android.graphics.Paint().apply {
+        color = 0xFFFFD54F.toInt() // Gold highlight
+        textSize = 22f
+        isFakeBoldText = true
+        textAlign = android.graphics.Paint.Align.CENTER
+        isAntiAlias = true
+    }
+    canvas.drawText(zoneName, size / 2f, 320f, zonePaint)
+
+    // Draw zone description
+    val descPaint = android.graphics.Paint().apply {
+        color = 0xDDFFFFFF.toInt()
+        textSize = 16f
+        textAlign = android.graphics.Paint.Align.CENTER
+        isAntiAlias = true
+    }
+    canvas.drawText(zoneDesc, size / 2f, 380f, descPaint)
+    
+    // Draw bottom branding
+    val footerPaint = android.graphics.Paint().apply {
+        color = 0x88FFFFFF.toInt()
+        textSize = 14f
+        textAlign = android.graphics.Paint.Align.CENTER
+        isAntiAlias = true
+    }
+    canvas.drawText("Find your restoration score with FloraFlow", size / 2f, size - 60f, footerPaint)
+    
+    try {
+        val cachePath = java.io.File(context.cacheDir, "shared_scores")
+        cachePath.mkdirs()
+        val file = java.io.File(cachePath, "onboarding_scorecard.png")
+        val stream = java.io.FileOutputStream(file)
+        bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+        stream.close()
+        
+        val uri = androidx.core.content.FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        
+        val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+            type = "image/png"
+            putExtra(android.content.Intent.EXTRA_STREAM, uri)
+            putExtra(android.content.Intent.EXTRA_SUBJECT, "My Biophilic Assessment Score")
+            putExtra(android.content.Intent.EXTRA_TEXT, "I just assessed my room's environment using FloraFlow. My Neural Load Score is $score/20 ($zoneDesc). Optimize your environment with FloraFlow!")
+            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        
+        context.startActivity(android.content.Intent.createChooser(shareIntent, "Share Score Card"))
+    } catch (e: Exception) {
+        android.widget.Toast.makeText(context, "Failed to share scorecard: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+    }
+}
 
 @Composable
 fun StepsScreen(
