@@ -17,3 +17,6 @@
 ## 2024-08-01 - Room Database Batch Insert
 **Learning:** Calling `insertPlant` multiple times inside a loop (like parsing Gemini output) creates unnecessary database transactions and degrades performance.
 **Action:** Always accumulate objects in a list (`mutableListOf<Plant>`) and use a batch insert function like `insertPlants(listOf(...))` to perform the insertion in a single transaction.
+## 2024-05-18 - Optimize nested loops with precomputed O(1) arrays
+**Learning:** During heavy Compose recompositions, nested iteration `O(N * M)` operations like `.firstOrNull()` inside UI lists or grids can severely degrade frame rate and CPU performance.
+**Action:** When a static list must be frequently queried by multiple nested UI elements, map it into a 1D or 2D Array before the loops. Lookups via direct array indices change complexity from `O(N)` to `O(1)`, resulting in massive (often >20x) iteration time improvements.

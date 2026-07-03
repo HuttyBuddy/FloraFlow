@@ -108,6 +108,26 @@ fun hasNeighborSynergy(row: Int, col: Int, gridItems: List<GridPlantItem>): Bool
     return false
 }
 
+fun hasNeighborSynergyOptimized(row: Int, col: Int, gridMap: Array<GridPlantItem?>): Boolean {
+    val currentLoc = gridMap.getOrNull(row * 5 + col) ?: return false
+
+    val neighbors = arrayOf(
+        if (row > 0) gridMap[(row - 1) * 5 + col] else null,
+        if (row < 4) gridMap[(row + 1) * 5 + col] else null,
+        if (col > 0) gridMap[row * 5 + col - 1] else null,
+        if (col < 4) gridMap[row * 5 + col + 1] else null
+    )
+
+    for (neighborItem in neighbors) {
+        if (neighborItem != null) {
+            if (checkPlantSynergy(currentLoc.plantName, neighborItem.plantName)) {
+                return true
+            }
+        }
+    }
+    return false
+}
+
 fun hasNeighborConflict(row: Int, col: Int, gridItems: List<GridPlantItem>): Boolean {
     val currentLoc = gridItems.firstOrNull { it.x == row && it.y == col } ?: return false
     val neighbors = listOf(
@@ -127,6 +147,25 @@ fun hasNeighborConflict(row: Int, col: Int, gridItems: List<GridPlantItem>): Boo
     return false
 }
 
+fun hasNeighborConflictOptimized(row: Int, col: Int, gridMap: Array<GridPlantItem?>): Boolean {
+    val currentLoc = gridMap.getOrNull(row * 5 + col) ?: return false
+
+    val neighbors = arrayOf(
+        if (row > 0) gridMap[(row - 1) * 5 + col] else null,
+        if (row < 4) gridMap[(row + 1) * 5 + col] else null,
+        if (col > 0) gridMap[row * 5 + col - 1] else null,
+        if (col < 4) gridMap[row * 5 + col + 1] else null
+    )
+
+    for (neighborItem in neighbors) {
+        if (neighborItem != null) {
+            if (checkPlantConflict(currentLoc.plantName, neighborItem.plantName)) {
+                return true
+            }
+        }
+    }
+    return false
+}
 data class SoilTheme(
     val name: String,
     val bgColors: List<Color>,
@@ -745,6 +784,15 @@ fun PlannerScreen(
                     }
                 }
 
+                    val gridMap = remember(activeGridItems) {
+                        val map = arrayOfNulls<GridPlantItem>(25)
+                        activeGridItems.forEach { item ->
+                            if (item.x in 0..4 && item.y in 0..4) {
+                                map[item.x * 5 + item.y] = item
+                            }
+                        }
+                        map
+                    }
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -756,11 +804,11 @@ fun PlannerScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     for (c in 0..4) {
-                                        val item = activeGridItems.firstOrNull { it.x == r && it.y == c }
+                                        val item = gridMap[r * 5 + c]
                                         val emoji = getEmojiForPlantName(item?.plantName ?: "")
                                         val isHighlighted = highlightedPlantName != null && item?.plantName == highlightedPlantName
-                                        val hasSynergy = item != null && hasNeighborSynergy(r, c, activeGridItems)
-                                        val hasConflict = item != null && hasNeighborConflict(r, c, activeGridItems)
+                                        val hasSynergy = item != null && hasNeighborSynergyOptimized(r, c, gridMap)
+                                        val hasConflict = item != null && hasNeighborConflictOptimized(r, c, gridMap)
 
                                         val scaleVal by animateFloatAsState(
                                             targetValue = if (isHighlighted) 1.08f else 1f,
@@ -2408,19 +2456,25 @@ data class LeafParticle(
 
 private fun calculatePlantAges(currentIndex: Int, snapshots: List<Pair<Long, String>>): Array<IntArray> {
     val ages = Array(5) { IntArray(5) { 0 } }
-    for (r in 0..4) {
-        for (c in 0..4) {
-            var age = 0
-            for (i in 0..currentIndex) {
-                val snap = snapshots.getOrNull(i)
-                val snapGrid = parseGridString(snap?.second ?: "")
-                if (snapGrid.any { it.x == r && it.y == c }) {
-                    age++
+    for (i in 0..currentIndex) {
+        val snap = snapshots.getOrNull(i)
+        val snapGrid = parseGridString(snap?.second ?: "")
+
+        val currentPlants = Array(5) { BooleanArray(5) { false } }
+        for (plant in snapGrid) {
+            if (plant.x in 0..4 && plant.y in 0..4) {
+                currentPlants[plant.x][plant.y] = true
+            }
+        }
+
+        for (r in 0..4) {
+            for (c in 0..4) {
+                if (currentPlants[r][c]) {
+                    ages[r][c]++
                 } else {
-                    age = 0 // Reset if it was empty or uprooted
+                    ages[r][c] = 0 // Reset if it was empty or uprooted
                 }
             }
-            ages[r][c] = age
         }
     }
     return ages
@@ -2499,6 +2553,7 @@ fun TimelapseGrid(gridItems: List<GridPlantItem>, plantAges: Array<IntArray>) {
             .background(Color(0xFF0C140D)) // Dark green viewfinder
             .padding(12.dp)
     ) {
+        val itemsMap = remember(gridItems) { gridItems.associateBy { it.x to it.y } }
         Column(
             verticalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier.fillMaxSize()
@@ -2509,7 +2564,7 @@ fun TimelapseGrid(gridItems: List<GridPlantItem>, plantAges: Array<IntArray>) {
                     modifier = Modifier.weight(1f)
                 ) {
                     for (c in 0..4) {
-                        val item = gridItems.firstOrNull { it.x == r && it.y == c }
+                        val item = itemsMap[r to c]
                         val age = plantAges[r][c]
 
                         val cellBg = if (item != null) {
