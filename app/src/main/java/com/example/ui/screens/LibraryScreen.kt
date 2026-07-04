@@ -888,6 +888,7 @@ fun PlantCareTrackerCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(
+                            modifier = Modifier.weight(1f),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
@@ -896,7 +897,8 @@ fun PlantCareTrackerCard(
                                 fontWeight = FontWeight.Bold,
                                 style = MaterialTheme.typography.titleMedium,
                                 maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f, fill = false)
                             )
                             if (hydration < 0.25f) {
                                 Box(
@@ -908,7 +910,9 @@ fun PlantCareTrackerCard(
                                         text = "⚠️ Thirsty",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.extendedColors.error,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        softWrap = false
                                     )
                                 }
                             }

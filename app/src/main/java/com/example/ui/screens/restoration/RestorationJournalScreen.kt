@@ -473,6 +473,7 @@ fun RestorationJournalScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState())
                                     .padding(top = 8.dp)
                                     .padding(bottom = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
