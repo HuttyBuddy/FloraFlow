@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.ClimatePlants
+import com.example.ui.theme.extendedColors
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.StrokeCap
@@ -900,10 +901,15 @@ fun PlantCareTrackerCard(
                             if (hydration < 0.25f) {
                                 Box(
                                     modifier = Modifier
-                                        .background(Color(0xFFEF5350).copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                        .background(MaterialTheme.extendedColors.error.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
-                                    Text("⚠️ Thirsty", fontSize = 8.sp, color = Color(0xFFD32F2F), fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = "⚠️ Thirsty",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.extendedColors.error,
+                                        fontWeight = FontWeight.Bold
+                                    )
                                 }
                             }
                         }

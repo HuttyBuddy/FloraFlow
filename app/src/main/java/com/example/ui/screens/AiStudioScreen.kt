@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.window.Dialog
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.theme.extendedColors
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -1452,14 +1453,14 @@ fun BotanistLiveLabConsole(
                     ) {
                         Text(
                             text = if (activeLayout != null) "SYNCED" else "STANDBY",
-                            fontSize = 8.sp,
+                            style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
             }
-
+ 
             // Interactive Bio-Signal wave!
             if (activeLayout != null) {
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -1470,13 +1471,13 @@ fun BotanistLiveLabConsole(
                     ) {
                         Text(
                             text = "LIVE SIGNAL TRANSLATOR",
-                            fontSize = 8.sp,
+                            style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
                         )
                         Text(
                             text = "120.4Hz • STABLE",
-                            fontSize = 8.sp,
+                            style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Medium,
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -1558,14 +1559,15 @@ fun BotanistMetricItem(
             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.62f), RoundedCornerShape(8.dp))
             .border(1.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f), RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
+            .heightIn(min = 48.dp)
             .padding(6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(1.dp)
     ) {
         Text(icon, fontSize = 14.sp)
         Text(value, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
-        Text(label, fontSize = 8.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(desc, fontSize = 7.5.sp, color = Color.Gray)
+        Text(label, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(desc, fontSize = 10.sp, color = Color.Gray)
     }
 }
 

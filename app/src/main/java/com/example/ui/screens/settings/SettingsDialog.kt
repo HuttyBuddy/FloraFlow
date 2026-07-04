@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.theme.extendedColors
 import com.example.ui.viewmodel.GardenViewModel
 import com.example.ui.viewmodel.ThemeMode
 
@@ -141,7 +142,7 @@ fun SettingsDialog(
                         title = "Rate Your App",
                         subtitle = "Help us grow with a store review",
                         icon = Icons.Default.Star,
-                        iconTint = Color(0xFFFFB300),
+                        iconTint = MaterialTheme.extendedColors.premiumGold,
                         onClick = {
                             val packageName = context.packageName
                             val marketIntent = Intent(Intent.ACTION_VIEW, "market://details?id=$packageName".toUri()).apply {

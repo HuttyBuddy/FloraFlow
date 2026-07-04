@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import com.example.ui.theme.extendedColors
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,7 +37,7 @@ fun PremiumLockOverlay(
             Icon(
                 imageVector = Icons.Default.WorkspacePremium,
                 contentDescription = "Premium lock",
-                tint = Color(0xFFFFD54F),
+                tint = MaterialTheme.extendedColors.premiumGold,
                 modifier = Modifier.size(36.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -59,13 +60,13 @@ fun PremiumLockOverlay(
             Button(
                 onClick = onUpgradeClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFFD54F),
+                    containerColor = MaterialTheme.extendedColors.premiumGold,
                     contentColor = Color.Black
                 ),
                 shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.height(36.dp)
+                modifier = Modifier.heightIn(min = 48.dp)
             ) {
-                Text("Unlock PRO", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                Text("Unlock PRO", fontWeight = FontWeight.Bold, fontSize = 14.sp)
             }
         }
     }

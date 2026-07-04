@@ -41,7 +41,8 @@ data class ExtendedColors(
     val warning: Color,
     val onWarning: Color,
     val error: Color,
-    val onError: Color
+    val onError: Color,
+    val premiumGold: Color
 )
 
 val LocalExtendedColors = staticCompositionLocalOf<ExtendedColors> {
@@ -123,7 +124,8 @@ fun MyApplicationTheme(
             warning = WarningAmberDark,
             onWarning = OnWarningAmberDark,
             error = ErrorRedDark,
-            onError = OnErrorRedDark
+            onError = OnErrorRedDark,
+            premiumGold = PremiumGold
         )
     } else {
         ExtendedColors(
@@ -132,7 +134,8 @@ fun MyApplicationTheme(
             warning = WarningAmber,
             onWarning = OnWarningAmber,
             error = ErrorRed,
-            onError = OnErrorRed
+            onError = OnErrorRed,
+            premiumGold = PremiumGold
         )
     }
 

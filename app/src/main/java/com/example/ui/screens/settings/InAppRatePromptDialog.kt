@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.theme.extendedColors
 import com.example.ui.viewmodel.GardenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,8 +61,8 @@ fun InAppRatePromptDialog(
                         .background(
                             brush = Brush.radialGradient(
                                 colors = listOf(
-                                    Color(0xFFFFD54F).copy(alpha = 0.35f),
-                                    Color(0xFFFFB300).copy(alpha = 0.05f)
+                                    MaterialTheme.extendedColors.premiumGold.copy(alpha = 0.35f),
+                                    MaterialTheme.extendedColors.premiumGold.copy(alpha = 0.05f)
                                 )
                             ),
                             shape = RoundedCornerShape(32.dp)
@@ -71,7 +72,7 @@ fun InAppRatePromptDialog(
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = "Rating Star",
-                        tint = Color(0xFFFFB300),
+                        tint = MaterialTheme.extendedColors.premiumGold,
                         modifier = Modifier.size(36.dp)
                     )
                 }

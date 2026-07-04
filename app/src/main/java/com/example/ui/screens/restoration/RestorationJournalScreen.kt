@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.theme.extendedColors
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -641,9 +642,9 @@ fun RestorationJournalScreen(
                                 width = 2.dp,
                                 brush = Brush.linearGradient(
                                     colors = listOf(
-                                        Color(0xFFFFD54F), // Gold
-                                        Color(0xFFFFB74D), // Amber
-                                        Color(0xFFFFD54F)
+                                        MaterialTheme.extendedColors.premiumGold,
+                                        MaterialTheme.extendedColors.premiumGold.copy(alpha = 0.6f),
+                                        MaterialTheme.extendedColors.premiumGold
                                     )
                                 )
                             )
@@ -656,43 +657,43 @@ fun RestorationJournalScreen(
                                 Icon(
                                     imageVector = Icons.Default.Lock,
                                     contentDescription = "Premium locked",
-                                    tint = Color(0xFFFFD54F),
+                                    tint = MaterialTheme.extendedColors.premiumGold,
                                     modifier = Modifier
                                         .size(44.dp)
                                         .scale(paywallPulse)
-                                )
-                                Text(
-                                    text = "Restoration Journal (Premium 👑)",
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 18.sp,
-                                    color = Color(0xFFA8E6CF),
-                                    textAlign = TextAlign.Center
-                                )
-                                Text(
-                                    text = "You have completed your 3 free trial sessions. Upgrade to FloraFlow PRO to unlock full binaural beat chimes, neural restoration tracking, and unlimited botanical stress metrics!",
-                                    fontSize = 12.sp,
-                                    color = Color.White.copy(alpha = 0.75f),
-                                    textAlign = TextAlign.Center,
-                                    lineHeight = 17.sp
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Button(
-                                    onClick = { viewModel.upgradeToPremium() },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                                    contentPadding = PaddingValues(),
-                                    shape = RoundedCornerShape(12.dp),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(48.dp)
-                                        .background(
-                                            Brush.horizontalGradient(
-                                                colors = listOf(
-                                                    Color(0xFFFFD54F),
-                                                    Color(0xFFFFB74D)
-                                                )
-                                            ),
-                                            shape = RoundedCornerShape(12.dp)
-                                        )
+                                  )
+                                  Text(
+                                      text = "Restoration Journal (Premium 👑)",
+                                      fontWeight = FontWeight.ExtraBold,
+                                      fontSize = 18.sp,
+                                      color = Color(0xFFA8E6CF),
+                                      textAlign = TextAlign.Center
+                                  )
+                                  Text(
+                                      text = "You have completed your 3 free trial sessions. Upgrade to FloraFlow PRO to unlock full binaural beat chimes, neural restoration tracking, and unlimited botanical stress metrics!",
+                                      fontSize = 12.sp,
+                                      color = Color.White.copy(alpha = 0.75f),
+                                      textAlign = TextAlign.Center,
+                                      lineHeight = 17.sp
+                                  )
+                                  Spacer(modifier = Modifier.height(4.dp))
+                                  Button(
+                                      onClick = { viewModel.upgradeToPremium() },
+                                      colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                                      contentPadding = PaddingValues(),
+                                      shape = RoundedCornerShape(12.dp),
+                                      modifier = Modifier
+                                          .fillMaxWidth()
+                                          .height(48.dp)
+                                          .background(
+                                              Brush.horizontalGradient(
+                                                  colors = listOf(
+                                                      MaterialTheme.extendedColors.premiumGold,
+                                                      MaterialTheme.extendedColors.premiumGold.copy(alpha = 0.6f)
+                                                  )
+                                              ),
+                                              shape = RoundedCornerShape(12.dp)
+                                          )
                                 ) {
                                     Text(
                                         text = "Upgrade to PRO for Unlimited Access",

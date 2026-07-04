@@ -28,6 +28,7 @@ import com.example.ui.viewmodel.GardenViewModel
 import com.example.ui.components.FloraFlowButton
 import com.example.ui.components.FloraFlowCard
 import com.example.ui.components.ButtonVariant
+import com.example.ui.theme.extendedColors
 
 @Composable
 fun SubscriptionManagementDialog(
@@ -121,14 +122,14 @@ fun SubscriptionManagementDialog(
                 Box(
                     modifier = Modifier
                         .size(60.dp)
-                        .background(Color(0xFFFFF8E1), CircleShape)
-                        .border(2.dp, Color(0xFFFFB300), CircleShape),
+                        .background(MaterialTheme.extendedColors.premiumGold.copy(alpha = 0.15f), CircleShape)
+                        .border(2.dp, MaterialTheme.extendedColors.premiumGold, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.WorkspacePremium,
                         contentDescription = "Active Pro status token",
-                        tint = Color(0xFFFFB300),
+                        tint = MaterialTheme.extendedColors.premiumGold,
                         modifier = Modifier.size(34.dp)
                     )
                 }
@@ -142,14 +143,14 @@ fun SubscriptionManagementDialog(
 
                 Box(
                     modifier = Modifier
-                        .background(Color(0xFFE8F5E9), RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.extendedColors.success.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
                         "ACTIVE (GOOGLE PLAY SUBSCRIPTION)",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2E7D32)
+                        color = MaterialTheme.extendedColors.success
                     )
                 }
 
@@ -161,10 +162,9 @@ fun SubscriptionManagementDialog(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     SubscriptionDetailRow(label = "Premium Plan Tier", value = tier ?: "FloraFlow PRO Monthly")
-                    SubscriptionDetailRow(label = "Order ID Ref", value = transactionId ?: "GPA.DEMO-8791-0312")
+                    SubscriptionDetailRow(label = "Order ID Ref", value = transactionId ?: "Syncing with Google Play...")
                     SubscriptionDetailRow(label = "Renewal Date", value = billingDate ?: "Next billing cycle")
                     SubscriptionDetailRow(label = "Payment Gateway", value = "Google Play Services")
-                    SubscriptionDetailRow(label = "Entitlement Key", value = "PRO_VERIFIED_SECURE")
                 }
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)

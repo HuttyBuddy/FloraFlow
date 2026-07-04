@@ -50,6 +50,7 @@ fun PremiumUpsellScreen(
     val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
 
     var selectAnnual by remember { mutableStateOf(true) }
+    var showComparison by remember { mutableStateOf(false) }
 
     val crownBadge = @Composable {
         Box(
@@ -58,7 +59,10 @@ fun PremiumUpsellScreen(
                 .clip(CircleShape)
                 .background(
                     Brush.linearGradient(
-                        colors = listOf(Color(0xFFFFD54F), Color(0xFFFFB74D))
+                        colors = listOf(
+                            MaterialTheme.extendedColors.premiumGold,
+                            MaterialTheme.extendedColors.premiumGold.copy(alpha = 0.6f)
+                        )
                     )
                 ),
             contentAlignment = Alignment.Center
@@ -331,6 +335,23 @@ fun PremiumUpsellScreen(
                 ctaPricingCard()
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
                 restoreButton()
+                
+                // Collapsible Plan Comparison Matrix
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                TextButton(
+                    onClick = { showComparison = !showComparison }
+                ) {
+                    Text(
+                        text = if (showComparison) "Hide Plan Comparison" else "Compare Plan Benefits",
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+                if (showComparison) {
+                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
+                    comparisonGrid()
+                }
+
                 Spacer(modifier = Modifier.height(48.dp))
             }
         } else {
@@ -358,7 +379,7 @@ fun PremiumUpsellScreen(
                     restoreButton()
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumSmall))
                 }
-
+ 
                 // RIGHT COLUMN (Detailed Value Props, Perks Matrix table)
                 Column(
                     modifier = Modifier
@@ -374,7 +395,7 @@ fun PremiumUpsellScreen(
                 }
             }
         }
-
+ 
         // Close button at top end (absolute positioned overlay)
         IconButton(
             onClick = onCloseClick,
@@ -382,12 +403,12 @@ fun PremiumUpsellScreen(
                 .align(Alignment.TopEnd)
                 .padding(16.dp)
                 .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f), CircleShape)
-                .size(36.dp)
+                .size(48.dp) // 48dp meets minimum touch target size!
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = "Close paywall",
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(24.dp),
                 tint = MaterialTheme.colorScheme.onSurface
             )
         }

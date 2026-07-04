@@ -57,6 +57,7 @@ import com.example.ui.screens.dashboard.DashboardScreen
 import com.example.ui.screens.feedback.FeedbackDialog
 import androidx.activity.viewModels
 import com.example.ui.theme.MyApplicationTheme
+import com.example.ui.theme.extendedColors
 import com.example.ui.theme.spacing
 import com.example.ui.viewmodel.GardenViewModel
 import androidx.work.PeriodicWorkRequestBuilder
@@ -112,7 +113,12 @@ class MainActivity : ComponentActivity() {
             val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
             val useDarkTheme = isDarkThemeOverridden ?: systemDark
 
-            val statusBarStyle = if (useDarkTheme) {
+            val currentTab by viewModel.currentTab.collectAsState()
+            val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
+
+            val forceDarkStatusBar = useDarkTheme || (currentTab == 4 && isOnboardingCompleted)
+
+            val statusBarStyle = if (forceDarkStatusBar) {
                 androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
             } else {
                 androidx.activity.SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
@@ -123,7 +129,7 @@ class MainActivity : ComponentActivity() {
                 androidx.activity.SystemBarStyle.light(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
             }
 
-            DisposableEffect(useDarkTheme) {
+            DisposableEffect(useDarkTheme, currentTab, isOnboardingCompleted) {
                 enableEdgeToEdge(
                     statusBarStyle = statusBarStyle,
                     navigationBarStyle = navigationBarStyle
@@ -132,8 +138,6 @@ class MainActivity : ComponentActivity() {
             }
 
             MyApplicationTheme(darkTheme = useDarkTheme) {
-                val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
-
                 // Composed regardless of onboarding state — it self-hides via
                 // showBillingDialog, but must exist during onboarding too since
                 // the post-assessment paywall can trigger it before the main
@@ -143,7 +147,6 @@ class MainActivity : ComponentActivity() {
                 if (!isOnboardingCompleted) {
                     OnboardingScreen(viewModel = viewModel)
                 } else {
-                    val currentTab by viewModel.currentTab.collectAsState()
                         var showFeedbackDialog by remember { mutableStateOf(false) }
                         var showSettingsDialog by remember { mutableStateOf(false) }
                         var showCommunityDialog by remember { mutableStateOf(false) }
@@ -204,7 +207,7 @@ class MainActivity : ComponentActivity() {
                                             Icon(
                                                 imageVector = Icons.Default.WorkspacePremium,
                                                 contentDescription = "Subscription Info Status",
-                                                tint = if (isPremium) Color(0xFFFFB300) else MaterialTheme.colorScheme.onSurface
+                                                tint = if (isPremium) MaterialTheme.extendedColors.premiumGold else MaterialTheme.colorScheme.onSurface
                                             )
                                         }
                                         IconButton(
@@ -289,16 +292,7 @@ class MainActivity : ComponentActivity() {
                                     fontWeight = FontWeight.Medium
                                 )
                                 
-                                val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-                                val screenWidth = configuration.screenWidthDp.dp
-                                val tabWidth = screenWidth / 5
-                                val indicatorOffset by androidx.compose.animation.core.animateDpAsState(
-                                    targetValue = tabWidth * currentTab,
-                                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                                    label = "tabIndicatorOffset"
-                                )
-
-                                Box(
+                                BoxWithConstraints(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -306,17 +300,31 @@ class MainActivity : ComponentActivity() {
                                         .height(80.dp)
                                         .testTag("app_navigation_bar")
                                 ) {
+                                    val barWidth = maxWidth
+                                    val tabWidth = barWidth / 5
+                                    val layoutDirection = androidx.compose.ui.platform.LocalLayoutDirection.current
+                                    val isLtr = layoutDirection == androidx.compose.ui.unit.LayoutDirection.Ltr
+                                    
+                                    val indicatorOffset by androidx.compose.animation.core.animateDpAsState(
+                                        targetValue = tabWidth * currentTab,
+                                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+                                        label = "tabIndicatorOffset"
+                                    )
+ 
                                     // Sliding indicator pill
                                     Box(
                                         modifier = Modifier
                                             .padding(vertical = 17.5.dp, horizontal = 6.dp)
                                             .width(tabWidth - 12.dp)
                                             .fillMaxHeight()
-                                            .offset { IntOffset(x = indicatorOffset.roundToPx(), y = 0) }
+                                            .offset {
+                                                val xOffset = indicatorOffset.roundToPx()
+                                                IntOffset(x = if (isLtr) xOffset else -xOffset, y = 0)
+                                            }
                                             .clip(RoundedCornerShape(12.dp))
                                             .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f))
                                     )
-
+ 
                                     Row(
                                         modifier = Modifier.fillMaxSize(),
                                         verticalAlignment = Alignment.CenterVertically
@@ -327,10 +335,7 @@ class MainActivity : ComponentActivity() {
                                                 .weight(1f)
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .clickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = null
-                                                ) {
+                                                .clickable {
                                                     viewModel.setCurrentTab(0)
                                                 }
                                                 .testTag("nav_tab_dashboard"),
@@ -355,21 +360,19 @@ class MainActivity : ComponentActivity() {
                                                     style = uniformTextStyle,
                                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
-                                                    softWrap = false
+                                                    softWrap = false,
+                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
-
+ 
                                         // Tab 1: My Plot
                                         Box(
                                             modifier = Modifier
                                                 .weight(1f)
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .clickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = null
-                                                ) {
+                                                .clickable {
                                                     viewModel.setCurrentTab(1)
                                                 }
                                                 .testTag("nav_tab_planner")
@@ -401,21 +404,19 @@ class MainActivity : ComponentActivity() {
                                                     style = uniformTextStyle,
                                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
-                                                    softWrap = false
+                                                    softWrap = false,
+                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
-
+ 
                                         // Tab 2: Greenhouse
                                         Box(
                                             modifier = Modifier
                                                 .weight(1f)
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .clickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = null
-                                                ) {
+                                                .clickable {
                                                     viewModel.setCurrentTab(2)
                                                 }
                                                 .testTag("nav_tab_greenhouse"),
@@ -440,21 +441,19 @@ class MainActivity : ComponentActivity() {
                                                     style = uniformTextStyle,
                                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
-                                                    softWrap = false
+                                                    softWrap = false,
+                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
-
-                                        // Tab 3: Garden Counsel
+ 
+                                        // Tab 3: Counsel
                                         Box(
                                             modifier = Modifier
                                                 .weight(1f)
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .clickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = null
-                                                ) {
+                                                .clickable {
                                                     viewModel.setCurrentTab(3)
                                                 }
                                                 .testTag("nav_tab_ai")
@@ -482,25 +481,23 @@ class MainActivity : ComponentActivity() {
                                                 )
                                                 Spacer(modifier = Modifier.height(2.dp))
                                                 Text(
-                                                    text = "Garden Counsel",
+                                                    text = "Counsel",
                                                     style = uniformTextStyle,
                                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
-                                                    softWrap = false
+                                                    softWrap = false,
+                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
-
+ 
                                         // Tab 4: Restoration
                                         Box(
                                             modifier = Modifier
                                                 .weight(1f)
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .clickable(
-                                                    interactionSource = remember { MutableInteractionSource() },
-                                                    indication = null
-                                                ) {
+                                                .clickable {
                                                     viewModel.setCurrentTab(4)
                                                 }
                                                 .testTag("nav_tab_ar")
@@ -532,7 +529,8 @@ class MainActivity : ComponentActivity() {
                                                     style = uniformTextStyle,
                                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
-                                                    softWrap = false
+                                                    softWrap = false,
+                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                                                 )
                                             }
                                         }

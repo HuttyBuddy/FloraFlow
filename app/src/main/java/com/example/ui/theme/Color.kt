@@ -36,6 +36,9 @@ val SoilBorderDark = Color(0xFF2E3228)     // Deep mud border
 val SoilNavBgDark = Color(0xFF1A1C16)      // Dark clay navigation
 val SoilSurfaceDark = Color(0xFF1B1D17)    // Dark sand surface
 
+// --- Brand Gold Color (Unified Premium Accent) ---
+val PremiumGold = Color(0xFFD4AF37)
+
 // --- Semantic Status Colors ---
 val SuccessGreen = Color(0xFF2E7D32)
 val OnSuccessGreen = Color(0xFFFFFFFF)

@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.window.Dialog
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.theme.extendedColors
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.boundsInRoot
 import com.example.ui.viewmodel.WalkthroughStep
@@ -286,9 +287,9 @@ fun DashboardScreen(
                                         modifier = Modifier
                                             .background(
                                                 color = when (result.score) {
-                                                    in 15..20 -> Color(0xFFE8F5E9)
-                                                    in 8..14 -> Color(0xFFFFFDE7)
-                                                    else -> Color(0xFFFFEBEE)
+                                                    in 15..20 -> MaterialTheme.extendedColors.success.copy(alpha = 0.15f)
+                                                    in 8..14 -> MaterialTheme.extendedColors.warning.copy(alpha = 0.15f)
+                                                    else -> MaterialTheme.extendedColors.error.copy(alpha = 0.15f)
                                                 },
                                                 shape = RoundedCornerShape(8.dp)
                                             )
@@ -298,9 +299,9 @@ fun DashboardScreen(
                                             text = "${result.score}/20",
                                             fontWeight = FontWeight.Bold,
                                             color = when (result.score) {
-                                                in 15..20 -> Color(0xFF2E7D32)
-                                                in 8..14 -> Color(0xFFF57F17)
-                                                else -> Color(0xFFC62828)
+                                                in 15..20 -> MaterialTheme.extendedColors.success
+                                                in 8..14 -> MaterialTheme.extendedColors.warning
+                                                else -> MaterialTheme.extendedColors.error
                                             },
                                             fontSize = 12.sp
                                         )

@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.example.data.model.GardenLayout
 import com.example.data.model.GridPlantItem
 import com.example.data.model.parseGridString
+import com.example.ui.theme.extendedColors
 import com.example.ui.screens.checkPlantSynergy
 import com.example.ui.screens.checkPlantConflict
 import kotlin.math.sqrt
@@ -189,7 +190,7 @@ fun CompanionSynergyCard(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(Color(0xFFE8F5E9), RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.extendedColors.success.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
                                     .padding(10.dp)
                             ) {
                                 Row(
@@ -198,15 +199,15 @@ fun CompanionSynergyCard(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = null,
-                                        tint = Color(0xFF2E7D32),
+                                        contentDescription = "Synergy Check",
+                                        tint = MaterialTheme.extendedColors.success,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
                                         text = "Active Synergy: ${item1.plantName} & ${item2.plantName}",
                                         style = MaterialTheme.typography.bodySmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF2E7D32)
+                                        color = MaterialTheme.extendedColors.success
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(2.dp))
@@ -223,7 +224,7 @@ fun CompanionSynergyCard(
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(Color(0xFFFFEBEE), RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.extendedColors.error.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
                                     .padding(10.dp)
                             ) {
                                 Row(
@@ -232,15 +233,15 @@ fun CompanionSynergyCard(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Cancel,
-                                        contentDescription = null,
-                                        tint = Color(0xFFC62828),
+                                        contentDescription = "Conflict Cancel",
+                                        tint = MaterialTheme.extendedColors.error,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
                                         text = "Mismatched Partnership: ${item1.plantName} & ${item2.plantName}",
                                         style = MaterialTheme.typography.bodySmall,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFC62828)
+                                        color = MaterialTheme.extendedColors.error
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(2.dp))

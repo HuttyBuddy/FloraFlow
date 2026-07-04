@@ -1,7 +1,9 @@
 package com.example.ui.screens.dashboard.components
-
+ 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -69,14 +71,14 @@ fun CelebrationDialog(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(420.dp)
+                .heightIn(min = 420.dp)
                 .testTag("celebration_dialog"),
             shape = RoundedCornerShape(28.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFCF9F1)),
-            border = BorderStroke(2.dp, Color(0xFF1F483E))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
         ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Canvas(modifier = Modifier.matchParentSize()) {
                     particles.forEach { p ->
                         val drawX = p.x % size.width
                         drawCircle(
@@ -89,7 +91,8 @@ fun CelebrationDialog(
                 
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
@@ -100,14 +103,14 @@ fun CelebrationDialog(
                         text = title,
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF1F483E),
+                        color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.Center
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF43493E),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         fontWeight = FontWeight.Medium
                     )
@@ -124,10 +127,13 @@ fun CelebrationDialog(
                                 .weight(1f)
                                 .height(48.dp)
                                 .testTag("close_celebration_button"),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF43493E)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            ),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Dismiss", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("Dismiss", fontWeight = FontWeight.Bold)
                         }
                         
                         Button(
@@ -138,12 +144,15 @@ fun CelebrationDialog(
                                 .weight(1f)
                                 .height(48.dp)
                                 .testTag("share_celebration_button"),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1F483E)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Icon(Icons.Default.Share, contentDescription = null, tint = Color.White)
+                            Icon(Icons.Default.Share, contentDescription = "Share achievement", tint = MaterialTheme.colorScheme.onPrimary)
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Share", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("Share", fontWeight = FontWeight.Bold)
                         }
                     }
                 }

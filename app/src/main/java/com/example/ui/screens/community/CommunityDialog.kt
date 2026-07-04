@@ -392,12 +392,12 @@ fun CommunityPostCard(
                             Icon(
                                 imageVector = Icons.Default.Eco,
                                 contentDescription = "Blueprint Attached",
-                                modifier = Modifier.size(10.dp)
+                                modifier = Modifier.size(12.dp)
                             )
                             Spacer(modifier = Modifier.width(3.dp))
                             Text(
                                 text = "Blueprint",
-                                fontSize = 8.sp,
+                                style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold
                             )
                         }

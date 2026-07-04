@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.ui.theme.extendedColors
 import com.example.ui.viewmodel.GardenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,7 +109,7 @@ fun RateAppDialog(
                             Icon(
                                 imageVector = if (isSelected) Icons.Default.Star else Icons.Default.StarBorder,
                                 contentDescription = "$i Stars",
-                                tint = if (isSelected) Color(0xFFFFB300) else MaterialTheme.colorScheme.outlineVariant,
+                                 tint = if (isSelected) MaterialTheme.extendedColors.premiumGold else MaterialTheme.colorScheme.outlineVariant,
                                 modifier = Modifier
                                     .size(42.dp)
                                     .clickable { rating = i }

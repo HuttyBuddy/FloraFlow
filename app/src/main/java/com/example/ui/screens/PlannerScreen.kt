@@ -35,6 +35,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.*
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.theme.extendedColors
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.StrokeCap
@@ -641,7 +642,7 @@ fun PlannerScreen(
                                     
                                     Text(
                                         text = theme.name,
-                                        fontSize = 11.sp,
+                                        fontSize = 13.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = if (isSelected) theme.outlineColor else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -655,7 +656,7 @@ fun PlannerScreen(
                                     }
                                     Text(
                                         text = specText,
-                                        fontSize = 8.sp,
+                                        fontSize = 11.sp,
                                         color = MaterialTheme.colorScheme.secondary,
                                         fontWeight = FontWeight.Medium
                                     )
@@ -1102,9 +1103,9 @@ fun PlannerScreen(
                                                     ) {
                                                         Text(
                                                             text = item.plantName.take(6),
-                                                            fontSize = 8.5.sp,
+                                                            fontSize = 10.sp,
                                                             fontWeight = FontWeight.ExtraBold,
-                                                            color = if (hasConflict) Color(0xFFC62828) else if (hasSynergy) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
+                                                            color = if (hasConflict) MaterialTheme.extendedColors.error else if (hasSynergy) MaterialTheme.extendedColors.success else MaterialTheme.colorScheme.primary,
                                                             textAlign = TextAlign.Center
                                                         )
                                                         if (hasConflict) {
@@ -1282,6 +1283,7 @@ fun PlannerScreen(
                             Card(
                                 modifier = Modifier
                                     .width(76.dp)
+                                    .heightIn(min = 48.dp)
                                     .clickable {
                                         isUprootModeActive = !isUprootModeActive
                                         selectedSeedTemplate = null
@@ -1303,8 +1305,8 @@ fun PlannerScreen(
                                 ) {
                                     Text("🧹", fontSize = 16.sp)
                                     Spacer(modifier = Modifier.height(2.dp))
-                                    Text("Clear", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = if (isSelected) Color(0xFFC62828) else MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-                                    Text("Eraser", fontSize = 7.sp, color = if (isSelected) Color(0xFFC62828).copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f), maxLines = 1)
+                                    Text("Clear", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) Color(0xFFC62828) else MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                                    Text("Eraser", fontSize = 10.sp, color = if (isSelected) Color(0xFFC62828).copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f), maxLines = 1)
                                 }
                             }
                         }
@@ -1316,10 +1318,11 @@ fun PlannerScreen(
 
                         items(templates, key = { it.name }) { template ->
                             val isSelected = selectedSeedTemplate?.name == template.name
-                            val accentColor = if (selectedTrayTab == 0) Color(0xFF0284C7) else Color(0xFF10B981)
+                            val accentColor = if (selectedTrayTab == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
                             Card(
                                 modifier = Modifier
                                     .width(76.dp)
+                                    .heightIn(min = 48.dp)
                                     .clickable {
                                         if (isSelected) {
                                             selectedSeedTemplate = null
@@ -1345,8 +1348,8 @@ fun PlannerScreen(
                                 ) {
                                     Text(template.iconEmoji, fontSize = 16.sp)
                                     Spacer(modifier = Modifier.height(2.dp))
-                                    Text(template.name, fontSize = 9.sp, fontWeight = FontWeight.Bold, color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                                    Text(template.type, fontSize = 7.sp, color = if (isSelected) accentColor.copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                    Text(template.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                    Text(template.type, fontSize = 10.sp, color = if (isSelected) accentColor.copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                                 }
                             }
                         }
@@ -1519,46 +1522,46 @@ fun PlannerScreen(
                                     if (synergyPairs.isNotEmpty()) {
                                         Card(
                                             modifier = Modifier.fillMaxWidth(),
-                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.extendedColors.success.copy(alpha = 0.15f)),
                                             shape = RoundedCornerShape(10.dp)
                                         ) {
                                             Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                                Text("✨ Active Synergies (No. $totalSynergies):", fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32), fontSize = 11.sp)
+                                                Text("✨ Active Synergies (No. $totalSynergies):", fontWeight = FontWeight.Bold, color = MaterialTheme.extendedColors.success, fontSize = 11.sp)
                                                 synergyPairs.forEach { pair ->
-                                                    Text("• $pair", fontSize = 10.sp, color = Color(0xFF1B5E20))
+                                                    Text("• $pair", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
                                                 }
                                             }
                                         }
                                     } else {
-                                        Text("No active synergies found yet. Try placing synergistic plants adjacent to each other (e.g. Maple & Rose, Lavender & Rosemary, Cactus & Aloe).", fontSize = 10.sp, color = MaterialTheme.colorScheme.secondary)
+                                        Text("No active synergies found yet. Try placing synergistic plants adjacent to each other (e.g. Maple & Rose, Lavender & Rosemary, Cactus & Aloe).", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondary)
                                     }
 
                                     if (conflictPairs.isNotEmpty()) {
                                         Card(
                                             modifier = Modifier.fillMaxWidth(),
-                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
+                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.extendedColors.error.copy(alpha = 0.15f)),
                                             shape = RoundedCornerShape(10.dp)
                                         ) {
                                             Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                                Text("⚠️ Active Conflicts (No. $totalConflicts):", fontWeight = FontWeight.Bold, color = Color(0xFFC62828), fontSize = 11.sp)
+                                                Text("⚠️ Active Conflicts (No. $totalConflicts):", fontWeight = FontWeight.Bold, color = MaterialTheme.extendedColors.error, fontSize = 11.sp)
                                                 conflictPairs.forEach { pair ->
-                                                    Text("• $pair", fontSize = 10.sp, color = Color(0xFFB71C1C))
+                                                    Text("• $pair", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
                                                 }
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                Text("Resolve conflicts by removing or relocating clashing species.", fontSize = 9.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFFC62828))
+                                                Text("Resolve conflicts by removing or relocating clashing species.", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.extendedColors.error)
                                             }
                                         }
                                     } else if (activeGridItems.isNotEmpty()) {
                                         Card(
                                             modifier = Modifier.fillMaxWidth(),
-                                            colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+                                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.extendedColors.success.copy(alpha = 0.15f)),
                                             shape = RoundedCornerShape(10.dp)
                                         ) {
                                             Text(
                                                 "🎉 No planting conflicts! Excellent layout architecture.",
                                                 modifier = Modifier.padding(10.dp),
                                                 fontWeight = FontWeight.Bold,
-                                                color = Color(0xFF2E7D32),
+                                                color = MaterialTheme.extendedColors.success,
                                                 fontSize = 11.sp
                                             )
                                         }
@@ -1707,7 +1710,7 @@ fun PlannerScreen(
                                 text = "FULLY CULTIVATED ✨",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Black,
-                                color = Color(0xFFFFB300),
+                                 color = MaterialTheme.extendedColors.premiumGold,
                                 letterSpacing = 0.5.sp
                             )
                         } else {
@@ -2013,11 +2016,11 @@ fun PlannerScreen(
                          verticalArrangement = Arrangement.spacedBy(4.dp)
                      ) {
                           val formatTime = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.US)
-                          Text("PROJECT-NAME : ${currentLayout?.name?.uppercase() ?: ""}", color = Color(0xFF81C784), fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
-                          Text("STYLE-THEME : ${currentLayout?.style?.uppercase() ?: ""}", color = Color(0xFF81C784), fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
-                          Text("ZONE-CLIMATE: ${currentLayout?.climate?.uppercase() ?: ""}", color = Color(0xFF81C784), fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
-                          Text("SOIL-DENSITY: ${currentSoilTheme.name.uppercase()}", color = Color(0xFF81C784), fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
-                          Text("TIMESTAMP   : ${formatTime.format(java.util.Date())} UTC", color = Color(0xFF81C784), fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                          Text("PROJECT-NAME : ${currentLayout?.name?.uppercase() ?: ""}", color = MaterialTheme.extendedColors.success, fontSize = 11.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                          Text("STYLE-THEME : ${currentLayout?.style?.uppercase() ?: ""}", color = MaterialTheme.extendedColors.success, fontSize = 11.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                          Text("ZONE-CLIMATE: ${currentLayout?.climate?.uppercase() ?: ""}", color = MaterialTheme.extendedColors.success, fontSize = 11.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                          Text("SOIL-DENSITY: ${currentSoilTheme.name.uppercase()}", color = MaterialTheme.extendedColors.success, fontSize = 11.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                          Text("TIMESTAMP   : ${formatTime.format(java.util.Date())} UTC", color = MaterialTheme.extendedColors.success, fontSize = 11.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
                      }
 
                      Text(
@@ -2495,8 +2498,8 @@ fun TimelapseHeader(onDismiss: () -> Unit) {
         Column {
             Text(
                 text = "TIMELAPSE OBSERVER",
-                color = Color(0xFF81C784),
-                fontSize = 9.sp,
+                color = MaterialTheme.extendedColors.success,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
             )
@@ -2699,8 +2702,8 @@ fun TimelapseTimeline(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Beginning", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
-            Text("Present Day", color = Color.Gray, fontSize = 9.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+            Text("Beginning", color = Color.Gray, fontSize = 11.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+            Text("Present Day", color = Color.Gray, fontSize = 11.sp, fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
         }
     }
 }
