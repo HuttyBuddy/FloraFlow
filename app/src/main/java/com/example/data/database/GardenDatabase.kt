@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.data.model.GardenLayout
 import com.example.data.model.MoodLog
 import com.example.data.model.Plant
@@ -35,7 +36,15 @@ abstract class GardenDatabase : RoomDatabase() {
         //         db.execSQL("ALTER TABLE plants ADD COLUMN newColumn TEXT NOT NULL DEFAULT ''")
         //     }
         // }
-        val ALL_MIGRATIONS: Array<Migration> = arrayOf()
+        val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add restoration_logs table
+                db.execSQL("CREATE TABLE IF NOT EXISTS `restoration_logs` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` INTEGER NOT NULL, `nriScore` INTEGER NOT NULL, `layoutId` INTEGER, `completedTasks` TEXT NOT NULL, `soundscapeTrack` TEXT NOT NULL)")
+                // Add assessment_results table
+                db.execSQL("CREATE TABLE IF NOT EXISTS `assessment_results` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` INTEGER NOT NULL, `score` INTEGER NOT NULL, `lowestCategories` TEXT NOT NULL)")
+            }
+        }
+        val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_6_7)
 
         fun getDatabase(context: Context): GardenDatabase {
             return INSTANCE ?: synchronized(this) {
