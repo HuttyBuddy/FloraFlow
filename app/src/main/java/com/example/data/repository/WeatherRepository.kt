@@ -2,9 +2,6 @@ package com.example.data.repository
 
 import android.content.Context
 import androidx.core.content.edit
-import com.example.data.api.WeatherDescription
-import com.example.data.api.WeatherMain
-import com.example.data.api.WeatherResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

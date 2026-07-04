@@ -148,7 +148,7 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
                 val product = purchase.products.firstOrNull()
                 productId = product
                 tier = if (product == PRODUCT_YEARLY) "FloraFlow PRO Annual" else "FloraFlow PRO Monthly"
-                txId = purchase.orderId ?: ("GPA." + (1000..9999).random().toString() + "-" + (1000..9999).random().toString() + "-MOCK")
+                txId = purchase.orderId ?: "—"
 
                 val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
                 val cal = Calendar.getInstance()

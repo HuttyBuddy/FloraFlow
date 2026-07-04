@@ -708,7 +708,7 @@ fun SuccessReceiptStep(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                 ReceiptItemRow(label = "Subscribed Plan Tier", value = activePlan.name)
-                ReceiptItemRow(label = "Transaction Order ID", value = transactionId ?: "GPA.DEMO-RESTORED")
+                ReceiptItemRow(label = "Transaction Order ID", value = transactionId ?: "Synced from Google Play")
                 ReceiptItemRow(label = "Trial Period Entitlement", value = activePlan.trial)
                 ReceiptItemRow(label = "Payment Authorized price", value = "${activePlan.price} / ${activePlan.period}")
                 ReceiptItemRow(label = "Automatic Renewal Date", value = billingDate ?: "Next Month")

@@ -1,5 +1,8 @@
 # FloraFlow UI Audit — Pre-Ship (2026-07-03)
 
+> **Re-audit (same day, after fix commit `4da6692`): see [Re-Audit Results](#re-audit-results--2026-07-03-post-fix) at the bottom.
+> Verdict: all four P0s verified fixed, code compiles, one leftover demo string found ([BillingDialog.kt:711](app/src/main/java/com/example/ui/screens/BillingDialog.kt)), rest is polish-level.**
+
 Scope: all Compose UI (~19,400 lines across 40 files). Method: full read of design system,
 shared components, app shell, and monetization screens; pattern-scan + targeted reads of the
 five large screens and dashboard components.
@@ -125,3 +128,57 @@ forest gradient. Force light status-bar icons while this tab is active (or scope
 7. CelebrationDialog height + Restoration status bar (P1-8, P1-9).
 
 Estimated effort: P0 items are a focused half-day; P0+P1 roughly a day and a half.
+
+---
+
+# Re-Audit Results — 2026-07-03 (post-fix)
+
+Verified fix commit `4da6692` line-by-line against every finding, then re-ran all pattern
+scans across the full UI source. `:app:compileDebugKotlin` passes.
+
+## P0 verification — all fixed ✅
+
+| # | Finding | Status |
+|---|---------|--------|
+| 1 | Dark-mode pastel/text breakage | ✅ CompanionSynergyCard, DashboardScreen zone chips, and Planner synergy/conflict cards all route through `extendedColors` with alpha tints now |
+| 2 | Nav label clipping / indicator drift | ✅ "Garden Counsel" → "Counsel", ellipsis guards added, indicator measured via `BoxWithConstraints`, RTL offset negated, ripple restored |
+| 3 | Demo data in subscription console | ✅ `GPA.DEMO-8791-0312` → "Syncing with Google Play...", fake "Entitlement Key" row deleted |
+| 4 | Comparison grid missing on phones | ✅ Added as collapsible "Compare Plan Benefits" section in the portrait layout |
+
+## P1 verification — all addressed ✅
+
+- Touch targets: Unlock PRO button and paywall close now 48dp; Planner tray cards `heightIn(min = 48.dp)`.
+- Worst micro-type fixed (7sp Eraser → 10sp, 8sp instances → 10–11sp in the flagged spots).
+- `PremiumGold` (`0xFFD4AF37`) added to `ExtendedColors` and applied at every premium touchpoint
+  (crown, lock overlay, subscription console, upsell crown, restoration paywall).
+- Tailwind sky/emerald removed from the Planner seed tray (now `primary`/`tertiary`).
+- CelebrationDialog: themed surface, `heightIn(min)` + scrollable column.
+- Restoration tab now forces light status-bar icons via `forceDarkStatusBar` in MainActivity.
+
+## New/leftover findings
+
+**Worth fixing before ship (one line):**
+1. **`BillingDialog.kt:711`** — the restore-purchase receipt still falls back to
+   `"GPA.DEMO-RESTORED"` as the Transaction Order ID. Same bug class as the fixed P0-3;
+   use "Synced from Google Play" or "—".
+
+**Polish-level (fine to ship, note for next pass):**
+2. `PlannerScreen.kt:784-787` — "FILTER ACTIVE 🎯" badge still uses fixed `0xFFC62828` on
+   `0xFFFFEBEE` (self-consistent/readable, but the file's siblings were migrated to `extendedColors.error`).
+3. `PlannerScreen.kt:1306-1307` — Clear/Eraser font sizes were fixed, but selected color is
+   still hardcoded `0xFFC62828` (mediocre contrast on dark `surfaceVariant`).
+4. `BillingDialog.kt:667` — fixed `0xFFE8F5E9` success circle (self-consistent pair, just unmigrated).
+5. `LogMoodDialog.kt:96` — 8sp mood labels remain; also `Color.White` where `onPrimary` belongs.
+6. ~20 remaining 7–9sp instances, nearly all chart axis labels / in-grid-cell captions
+   (TherapyChart, ScoreHistoryChart, CircularBotanicalRhythm, Planner grid cells, AiStudio badges).
+   Defensible for dense data displays; bump to 10sp minimum when convenient.
+7. `CircularBotanicalRhythm.kt:73-75` and `MoodLogItemCard.kt:143-149` still use Tailwind
+   `0x0284C7`/`0x10B981` as data-category colors — same off-palette blue removed from the Planner tray.
+8. Decorative `0xFFFFD54F`/`0xFFFFB74D` golds remain (~25×) in Onboarding tints, AiStudio sparkle
+   gradients, Planner rings, MindfulBreathingCard. Premium *identity* spots are unified; these are
+   ambient decoration and lower-stakes.
+
+## Ship verdict
+
+**Clear to ship after the one-line `BillingDialog.kt:711` fix.** Everything else remaining is
+cosmetic debt suitable for a post-launch polish pass.

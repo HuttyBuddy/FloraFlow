@@ -4,7 +4,6 @@ import com.example.BuildConfig
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -84,9 +83,10 @@ object GeminiApiClient {
         .writeTimeout(60, TimeUnit.SECONDS)
         .build()
 
-    // Moshi Instance
+    // Moshi Instance — relies solely on generated adapters (@JsonClass(generateAdapter = true))
+    // for every request/response type here, which is R8/minification-safe. Do not add the
+    // reflection-based KotlinJsonAdapterFactory back; it breaks under ProGuard/R8 shrinking.
     private val moshi = Moshi.Builder()
-        .addLast(KotlinJsonAdapterFactory())
         .build()
 
     val service: GeminiApiService by lazy {
