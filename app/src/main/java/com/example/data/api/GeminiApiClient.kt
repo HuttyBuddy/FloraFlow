@@ -119,9 +119,9 @@ object GeminiApiClient {
         val isProxyActive = proxyHost.isNotEmpty() && proxyHost != "none" && proxyHost != "YOUR_PROXY_URL"
 
         val endpointUrl = if (isProxyActive) {
-            "https://$proxyHost/v1beta/models/gemini-2.5-flash:generateContent"
+            "https://$proxyHost/v1beta/models/gemini-3.5-flash:generateContent"
         } else {
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent"
         }
 
         val requestKey = if (isProxyActive) {
