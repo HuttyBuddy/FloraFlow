@@ -5,12 +5,12 @@ All notable changes to the FloraFlow project will be documented in this file.
 ## [9.0.1.2] - 2026-07-03
 
 ### Fixed
-- **Startup Stability**: Added `MIGRATION_6_7` to `GardenDatabase` to ensure users upgrading from prior versions don't experience crashes due to schema changes.
-- **AI Counselor**: Updated the Gemini model identifier to `gemini-3.5-flash` to align with the 2026 production API endpoints.
-- **Build Hygiene**: Resolved a fatal lint error in `MainActivity` related to the Activity Result API by integrating the `androidx.fragment:fragment-ktx` dependency.
+- **Upgrade Reliability**: Resolved a critical startup crash for users updating from earlier versions by implementing the Room migration path for the new Restoration and Assessment tables.
+- **AI Intelligence**: Optimized the Garden Counsel advisor to utilize the high-performance `gemini-3.5-flash` model, ensuring faster and more accurate botanical advice.
+- **Release Stability**: Fixed a fatal assembly error by upgrading the Fragment dependency, ensuring the app correctly handles system permissions in the production release.
 
 ### Changed
-- **Security Baseline**: Integrated `APP_SHARED_SECRET` into the environment configuration for enhanced security during proxied AI requests.
+- **Secure Synchronization**: Enhanced the security handshake between the mobile app and AI proxy services by integrating a shared application secret.
 
 ## [9.0.1.1] - 2026-06-26
 

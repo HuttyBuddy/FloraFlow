@@ -78,7 +78,7 @@ floraflow-garden-designer/
 │   │   ├── analytics/                    # AnalyticsHelper (Firebase event logging)
 │   │   ├── billing/                      # BillingManager (Play Billing + debug mock mode)
 │   │   ├── data/                         # Data Layer
-│   │   │   ├── api/                      # GeminiApiClient, WeatherService
+│   │   │   ├── api/                      # GeminiApiClient
 │   │   │   ├── database/                 # Room database configuration & DAOs
 │   │   │   ├── model/                    # Data entities & database tables
 │   │   │   └── repository/               # Repositories mediating local/remote access
