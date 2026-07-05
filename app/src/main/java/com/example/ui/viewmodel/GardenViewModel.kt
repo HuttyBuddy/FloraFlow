@@ -2053,6 +2053,8 @@ class GardenViewModel @JvmOverloads constructor(
         val diversityScore = (uniqueTypes.size * 10).coerceAtMost(40)
         
         // 2. Synergy Score (max 40%)
+        // ⚡ Bolt Performance Optimization:
+        // Replaced expensive sqrt() with boundary checks and squared distance comparisons.
         val gridItems = parseGridString(layout.gridString)
         var synergyCount = 0
         for (i in gridItems.indices) {
@@ -2061,8 +2063,13 @@ class GardenViewModel @JvmOverloads constructor(
                 val item2 = gridItems[j]
                 val dx = item1.x - item2.x
                 val dy = item1.y - item2.y
-                val dist = kotlin.math.sqrt((dx * dx + dy * dy).toDouble())
-                if (dist <= 1.5 && checkPlantSynergy(item1.plantName, item2.plantName)) {
+
+                // Early exit boundary check
+                if (dx < -1 || dx > 1 || dy < -1 || dy > 1) continue
+
+                // Squared distance check (1.5^2 = 2.25)
+                val distSq = dx * dx + dy * dy
+                if (distSq <= 2.25 && checkPlantSynergy(item1.plantName, item2.plantName)) {
                     synergyCount++
                 }
             }
