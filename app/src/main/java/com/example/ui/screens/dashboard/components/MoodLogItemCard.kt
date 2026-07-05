@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.MoodLog
+import com.example.ui.components.MoodPhoto
 import com.example.ui.theme.SoilSageDark
 import com.example.ui.theme.spacing
 
@@ -59,12 +60,6 @@ fun MoodLogItemCard(
         }
     }
 
-    val emojiBgColor = if (isDark) {
-        MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
-    } else {
-        MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
-    }
-
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -75,15 +70,13 @@ fun MoodLogItemCard(
             modifier = Modifier.padding(MaterialTheme.spacing.medium),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(54.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(emojiBgColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(emoji, fontSize = 28.sp)
-            }
+            MoodPhoto(
+                mood = log.mood,
+                fallbackEmoji = emoji,
+                modifier = Modifier.size(54.dp),
+                shape = RoundedCornerShape(12.dp),
+                emojiFontSize = 28.sp
+            )
 
             Spacer(modifier = Modifier.width(MaterialTheme.spacing.medium))
 

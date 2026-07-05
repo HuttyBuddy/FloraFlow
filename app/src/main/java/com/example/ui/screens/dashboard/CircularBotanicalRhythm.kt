@@ -3,9 +3,12 @@ package com.example.ui.screens.dashboard
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -35,6 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.MoodLog
+import com.example.ui.components.MoodImages
 import kotlin.math.atan2
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -240,6 +244,7 @@ fun CircularBotanicalRhythm(
 
             // 3. Central Wellness Bubble (Mood Circle)
             val innerSize = 130.dp
+            val moodPhotoRes = MoodImages.forMood(todayLog?.mood)
             Box(
                 modifier = Modifier
                     .size(innerSize)
@@ -252,13 +257,29 @@ fun CircularBotanicalRhythm(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = moodEmoji,
-                        fontSize = 32.sp,
-                        textAlign = TextAlign.Center
+                if (moodPhotoRes != null) {
+                    Image(
+                        painter = painterResource(id = moodPhotoRes),
+                        contentDescription = "$moodLabel mood photo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize().clip(CircleShape)
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    // Scrim so the mood label stays legible over any photo
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Brush.radialGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))))
+                    )
+                }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (moodPhotoRes == null) {
+                        Text(
+                            text = moodEmoji,
+                            fontSize = 32.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                    }
                     Text(
                         text = moodLabel,
                         style = MaterialTheme.typography.labelLarge,

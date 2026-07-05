@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.example.ui.components.MoodPhoto
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,27 +78,32 @@ fun LogMoodDialog(
                 ) {
                     moodEmoList.forEach { pair ->
                         val isSelected = mood == pair.first
-                        Box(
+                        Column(
                             modifier = Modifier
                                 .weight(1f)
-                                .height(54.dp)
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary 
+                                    if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
                                     else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                                 )
-                                .clickable { mood = pair.first },
-                            contentAlignment = Alignment.Center
+                                .clickable { mood = pair.first }
+                                .padding(vertical = 6.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(pair.second, fontSize = 18.sp)
-                                Text(
-                                    pair.first,
-                                    fontSize = 8.sp,
-                                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                            MoodPhoto(
+                                mood = pair.first,
+                                fallbackEmoji = pair.second,
+                                modifier = Modifier.size(36.dp),
+                                shape = androidx.compose.foundation.shape.CircleShape,
+                                emojiFontSize = 18.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                pair.first,
+                                fontSize = 8.sp,
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                     }
                 }

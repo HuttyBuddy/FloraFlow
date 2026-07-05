@@ -435,7 +435,7 @@ fun PlannerScreen(
                             hasConsultedAi = true
                         },
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(0.8f)
                             .height(36.dp),
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 4.dp),
@@ -458,7 +458,7 @@ fun PlannerScreen(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 "Layout Review",
-                                fontSize = 10.sp,
+                                fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -473,7 +473,7 @@ fun PlannerScreen(
                             hasConsultedAi = true
                         },
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(1.2f)
                             .height(36.dp),
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 4.dp),
@@ -496,7 +496,7 @@ fun PlannerScreen(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 "Blueprint Suggestion",
-                                fontSize = 10.sp,
+                                fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -1637,7 +1637,7 @@ fun PlannerScreen(
                             ) {
                                 Icon(Icons.Default.Layers, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("RENDER ARCHITECT BLUEPRINT 📐", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                                Text("RENDER BLUEPRINT OF BIOPHILIC SPACE 📐", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
                             }
                         }
                     }
