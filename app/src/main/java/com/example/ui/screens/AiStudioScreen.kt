@@ -16,6 +16,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.example.R
+import android.graphics.BitmapFactory
+import androidx.compose.ui.graphics.asImageBitmap
+import com.example.ui.components.PlantImages
+import com.example.data.api.Content
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -115,6 +119,147 @@ fun convertUriToBase64(context: android.content.Context, uri: android.net.Uri): 
 
 fun getUriMimeType(context: android.content.Context, uri: android.net.Uri): String {
     return context.contentResolver.getType(uri) ?: "image/jpeg"
+}
+
+@Composable
+fun ChatBubbleContent(
+    content: Content,
+    isUser: Boolean
+) {
+    val text = remember(content) { content.parts.firstOrNull { it.text != null }?.text ?: "" }
+    val userImageBitmap = remember(content) {
+        val inlinePart = content.parts.firstOrNull { it.inlineData != null }
+        inlinePart?.inlineData?.data?.let { base64Str ->
+            try {
+                val decodedBytes = android.util.Base64.decode(base64Str, android.util.Base64.DEFAULT)
+                BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+            } catch (e: Exception) {
+                null
+            }
+        }
+    }
+
+    val plantNames = remember {
+        listOf(
+            "Snake Plant", "Peace Lily", "ZZ Plant", "Cast Iron Plant", "Fiddle Leaf Fig",
+            "Swiss Cheese Plant", "Spider Plant", "Jade Plant", "Chinese Money Plant",
+            "String of Pearls", "Rubber Plant", "Calathea Ornata", "Parlor Palm",
+            "Prayer Plant", "Aloe Vera", "Golden Pothos", "Boston Fern", "Saguaro Cactus",
+            "Desert Marigold", "Rosemary", "Prickly Pear Cactus", "Agave Americana",
+            "Bird of Paradise", "Monstera Deliciosa", "Red Ginger", "Hibiscus",
+            "Plumeria", "Cypress Tree", "Lavender", "English Lavender", "Bougainvillea",
+            "Jacaranda Tree", "Mealy Cup Sage", "Olive Tree", "Sweet Fig Tree",
+            "California Poppy", "Columbine", "Alpine Aster", "Creeping Thyme",
+            "Edelweiss", "Alpine Gentian", "Snowdrop", "Heather", "Fuchsia",
+            "English Rose", "Japanese Maple", "English Ivy", "Bonsai Juniper",
+            "Hydrangea", "Peonies", "Sunflower", "Marigold", "Snapdragon", "Hostas"
+        )
+    }
+
+    val detectedPlants = remember(text) {
+        if (text.isBlank()) emptyList() else {
+            val matches = mutableListOf<String>()
+            val sortedNames = plantNames.sortedByDescending { it.length }
+            val lowerText = text.lowercase()
+            for (name in sortedNames) {
+                if (lowerText.contains(name.lowercase()) && !matches.any { it.contains(name, ignoreCase = true) }) {
+                    matches.add(name)
+                }
+            }
+            matches.mapNotNull { name ->
+                PlantImages.forPlantName(name)?.let { resId -> name to resId }
+            }
+        }
+    }
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        if (!isUser) {
+            Text(
+                text = "DR. JULIAN GREENLEAF",
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                letterSpacing = 0.5.sp
+            )
+        }
+
+        userImageBitmap?.let { bitmap ->
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = "Uploaded plant image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .padding(bottom = 6.dp),
+                contentScale = ContentScale.Crop
+            )
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.Top,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (!isUser) {
+                Text("🍃", fontSize = 12.sp)
+            }
+            Text(
+                text = text,
+                fontSize = 13.sp,
+                color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
+                style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        if (detectedPlants.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                detectedPlants.take(3).forEach { (name, resId) ->
+                    Card(
+                        shape = RoundedCornerShape(10.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
+                        modifier = Modifier
+                            .width(85.dp)
+                            .height(105.dp)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxSize().padding(4.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = resId),
+                                contentDescription = name,
+                                modifier = Modifier
+                                    .size(56.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = name,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 2,
+                                textAlign = TextAlign.Center,
+                                lineHeight = 11.sp,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -450,116 +595,117 @@ fun AiStudioScreen(
                                             modifier = Modifier.padding(12.dp),
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Icon(
-                                                Icons.Default.AutoAwesome,
-                                                contentDescription = "Diagnostic action",
-                                                tint = MaterialTheme.colorScheme.tertiary,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(10.dp))
+                                            val images = remember(pair.first) {
+                                                val clean = pair.first.lowercase()
+                                                when {
+                                                    clean.contains("companion") -> listOf(R.drawable.plant_bonsai_juniper, R.drawable.plant_lavender)
+                                                    clean.contains("yellowing") || clean.contains("pest") -> listOf(R.drawable.plant_peace_lily)
+                                                    clean.contains("therapy") || clean.contains("wellness") -> listOf(R.drawable.plant_rosemary)
+                                                    clean.contains("diagnosis") || clean.contains("space") -> listOf(R.drawable.plant_monstera_deliciosa)
+                                                    else -> emptyList()
+                                                }
+                                            }
+
+                                            if (images.isNotEmpty()) {
+                                                Row(
+                                                    horizontalArrangement = Arrangement.spacedBy((-10).dp),
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    images.forEach { imgRes ->
+                                                        Image(
+                                                            painter = painterResource(id = imgRes),
+                                                            contentDescription = null,
+                                                            modifier = Modifier
+                                                                .size(36.dp)
+                                                                .clip(CircleShape)
+                                                                .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                                                            contentScale = ContentScale.Crop
+                                                        )
+                                                    }
+                                                }
+                                            } else {
+                                                Icon(
+                                                    Icons.Default.AutoAwesome,
+                                                    contentDescription = "Diagnostic action",
+                                                    tint = MaterialTheme.colorScheme.tertiary,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.width(12.dp))
                                             Text(
                                                 text = pair.first,
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSurface
+                                                color = MaterialTheme.colorScheme.onSurface,
+                                                modifier = Modifier.weight(1f)
                                             )
                                         }
                                     }
                                 }
                             }
                         }
-                    } else {
-                        items(chatHistory) { content ->
-                            val isUser = content.role == "user"
-                            val text = content.parts.firstOrNull()?.text ?: ""
+                    }
+                    items(chatHistory) { content ->
+                        val isUser = content.role == "user"
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
-                            ) {
-                                if (!isUser) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.julian_avatar),
-                                        contentDescription = "Dr. Julian Greenleaf",
-                                        modifier = Modifier
-                                            .padding(end = 8.dp, top = 2.dp)
-                                            .size(32.dp)
-                                            .clip(CircleShape),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                }
-
-                                Box(
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
+                        ) {
+                            if (!isUser) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.julian_avatar),
+                                    contentDescription = "Dr. Julian Greenleaf",
                                     modifier = Modifier
-                                        .widthIn(max = 280.dp)
-                                        .testTag(if (isUser) "user_chat_bubble" else "model_chat_bubble")
-                                        .clip(
-                                            RoundedCornerShape(
-                                                topStart = 16.dp,
-                                                topEnd = 16.dp,
-                                                bottomStart = if (isUser) 16.dp else 4.dp,
-                                                bottomEnd = if (isUser) 4.dp else 16.dp
-                                            )
+                                        .padding(end = 8.dp, top = 2.dp)
+                                        .size(32.dp)
+                                        .clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .widthIn(max = 280.dp)
+                                    .testTag(if (isUser) "user_chat_bubble" else "model_chat_bubble")
+                                    .clip(
+                                        RoundedCornerShape(
+                                            topStart = 16.dp,
+                                            topEnd = 16.dp,
+                                            bottomStart = if (isUser) 16.dp else 4.dp,
+                                            bottomEnd = if (isUser) 4.dp else 16.dp
                                         )
-                                        .background(
-                                            if (isUser) {
-                                                Brush.horizontalGradient(
-                                                    listOf(
-                                                        Color(0xFF386641),
-                                                        Color(0xFF6A994E)
-                                                    )
+                                    )
+                                    .background(
+                                        if (isUser) {
+                                            Brush.horizontalGradient(
+                                                listOf(
+                                                    Color(0xFF386641),
+                                                    Color(0xFF6A994E)
                                                 )
-                                            } else {
-                                                Brush.linearGradient(
-                                                    listOf(
-                                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                                        MaterialTheme.colorScheme.surface
-                                                    )
-                                                )
-                                            }
-                                        )
-                                        .border(
-                                            width = 1.dp,
-                                            color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                            shape = RoundedCornerShape(
-                                                topStart = 16.dp,
-                                                topEnd = 16.dp,
-                                                bottomStart = if (isUser) 16.dp else 4.dp,
-                                                bottomEnd = if (isUser) 4.dp else 16.dp
                                             )
-                                        )
-                                        .padding(horizontal = 14.dp, vertical = 10.dp)
-                                ) {
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        if (!isUser) {
-                                            Text(
-                                                text = "DR. JULIAN GREENLEAF",
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.primary,
-                                                letterSpacing = 0.5.sp
+                                        } else {
+                                            Brush.linearGradient(
+                                                listOf(
+                                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                                    MaterialTheme.colorScheme.surface
+                                                )
                                             )
                                         }
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            verticalAlignment = Alignment.Top,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            if (!isUser) {
-                                                Text("🍃", fontSize = 12.sp)
-                                            }
-                                            Text(
-                                                text = text,
-                                                fontSize = 13.sp,
-                                                color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
-                                                style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
-                                                modifier = Modifier.weight(1f)
-                                            )
-                                        }
-                                    }
-                                }
+                                    )
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                        shape = RoundedCornerShape(
+                                            topStart = 16.dp,
+                                            topEnd = 16.dp,
+                                            bottomStart = if (isUser) 16.dp else 4.dp,
+                                            bottomEnd = if (isUser) 4.dp else 16.dp
+                                        )
+                                    )
+                                    .padding(horizontal = 14.dp, vertical = 10.dp)
+                            ) {
+                                ChatBubbleContent(content = content, isUser = isUser)
                             }
                         }
                     }
@@ -855,7 +1001,6 @@ fun AiStudioScreen(
                         } else {
                             items(chatHistory) { content ->
                                 val isUser = content.role == "user"
-                                val text = content.parts.firstOrNull()?.text ?: ""
 
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -914,35 +1059,7 @@ fun AiStudioScreen(
                                             )
                                             .padding(horizontal = 14.dp, vertical = 10.dp)
                                     ) {
-                                        Column(
-                                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                                        ) {
-                                            if (!isUser) {
-                                                Text(
-                                                    text = "DR. JULIAN GREENLEAF",
-                                                    fontSize = 9.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.primary,
-                                                    letterSpacing = 0.5.sp
-                                                )
-                                            }
-                                            Row(
-                                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                                verticalAlignment = Alignment.Top,
-                                                modifier = Modifier.fillMaxWidth()
-                                            ) {
-                                                if (!isUser) {
-                                                    Text("🍃", fontSize = 12.sp)
-                                                }
-                                                Text(
-                                                    text = text,
-                                                    fontSize = 13.sp,
-                                                    color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
-                                                    style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
-                                                    modifier = Modifier.weight(1f)
-                                                )
-                                            }
-                                        }
+                                        ChatBubbleContent(content = content, isUser = isUser)
                                     }
                                 }
                             }
@@ -1220,18 +1337,49 @@ fun AiStudioScreen(
                                     modifier = Modifier.padding(12.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        Icons.Default.AutoAwesome,
-                                        contentDescription = "Diagnostic action",
-                                        tint = MaterialTheme.colorScheme.tertiary,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
+                                    val images = remember(pair.first) {
+                                        val clean = pair.first.lowercase()
+                                        when {
+                                            clean.contains("companion") -> listOf(R.drawable.plant_bonsai_juniper, R.drawable.plant_lavender)
+                                            clean.contains("yellowing") || clean.contains("pest") -> listOf(R.drawable.plant_peace_lily)
+                                            clean.contains("therapy") || clean.contains("wellness") -> listOf(R.drawable.plant_rosemary)
+                                            clean.contains("diagnosis") || clean.contains("space") -> listOf(R.drawable.plant_monstera_deliciosa)
+                                            else -> emptyList()
+                                        }
+                                    }
+
+                                    if (images.isNotEmpty()) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy((-10).dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            images.forEach { imgRes ->
+                                                Image(
+                                                    painter = painterResource(id = imgRes),
+                                                    contentDescription = null,
+                                                    modifier = Modifier
+                                                        .size(36.dp)
+                                                        .clip(CircleShape)
+                                                        .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                                                    contentScale = ContentScale.Crop
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        Icon(
+                                            Icons.Default.AutoAwesome,
+                                            contentDescription = "Diagnostic action",
+                                            tint = MaterialTheme.colorScheme.tertiary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(12.dp))
                                     Text(
                                         text = pair.first,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        modifier = Modifier.weight(1f)
                                     )
                                 }
                             }

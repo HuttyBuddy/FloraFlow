@@ -152,11 +152,8 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
 
                 val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
                 val cal = Calendar.getInstance()
-                if (product == PRODUCT_YEARLY) {
-                    cal.add(Calendar.YEAR, 1)
-                } else {
-                    cal.add(Calendar.MONTH, 1)
-                }
+                // For a 3-day free trial, billing starts in 3 days
+                cal.add(Calendar.DAY_OF_YEAR, 3)
                 billingDate = sdf.format(cal.time)
             } else if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
                 hasPending = true
@@ -346,11 +343,8 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
 
         val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
         val cal = Calendar.getInstance()
-        if (productId == PRODUCT_YEARLY) {
-            cal.add(Calendar.YEAR, 1)
-        } else {
-            cal.add(Calendar.MONTH, 1)
-        }
+        // For a 3-day free trial, billing starts in 3 days
+        cal.add(Calendar.DAY_OF_YEAR, 3)
         val billingDate = sdf.format(cal.time)
 
         _isPremium.value = true

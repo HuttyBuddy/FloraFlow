@@ -40,6 +40,9 @@ import com.example.ui.components.FloraFlowCard
 import com.example.ui.components.ButtonVariant
 import com.example.ui.theme.extendedColors
 import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -303,7 +306,7 @@ fun BillingDialog(
                                 )
 
                                 FloraFlowButton(
-                                    text = "Pay Now (${activePlan.price})",
+                                    text = "Start 3-Day Free Trial",
                                     onClick = { currentStep = 3 },
                                     modifier = Modifier
                                         .weight(1.5f)
@@ -473,6 +476,12 @@ fun PlanSelectionStep(
 fun GooglePlayMockSheet(
     activePlan: BillingPlan
 ) {
+    val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
+    val cal = Calendar.getInstance()
+    val todayDate = sdf.format(cal.time)
+    cal.add(Calendar.DAY_OF_YEAR, 3)
+    val trialEndDate = sdf.format(cal.time)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -536,20 +545,27 @@ fun GooglePlayMockSheet(
         ) {
             Column(
                 modifier = Modifier.padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "• Subscription starts immediately.",
+                    text = "• Today ($todayDate): $0.00 (Free Trial starts)",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.extendedColors.success
+                )
+                Text(
+                    text = "• Trial Duration: 3 days (Ends on $trialEndDate)",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
-                    text = "• Free Trial period: ${activePlan.trial}",
+                    text = "• First Billing Date: $trialEndDate (Charged ${activePlan.price})",
                     fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "• Billed automatically. Cancel anytime in Subscriptions on Google Play.",
+                    text = "• No charges will occur before $trialEndDate. Cancel anytime on Google Play before the trial ends to avoid being billed.",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -640,7 +656,7 @@ fun BankHandshakeLoadingStep(
 
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Total amount due today: ${activePlan.price} after trial period logic completes.",
+            text = "Total amount due today: $0.00. First charge of ${activePlan.price} will occur automatically in 3 days.",
             fontSize = 10.sp,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant

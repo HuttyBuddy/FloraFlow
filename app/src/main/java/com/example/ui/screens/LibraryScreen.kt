@@ -251,7 +251,15 @@ fun LibraryScreen(
                         }
                     },
                     label = { Text(tpl.name, fontSize = 11.sp, fontWeight = FontWeight.Bold) },
-                    leadingIcon = { Text(tpl.iconEmoji, fontSize = 14.sp) },
+                    leadingIcon = {
+                        PlantPhoto(
+                            plantName = tpl.name,
+                            fallbackEmoji = tpl.iconEmoji,
+                            modifier = Modifier.size(20.dp),
+                            shape = CircleShape,
+                            emojiFontSize = 12.sp
+                        )
+                    },
                     trailingIcon = {
                         if (isCultivated) {
                             Icon(Icons.Default.Check, contentDescription = "Cultivated", modifier = Modifier.size(12.dp))

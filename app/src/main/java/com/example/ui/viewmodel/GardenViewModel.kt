@@ -984,8 +984,8 @@ class GardenViewModel @JvmOverloads constructor(
         allLayouts = repository.allLayouts
             .map { list ->
                 list.map { layout ->
-                    if (layout.name == "My First Zen Space") {
-                        layout.copy(name = "My First Indoor Space")
+                    if (layout.name == "My First Zen Space" || layout.name == "My First Indoor Space") {
+                        layout.copy(name = "My First Space")
                     } else {
                         layout
                     }
@@ -1076,7 +1076,7 @@ class GardenViewModel @JvmOverloads constructor(
                 val existing = repository.allLayouts.firstOrNull() ?: emptyList()
                 if (existing.isEmpty()) {
                     val defaultLayout = GardenLayout(
-                        name = "My First Indoor Space",
+                        name = "My First Space",
                         style = "Indoor Area",
                         climate = "Temperate",
                         gridString = "0,0,Bonsai Juniper|4,4,English Lavender",
@@ -1487,7 +1487,8 @@ class GardenViewModel @JvmOverloads constructor(
                 "2. Ask them questions one by one or in a friendly, conversational group so they do not feel overwhelmed.\n" +
                 "3. Once the user provides answers to all of these aspects, assess their space. Give them a biophilic score out of 20, map it to a zone (Green: 15-20, Yellow: 8-14, Red: <8), provide a brief analysis of their strengths/weaknesses, and suggest 3 highly specific biophilic improvements.\n" +
                 "4. CRITICAL: In your final assessment message, you MUST append the token [DIAGNOSIS_RESULT: score=X, lowest=CATEGORY1, CATEGORY2] at the very end of your response, where X is the score and the lowest categories are the names of the aspects they scored lowest on. You MUST choose category names EXACTLY from this list (spelling and punctuation matter): NATURE VIEWS, LIVING PLANTS, NATURAL LIGHT, ACOUSTIC CALM, NATURAL MATERIALS, AIR & VENTILATION, ORGANIC FORMS, WATER FEATURES, SENSORY RICHNESS, SEASONAL AWARENESS. Separate multiple categories with commas. Example: [DIAGNOSIS_RESULT: score=12, lowest=LIVING PLANTS, NATURAL LIGHT].\n" +
-                "5. Keep your responses warm, conversational, encouraging, and brief."
+                "5. Keep your responses warm, conversational, encouraging, and brief.\n" +
+                "6. CRITICAL IMAGE REQUIREMENT: Whenever you recommend, mention, or suggest plants, always refer to them by their standard names (e.g., 'Snake Plant', 'Lavender', 'Monstera Deliciosa', 'Bonsai Juniper', 'Rosemary', 'Peace Lily', 'Fiddle Leaf Fig', 'ZZ Plant', etc.) so that the Counsel tab can display real photo outputs and examples inline."
             } else if (score != null) {
                 val zone = when (score) {
                     in 15..20 -> "Green Zone — Low Neural Load"
@@ -1504,11 +1505,13 @@ class GardenViewModel @JvmOverloads constructor(
                 "3. Recommend actionable, specific changes. Not 'add some greenery' but 'place a 4-6 ft snake plant in the corner nearest your desk.'\n" +
                 "4. Always consider their stated space constraints (indoor/outdoor, size, light, climate, budget, maintenance capacity).\n" +
                 "5. After giving a recommendation, offer to build it in the Garden Planner or find the plant in the Botanical Database.\n" +
-                "6. You are warm, knowledgeable, and direct. Not clinical. Not salesy. Like a smart friend who happens to know biophilic design science."
+                "6. You are warm, knowledgeable, and direct. Not clinical. Not salesy. Like a smart friend who happens to know biophilic design science.\n" +
+                "7. CRITICAL IMAGE REQUIREMENT: Whenever you recommend, mention, or suggest plants, always refer to them by their standard names (e.g., 'Snake Plant', 'Lavender', 'Monstera Deliciosa', 'Bonsai Juniper', 'Rosemary', 'Peace Lily', 'Fiddle Leaf Fig', 'ZZ Plant', etc.) so that the Counsel tab can display real photo outputs and examples inline."
             } else {
                 "You are a friendly, conversational Master Botanist, Garden Stylist, and Mindfulness Coach. " +
                 "Your job is to advise users on how to design their dream garden, suggest specific plants, resolve pest diagnoses, and discuss how surrounding ourselves with nature coordinates positive mental health. " +
-                "Keep answers highly engaging, brief, and structured with clear tips."
+                "Keep answers highly engaging, brief, and structured with clear tips. " +
+                "CRITICAL IMAGE REQUIREMENT: Whenever you recommend, mention, or suggest plants, always refer to them by their standard names (e.g., 'Snake Plant', 'Lavender', 'Monstera Deliciosa', 'Bonsai Juniper', 'Rosemary', 'Peace Lily', 'Fiddle Leaf Fig', 'ZZ Plant', etc.) so that the Counsel tab can display real photo outputs and examples inline."
             }
 
             val cleanHistory = currentHistory.filterIndexed { index, content ->

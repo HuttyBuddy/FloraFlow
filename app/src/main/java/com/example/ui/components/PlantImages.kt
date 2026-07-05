@@ -59,6 +59,7 @@ object PlantImages {
         "Plumeria" to R.drawable.plant_plumeria,
         "Cypress Tree" to R.drawable.plant_cypress_tree,
         "Lavender" to R.drawable.plant_lavender,
+        "English Lavender" to R.drawable.plant_lavender,
         "Bougainvillea" to R.drawable.plant_bougainvillea,
         "Jacaranda Tree" to R.drawable.plant_jacaranda_tree,
         "Mealy Cup Sage" to R.drawable.plant_mealy_cup_sage,

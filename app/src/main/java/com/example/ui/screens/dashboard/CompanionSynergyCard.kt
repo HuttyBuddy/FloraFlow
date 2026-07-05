@@ -134,7 +134,7 @@ fun CompanionSynergyCard(
                             text = if (hasIssues) "${conflicts.size} Mismatches" else if (hasSynergies) "${synergies.size} Synergies" else "Stable",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = if (hasIssues) Color(0xFFC62828) else if (hasSynergies) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
+                            color = if (hasIssues) Color(0xFFC62828) else if (hasSynergies) Color(0xFF2E7D32) else Color(0xFF1B4D3E)
                         )
                     }
                 }

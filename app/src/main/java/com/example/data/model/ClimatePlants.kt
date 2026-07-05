@@ -687,6 +687,27 @@ object ClimatePlants {
             )
         ),
         PlantTemplate(
+            name = "English Lavender",
+            type = "Flower",
+            careSpring = "Water weekly, prune after first flowering flush.",
+            careSummer = "Loves full sun and hot weather. Reduce water.",
+            careAutumn = "Cut back spent flower stalks to maintain shape.",
+            careWinter = "Cold hardy, requires little to no winter watering.",
+            soilType = "Sandy, well-draining, slightly alkaline",
+            sunlight = "Full Sun",
+            iconEmoji = "🪻",
+            matureSize = "1 - 3 feet tall",
+            wateringNeeds = "Low",
+            bloomTime = "Summer",
+            pestsDiseases = "Root rot, Spittlebugs",
+            compatibleClimate = "Temperate Mediterranean",
+            isIndoor = false,
+            funFacts = listOf(
+                "Lavender belongs to the mint family Lamiaceae.",
+                "Its scent is widely used in aromatherapy to reduce anxiety and improve sleep."
+            )
+        ),
+        PlantTemplate(
             name = "Bougainvillea",
             type = "Flower",
             careSpring = "Fertilize to trigger bright pink bracts.",
@@ -1208,8 +1229,9 @@ object ClimatePlants {
     }
 
     fun getTemplatesForPlanner(climate: String, isIndoor: Boolean): List<PlantTemplate> {
-        return ALL_TEMPLATES.filter { 
-            it.compatibleClimate.contains(climate, ignoreCase = true) && it.isIndoor == isIndoor 
-        }
+        val categoryTemplates = ALL_TEMPLATES.filter { it.isIndoor == isIndoor }
+        return categoryTemplates.sortedWith(compareByDescending { 
+            it.compatibleClimate.contains(climate, ignoreCase = true)
+        })
     }
 }
