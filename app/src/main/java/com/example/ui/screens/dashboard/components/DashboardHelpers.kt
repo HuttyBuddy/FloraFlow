@@ -56,16 +56,16 @@ data class SensoryRitual(
 
 fun getRitualForCategory(category: String): SensoryRitual {
     return when (category.uppercase()) {
-        "NATURE VIEWS" -> SensoryRitual("NATURE VIEWS", "Look out window at green spaces for 2m", "[Ritual: Nature Views Window Break]")
-        "LIVING PLANTS" -> SensoryRitual("LIVING PLANTS", "Gently inspect your indoor plants' soil", "[Ritual: Plant Touch & Care]")
-        "NATURAL LIGHT" -> SensoryRitual("NATURAL LIGHT", "Spend 5 minutes in natural window light", "[Ritual: Natural Daylight Rest]")
+        "NATURE VIEWS" -> SensoryRitual("NATURE VIEWS", "Look at natural green spaces for 2m", "[Ritual: Nature Views Window Break]")
+        "LIVING PLANTS" -> SensoryRitual("LIVING PLANTS", "Gently inspect your plants' soil", "[Ritual: Plant Touch & Care]")
+        "NATURAL LIGHT" -> SensoryRitual("NATURAL LIGHT", "Spend 5 minutes in natural light", "[Ritual: Natural Daylight Rest]")
         "ACOUSTIC CALM" -> SensoryRitual("ACOUSTIC CALM", "Spend 3 minutes in mindful silence", "[Ritual: Acoustic Quiet Break]")
         "NATURAL MATERIALS" -> SensoryRitual("NATURAL MATERIALS", "Touch a natural texture (wood/clay pot)", "[Ritual: Natural Texture Contact]")
-        "AIR & VENTILATION" -> SensoryRitual("AIR & VENTILATION", "Open window for 10m to aerate room", "[Ritual: Open Window Fresh Air]")
+        "AIR & VENTILATION" -> SensoryRitual("AIR & VENTILATION", "Get 10m of fresh air to aerate your space", "[Ritual: Open Window Fresh Air]")
         "ORGANIC FORMS" -> SensoryRitual("ORGANIC FORMS", "Trace a curved plant leaf boundary", "[Ritual: Leaf Contour Trace]")
         "WATER FEATURES" -> SensoryRitual("WATER FEATURES", "Listen to water flow/rain sounds for 2m", "[Ritual: Water Soundscape Rest]")
         "SENSORY RICHNESS" -> SensoryRitual("SENSORY RICHNESS", "Scent break: Smell lavender, pine, or soil", "[Ritual: Natural Scent Breath]")
-        "SEASONAL AWARENESS" -> SensoryRitual("SEASONAL AWARENESS", "Observe one outdoor seasonal change today", "[Ritual: Season Observance]")
+        "SEASONAL AWARENESS" -> SensoryRitual("SEASONAL AWARENESS", "Observe one seasonal change today", "[Ritual: Season Observance]")
         else -> SensoryRitual("GENERAL", "Take 5 deep breaths in your sanctuary", "[Ritual: General Deep Breaths]")
     }
 }

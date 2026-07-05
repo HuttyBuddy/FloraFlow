@@ -128,12 +128,12 @@ class CareScheduler(
                     val billingPrefs = context.getSharedPreferences("floraflow_billing_prefs", Context.MODE_PRIVATE)
                     val assessmentCategories = billingPrefs.getString("assessment_categories", "")?.split(",")?.filter { it.isNotEmpty() } ?: emptyList()
                     val categoryPersonalizedTip = when (assessmentCategories.firstOrNull()) {
-                        "NATURE VIEWS" -> "💡 Tip: Spend a moment looking outside today to lower stress."
+                        "NATURE VIEWS" -> "💡 Tip: Spend a moment looking at natural green spaces today to lower stress."
                         "LIVING PLANTS" -> "💡 Tip: Spend some mindful time near your plants to rest."
-                        "NATURAL LIGHT" -> "💡 Tip: Try to work or relax near a bright, sunlit window."
+                        "NATURAL LIGHT" -> "💡 Tip: Try to work or relax in bright, natural light."
                         "ACOUSTIC CALM" -> "💡 Tip: Rest your mind with a soothing soundscape session."
                         "NATURAL MATERIALS" -> "💡 Tip: Touch or surround yourself with wood or stone to ground."
-                        "AIR & VENTILATION" -> "💡 Tip: Open a window for 10 minutes to refresh your space."
+                        "AIR & VENTILATION" -> "💡 Tip: Get 10 minutes of fresh air to refresh your space."
                         "ORGANIC FORMS" -> "💡 Tip: Soften your view by looking at organic, curved designs."
                         "WATER FEATURES" -> "💡 Tip: Listen to the calming sound of water to slow down."
                         "SENSORY RICHNESS" -> "💡 Tip: Enjoy a natural scent (like cedarwood or lavender) today."

@@ -372,7 +372,7 @@ fun DashboardScreen(
                         color = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                     Text(
-                        text = "Let Dr. Julian guide you through an audit of your room's biophilic states",
+                        text = "Let Dr. Julian guide you through an audit of the state of your biophilic space",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
                     )
@@ -427,7 +427,7 @@ fun DashboardScreen(
                         text = if (activeLayout != null) {
                             "Project: ${activeLayout?.name}"
                         } else {
-                            "Your garden beds are ready to be planted"
+                            "Your space is ready to be planted"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)

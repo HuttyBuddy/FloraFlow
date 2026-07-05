@@ -50,7 +50,6 @@ fun PremiumUpsellScreen(
     val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
 
     var selectAnnual by remember { mutableStateOf(true) }
-    var showComparison by remember { mutableStateOf(false) }
 
     val crownBadge = @Composable {
         Box(
@@ -123,12 +122,12 @@ fun PremiumUpsellScreen(
     // unknown (loading, or debug mock mode) — never claim a trial length
     // that Play Console doesn't actually have configured.
     val annualPrice = annualOffer?.formattedPrice ?: "$39.99"
-    val annualTrialDays = annualOffer?.trialDays ?: 14
-    val annualTrialLabel = if (annualTrialDays > 0) "$annualTrialDays-Day Free Trial, then $annualPrice/yr" else "$annualPrice/yr"
+    val annualTrialDays = 3
+    val annualTrialLabel = "$annualTrialDays-Day Free Trial, then $annualPrice/yr"
 
     val monthlyPrice = monthlyOffer?.formattedPrice ?: "$4.99"
-    val monthlyTrialDays = monthlyOffer?.trialDays ?: 7
-    val monthlyTrialLabel = if (monthlyTrialDays > 0) "$monthlyTrialDays-Day Free Trial, then $monthlyPrice/mo" else "$monthlyPrice/mo"
+    val monthlyTrialDays = 3
+    val monthlyTrialLabel = "$monthlyTrialDays-Day Free Trial, then $monthlyPrice/mo"
 
     val selectedTrialDays = if (selectAnnual) annualTrialDays else monthlyTrialDays
 
@@ -223,87 +222,7 @@ fun PremiumUpsellScreen(
         )
     }
 
-    val comparisonGrid = @Composable {
-        FloraFlowCard(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = 2.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(MaterialTheme.spacing.medium),
-                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.mediumSmall)
-            ) {
-                Text(
-                    "Compare Plan Benefits",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Text("Feature", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("FREE", modifier = Modifier.weight(0.25f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("PRO", modifier = Modifier.weight(0.25f), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.primary)
-                }
 
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-
-                // Feature Row 1
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("2D Space Planner", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Check, contentDescription = "Yes", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                    }
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Check, contentDescription = "Yes", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                    }
-                }
-
-                // Feature Row 2
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("Restoration Journal", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("3 free plays/wk", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
-                    }
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("Full Binaural", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
-                    }
-                }
-
-                // Feature Row 3
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("AI Master Botanist", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("3 free queries/day", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
-                    }
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("Unlimited", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
-                    }
-                }
-
-                // Feature Row 4
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("Botanical Catalog", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("Basic Only", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary, fontSize = 10.sp)
-                    }
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Text("5000+ Exotic", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 10.sp)
-                    }
-                }
-
-                // Feature Row 5
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text("Lab Soundwave Diagnostics", modifier = Modifier.weight(0.5f), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Close, contentDescription = "No", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
-                    }
-                    Box(modifier = Modifier.weight(0.25f), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Check, contentDescription = "Yes", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
-                    }
-                }
-            }
-        }
-    }
 
     Box(
         modifier = modifier
@@ -338,21 +257,7 @@ fun PremiumUpsellScreen(
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
                 restoreButton()
                 
-                // Collapsible Plan Comparison Matrix
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-                TextButton(
-                    onClick = { showComparison = !showComparison }
-                ) {
-                    Text(
-                        text = if (showComparison) "Hide Plan Comparison" else "Compare Plan Benefits",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                }
-                if (showComparison) {
-                    Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
-                    comparisonGrid()
-                }
+
 
                 Spacer(modifier = Modifier.height(48.dp))
             }
@@ -382,7 +287,7 @@ fun PremiumUpsellScreen(
                     Spacer(modifier = Modifier.height(MaterialTheme.spacing.mediumSmall))
                 }
  
-                // RIGHT COLUMN (Detailed Value Props, Perks Matrix table)
+                // RIGHT COLUMN (Detailed Value Props)
                 Column(
                     modifier = Modifier
                         .weight(0.55f)
@@ -393,7 +298,6 @@ fun PremiumUpsellScreen(
                 ) {
                     Spacer(modifier = Modifier.height(36.dp))
                     featuresList()
-                    comparisonGrid()
                 }
             }
         }

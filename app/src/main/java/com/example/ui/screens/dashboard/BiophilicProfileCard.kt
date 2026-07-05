@@ -314,16 +314,16 @@ private data class BiophilicZoneInfo(
 
 private fun getBiophilicCategoryTip(category: String): Pair<String, String> {
     return when (category.uppercase()) {
-        "NATURE VIEWS" -> Pair("Optimize nature views", "Clear objects blocking window views. Place your indoor plant layout directly in line of sight to rest eye muscles.")
-        "LIVING PLANTS" -> Pair("Add plant variety", "Sow at least 2-3 distinct indoor plants (e.g., ivy, bonsai) in your space to lower sympathetic nervous system arousal.")
-        "NATURAL LIGHT" -> Pair("Maximize daylight", "Set your desk/sitting area within 5 feet of a natural window to regulate sleep cycles and cortisol.")
+        "NATURE VIEWS" -> Pair("Optimize nature views", "Clear obstructions from your view. Place your plant layout directly in your line of sight to rest eye muscles.")
+        "LIVING PLANTS" -> Pair("Add plant variety", "Sow at least 2-3 distinct plants (e.g., ivy, bonsai) in your space to lower sympathetic nervous system arousal.")
+        "NATURAL LIGHT" -> Pair("Maximize daylight", "Set your desk/sitting area within 5 feet of natural light to regulate sleep cycles and cortisol.")
         "ACOUSTIC CALM" -> Pair("Introduce sound masking", "Place a tabletop moving water feature or play soothing botanical rain sounds to mask distracting background hums.")
         "NATURAL MATERIALS" -> Pair("Introduce natural textures", "Integrate materials like wood, cork, or a clay plant pot into your setup to stabilize stress baselines.")
-        "AIR & VENTILATION" -> Pair("Enhance ventilation", "Open windows for 10 minutes twice daily, or place a quiet oscillating fan near plants to simulate natural breeze.")
+        "AIR & VENTILATION" -> Pair("Enhance ventilation", "Get 10 minutes of fresh air twice daily, or place a quiet oscillating fan near plants to simulate natural breeze.")
         "ORGANIC FORMS" -> Pair("Adopt organic layouts", "Incorporate rounded pots, curved paths, or prints of leaf shapes to soften sharp institutional wall corners.")
         "WATER FEATURES" -> Pair("Water soundscape sync", "Sow moisture-loving plants or stream rainfall sounds when gardening to lower blood pressure and anxiety.")
         "SENSORY RICHNESS" -> Pair("Stimulate sensory triggers", "Introduce highly aromatic herbs (lavender, pine, mint) near your workspace. Inhale their scent during breaks.")
-        "SEASONAL AWARENESS" -> Pair("Align with natural cycles", "Adjust indoor light durations to match current seasons. Keep a seasonal plant blooming inside.")
+        "SEASONAL AWARENESS" -> Pair("Align with natural cycles", "Adjust light durations to match current seasons. Keep a seasonal plant blooming nearby.")
         else -> Pair("Enhance natural presence", "Add organic shapes, living greenery, and natural daylight zones to complete your biophilic shelter.")
     }
 }

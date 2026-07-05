@@ -89,6 +89,7 @@ fun RestorationJournalScreen(
     val restorationLogs by viewModel.allRestorationLogs.collectAsStateWithLifecycle()
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
     val restorationTrialCount by viewModel.restorationTrialCount.collectAsStateWithLifecycle()
+    val sleepTimerEndTime by viewModel.sleepTimerEndTime.collectAsStateWithLifecycle()
     val pendingCareTasks by viewModel.pendingCareTasks.collectAsStateWithLifecycle()
 
     // Biophilic scores calculation for breakdown view
@@ -160,11 +161,11 @@ fun RestorationJournalScreen(
 
     var completedTasksList = remember { mutableStateListOf<String>() }
 
-    // Soundscape tracks definition
+    // Soundscape tracks definition — each pairs a brainwave preset with its own living nature scene
     val tracks = listOf(
-        SoundscapeTrackInfo("Alpha Focus", 200f, 10f, "Alpha waves (10Hz) promote alert relaxation, ideal for deep focus or workspace design."),
-        SoundscapeTrackInfo("Theta Meditate", 200f, 6f, "Theta waves (6Hz) facilitate deep sensory visualization, creativity, and mental stillness."),
-        SoundscapeTrackInfo("Delta Sleep", 150f, 2.5f, "Delta waves (2.5Hz) slow brainwaves down for heavy physical healing and deep sleep states.")
+        SoundscapeTrackInfo("Alpha Focus", "Forest Breeze 🍃", 200f, 10f, "A living forest breeze with hand-struck wind chimes, under Alpha waves (10Hz) for alert, relaxed focus. Generated live — it never loops or repeats."),
+        SoundscapeTrackInfo("Theta Meditate", "Gentle Rain 🌧️", 200f, 6f, "Soft rainfall with droplets scattered around you, under Theta waves (6Hz) for deep visualization and mental stillness. Generated live — it never loops or repeats."),
+        SoundscapeTrackInfo("Delta Sleep", "Ocean Waves 🌊", 150f, 2.5f, "Slow ocean swells breaking in the distance, under Delta waves (2.5Hz) for physical healing and deep sleep. Generated live — it never loops or repeats.")
     )
 
     // Base background gradient
@@ -282,7 +283,7 @@ fun RestorationJournalScreen(
                                 modifier = Modifier.align(Alignment.Start)
                             )
                             Text(
-                                text = "Binaural beat synthesis overlaying natural ambient channels",
+                                text = "Living nature scenes generated in real time, layered with binaural brainwave tones",
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.5f),
                                 modifier = Modifier
@@ -307,17 +308,24 @@ fun RestorationJournalScreen(
                                             .background(if (isSelected) Color(0xFF81C784).copy(alpha = 0.25f) else Color.Transparent)
                                             .clickable {
                                                 viewModel.changeSoundscapeTrack(track.name, track.baseFreq, track.diffFreq)
-                                                Toast.makeText(context, "Switched to ${track.name}", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, "Drifting into ${track.scene}", Toast.LENGTH_SHORT).show()
                                             }
                                             .padding(vertical = 10.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        Text(
-                                            text = track.name.split(" ")[0], // Alpha, Theta, Delta
-                                            fontSize = 12.sp,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                            color = if (isSelected) Color(0xFFA8E6CF) else Color.White.copy(alpha = 0.7f)
-                                        )
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Text(
+                                                text = track.name.split(" ")[0], // Alpha, Theta, Delta
+                                                fontSize = 12.sp,
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (isSelected) Color(0xFFA8E6CF) else Color.White.copy(alpha = 0.7f)
+                                            )
+                                            Text(
+                                                text = track.scene,
+                                                fontSize = 9.sp,
+                                                color = if (isSelected) Color(0xFF81C784) else Color.White.copy(alpha = 0.4f)
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -471,6 +479,14 @@ fun RestorationJournalScreen(
                                     )
                                 }
                             }
+
+                            // Sleep timer — session ends with a long, gentle 15s fade
+                            Spacer(modifier = Modifier.height(14.dp))
+                            SleepTimerRow(
+                                sleepTimerEndTime = sleepTimerEndTime,
+                                isPlaying = isPlaying,
+                                onSetTimer = { minutes -> viewModel.setSleepTimer(minutes) }
+                            )
                         }
                     }
 
@@ -723,7 +739,7 @@ fun RestorationJournalScreen(
                                       textAlign = TextAlign.Center
                                   )
                                   Text(
-                                      text = "You have completed your 3 free trial sessions. Upgrade to FloraFlow PRO to unlock full binaural beat chimes, neural restoration tracking, and unlimited botanical stress metrics!",
+                                      text = "You have completed your 3 free trial sessions. Upgrade to FloraFlow PRO for unlimited Forest Breeze, Gentle Rain & Ocean Wave sessions — living soundscapes that never loop — plus sleep timer fade-outs and neural restoration tracking!",
                                       fontSize = 12.sp,
                                       color = Color.White.copy(alpha = 0.75f),
                                       textAlign = TextAlign.Center,
@@ -1112,6 +1128,77 @@ fun NriGaugeCard(
 }
 
 @Composable
+fun SleepTimerRow(
+    sleepTimerEndTime: Long?,
+    isPlaying: Boolean,
+    onSetTimer: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // Tick once a second while a timer is armed so the countdown stays live
+    var now by remember { mutableStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(sleepTimerEndTime) {
+        while (sleepTimerEndTime != null) {
+            now = System.currentTimeMillis()
+            kotlinx.coroutines.delay(1000)
+        }
+    }
+
+    var selectedMinutes by remember { mutableStateOf(0) }
+    // Timer finished (or was cleared by pause) — snap the chips back to Off
+    LaunchedEffect(sleepTimerEndTime) {
+        if (sleepTimerEndTime == null) selectedMinutes = 0
+    }
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "🌙 Sleep timer",
+                fontSize = 12.sp,
+                color = Color.White.copy(alpha = 0.7f)
+            )
+            listOf(0, 15, 30, 60).forEach { minutes ->
+                val isSelected = selectedMinutes == minutes
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(
+                            if (isSelected) Color(0xFF81C784).copy(alpha = 0.25f)
+                            else Color(0xFF0F261D).copy(alpha = 0.8f)
+                        )
+                        .clickable(enabled = isPlaying || minutes == 0) {
+                            selectedMinutes = minutes
+                            onSetTimer(minutes)
+                        }
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = if (minutes == 0) "Off" else "${minutes}m",
+                        fontSize = 11.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        color = if (isSelected) Color(0xFFA8E6CF) else Color.White.copy(alpha = 0.6f)
+                    )
+                }
+            }
+        }
+        if (sleepTimerEndTime != null && isPlaying) {
+            val remainingSecs = ((sleepTimerEndTime - now) / 1000L).coerceAtLeast(0L)
+            Text(
+                text = "Fading out in %d:%02d".format(remainingSecs / 60, remainingSecs % 60),
+                fontSize = 10.sp,
+                color = Color(0xFF81C784).copy(alpha = 0.8f),
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+    }
+}
+
+@Composable
 fun AudioWaveformVisualizer(
     isPlaying: Boolean,
     modifier: Modifier = Modifier
@@ -1399,6 +1486,7 @@ fun RestorationLogItem(log: com.example.data.model.RestorationLog) {
 
 data class SoundscapeTrackInfo(
     val name: String,
+    val scene: String,
     val baseFreq: Float,
     val diffFreq: Float,
     val description: String

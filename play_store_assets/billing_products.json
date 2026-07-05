@@ -5,7 +5,7 @@
     "name": "FloraFlow PRO Monthly",
     "price": "$4.99",
     "period": "1 Month",
-    "freeTrial": "7-Day Free Trial",
+    "freeTrial": "3-Day Free Trial",
     "shortDescription": "Try premium features: full Neural Restoration Journal access, brainwave soundscapes, and AI queries.",
     "benefits": [
       "Full Neural Restoration Journal access",
@@ -20,14 +20,14 @@
     "name": "FloraFlow PRO Annual",
     "price": "$39.99",
     "period": "1 Year",
-    "freeTrial": "14-Day Free Trial",
+    "freeTrial": "3-Day Free Trial",
     "shortDescription": "Save over 33%! Unlocks unlimited Gemini-powered AI advice, full soundscapes, and advanced layouts.",
     "benefits": [
       "Unlimited Gemini-powered AI master botanist advice",
       "Full Eco-acoustic binaural soundscapes & nature chimes",
       "Unlimited space layout grids & design snapshots",
       "Comprehensive therapeutic mental wellness logs & mood correlation statistics",
-      "14-Day Free Trial"
+      "3-Day Free Trial"
     ]
   }
 ]

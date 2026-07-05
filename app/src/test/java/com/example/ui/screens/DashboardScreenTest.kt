@@ -32,7 +32,7 @@ class DashboardScreenTest {
     fun getRitualForCategory_returnsCorrectRitual_forNatureViews() {
         val ritual = getRitualForCategory("NATURE VIEWS")
         assertEquals("NATURE VIEWS", ritual.category)
-        assertEquals("Look out window at green spaces for 2m", ritual.text)
+        assertEquals("Look at natural green spaces for 2m", ritual.text)
         assertEquals("[Ritual: Nature Views Window Break]", ritual.noteMarker)
     }
 

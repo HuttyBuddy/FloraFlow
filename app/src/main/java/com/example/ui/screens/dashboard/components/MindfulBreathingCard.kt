@@ -163,7 +163,7 @@ fun MindfulBreathingCard(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text("🌸 Excellent! You completed a breathing cycle.", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                    Text("This outdoor breathing minute correlates with 5% higher mental well-being and calmness indices.", style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
+                    Text("This mindful breathing minute correlates with 5% higher mental well-being and calmness indices.", style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
                     
                     OutlinedTextField(
                         value = customNotes,

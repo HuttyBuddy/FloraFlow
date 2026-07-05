@@ -41,6 +41,11 @@ import com.example.data.model.PlantTemplate
 import com.example.ui.viewmodel.GardenViewModel
 import com.example.data.model.CareTask
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.example.ui.components.PlantImages
+import com.example.ui.components.PlantPhoto
 
 // ⚡ Bolt Performance Optimization:
 // Extracted static lists to top-level constants. By moving these outside of the
@@ -399,62 +404,55 @@ fun LibraryScreen(
             
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Row with Zip Code & Real-Time Search Bar
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Zip Code Field
-                OutlinedTextField(
-                    value = zipInput,
-                    onValueChange = { 
-                        zipInput = it
-                        if (it.length == 5 && it.all { c -> c.isDigit() }) {
-                            viewModel.updateWeatherLocation(it)
-                        }
-                    },
-                    placeholder = { Text("Zip Code") },
-                    label = { Text("Local Zip") },
-                    leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = "Zip Code Location") },
-                    modifier = Modifier
-                        .width(125.dp)
-                        .testTag("encyclopedia_zip_input"),
-                    shape = RoundedCornerShape(14.dp),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                    )
+            // Zip Code Field
+            OutlinedTextField(
+                value = zipInput,
+                onValueChange = { 
+                    zipInput = it
+                    if (it.length == 5 && it.all { c -> c.isDigit() }) {
+                        viewModel.updateWeatherLocation(it)
+                    }
+                },
+                placeholder = { Text("Zip Code") },
+                label = { Text("Local Zip") },
+                leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = "Zip Code Location") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("encyclopedia_zip_input"),
+                shape = RoundedCornerShape(14.dp),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
                 )
+            )
 
-                // Search Bar
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { viewModel.setLibrarySearchQuery(it) },
-                    placeholder = { Text(dynamicPlaceholder) },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search icon") },
-                    trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { 
-                                viewModel.setLibrarySearchQuery("") 
-                                selectedSuggestionExplanation = ""
-                            }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Clear search input")
-                            }
+            // Search Bar
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.setLibrarySearchQuery(it) },
+                placeholder = { Text(dynamicPlaceholder) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search icon") },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { 
+                            viewModel.setLibrarySearchQuery("") 
+                            selectedSuggestionExplanation = ""
+                        }) {
+                            Icon(Icons.Default.Clear, contentDescription = "Clear search input")
                         }
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .testTag("species_search_input"),
-                    shape = RoundedCornerShape(14.dp),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                    )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("species_search_input"),
+                shape = RoundedCornerShape(14.dp),
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
                 )
-            }
+            )
 
             // Smart Suggestions UI Panel
             AnimatedVisibility(
@@ -491,7 +489,7 @@ fun LibraryScreen(
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "🔮 Predicted for You",
+                                text = "Predicted for You",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -798,6 +796,15 @@ fun LibraryScreen(
                         }
                     )
                 }
+
+                Text(
+                    text = "Botanical photography courtesy of Wikimedia Commons contributors.",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontSize = 9.sp,
+                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                )
             }
         }
     }
@@ -994,15 +1001,12 @@ fun PlantCareTrackerCard(
                     .fillMaxWidth()
                     .clickable { onExpandClick() }
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(emoji, fontSize = 24.sp)
-                }
+                PlantPhoto(
+                    plantName = plant.name,
+                    fallbackEmoji = emoji,
+                    modifier = Modifier.size(52.dp),
+                    shape = RoundedCornerShape(12.dp)
+                )
 
                 Spacer(modifier = Modifier.width(16.dp))
 
@@ -1374,15 +1378,12 @@ fun SpeciesEncyclopediaCard(
                     .fillMaxWidth()
                     .clickable { onExpandClick() }
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(template.iconEmoji, fontSize = 24.sp)
-                }
+                PlantPhoto(
+                    plantName = template.name,
+                    fallbackEmoji = template.iconEmoji,
+                    modifier = Modifier.size(52.dp),
+                    shape = RoundedCornerShape(12.dp)
+                )
 
                 Spacer(modifier = Modifier.width(16.dp))
 
@@ -1431,6 +1432,39 @@ fun SpeciesEncyclopediaCard(
                     modifier = Modifier.padding(top = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    // Full-width botanical hero photograph
+                    val heroImageRes = remember(template.name) { PlantImages.forPlantName(template.name) }
+                    if (heroImageRes != null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(190.dp)
+                                .clip(RoundedCornerShape(14.dp))
+                        ) {
+                            Image(
+                                painter = painterResource(id = heroImageRes),
+                                contentDescription = "${template.name} photograph",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            // Species label overlay for a polished editorial look
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomStart)
+                                    .padding(10.dp)
+                                    .background(Color.Black.copy(alpha = 0.45f), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "${template.iconEmoji} ${template.name}",
+                                    color = Color.White,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+
                     // Care parameters overview table
                     Column(
                         modifier = Modifier

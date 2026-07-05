@@ -2120,13 +2120,16 @@ class GardenViewModel @JvmOverloads constructor(
 
     private val _diffFrequency = MutableStateFlow(6f)
     val diffFrequency: StateFlow<Float> = _diffFrequency.asStateFlow()
-    
+
+    private val _sleepTimerEndTime = MutableStateFlow<Long?>(null)
+    val sleepTimerEndTime: StateFlow<Long?> = _sleepTimerEndTime.asStateFlow()
+
     private val serviceConnection = object : android.content.ServiceConnection {
         override fun onServiceConnected(name: android.content.ComponentName?, service: android.os.IBinder?) {
             val binder = service as? com.example.ui.screens.restoration.SoundscapeService.SoundscapeBinder
             soundscapeService = binder?.getService()
             _isServiceBound.value = true
-            
+
             soundscapeService?.let {
                 _isSoundscapePlaying.value = it.isPlaying()
                 _currentSoundscapeTrack.value = it.getCurrentTrackName()
@@ -2134,9 +2137,16 @@ class GardenViewModel @JvmOverloads constructor(
                 _binauralVolume.value = it.getBinauralVolume()
                 _baseFrequency.value = it.getBaseFrequency()
                 _diffFrequency.value = it.getDiffFrequency()
+                _sleepTimerEndTime.value = it.getSleepTimerEndTime()
+                // Keep the UI honest when playback changes outside the screen
+                // (notification actions, sleep timer completing).
+                it.onPlaybackChanged = { playing ->
+                    _isSoundscapePlaying.value = playing
+                    if (!playing) _sleepTimerEndTime.value = null
+                }
             }
         }
-        
+
         override fun onServiceDisconnected(name: android.content.ComponentName?) {
             soundscapeService = null
             _isServiceBound.value = false
@@ -2152,10 +2162,17 @@ class GardenViewModel @JvmOverloads constructor(
     fun unbindSoundscapeService() {
         if (_isServiceBound.value) {
             val context = getApplication<Application>().applicationContext
+            soundscapeService?.onPlaybackChanged = null
             context.unbindService(serviceConnection)
             _isServiceBound.value = false
             soundscapeService = null
         }
+    }
+
+    fun setSleepTimer(minutes: Int) {
+        val service = soundscapeService ?: return
+        service.setSleepTimer(minutes)
+        _sleepTimerEndTime.value = service.getSleepTimerEndTime()
     }
     
 

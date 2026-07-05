@@ -55,7 +55,7 @@ fun BillingDialog(
             name = "FloraFlow PRO Monthly",
             price = "$4.99",
             period = "month",
-            trial = "7-Day Free Trial",
+            trial = "3-Day Free Trial",
             description = "Try premium features: full Neural Restoration Journal access, synthesized brainwave soundscapes, and 3 free Gemini AI expert queries.",
             isPopular = false,
             isAnnual = false
@@ -64,7 +64,7 @@ fun BillingDialog(
             name = "FloraFlow PRO Annual",
             price = "$39.99",
             period = "year",
-            trial = "14-Day Free Trial",
+            trial = "3-Day Free Trial",
             description = "Save over 33%! Unlocks unlimited Gemini-Powered AI advice, full Eco-Acoustic journal chimes, stress metric logs, and advanced layouts.",
             isPopular = true,
             isAnnual = true

@@ -142,13 +142,13 @@ fun CompanionSynergyCard(
 
             if (gridItems.isEmpty()) {
                 Text(
-                    text = "No plants sowed in this layout grid yet. Visit the Garden Planner tab to sow companion seeds like Lavender and Rose to unlock companion synergies!",
+                    text = "No plants placed in this layout grid yet. Visit the Garden Planner tab to add companion plants like Lavender and Rose to unlock companion synergies!",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
                 Text(
-                    text = "Sowed Vegetation: ${gridItems.size} items in '${activeLayout.name}'. We analyze adjacent cells to ensure optimal biophilic coexistence.",
+                    text = "Placed Vegetation: ${gridItems.size} items in '${activeLayout.name}'. We analyze adjacent cells to ensure optimal biophilic coexistence.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -180,7 +180,7 @@ fun CompanionSynergyCard(
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         if (synergies.isEmpty() && conflicts.isEmpty()) {
                             Text(
-                                text = "✨ The sowed plants are neutral and have stable companion indexes. Sow Lavender + Rosemary or Cactus + Aloe next to each other to activate dynamic biophilic synergies (+15% Growth progress bonus).",
+                                text = "✨ The placed plants are neutral and have stable companion indexes. Place Lavender + Rosemary or Cactus + Aloe next to each other to activate dynamic biophilic synergies (+15% Growth progress bonus).",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -212,7 +212,7 @@ fun CompanionSynergyCard(
                                 }
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "Symbiotic companion pairing detected at grid cells (${item1.x + 1}, ${item1.y + 1}) & (${item2.x + 1}, ${item2.y + 1}). Restorative bio-fragrances sync to enhance room biophilic energy.",
+                                    text = "Symbiotic companion pairing detected at grid cells (${item1.x + 1}, ${item1.y + 1}) & (${item2.x + 1}, ${item2.y + 1}). Restorative bio-fragrances sync to enhance your space's biophilic energy.",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 11.sp
@@ -246,7 +246,7 @@ fun CompanionSynergyCard(
                                 }
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = "Soil moisture or sun exposure requirements conflict at cells (${item1.x + 1}, ${item1.y + 1}) & (${item2.x + 1}, ${item2.y + 1}). Consider moving them apart to optimize care schedules.",
+                                    text = "Light, water, or spacing needs conflict at cells (${item1.x + 1}, ${item1.y + 1}) & (${item2.x + 1}, ${item2.y + 1}). Consider adjusting their placement to optimize care schedules.",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 11.sp

@@ -12,6 +12,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.Image
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.example.R
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -369,6 +373,199 @@ fun AiStudioScreen(
                 BreathingGardenCircle()
             }
 
+            // 3. Main Chat List Box container
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(380.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .padding(8.dp)
+            ) {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    if (chatHistory.isEmpty()) {
+                        item {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    "🌱 Live Garden Intelligence Consultation",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = "Ask anything about which plants grow well together, how weather and sun affect your space, or how plants can help you feel calm and relaxed.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.padding(horizontal = 8.dp)
+                                )
+
+                                Spacer(modifier = Modifier.height(18.dp))
+
+                                Text(
+                                    "🌿 SELECT QUICK DIAGNOSTIC CHECK:",
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                val suggestions = AI_SUGGESTIONS_PORTRAIT
+
+                                suggestions.forEach { pair ->
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp)
+                                            .clickable {
+                                                viewModel.sendAiChatMessage(pair.second)
+                                            },
+                                        shape = RoundedCornerShape(12.dp),
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                        border = BorderStroke(
+                                            width = 1.dp,
+                                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                                        )
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Default.AutoAwesome,
+                                                contentDescription = "Diagnostic action",
+                                                tint = MaterialTheme.colorScheme.tertiary,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(10.dp))
+                                            Text(
+                                                text = pair.first,
+                                                fontSize = 11.5.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        items(chatHistory) { content ->
+                            val isUser = content.role == "user"
+                            val text = content.parts.firstOrNull()?.text ?: ""
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
+                            ) {
+                                if (!isUser) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.julian_avatar),
+                                        contentDescription = "Dr. Julian Greenleaf",
+                                        modifier = Modifier
+                                            .padding(end = 8.dp, top = 2.dp)
+                                            .size(32.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .widthIn(max = 280.dp)
+                                        .testTag(if (isUser) "user_chat_bubble" else "model_chat_bubble")
+                                        .clip(
+                                            RoundedCornerShape(
+                                                topStart = 16.dp,
+                                                topEnd = 16.dp,
+                                                bottomStart = if (isUser) 16.dp else 4.dp,
+                                                bottomEnd = if (isUser) 4.dp else 16.dp
+                                            )
+                                        )
+                                        .background(
+                                            if (isUser) {
+                                                Brush.horizontalGradient(
+                                                    listOf(
+                                                        Color(0xFF386641),
+                                                        Color(0xFF6A994E)
+                                                    )
+                                                )
+                                            } else {
+                                                Brush.linearGradient(
+                                                    listOf(
+                                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                                        MaterialTheme.colorScheme.surface
+                                                    )
+                                                )
+                                            }
+                                        )
+                                        .border(
+                                            width = 1.dp,
+                                            color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                            shape = RoundedCornerShape(
+                                                topStart = 16.dp,
+                                                topEnd = 16.dp,
+                                                bottomStart = if (isUser) 16.dp else 4.dp,
+                                                bottomEnd = if (isUser) 4.dp else 16.dp
+                                            )
+                                        )
+                                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                                ) {
+                                    Column(
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        if (!isUser) {
+                                            Text(
+                                                text = "DR. JULIAN GREENLEAF",
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                letterSpacing = 0.5.sp
+                                            )
+                                        }
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                            verticalAlignment = Alignment.Top,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            if (!isUser) {
+                                                Text("🍃", fontSize = 12.sp)
+                                            }
+                                            Text(
+                                                text = text,
+                                                fontSize = 13.sp,
+                                                color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
+                                                style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // Send message or premium wall trigger section
             if (!isPremium && (userQueriesCount >= aiQueryDailyLimit)) {
                 Card(
@@ -572,200 +769,6 @@ fun AiStudioScreen(
                 }
             }
 
-            // 3. Main Chat List Box container
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(380.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                    .padding(8.dp)
-            ) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    if (chatHistory.isEmpty()) {
-                        item {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    "🌱 Live Garden Intelligence Consultation",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    text = "Ask anything about which plants grow well together, how weather and sun affect your space, or how plants can help you feel calm and relaxed.",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    modifier = Modifier.padding(horizontal = 8.dp)
-                                )
-
-                                Spacer(modifier = Modifier.height(18.dp))
-
-                                Text(
-                                    "🌿 SELECT QUICK DIAGNOSTIC CHECK:",
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                val suggestions = AI_SUGGESTIONS_PORTRAIT
-
-                                suggestions.forEach { pair ->
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 4.dp)
-                                            .clickable {
-                                                viewModel.sendAiChatMessage(pair.second)
-                                            },
-                                        shape = RoundedCornerShape(12.dp),
-                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                                        border = BorderStroke(
-                                            width = 1.dp,
-                                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                                        )
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(12.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Icon(
-                                                Icons.Default.AutoAwesome,
-                                                contentDescription = "Diagnostic action",
-                                                tint = MaterialTheme.colorScheme.tertiary,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(10.dp))
-                                            Text(
-                                                text = pair.first,
-                                                fontSize = 11.5.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        items(chatHistory) { content ->
-                            val isUser = content.role == "user"
-                            val text = content.parts.firstOrNull()?.text ?: ""
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
-                            ) {
-                                if (!isUser) {
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(end = 8.dp, top = 2.dp)
-                                            .size(32.dp)
-                                            .clip(CircleShape)
-                                            .background(MaterialTheme.colorScheme.primary),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text("🧑‍🔬", fontSize = 16.sp)
-                                    }
-                                }
-
-                                Box(
-                                    modifier = Modifier
-                                        .widthIn(max = 280.dp)
-                                        .testTag(if (isUser) "user_chat_bubble" else "model_chat_bubble")
-                                        .clip(
-                                            RoundedCornerShape(
-                                                topStart = 16.dp,
-                                                topEnd = 16.dp,
-                                                bottomStart = if (isUser) 16.dp else 4.dp,
-                                                bottomEnd = if (isUser) 4.dp else 16.dp
-                                            )
-                                        )
-                                        .background(
-                                            if (isUser) {
-                                                Brush.horizontalGradient(
-                                                    listOf(
-                                                        Color(0xFF386641),
-                                                        Color(0xFF6A994E)
-                                                    )
-                                                )
-                                            } else {
-                                                Brush.linearGradient(
-                                                    listOf(
-                                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                                        MaterialTheme.colorScheme.surface
-                                                    )
-                                                )
-                                            }
-                                        )
-                                        .border(
-                                            width = 1.dp,
-                                            color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                                            shape = RoundedCornerShape(
-                                                topStart = 16.dp,
-                                                topEnd = 16.dp,
-                                                bottomStart = if (isUser) 16.dp else 4.dp,
-                                                bottomEnd = if (isUser) 4.dp else 16.dp
-                                            )
-                                        )
-                                        .padding(horizontal = 14.dp, vertical = 10.dp)
-                                ) {
-                                    Column(
-                                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        if (!isUser) {
-                                            Text(
-                                                text = "DR. JULIAN GREENLEAF",
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.primary,
-                                                letterSpacing = 0.5.sp
-                                            )
-                                        }
-                                        Row(
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                            verticalAlignment = Alignment.Top,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            if (!isUser) {
-                                                Text("🍃", fontSize = 12.sp)
-                                            }
-                                            Text(
-                                                text = text,
-                                                fontSize = 13.sp,
-                                                color = if (isUser) Color.White else MaterialTheme.colorScheme.onSurface,
-                                                style = androidx.compose.ui.text.TextStyle(lineHeight = 17.sp),
-                                                modifier = Modifier.weight(1f)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
             if (showLabPopup) {
                 Dialog(onDismissRequest = { showLabPopup = false }) {
                     BotanistLiveLabConsole(
@@ -859,16 +862,15 @@ fun AiStudioScreen(
                                     horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
                                 ) {
                                     if (!isUser) {
-                                        Box(
+                                        Image(
+                                            painter = painterResource(id = R.drawable.julian_avatar),
+                                            contentDescription = "Dr. Julian Greenleaf",
                                             modifier = Modifier
                                                 .padding(end = 8.dp, top = 2.dp)
                                                 .size(32.dp)
-                                                .clip(CircleShape)
-                                                .background(MaterialTheme.colorScheme.primary),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text("🧑‍🔬", fontSize = 16.sp)
-                                        }
+                                                .clip(CircleShape),
+                                            contentScale = ContentScale.Crop
+                                        )
                                     }
 
                                     Box(
@@ -1305,29 +1307,14 @@ fun BotanistProfileHeader(
                         .background(MaterialTheme.colorScheme.primary, CircleShape)
                 )
 
-                Box(
+                Image(
+                    painter = painterResource(id = R.drawable.julian_avatar),
+                    contentDescription = "Dr. Julian Greenleaf",
                     modifier = Modifier
                         .size(44.dp)
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.primaryContainer,
-                                    MaterialTheme.colorScheme.tertiaryContainer
-                                )
-                            ),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("🧑‍🔬", fontSize = 20.sp)
-                    Box(
-                        modifier = Modifier
-                            .size(10.dp)
-                            .align(Alignment.BottomEnd)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            .border(1.5.dp, MaterialTheme.colorScheme.surface, CircleShape)
-                    )
-                }
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
             }
 
             Column(modifier = Modifier.weight(1f)) {

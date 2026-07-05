@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.nativeCanvas
+import com.example.ui.components.PlantPhoto
 
 fun plantMatchesRule(plantName: String, ruleName: String): Boolean {
     val words = plantName.lowercase().split(Regex("[^a-zA-Z0-9]+")).filter { it.isNotBlank() }
@@ -1100,7 +1101,13 @@ fun PlannerScreen(
                                                             ),
                                                         contentAlignment = Alignment.Center
                                                     ) {
-                                                        Text(emoji, fontSize = 22.sp)
+                                                        PlantPhoto(
+                                                            plantName = item.plantName,
+                                                            fallbackEmoji = emoji,
+                                                            modifier = Modifier.size(34.dp),
+                                                            shape = CircleShape,
+                                                            emojiFontSize = 22.sp
+                                                        )
                                                     }
                                                     Spacer(modifier = Modifier.height(2.dp))
                                                     Row(
@@ -1214,7 +1221,13 @@ fun PlannerScreen(
                                          .padding(horizontal = 10.dp, vertical = 6.dp),
                                      verticalAlignment = Alignment.CenterVertically
                                  ) {
-                                     Text(emoji, fontSize = 12.sp)
+                                     PlantPhoto(
+                                         plantName = name,
+                                         fallbackEmoji = emoji,
+                                         modifier = Modifier.size(18.dp),
+                                         shape = CircleShape,
+                                         emojiFontSize = 12.sp
+                                     )
                                      Spacer(modifier = Modifier.width(5.dp))
                                      Text(
                                          text = name,
@@ -1364,7 +1377,13 @@ fun PlannerScreen(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    Text(template.iconEmoji, fontSize = 16.sp)
+                                    PlantPhoto(
+                                        plantName = template.name,
+                                        fallbackEmoji = template.iconEmoji,
+                                        modifier = Modifier.size(32.dp),
+                                        shape = CircleShape,
+                                        emojiFontSize = 16.sp
+                                    )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(template.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                                     Text(template.type, fontSize = 10.sp, color = if (isSelected) accentColor.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)

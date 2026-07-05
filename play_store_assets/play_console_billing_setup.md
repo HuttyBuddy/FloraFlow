@@ -10,8 +10,8 @@ Ensure the product IDs match the configurations defined in `com.example.billing.
 
 | Plan Name | Product ID (SKU) | Price | Billing Period | Free Trial |
 | :--- | :--- | :--- | :--- | :--- |
-| **FloraFlow PRO Monthly** | `floraflow_premium_monthly` | `$4.99` | Monthly | 7-Day |
-| **FloraFlow PRO Annual** | `floraflow_premium_yearly` | `$39.99` | Yearly | 14-Day |
+| **FloraFlow PRO Monthly** | `floraflow_premium_monthly` | `$4.99` | Monthly | 3-Day |
+| **FloraFlow PRO Annual** | `floraflow_premium_yearly` | `$39.99` | Yearly | 3-Day |
 
 ---
 
@@ -46,11 +46,11 @@ Subscriptions in Google Play Console require at least one **Base Plan**:
 To configure free trials, you must create an **Offer** linked to the Base Plan:
 1. In the **Base plans and offers** list, locate your newly activated base plan.
 2. Click **Add offer**.
-3. Set the **Offer ID** (e.g. `7-day-trial` or `14-day-trial`).
+3. Set the **Offer ID** (e.g. `3-day-trial`).
 4. Set the **Eligibility Criteria** to **New Customer Acquisition** (only users who haven't subscribed before qualify).
 5. Under **Phases**, click **Add phase**:
    - Choose **Free trial** type.
-   - Set the duration: `7 Days` for Monthly, `14 Days` for Yearly.
+   - Set the duration: `3 Days` for both Monthly and Yearly.
 6. Click **Save** ➡️ **Activate**.
 
 ---
@@ -76,7 +76,7 @@ Copy and paste these localized titles, descriptions, and benefit bullets directl
   - Full Eco-acoustic binaural soundscapes & nature chimes
   - Unlimited space layout grids & design snapshots
   - Comprehensive therapeutic mental wellness logs & mood correlation statistics
-  - 14-day free trial
+  - 3-day free trial
 
 ---
 
