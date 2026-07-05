@@ -185,7 +185,7 @@ object GeminiApiClient {
                 else -> "API Error: The server returned an error (${e.code()})."
             }
         } catch (e: Exception) {
-            "Botanical Sync Error: ${e.localizedMessage}. This might be a persistent issue with the AI service."
+            "Botanical Sync Error: An unexpected error occurred. This might be a persistent issue with the AI service."
         }
     }
 
