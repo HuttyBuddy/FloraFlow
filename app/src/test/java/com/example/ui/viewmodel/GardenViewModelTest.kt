@@ -11,6 +11,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.Dispatchers
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32])
@@ -140,5 +143,77 @@ class GardenViewModelTest {
 
         viewModel.saveAssessmentResult(18, listOf("NATURE VIEWS"))
         assertEquals(0L, sharedPrefs.getLong("reassessment_snooze_timestamp", 0L))
+    }
+
+    @Test
+    fun smartSearchSuggestions_learnsFromSubstrateSelection() = runBlocking {
+        val job = launch(Dispatchers.Unconfined) {
+            viewModel.smartSearchSuggestions.collect {}
+        }
+        
+        viewModel.recordSubstrateSelected("Sand 🟧")
+        org.robolectric.shadows.ShadowLooper.idleMainLooper()
+        
+        val updatedSuggestions = viewModel.smartSearchSuggestions.value
+        val hasSubstrateFit = updatedSuggestions.any { it.category == "Substrate Fit" && it.query == "Succulent" }
+        assertTrue(hasSubstrateFit)
+        
+        job.cancel()
+    }
+
+    @Test
+    fun smartSearchSuggestions_learnsFromSeedSowing() = runBlocking {
+        val job = launch(Dispatchers.Unconfined) {
+            viewModel.smartSearchSuggestions.collect {}
+        }
+        
+        viewModel.recordSeedSelected("Tomato")
+        org.robolectric.shadows.ShadowLooper.idleMainLooper()
+        
+        val updatedSuggestions = viewModel.smartSearchSuggestions.value
+        val hasTomatoCompanion = updatedSuggestions.any { it.category == "Companion Fit" && it.query == "Basil" }
+        assertTrue(hasTomatoCompanion)
+        
+        job.cancel()
+    }
+
+    @Test
+    fun smartSearchSuggestions_learnsFromRestorationTabVisit() = runBlocking {
+        val job = launch(Dispatchers.Unconfined) {
+            viewModel.smartSearchSuggestions.collect {}
+        }
+        
+        viewModel.recordVisitedScreen(4)
+        org.robolectric.shadows.ShadowLooper.idleMainLooper()
+        
+        val updatedSuggestions = viewModel.smartSearchSuggestions.value
+        val hasRestorationSuggestion = updatedSuggestions.any { it.category == "Restoration Boost" && it.query == "Lavender" }
+        assertTrue(hasRestorationSuggestion)
+        
+        job.cancel()
+    }
+
+    @Test
+    fun smartSearchSuggestions_clearLearningHistory_resetsToDefaults() = runBlocking {
+        val job = launch(Dispatchers.Unconfined) {
+            viewModel.smartSearchSuggestions.collect {}
+        }
+        
+        viewModel.recordSubstrateSelected("Sand")
+        viewModel.recordSeedSelected("Tomato")
+        viewModel.recordVisitedScreen(4)
+        org.robolectric.shadows.ShadowLooper.idleMainLooper()
+        
+        assertTrue(viewModel.smartSearchSuggestions.value.any { 
+            it.category == "Substrate Fit" || it.category == "Companion Fit" || it.category == "Restoration Boost" 
+        })
+        
+        viewModel.clearLearningHistory()
+        org.robolectric.shadows.ShadowLooper.idleMainLooper()
+        
+        val resetSuggestions = viewModel.smartSearchSuggestions.value
+        assertTrue(resetSuggestions.all { it.category == "Popular Search" })
+        
+        job.cancel()
     }
 }

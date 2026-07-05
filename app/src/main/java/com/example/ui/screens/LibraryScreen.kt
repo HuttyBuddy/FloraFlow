@@ -3,6 +3,7 @@ package com.example.ui.screens
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -98,6 +99,9 @@ fun LibraryScreen(
     val currentWeather by viewModel.currentWeather.collectAsStateWithLifecycle()
     var zipInput by remember(currentWeather) { mutableStateOf(viewModel.getWeatherLocationZip()) }
     val searchQuery by viewModel.librarySearchQuery.collectAsStateWithLifecycle()
+    val smartSuggestions by viewModel.smartSearchSuggestions.collectAsStateWithLifecycle()
+    val dynamicPlaceholder by viewModel.dynamicSearchPlaceholder.collectAsStateWithLifecycle()
+    var selectedSuggestionExplanation by remember { mutableStateOf("") }
     var selectedTypeFilter by remember { mutableStateOf("All") }
     var selectedClimateFilter by remember { mutableStateOf("All") }
     var selectedWaterFilter by remember { mutableStateOf("All") }
@@ -428,11 +432,14 @@ fun LibraryScreen(
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = { viewModel.setLibrarySearchQuery(it) },
-                    placeholder = { Text("Search 50+ species...") },
+                    placeholder = { Text(dynamicPlaceholder) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search icon") },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { viewModel.setLibrarySearchQuery("") }) {
+                            IconButton(onClick = { 
+                                viewModel.setLibrarySearchQuery("") 
+                                selectedSuggestionExplanation = ""
+                            }) {
                                 Icon(Icons.Default.Clear, contentDescription = "Clear search input")
                             }
                         }
@@ -447,6 +454,121 @@ fun LibraryScreen(
                         unfocusedContainerColor = MaterialTheme.colorScheme.surface
                     )
                 )
+            }
+
+            // Smart Suggestions UI Panel
+            AnimatedVisibility(
+                visible = searchQuery.isEmpty() && smartSuggestions.isNotEmpty(),
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.08f),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(16.dp)
+                        )
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = "AI Suggestion icon",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "🔮 Predicted for You",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Based on activity",
+                                style = MaterialTheme.typography.bodySmall,
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
+                            IconButton(
+                                onClick = {
+                                    viewModel.clearLearningHistory()
+                                    selectedSuggestionExplanation = ""
+                                },
+                                modifier = Modifier.size(20.dp).testTag("clear_learning_history_btn")
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.RestartAlt,
+                                    contentDescription = "Reset History",
+                                    modifier = Modifier.size(14.dp),
+                                    tint = MaterialTheme.colorScheme.secondary
+                                )
+                            }
+                        }
+                    }
+
+                    // Scrolling chips list
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        items(smartSuggestions) { suggestion ->
+                            val isChosen = searchQuery == suggestion.query
+                            FilterChip(
+                                selected = isChosen,
+                                onClick = {
+                                    viewModel.setLibrarySearchQuery(suggestion.query)
+                                    selectedSuggestionExplanation = suggestion.explanation
+                                },
+                                label = {
+                                    Column(modifier = Modifier.padding(vertical = 2.dp)) {
+                                        Text(
+                                            text = suggestion.displayText,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 11.sp
+                                        )
+                                        Text(
+                                            text = suggestion.category,
+                                            fontSize = 9.sp,
+                                            color = MaterialTheme.colorScheme.secondary
+                                        )
+                                    }
+                                },
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier.testTag("suggestion_chip_${suggestion.query.lowercase().replace(" ", "_")}")
+                            )
+                        }
+                    }
+                    
+                    // Selected suggestion rationale
+                    if (selectedSuggestionExplanation.isNotEmpty()) {
+                        Text(
+                            text = "💡 $selectedSuggestionExplanation",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontSize = 10.sp,
+                            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.85f),
+                            modifier = Modifier.padding(top = 4.dp).testTag("suggestion_rationale")
+                        )
+                    }
+                }
             }
 
             // Info row showing resolved climate and the Clear All Filters button
@@ -664,7 +786,10 @@ fun LibraryScreen(
                         template = tpl,
                         isExpanded = isExpanded,
                         onExpandClick = {
-                            expandedSpeciesName = if (isExpanded) null else tpl.name
+                            expandedSpeciesName = if (isExpanded) null else {
+                                viewModel.recordSpeciesViewed(tpl.name)
+                                tpl.name
+                            }
                         },
                         isPlanted = isPlanted,
                         activeLayoutAvailable = activeLayout != null,

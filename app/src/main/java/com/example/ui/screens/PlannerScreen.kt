@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -514,7 +515,10 @@ fun PlannerScreen(
                         color = MaterialTheme.colorScheme.primary
                     )
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .padding(vertical = 4.dp, horizontal = 2.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         soilThemes.forEachIndexed { index, theme ->
@@ -531,10 +535,12 @@ fun PlannerScreen(
                             
                             Card(
                                 modifier = Modifier
-                                    .weight(1f)
+                                    .width(105.dp)
                                     .scale(animatedScale)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable { selectedSoilIdx = index },
+                                    .clickable {
+                                        selectedSoilIdx = index
+                                        viewModel.recordSubstrateSelected(theme.name)
+                                    },
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (isSelected) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surface.copy(alpha = 0.4f)
                                 ),
@@ -695,7 +701,7 @@ fun PlannerScreen(
         val actionsPanelContent = @Composable {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                     // Auto-Sow Seeds button
@@ -707,7 +713,7 @@ fun PlannerScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                         contentPadding = PaddingValues(),
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(1.3f)
                             .testTag("quick_sow_button")
                             .clip(RoundedCornerShape(12.dp))
                             .background(
@@ -723,11 +729,11 @@ fun PlannerScreen(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp)
+                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 2.dp)
                         ) {
                             Icon(Icons.Default.Spa, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Auto-Sow Seeds 🌱", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Auto-Sow Seeds", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
 
@@ -739,7 +745,7 @@ fun PlannerScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
                         contentPadding = PaddingValues(),
                         modifier = Modifier
-                            .weight(1f)
+                            .weight(0.7f)
                             .testTag("clear_grid_button")
                             .clip(RoundedCornerShape(12.dp))
                             .background(
@@ -755,11 +761,11 @@ fun PlannerScreen(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 4.dp)
+                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 2.dp)
                         ) {
                             Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Uproot All 🧹", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Uproot All", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
             }
@@ -1289,12 +1295,12 @@ fun PlannerScreen(
                                         selectedSeedTemplate = null
                                     },
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (isSelected) Color(0xFFC62828).copy(alpha = 0.15f) 
-                                                     else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                    containerColor = if (isSelected) Color(0xFFC62828).copy(alpha = 0.18f) 
+                                                     else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                                 ),
                                 border = BorderStroke(
                                     width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) Color(0xFFC62828) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                                    color = if (isSelected) Color(0xFFC62828) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
@@ -1305,8 +1311,19 @@ fun PlannerScreen(
                                 ) {
                                     Text("🧹", fontSize = 16.sp)
                                     Spacer(modifier = Modifier.height(2.dp))
-                                    Text("Clear", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) Color(0xFFC62828) else MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-                                    Text("Eraser", fontSize = 10.sp, color = if (isSelected) Color(0xFFC62828).copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f), maxLines = 1)
+                                    Text(
+                                        text = "Eraser", 
+                                        fontSize = 11.sp, 
+                                        fontWeight = FontWeight.Bold, 
+                                        color = if (isSelected) Color(0xFFC62828) else MaterialTheme.colorScheme.onSurface, 
+                                        maxLines = 1
+                                    )
+                                    Text(
+                                        text = "Clear Cell", 
+                                        fontSize = 10.sp, 
+                                        color = if (isSelected) Color(0xFFC62828).copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), 
+                                        maxLines = 1
+                                    )
                                 }
                             }
                         }
@@ -1328,12 +1345,13 @@ fun PlannerScreen(
                                             selectedSeedTemplate = null
                                         } else {
                                             selectedSeedTemplate = template
+                                            viewModel.recordSeedSelected(template.name)
                                             isUprootModeActive = false
                                         }
                                     },
                                 colors = CardDefaults.cardColors(
                                     containerColor = if (isSelected) accentColor.copy(alpha = 0.15f) 
-                                                     else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                                     else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                                 ),
                                 border = BorderStroke(
                                     width = if (isSelected) 2.dp else 1.dp,
@@ -1348,8 +1366,8 @@ fun PlannerScreen(
                                 ) {
                                     Text(template.iconEmoji, fontSize = 16.sp)
                                     Spacer(modifier = Modifier.height(2.dp))
-                                    Text(template.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                                    Text(template.type, fontSize = 10.sp, color = if (isSelected) accentColor.copy(alpha = 0.8f) else MaterialTheme.colorScheme.secondary.copy(alpha = 0.7f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                    Text(template.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                    Text(template.type, fontSize = 10.sp, color = if (isSelected) accentColor.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                                 }
                             }
                         }
@@ -1582,8 +1600,8 @@ fun PlannerScreen(
                         }
 
                         ChecklistItem(
-                            title = "5. Export CAD Blueprint",
-                            description = "Render and download the final layout as an architect CAD vector file.",
+                            title = "5. Export Blueprint",
+                            description = "Render and download the final layout as an architect vector file.",
                             statusText = if (hasExportedBlueprint) "Blueprint exported successfully" else "Ready to export",
                             isCompleted = task5Completed,
                             isExpanded = expandedTasks[5] == true,
@@ -1600,7 +1618,7 @@ fun PlannerScreen(
                             ) {
                                 Icon(Icons.Default.Layers, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("RENDER ARCHITECT CAD BLUEPRINT 📐", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                                Text("RENDER ARCHITECT BLUEPRINT 📐", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
                             }
                         }
                     }
@@ -1959,7 +1977,7 @@ fun PlannerScreen(
         }
     }
 
-    // --- Cyber CAD Blueprint Render Dialog ---
+    // --- Cyber Blueprint Render Dialog ---
     if (showBlueprintDialog) {
         Dialog(onDismissRequest = { showBlueprintDialog = false }) {
             Surface(
@@ -1983,7 +2001,7 @@ fun PlannerScreen(
                      ) {
                           Column {
                               Text(
-                                  text = "FLORAFLOW CAD SHEET PL-5",
+                                  text = "FLORAFLOW SHEET PL-5",
                                   color = Color(0xFF81C784),
                                   fontSize = 9.sp,
                                   fontWeight = FontWeight.Bold,
@@ -2031,7 +2049,7 @@ fun PlannerScreen(
                          fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                      )
 
-                     // Vector CAD Canvas drawing!
+                     // Vector Canvas drawing!
                      Box(
                          modifier = Modifier
                              .fillMaxWidth()
@@ -2229,7 +2247,7 @@ fun PlannerScreen(
                              LaunchedEffect(Unit) {
                                  kotlinx.coroutines.delay(1500)
                                  isSimulatingSave = false
-                                 android.widget.Toast.makeText(currentContext, "Blueprint saved as FloraFlow_Blueprint.cad 📂✨", android.widget.Toast.LENGTH_SHORT).show()
+                                 android.widget.Toast.makeText(currentContext, "Blueprint saved as FloraFlow_Blueprint.svg 📂✨", android.widget.Toast.LENGTH_SHORT).show()
                                  showBlueprintDialog = false
                                  hasExportedBlueprint = true
                              }

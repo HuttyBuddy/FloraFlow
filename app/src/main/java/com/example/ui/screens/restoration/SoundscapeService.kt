@@ -142,6 +142,13 @@ class SoundscapeService : Service() {
     fun getCurrentTrackName(): String = currentTrackName
     fun getAmbientVolume(): Float = ambientVolume
     fun getBinauralVolume(): Float = binauralVolume
+    fun getBaseFrequency(): Float = baseFrequency
+    fun getDiffFrequency(): Float = diffFrequency
+
+    fun setFrequencies(baseFreq: Float, diffFreq: Float) {
+        this.baseFrequency = baseFreq
+        this.diffFrequency = diffFreq
+    }
 
     private fun playAmbientLoop() {
         try {
@@ -189,14 +196,14 @@ class SoundscapeService : Service() {
             }
 
             toneJob = serviceScope.launch {
-                val freqLeft = baseFrequency
-                val freqRight = baseFrequency + diffFrequency
                 val bufferSize = minBufferSize / 2 // in Shorts
                 val buffer = ShortArray(bufferSize)
                 var angleLeft = 0.0
                 var angleRight = 0.0
                 
                 while (isActive && isPlaying) {
+                    val freqLeft = baseFrequency
+                    val freqRight = baseFrequency + diffFrequency
                     for (i in 0 until bufferSize step 2) {
                         // Left channel
                         buffer[i] = (sin(angleLeft) * Short.MAX_VALUE).toInt().toShort()

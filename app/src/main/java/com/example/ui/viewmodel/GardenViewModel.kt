@@ -137,6 +137,84 @@ class GardenViewModel @JvmOverloads constructor(
         _librarySearchQuery.value = query
     }
 
+    // --- Smart Predictive Search System ---
+    data class SmartSearchSuggestion(
+        val query: String,
+        val displayText: String,
+        val category: String,
+        val explanation: String
+    )
+
+    private val _lastVisitedTab = MutableStateFlow<Int?>(null)
+    val lastVisitedTab: StateFlow<Int?> = _lastVisitedTab.asStateFlow()
+
+    private val _lastSelectedSubstrate = MutableStateFlow<String?>(null)
+    val lastSelectedSubstrate: StateFlow<String?> = _lastSelectedSubstrate.asStateFlow()
+
+    private val _lastSelectedSeed = MutableStateFlow<String?>(null)
+    val lastSelectedSeed: StateFlow<String?> = _lastSelectedSeed.asStateFlow()
+
+    private val _lastViewedSpecies = MutableStateFlow<String?>(null)
+    val lastViewedSpecies: StateFlow<String?> = _lastViewedSpecies.asStateFlow()
+
+    private val _lastAiKeywords = MutableStateFlow<String?>(null)
+    val lastAiKeywords: StateFlow<String?> = _lastAiKeywords.asStateFlow()
+
+    fun recordVisitedScreen(tabIndex: Int) {
+        _lastVisitedTab.value = tabIndex
+        sharedPrefs.edit { putInt("smart_search_last_tab", tabIndex) }
+    }
+
+    fun recordSubstrateSelected(substrateName: String) {
+        val cleaned = substrateName.replace(Regex("[^a-zA-Z\\s]"), "").trim()
+        _lastSelectedSubstrate.value = cleaned
+        sharedPrefs.edit { putString("smart_search_last_substrate", cleaned) }
+    }
+
+    fun recordSeedSelected(seedName: String) {
+        _lastSelectedSeed.value = seedName
+        sharedPrefs.edit { putString("smart_search_last_seed", seedName) }
+    }
+
+    fun recordSpeciesViewed(speciesName: String) {
+        _lastViewedSpecies.value = speciesName
+        sharedPrefs.edit { putString("smart_search_last_viewed", speciesName) }
+    }
+
+    fun recordAiQuery(query: String) {
+        val keywords = when {
+            query.contains("pest", ignoreCase = true) || query.contains("bug", ignoreCase = true) || query.contains("disease", ignoreCase = true) -> "Pest Control"
+            query.contains("water", ignoreCase = true) || query.contains("dry", ignoreCase = true) -> "Watering"
+            query.contains("soil", ignoreCase = true) || query.contains("repot", ignoreCase = true) -> "Soil Care"
+            query.contains("prune", ignoreCase = true) || query.contains("trim", ignoreCase = true) -> "Pruning"
+            else -> {
+                val match = com.example.data.model.ClimatePlants.ALL_TEMPLATES.find { 
+                    query.contains(it.name, ignoreCase = true) 
+                }
+                match?.name
+            }
+        }
+        if (keywords != null) {
+            _lastAiKeywords.value = keywords
+            sharedPrefs.edit { putString("smart_search_last_ai", keywords) }
+        }
+    }
+
+    fun clearLearningHistory() {
+        _lastVisitedTab.value = null
+        _lastSelectedSubstrate.value = null
+        _lastSelectedSeed.value = null
+        _lastViewedSpecies.value = null
+        _lastAiKeywords.value = null
+        sharedPrefs.edit {
+            remove("smart_search_last_tab")
+            remove("smart_search_last_substrate")
+            remove("smart_search_last_seed")
+            remove("smart_search_last_viewed")
+            remove("smart_search_last_ai")
+        }
+    }
+
     private val _firstBloomTrigger = MutableStateFlow<String?>(null)
     val firstBloomTrigger: StateFlow<String?> = _firstBloomTrigger.asStateFlow()
     fun clearFirstBloomTrigger() { _firstBloomTrigger.value = null }
@@ -217,6 +295,288 @@ class GardenViewModel @JvmOverloads constructor(
     fun updateSelectedMood(mood: String) {
         _selectedMood.value = mood
     }
+
+    // Combine all learning signals to produce a list of smart search suggestions
+    val smartSearchSuggestions: StateFlow<List<SmartSearchSuggestion>> = combine(
+        _lastVisitedTab,
+        _lastSelectedSubstrate,
+        _lastSelectedSeed,
+        _lastViewedSpecies,
+        _lastAiKeywords,
+        _activePlants,
+        _assessmentScore,
+        _lowestCategories,
+        _selectedMood,
+        _currentSeason
+    ) { args ->
+        val lastTab = args[0] as? Int
+        val lastSubstrate = args[1] as? String
+        val lastSeed = args[2] as? String
+        val lastViewed = args[3] as? String
+        val lastAi = args[4] as? String
+        val activePlantsList = args[5] as List<Plant>
+        val score = args[6] as? Int
+        val categoriesList = args[7] as? List<String> ?: emptyList()
+        val mood = args[8] as String
+        val season = args[9] as String
+
+        val suggestions = mutableListOf<SmartSearchSuggestion>()
+
+        // 1. Companion / Care Recommendations from last sowed seed
+        if (lastSeed != null) {
+            suggestions.add(
+                SmartSearchSuggestion(
+                    query = lastSeed,
+                    displayText = "$lastSeed Care",
+                    category = "Recent Sowing",
+                    explanation = "Read full soil, water, and sunlight guidelines for your newly sowed $lastSeed."
+                )
+            )
+            // Companion suggestions
+            if (lastSeed.equals("Tomato", ignoreCase = true)) {
+                suggestions.add(
+                    SmartSearchSuggestion(
+                        query = "Basil",
+                        displayText = "Basil (Companion)",
+                        category = "Companion Fit",
+                        explanation = "Basil repels pests and enhances the flavor of Tomato when grown nearby."
+                    )
+                )
+                suggestions.add(
+                    SmartSearchSuggestion(
+                        query = "Marigold",
+                        displayText = "Marigold (Companion)",
+                        category = "Companion Fit",
+                        explanation = "Marigolds act as a natural guard against tomato pests when planted near Tomato."
+                    )
+                )
+            } else if (lastSeed.equals("Snake Plant", ignoreCase = true)) {
+                suggestions.add(
+                    SmartSearchSuggestion(
+                        query = "ZZ Plant",
+                        displayText = "ZZ Plant (Companion)",
+                        category = "Companion Fit",
+                        explanation = "ZZ Plants share similar low-watering, low-light requirements as Snake Plants."
+                    )
+                )
+            }
+        }
+
+        // 2. Substrate-driven recommendations
+        if (lastSubstrate != null) {
+            when {
+                lastSubstrate.contains("Sand", ignoreCase = true) -> {
+                    suggestions.add(
+                        SmartSearchSuggestion(
+                            query = "Succulent",
+                            displayText = "Sandy Succulents",
+                            category = "Substrate Fit",
+                            explanation = "Succulents and cacti are perfectly suited for coarse, fast-draining Sand substrate."
+                        )
+                    )
+                    suggestions.add(
+                        SmartSearchSuggestion(
+                            query = "Snake Plant",
+                            displayText = "Snake Plant",
+                            category = "Substrate Fit",
+                            explanation = "Snake Plants thrive in sandy potting mixes that prevent waterlogging."
+                        )
+                    )
+                }
+                lastSubstrate.contains("Clay", ignoreCase = true) -> {
+                    suggestions.add(
+                        SmartSearchSuggestion(
+                            query = "Flower",
+                            displayText = "Clay-Tolerant Blooms",
+                            category = "Substrate Fit",
+                            explanation = "Some flowering perennials enjoy the moisture retention of clay soils."
+                        )
+                    )
+                    suggestions.add(
+                        SmartSearchSuggestion(
+                            query = "Fern",
+                            displayText = "Moisture-Loving Ferns",
+                            category = "Substrate Fit",
+                            explanation = "Ferns thrive in dense, moisture-retentive substrates like clay."
+                        )
+                    )
+                }
+                lastSubstrate.contains("Loam", ignoreCase = true) -> {
+                    suggestions.add(
+                        SmartSearchSuggestion(
+                            query = "Shrub",
+                            displayText = "Loam-Loving Shrubs",
+                            category = "Substrate Fit",
+                            explanation = "Tilled loam is the gold standard for high-nutrient shrubs and herbs."
+                        )
+                    )
+                }
+            }
+        }
+
+        // 3. Navigation History / Screen Context
+        if (lastTab != null) {
+            when (lastTab) {
+                4 -> { // Restoration
+                    suggestions.add(
+                        SmartSearchSuggestion(
+                            query = "Lavender",
+                            displayText = "Relaxing Lavender",
+                            category = "Restoration Boost",
+                            explanation = "Since you visited Restoration: Lavender is clinically proven to lower stress."
+                        )
+                    )
+                    suggestions.add(
+                        SmartSearchSuggestion(
+                            query = "Peace Lily",
+                            displayText = "Calming Peace Lily",
+                            category = "Restoration Boost",
+                            explanation = "Peace Lilies introduce soothing green views that help you decompress."
+                        )
+                    )
+                }
+                3 -> { // Counsel
+                    if (lastAi != null) {
+                        if (lastAi.equals("Pest Control", ignoreCase = true)) {
+                            suggestions.add(
+                                SmartSearchSuggestion(
+                                    query = "Pest Resistant",
+                                    displayText = "Pest-Resistant Species",
+                                    category = "Counsel Insight",
+                                    explanation = "Learn which plant species naturally resist common garden pests and diseases."
+                                )
+                            )
+                        } else {
+                            suggestions.add(
+                                SmartSearchSuggestion(
+                                    query = lastAi,
+                                    displayText = "$lastAi Info",
+                                    category = "Counsel Insight",
+                                    explanation = "Explore more botanical facts about $lastAi following your AI chat."
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        // 4. Mood-driven recommendations
+        if (mood.equals("Stressed", ignoreCase = true) || mood.equals("Overwhelmed", ignoreCase = true)) {
+            suggestions.add(
+                SmartSearchSuggestion(
+                    query = "Indoor Area",
+                    displayText = "Sensory Sanctuary",
+                    category = "Mindful Fit",
+                    explanation = "Create an indoor sensory sanctuary to reduce stress and anxiety."
+                )
+            )
+        }
+
+        // 5. Climate matching (Mediterranean, Arid, Tropical, Temperate, Mountainous)
+        val resolvedClimate = activeLayout.value?.climate ?: "Temperate"
+        
+        when {
+            resolvedClimate.contains("Arid", ignoreCase = true) -> {
+                suggestions.add(
+                    SmartSearchSuggestion(
+                        query = "Succulent",
+                        displayText = "Arid Species",
+                        category = "Climate Match",
+                        explanation = "Matches your garden's Arid climate compatibility. Requires very low watering."
+                    )
+                )
+            }
+            resolvedClimate.contains("Mediterranean", ignoreCase = true) -> {
+                suggestions.add(
+                    SmartSearchSuggestion(
+                        query = "Rosemary",
+                        displayText = "Mediterranean Herbs",
+                        category = "Climate Match",
+                        explanation = "Adapted to dry, warm summers like your garden's Mediterranean climate."
+                    )
+                )
+            }
+            resolvedClimate.contains("Tropical", ignoreCase = true) -> {
+                suggestions.add(
+                    SmartSearchSuggestion(
+                        query = "Fern",
+                        displayText = "Tropical Ferns",
+                        category = "Climate Match",
+                        explanation = "Humid-loving plants that thrive in warm, tropical climates."
+                    )
+                )
+            }
+        }
+
+        // 6. Biophilic Gaps from Assessment
+        if (score != null && score < 15) {
+            val airQualityLow = categoriesList.any { it.contains("AIR", ignoreCase = true) || it.contains("VENTILATION", ignoreCase = true) }
+            if (airQualityLow) {
+                suggestions.add(
+                    SmartSearchSuggestion(
+                        query = "Snake Plant",
+                        displayText = "Air Purifying Snake Plant",
+                        category = "Biophilic Gap",
+                        explanation = "Boosts oxygen production at night to address your low room ventilation score."
+                    )
+                )
+                suggestions.add(
+                    SmartSearchSuggestion(
+                        query = "Peace Lily",
+                        displayText = "Air Filtering Peace Lily",
+                        category = "Biophilic Gap",
+                        explanation = "Tackles airborne toxins to improve your room's air quality zone."
+                    )
+                )
+            }
+        }
+
+        // 7. View History
+        if (lastViewed != null) {
+            suggestions.add(
+                SmartSearchSuggestion(
+                    query = lastViewed,
+                    displayText = "Re-explore $lastViewed",
+                    category = "Recently Viewed",
+                    explanation = "Jump back into the care guide for your recently inspected $lastViewed."
+                )
+            )
+        }
+
+        // Ensure we always have unique suggestions and filter out duplicate queries
+        val uniqueSuggestions = suggestions.distinctBy { it.query.lowercase() }
+        
+        // Add defaults if empty or too short
+        val finalSuggestions = uniqueSuggestions.toMutableList()
+        val defaultPool = listOf(
+            SmartSearchSuggestion("Snake Plant", "Snake Plant", "Popular Search", "A robust air-purifier that thrives on neglect."),
+            SmartSearchSuggestion("Peace Lily", "Peace Lily", "Popular Search", "Beautiful flowering plant that dramatically droops when thirsty."),
+            SmartSearchSuggestion("ZZ Plant", "ZZ Plant", "Popular Search", "Vibrant, low-light houseplant with thick waxy leaves."),
+            SmartSearchSuggestion("Swiss Cheese Plant", "Monstera", "Popular Search", "A climbing rainforest plant with iconic split leaves.")
+        )
+        for (item in defaultPool) {
+            if (finalSuggestions.size >= 5) break
+            if (finalSuggestions.none { it.query.lowercase() == item.query.lowercase() }) {
+                finalSuggestions.add(item)
+            }
+        }
+
+        finalSuggestions.take(5)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val dynamicSearchPlaceholder: StateFlow<String> = combine(
+        smartSearchSuggestions,
+        _lastSelectedSeed
+    ) { suggestions, lastSeed ->
+        if (lastSeed != null) {
+            "Companion for $lastSeed..."
+        } else if (suggestions.isNotEmpty()) {
+            "Try: '${suggestions.first().displayText}'..."
+        } else {
+            "Search 50+ species..."
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "Search 50+ species...")
 
     fun saveRestorationLog(nriScore: Int, completedTasks: List<String>) {
         viewModelScope.launch(ioDispatcher) {
@@ -532,6 +892,7 @@ class GardenViewModel @JvmOverloads constructor(
 
     fun setCurrentTab(tab: Int) {
         _currentTab.value = tab
+        recordVisitedScreen(tab)
     }
 
     init {
@@ -572,6 +933,12 @@ class GardenViewModel @JvmOverloads constructor(
         if (savedCategories != null) {
             _lowestCategories.value = savedCategories.split(",").filter { it.isNotBlank() }
         }
+
+        _lastVisitedTab.value = if (sharedPrefs.contains("smart_search_last_tab")) sharedPrefs.getInt("smart_search_last_tab", 0) else null
+        _lastSelectedSubstrate.value = sharedPrefs.getString("smart_search_last_substrate", null)
+        _lastSelectedSeed.value = sharedPrefs.getString("smart_search_last_seed", null)
+        _lastViewedSpecies.value = sharedPrefs.getString("smart_search_last_viewed", null)
+        _lastAiKeywords.value = sharedPrefs.getString("smart_search_last_ai", null)
 
         _step1Completed.value = sharedPrefs.getBoolean("step_1_completed", false)
         _step2Completed.value = sharedPrefs.getBoolean("step_2_completed", false)
@@ -1088,6 +1455,7 @@ class GardenViewModel @JvmOverloads constructor(
     // --- Real-time Gemini Client interactions ---
     fun sendAiChatMessage(message: String, imageBytesBase64: String? = null, imageMimeType: String? = "image/jpeg") {
         if (message.isBlank() && imageBytesBase64 == null) return
+        recordAiQuery(message)
         
         val upsellMsg = "🔒 Free AI Advisor biophilic limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
         if (checkPremiumLimit(message, upsellMsg, 3)) return
@@ -1599,6 +1967,7 @@ class GardenViewModel @JvmOverloads constructor(
     // --- Care Scheduler & Weather Integration Methods ---
 
     fun completeCareTask(task: CareTask) {
+        recordSeedSelected(task.plantName)
         viewModelScope.launch(ioDispatcher) {
             careScheduler.completeTask(task)
             refreshWidget()
@@ -1745,6 +2114,12 @@ class GardenViewModel @JvmOverloads constructor(
     
     private val _binauralVolume = MutableStateFlow(0.3f)
     val binauralVolume: StateFlow<Float> = _binauralVolume.asStateFlow()
+
+    private val _baseFrequency = MutableStateFlow(200f)
+    val baseFrequency: StateFlow<Float> = _baseFrequency.asStateFlow()
+
+    private val _diffFrequency = MutableStateFlow(6f)
+    val diffFrequency: StateFlow<Float> = _diffFrequency.asStateFlow()
     
     private val serviceConnection = object : android.content.ServiceConnection {
         override fun onServiceConnected(name: android.content.ComponentName?, service: android.os.IBinder?) {
@@ -1757,6 +2132,8 @@ class GardenViewModel @JvmOverloads constructor(
                 _currentSoundscapeTrack.value = it.getCurrentTrackName()
                 _ambientVolume.value = it.getAmbientVolume()
                 _binauralVolume.value = it.getBinauralVolume()
+                _baseFrequency.value = it.getBaseFrequency()
+                _diffFrequency.value = it.getDiffFrequency()
             }
         }
         
@@ -1787,6 +2164,26 @@ class GardenViewModel @JvmOverloads constructor(
         val service = soundscapeService ?: return
         service.setTrack(name, baseFreq, diffFreq)
         _currentSoundscapeTrack.value = name
+        _baseFrequency.value = baseFreq
+        _diffFrequency.value = diffFreq
+    }
+
+    fun updateFrequencies(baseFreq: Float, diffFreq: Float) {
+        val service = soundscapeService ?: return
+        service.setFrequencies(baseFreq, diffFreq)
+        _baseFrequency.value = baseFreq
+        _diffFrequency.value = diffFreq
+
+        val currentTrackPreset = when {
+            baseFreq == 200f && diffFreq == 10f -> "Alpha Focus"
+            baseFreq == 200f && diffFreq == 6f -> "Theta Meditate"
+            baseFreq == 150f && diffFreq == 2.5f -> "Delta Sleep"
+            else -> "Custom Track"
+        }
+        if (_currentSoundscapeTrack.value != currentTrackPreset) {
+            _currentSoundscapeTrack.value = currentTrackPreset
+            service.setTrack(currentTrackPreset, baseFreq, diffFreq)
+        }
     }
     
     fun updateAmbientVolume(vol: Float) {

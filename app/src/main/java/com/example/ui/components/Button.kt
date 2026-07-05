@@ -3,6 +3,7 @@ package com.example.ui.components
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
@@ -17,6 +18,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.example.ui.theme.spacing
@@ -61,7 +63,8 @@ fun FloraFlowButton(
             
             Text(
                 text = text,
-                style = MaterialTheme.typography.labelLarge
+                style = MaterialTheme.typography.labelLarge,
+                textAlign = TextAlign.Center
             )
             
             if (!loading && trailingIcon != null) {
@@ -81,7 +84,7 @@ fun FloraFlowButton(
         ButtonVariant.Filled -> {
             Button(
                 onClick = onClick,
-                modifier = modifier.height(48.dp),
+                modifier = modifier.heightIn(min = 48.dp),
                 enabled = enabled && !loading,
                 shape = shape,
                 colors = ButtonDefaults.buttonColors(
@@ -95,7 +98,7 @@ fun FloraFlowButton(
         ButtonVariant.Outlined -> {
             OutlinedButton(
                 onClick = onClick,
-                modifier = modifier.height(48.dp),
+                modifier = modifier.heightIn(min = 48.dp),
                 enabled = enabled && !loading,
                 shape = shape,
                 border = androidx.compose.foundation.BorderStroke(
@@ -112,7 +115,7 @@ fun FloraFlowButton(
         ButtonVariant.Text -> {
             TextButton(
                 onClick = onClick,
-                modifier = modifier.height(48.dp),
+                modifier = modifier.heightIn(min = 48.dp),
                 enabled = enabled && !loading,
                 shape = shape,
                 colors = ButtonDefaults.textButtonColors(

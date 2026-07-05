@@ -238,7 +238,11 @@ fun BillingDialog(
                                     color = MaterialTheme.colorScheme.primary
                                 )
                                 Text(
-                                    text = if (currentStep == 2) "Google Play Billing" else "Step $currentStep of ${if (billingManager.inMockMode) 4 else 3}",
+                                    text = when (currentStep) {
+                                        2 -> "Google Play Billing"
+                                        4 -> "Transaction Receipt"
+                                        else -> "Step $currentStep of ${if (billingManager.inMockMode) 4 else 3}"
+                                    },
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -657,7 +661,8 @@ fun SuccessReceiptStep(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -733,9 +738,22 @@ fun ReceiptItemRow(label: String, value: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Top
     ) {
-        Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, fontSize = 11.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = value,
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1.5f, fill = false)
+        )
     }
 }

@@ -84,6 +84,8 @@ fun RestorationJournalScreen(
     val currentTrack by viewModel.currentSoundscapeTrack.collectAsStateWithLifecycle()
     val ambientVol by viewModel.ambientVolume.collectAsStateWithLifecycle()
     val binauralVol by viewModel.binauralVolume.collectAsStateWithLifecycle()
+    val baseFreq by viewModel.baseFrequency.collectAsStateWithLifecycle()
+    val diffFreq by viewModel.diffFrequency.collectAsStateWithLifecycle()
     val restorationLogs by viewModel.allRestorationLogs.collectAsStateWithLifecycle()
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
     val restorationTrialCount by viewModel.restorationTrialCount.collectAsStateWithLifecycle()
@@ -365,6 +367,56 @@ fun RestorationJournalScreen(
                                 Slider(
                                     value = binauralVol,
                                     onValueChange = { viewModel.updateBinauralVolume(it) },
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = Color(0xFF81C784),
+                                        activeTrackColor = Color(0xFF81C784),
+                                        inactiveTrackColor = Color(0xFF0F261D)
+                                    )
+                                )
+                            }
+
+                            Divider(color = Color(0xFF81C784).copy(alpha = 0.1f), modifier = Modifier.padding(vertical = 8.dp))
+
+                            // 3. Carrier/Base Frequency Slider
+                            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("🧠 Carrier Frequency", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                                    Text("${baseFreq.toInt()} Hz", fontSize = 12.sp, color = Color(0xFFA8E6CF))
+                                }
+                                Slider(
+                                    value = baseFreq,
+                                    onValueChange = { viewModel.updateFrequencies(it, diffFreq) },
+                                    valueRange = 100f..500f,
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = Color(0xFF81C784),
+                                        activeTrackColor = Color(0xFF81C784),
+                                        inactiveTrackColor = Color(0xFF0F261D)
+                                    )
+                                )
+                            }
+
+                            // 4. Brainwave/Diff Frequency Slider
+                            Column(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                                val brainwaveState = when {
+                                    diffFreq < 4f -> "Delta (Sleep/Heal)"
+                                    diffFreq < 8f -> "Theta (Meditation)"
+                                    diffFreq < 12f -> "Alpha (Focus)"
+                                    else -> "Beta (Active/Alert)"
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text("🌀 Brainwave Frequency ($brainwaveState)", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                                    Text(String.format(java.util.Locale.US, "%.1f Hz", diffFreq), fontSize = 12.sp, color = Color(0xFFA8E6CF))
+                                }
+                                Slider(
+                                    value = diffFreq,
+                                    onValueChange = { viewModel.updateFrequencies(baseFreq, it) },
+                                    valueRange = 0.5f..20f,
                                     colors = SliderDefaults.colors(
                                         thumbColor = Color(0xFF81C784),
                                         activeTrackColor = Color(0xFF81C784),
@@ -700,7 +752,9 @@ fun RestorationJournalScreen(
                                         text = "Upgrade to PRO for Unlimited Access",
                                         fontWeight = FontWeight.ExtraBold,
                                         color = Color(0xFF0F261D),
-                                        fontSize = 13.sp
+                                        fontSize = 13.sp,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.fillMaxWidth()
                                     )
                                 }
                             }

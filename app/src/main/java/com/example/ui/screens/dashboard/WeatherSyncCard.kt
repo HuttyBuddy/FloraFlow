@@ -151,7 +151,7 @@ fun WeatherSyncCard(
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        text = "Edit Loc",
+                        text = "Edit Location",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF1D3C28)

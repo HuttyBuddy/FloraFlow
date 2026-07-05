@@ -86,7 +86,7 @@ fun PremiumUpsellScreen(
             )
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
             Text(
-                text = "Point your phone at a space, envision, plan, and bring a garden to life. Unlock premium eco-acoustic soundscapes and biophilic design neuroscience.",
+                text = "Use your phone to plan and bring your biophilic space to life. Unlock premium eco-acoustic soundscapes and biophilic design neuroscience.",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -142,7 +142,8 @@ fun PremiumUpsellScreen(
                 onClick = { selectAnnual = true },
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (selectAnnual) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surface
+                    containerColor = if (selectAnnual) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 border = BorderStroke(
                     width = if (selectAnnual) 2.dp else 1.dp,
@@ -174,7 +175,8 @@ fun PremiumUpsellScreen(
                 onClick = { selectAnnual = false },
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = if (!selectAnnual) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surface
+                    containerColor = if (!selectAnnual) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 border = BorderStroke(
                     width = if (!selectAnnual) 2.dp else 1.dp,
