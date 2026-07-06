@@ -10,3 +10,7 @@
 ## 2026-06-24 - Add explicit contentDescription for Search Icons
 **Learning:** IconButtons with visual indicators like Search often have missing or null content descriptions, rendering them invisible or confusing for screen-reader users.
 **Action:** Always provide a clear explicit 'contentDescription' string for informative Icons acting as or accompanying UI controls (e.g. 'Search', 'Clear filter'), instead of setting it to null.
+
+## 2026-06-25 - Add clear CTA to empty search results in dialogs
+**Learning:** Empty states in dialog overlays (like Help or Community) can trap users if they apply filters but cannot easily clear them without manually deleting text or toggling chips.
+**Action:** Always provide a clear, one-tap 'Clear Filters' CTA within any empty state that is triggered by search or filtering logic, rather than just suggesting it in text.
