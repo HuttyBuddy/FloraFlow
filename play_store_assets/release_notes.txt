@@ -1,8 +1,8 @@
-FloraFlow - Version 2 Release Notes
+What's new in FloraFlow 9.0.1.2:
 
-What's New:
-- 🌿 Garden Library: Introduced our botanical database featuring soil pH, sunlight needs, and companion planting insights.
-- 💳 Premium Billing: Added support for unlocking advanced garden design features.
-- 🔒 Privacy Updates: Enhanced privacy policy and updated support contact information.
-- 🛠️ Performance & Stability: Cleaned up project structure and optimized performance for initial closed testing.
-- ✨ Visuals: Improved AR Climate Simulator with interactive filters including "Cherry Blossoms" and "Fireflies."
+- Faster, more accurate AI garden advice from our upgraded Gemini-powered garden assistant
+- Fixed a startup crash affecting some users updating from earlier versions
+- Improved security for the connection between the app and our AI advisor
+- General stability fixes ahead of our production launch
+
+Thanks for growing with us — as always, we'd love your feedback.

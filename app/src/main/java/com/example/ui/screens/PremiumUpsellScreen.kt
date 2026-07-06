@@ -121,7 +121,7 @@ fun PremiumUpsellScreen(
     // Fall back to static placeholder copy only while the real Play offer is
     // unknown (loading, or debug mock mode) — never claim a trial length
     // that Play Console doesn't actually have configured.
-    val annualPrice = annualOffer?.formattedPrice ?: "$39.99"
+    val annualPrice = annualOffer?.formattedPrice ?: "$49.99"
     val annualTrialDays = 3
     val annualTrialLabel = "$annualTrialDays-Day Free Trial, then $annualPrice/yr"
 
@@ -162,7 +162,22 @@ fun PremiumUpsellScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Annual Plan (Best Value)", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Annual Plan", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .background(MaterialTheme.extendedColors.success.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    "20% OFF • BEST VALUE",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.extendedColors.success
+                                )
+                            }
+                        }
                         Text(annualTrialLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     }
                     Text(annualPrice, fontWeight = FontWeight.Black, fontSize = 14.sp)

@@ -1,37 +1,28 @@
-🌿 FloraFlow: Cultivating Calm through Mindful Gardening 🌿
-Transform your spaces, satisfy your green thumb, and cultivate peace of mind with FloraFlow—the ultimate premium, interactive garden layout design and climate simulator. Whether you are managing a sunny balcony, a dynamic backyard raised bed, or a suburban botanical oasis, FloraFlow bridges botanical science and creative landscape artistry.
+🌿 FloraFlow — Garden Planning, Grounded in Nature and Backed by AI
 
-FEATURES AT A GLANCE:
+FloraFlow is a garden design and restoration app for anyone with a patch of soil to plant — a sunny balcony, a backyard bed, or a full landscape. Plan your layout, get plant-specific advice from an AI garden assistant, preview your design in AR, and unwind with a Restoration Journal built from real nature sound and brainwave audio.
 
-🌱 DYNAMIC LAYOUT PLANNER & INTERACTIVE CANVAS
-Draft your gardening blueprints on an intuitive, grid-based aesthetic canvas. Arrange custom garden sectors, size plant rows, and define exact companion-planting bounds. Receive instant warnings if incompatible plants are staged too close, and discover companion plant suggestions to boost garden pollination, deter pests, and optimize growth vectors naturally.
+WHAT YOU CAN DO
 
-📸 TECH-ACCENTED AR LENS SIMULATOR
-Step into your creation. Our interactive simulated AR Lens delivers a professional landscape mockup tool right on your mobile screen. 
-- Project customizable 3D-feeling plant markers and organic sprout decals.
-- Control soil wetness indicators and scale growth stages from tiny seedlings to colossal towering trees.
-- Experience live simulated weather transitions! Toggle Gentle Rain, Cherry Blossom Drifts, and Luminescent Firefly Sparks.
-- Take high-resolution design snapshots of your virtual layout from multiple angles and save them directly into your device's visual gallery.
+🌱 Plan your layout
+Sketch your garden on an interactive grid canvas. Place plants, size your beds, and set companion-planting boundaries. FloraFlow flags incompatible pairings before you plant them and suggests companions that support pollination, deter pests, and help your garden grow together well.
 
-🌦️ SIMULATED WEATHER & MICROCLIMATE ENGINE
-How will your garden respond to a sudden heatwave or a cold rain spell? Predict and visualize microclimate effects in real-time. Tune parameters to witness how soft rainfall drenches your plants, or spark a warm cozy evening glow complete with drifting fireflies.
+🧠 Ask your AI garden assistant
+Chat with FloraFlow's Gemini-powered garden assistant about your specific space. It asks about your goals, sun and soil conditions, and maintenance preferences, then recommends plants and layouts — and explains why they work, so you learn as you plan.
 
-📅 HYBRID COMPANION DATABASE & DAILY TRACKING
-Gain instant access to a customized hybrid botanical library of over 100+ companion profiles. Seamlessly transition from layout design to daily gardening task lists:
-- Set plant-by-plant reminders for seasonal fertilizing, watering levels, and pruning times.
-- Cross-reference optimal Soil pH levels, sunlight requirements, and climate zones.
-- Access the local smart planner to log companion pairings and track current growth seasons.
+📸 Preview your garden in AR
+See your design come to life with FloraFlow's AR Lens. View plants at different growth stages, from seedling to mature, and switch between weather overlays like gentle rain, cherry blossom drift, and fireflies at dusk. Save snapshots of your layout straight to your gallery.
 
-🧠 THERAPEUTIC GARDENING & WELLNESS DIARY
-FloraFlow goes beyond standard landscape software to embrace the ultimate benefit of gardening: mental tranquility.
-- Log your physical gardening sessions.
-- Record therapeutic mindfulness minutes.
-- Rate your emotional mood scales before and after tending to your garden.
-- Explore integrated correlation stats to visual how regular outdoor soil interaction boosts your emotional wellness and reduces daily stress levels.
+📚 Look up any plant
+Browse a companion-planting library with 100+ plant profiles covering sunlight needs, soil pH, water requirements, and which neighbors help (or hurt) each other. Set reminders for watering, fertilizing, and pruning by plant.
 
-💎 LIFETIME SUBSCRIPTION & PREMIUM UPGRADES
-Unlock the full potential of your garden blueprint. Subscribing or choosing the Lifetime Premium Upgrade unlocks unlimited layout grids, advanced weather simulations, extra botanical cultivars, smart automatic spacing alerts, and unlimited design snapshot slots to power your financial and physical growing journeys.
+🎧 Unwind with the Restoration Journal
+Put on your headphones. The Restoration Journal pairs procedural binaural beats (Alpha, Theta, and Delta) with layered nature soundscapes — wind chimes, rustling leaves — generated around your own garden plan, not generic ambient loops. Log your time in the garden and your mood before and after, and see how tending your plants and your Restoration score connect over time.
 
-Whether you are a professional organic farmer or a first-time balcony hobbyist, FloraFlow is designed to make your growing journey structured, successful, and deeply relaxing.
+📊 Your dashboard, at a glance
+Check in on your Biophilic Profile, Companion Synergy, and Weather Sync cards to see how your garden and your restoration habits are trending.
 
-Download FloraFlow today—and watch your dream garden blossom.
+FLORAFLOW PRO
+Most core planning and library features are free. FloraFlow PRO ($4.99/month or $39.99/year, both with a 3-day free trial) unlocks the full Restoration Journal and soundscape library, unlimited Gemini AI garden assistant queries, unlimited layout grids and design snapshots, and the full companion-planting space analyzer.
+
+FloraFlow is built for home gardeners — no design training or horticultural background needed. Whether you're planting your first herb pot or replanning a whole backyard, FloraFlow helps you get there, one layout at a time.

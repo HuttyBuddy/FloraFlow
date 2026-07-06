@@ -65,10 +65,10 @@ fun BillingDialog(
         ),
         BillingPlan(
             name = "FloraFlow PRO Annual",
-            price = "$39.99",
+            price = "$49.99",
             period = "year",
             trial = "3-Day Free Trial",
-            description = "Save over 33%! Unlocks unlimited Gemini-Powered AI advice, full Eco-Acoustic journal chimes, stress metric logs, and advanced layouts.",
+            description = "Save 20%! Unlocks unlimited Gemini-Powered AI advice, full Eco-Acoustic journal chimes, stress metric logs, and advanced layouts.",
             isPopular = true,
             isAnnual = true
         )
@@ -457,7 +457,7 @@ fun PlanSelectionStep(
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "POPULAR",
+                            text = if (plan.isAnnual) "20% OFF • BEST VALUE" else "POPULAR",
                             fontSize = 9.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.White,
@@ -554,6 +554,11 @@ fun GooglePlayMockSheet(
                     color = MaterialTheme.extendedColors.success
                 )
                 Text(
+                    text = "• Subscription officially begins after the 3-day trial period.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
                     text = "• Trial Duration: 3 days (Ends on $trialEndDate)",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -604,7 +609,7 @@ fun GooglePlayMockSheet(
                 )
             }
             Text(
-                text = "$50.00",
+                text = activePlan.price,
                 fontWeight = FontWeight.Bold,
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onSurface
