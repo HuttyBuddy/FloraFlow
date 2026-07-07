@@ -24,7 +24,6 @@ import com.example.data.model.parseGridString
 import com.example.ui.theme.extendedColors
 import com.example.ui.screens.checkPlantSynergy
 import com.example.ui.screens.checkPlantConflict
-import kotlin.math.sqrt
 
 @Composable
 fun CompanionSynergyCard(
@@ -40,34 +39,29 @@ fun CompanionSynergyCard(
     var expanded by remember { mutableStateOf(false) }
 
     // Pairwise companion checks for adjacent plants (distance <= 1.5)
-    val synergies = remember(gridItems) {
-        val list = mutableListOf<Pair<GridPlantItem, GridPlantItem>>()
+    val (synergies, conflicts) = remember(gridItems) {
+        val synList = mutableListOf<Pair<GridPlantItem, GridPlantItem>>()
+        val confList = mutableListOf<Pair<GridPlantItem, GridPlantItem>>()
         for (i in 0 until gridItems.size) {
             for (j in i + 1 until gridItems.size) {
                 val item1 = gridItems[i]
                 val item2 = gridItems[j]
-                val dist = sqrt(((item1.x - item2.x) * (item1.x - item2.x) + (item1.y - item2.y) * (item1.y - item2.y)).toDouble())
-                if (dist <= 1.5 && checkPlantSynergy(item1.plantName, item2.plantName)) {
-                    list.add(Pair(item1, item2))
-                }
-            }
-        }
-        list
-    }
+                val dx = item1.x - item2.x
+                val dy = item1.y - item2.y
+                val distSq = dx * dx + dy * dy
 
-    val conflicts = remember(gridItems) {
-        val list = mutableListOf<Pair<GridPlantItem, GridPlantItem>>()
-        for (i in 0 until gridItems.size) {
-            for (j in i + 1 until gridItems.size) {
-                val item1 = gridItems[i]
-                val item2 = gridItems[j]
-                val dist = sqrt(((item1.x - item2.x) * (item1.x - item2.x) + (item1.y - item2.y) * (item1.y - item2.y)).toDouble())
-                if (dist <= 1.5 && checkPlantConflict(item1.plantName, item2.plantName)) {
-                    list.add(Pair(item1, item2))
+                // 1.5 squared is 2.25. Since coordinates are integers, distSq <= 2 is equivalent.
+                if (distSq <= 2) {
+                    if (checkPlantSynergy(item1.plantName, item2.plantName)) {
+                        synList.add(Pair(item1, item2))
+                    }
+                    if (checkPlantConflict(item1.plantName, item2.plantName)) {
+                        confList.add(Pair(item1, item2))
+                    }
                 }
             }
         }
-        list
+        Pair(synList, confList)
     }
 
     val hasIssues = conflicts.isNotEmpty()
