@@ -172,7 +172,7 @@ fun WeatherSyncCard(
                         .background(Color.White.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
                         .padding(8.dp)
                 ) {
-                    Icon(Icons.Default.Thermostat, contentDescription = null, tint = themeColor, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Thermostat, contentDescription = "Temperature", tint = themeColor, modifier = Modifier.size(18.dp))
                     Text(
                         text = "${weather.temperatureFahrenheit.toInt()}°F",
                         style = MaterialTheme.typography.bodyMedium,
@@ -190,7 +190,7 @@ fun WeatherSyncCard(
                         .background(Color.White.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
                         .padding(8.dp)
                 ) {
-                    Icon(Icons.Default.WaterDrop, contentDescription = null, tint = themeColor, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.WaterDrop, contentDescription = "Humidity", tint = themeColor, modifier = Modifier.size(18.dp))
                     Text(
                         text = "${weather.humidity.toInt()}% Hum",
                         style = MaterialTheme.typography.bodyMedium,
