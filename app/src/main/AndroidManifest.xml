@@ -43,7 +43,10 @@
         android:theme="@style/Theme.MyApplication">
 
         <meta-data android:name="com.google.ar.core" android:value="optional" />
-        <meta-data android:name="com.google.ar.core.min_apk_version" android:value="250220000" />
+        <meta-data
+            android:name="com.google.ar.core.min_apk_version"
+            android:value="260760000"
+            tools:replace="android:value" />
 
         <activity
             android:name=".MainActivity"
