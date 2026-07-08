@@ -26,7 +26,7 @@ There is no component library — every screen builds its own buttons, cards, an
 | Component | States covered | Variants | Docs | Score |
 |-----------|----------------|----------|------|-------|
 | Buttons | Ad hoc per screen (no shared disabled/loading pattern) | 4 competing implementations (Button/Outlined/Text/clickable-box) | ❌ | 3/10 |
-| Cards/Dialogs | Custom per screen (BillingDialog, CommunityDialog, LegalDialog, etc. each reimplement layout/elevation) | Not standardized | ❌ | 4/10 |
+| Cards/Dialogs | Custom per screen (BillingDialog, LegalDialog, etc. each reimplement layout/elevation) | Not standardized | ❌ | 4/10 |
 | Color tokens | Full light/dark palette defined | ✅ semantic naming (Bg/Text/Muted/Primary/etc.) | ⚠️ inline comments only | 6/10 |
 | Typography scale | Full Material3 type scale defined, 2 font families | ✅ | ⚠️ inline comments only | 7/10 |
 | Shape scale | 5-step scale defined | ✅ | ⚠️ inline comments only | 6/10 |

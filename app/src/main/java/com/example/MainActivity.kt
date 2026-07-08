@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -33,7 +32,6 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import com.example.ui.screens.settings.SettingsDialog
-import com.example.ui.screens.community.CommunityDialog
 import com.example.ui.screens.settings.InAppRatePromptDialog
 import com.example.ui.screens.walkthrough.WalkthroughOverlay
 import com.example.ui.screens.help.HelpDialog
@@ -149,7 +147,6 @@ class MainActivity : ComponentActivity() {
                 } else {
                         var showFeedbackDialog by remember { mutableStateOf(false) }
                         var showSettingsDialog by remember { mutableStateOf(false) }
-                        var showCommunityDialog by remember { mutableStateOf(false) }
                         var showHelpDialog by remember { mutableStateOf(false) }
                         val isPremium by viewModel.isPremium.collectAsState()
 
@@ -210,15 +207,7 @@ class MainActivity : ComponentActivity() {
                                                 tint = if (isPremium) MaterialTheme.extendedColors.premiumGold else MaterialTheme.colorScheme.onSurface
                                             )
                                         }
-                                        IconButton(
-                                            onClick = { showCommunityDialog = true },
-                                            modifier = Modifier.testTag("community_button")
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Forum,
-                                                contentDescription = "Community Forum"
-                                            )
-                                        }
+
                                         var showMenu by remember { mutableStateOf(false) }
                                         Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
                                             IconButton(
@@ -551,8 +540,7 @@ class MainActivity : ComponentActivity() {
                             ) {
                                 when (currentTab) {
                                     0 -> DashboardScreen(
-                                        viewModel = viewModel,
-                                        onCommunityClick = { showCommunityDialog = true }
+                                        viewModel = viewModel
                                     )
                                     1 -> PlannerScreen(
                                         viewModel = viewModel,
@@ -591,11 +579,7 @@ class MainActivity : ComponentActivity() {
                             viewModel = viewModel
                         )
 
-                        CommunityDialog(
-                            visible = showCommunityDialog,
-                            onDismiss = { showCommunityDialog = false },
-                            viewModel = viewModel
-                        )
+
 
                         InAppRatePromptDialog(
                             visible = showInAppRatePrompt,

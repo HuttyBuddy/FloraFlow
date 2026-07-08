@@ -49,7 +49,6 @@ import com.example.ui.screens.dashboard.components.*
 @Composable
 fun DashboardScreen(
     viewModel: GardenViewModel,
-    onCommunityClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val layouts by viewModel.allLayouts.collectAsStateWithLifecycle()
@@ -622,89 +621,6 @@ fun DashboardScreen(
         }
     }
 
-    val communityPromoContent = @Composable {
-        var isPressedComm by remember { mutableStateOf(false) }
-        val scaleComm by animateFloatAsState(if (isPressedComm) 0.96f else 1f, label = "ScaleComm")
-        
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .scale(scaleComm)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = {
-                            isPressedComm = true
-                            tryAwaitRelease()
-                            isPressedComm = false
-                        },
-                        onTap = { onCommunityClick() }
-                    )
-                }
-                .testTag("dashboard_community_promo_card"),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f)
-            ),
-            border = BorderStroke(
-                1.5.dp, 
-                Brush.horizontalGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f)
-                    )
-                )
-            )
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                        .background(
-                            Brush.linearGradient(
-                                listOf(
-                                    MaterialTheme.colorScheme.primary,
-                                    MaterialTheme.colorScheme.secondary
-                                )
-                            )
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Forum,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "The Garden Gate",
-                        fontWeight = FontWeight.ExtraBold,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Text(
-                        text = "Step through the gate and grow together",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
-                    )
-                }
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-        }
-    }
 
     val canvasChartContent = @Composable {
         Card(
@@ -883,7 +799,6 @@ fun DashboardScreen(
             }
             item { SeasonalCareCoachCard(activePlants = activePlants) }
             item { quickActionsContent() }
-            item { communityPromoContent() }
             item { statisticsContent() }
             item { canvasChartContent() }
             item { scoreHistoryCardContent() }
@@ -950,7 +865,6 @@ fun DashboardScreen(
                 }
                 SeasonalCareCoachCard(activePlants = activePlants)
                 quickActionsContent()
-                communityPromoContent()
                 statisticsContent()
                 Spacer(modifier = Modifier.height(16.dp))
             }

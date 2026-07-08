@@ -50,13 +50,13 @@ val faqs = listOf(
     FAQItem(
         id = 1,
         question = "How do I design a garden in My Plot?",
-        answer = "Go to the 'My Plot' tab. Tap the 'Add Plant' button, select a plant species from our database, and tap anywhere on the canvas to place it. You can drag and drop plants to rearrange them, tap to select, and resize or rotate them.",
+        answer = "Go to the 'My Plot' tab. Select a plant species from the 'Seed Tray' (Indoor or Outdoor) or tap an empty grid cell to choose a recommended species for your climate. Tap any sector on the 5x5 blueprint to sow your seeds. You can use the Eraser tool to clear cells or 'Auto-Sow' to quickly fill your space.",
         category = "My Plot"
     ),
     FAQItem(
         id = 2,
         question = "What is the Garden Counsel and how can it help?",
-        answer = "The Garden Counsel is powered by Gemini and acts as your personal master gardener. Tap the 'Garden Counsel' tab to start a chat. Ask about planting calendars, pest control, companion planting, or lighting requirements for specific species.",
+        answer = "The Garden Counsel is powered by the latest Gemini 3.5 Flash model and acts as your personal master gardener. It is a premium feature with 3 free trial queries. Tap the 'Counsel' tab to start a chat and ask about planting calendars, pest control, companion planting, or lighting requirements for specific species.",
         category = "Garden Counsel"
     ),
     FAQItem(
@@ -68,7 +68,7 @@ val faqs = listOf(
     FAQItem(
         id = 4,
         question = "Is a premium subscription required?",
-        answer = "FloraFlow is free for basic layout planning, greenhouse inventory, and standard AI advice. It also includes a trial of premium features (3 free Gemini AI advice queries and 3 free Restoration play/log sessions). FloraFlow PRO unlocks unlimited AI Advisor consultations, full Eco-Acoustic Restoration Journal tracking with brainwave frequencies, and custom biophilic design index metrics.",
+        answer = "FloraFlow is free for basic layout planning and greenhouse inventory. It includes a trial of premium features (3 free Garden Counsel queries and 3 free Restoration play/log sessions). FloraFlow PRO unlocks unlimited Garden Counsel consultations, full Eco-Acoustic Restoration Journal tracking with brainwave frequencies, and custom biophilic design index metrics.",
         category = "Premium"
     ),
     FAQItem(
@@ -86,7 +86,7 @@ val faqs = listOf(
     FAQItem(
         id = 7,
         question = "How do I change the app theme?",
-        answer = "Open Settings (cog icon in the top right) and select between 'System' (follows device preferences), 'Light', or 'Dark' mode. Settings are persisted automatically.",
+        answer = "Tap the 'More options' icon (vertical dots) in the top right corner of the Dashboard or main screens, select 'Settings', and then choose between 'System' (follows device preferences), 'Light', or 'Dark' mode. Settings are persisted automatically.",
         category = "Getting Started"
     )
 )

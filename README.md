@@ -22,7 +22,6 @@ FloraFlow makes professional-grade landscape design accessible to everyday home 
 *   **Mood Logging:** Record your emotional state (Peaceful, Energized, Refreshed, Stressed, Overwhelmed, Happy) to track how gardening correlates with your mental wellness.
 *   **Therapeutic Tasks & Habit Streaks:** Engage in daily mindful gardening challenges, with streaks computed in the device's local time zone.
 *   **Weather-Aware Care Scheduling:** Watering, fertilizing, and pruning reminders adjust automatically for rain, heatwaves, and frost, with deduplicated notifications so the same alert never fires twice.
-*   **Community Board:** View community highlights and discussions centered around wellness and sustainable planting.
 
 ### 3. 2D Interactive Garden Planner
 *   **Grid-Based Layouts:** Draft layouts on a customizable 5x5 grid.
@@ -36,7 +35,7 @@ FloraFlow makes professional-grade landscape design accessible to everyday home 
 ### 5. Gemini-Powered AI Advisor ("Garden Counsel")
 *   **Intelligent Q&A:** Chat with an AI assistant powered by the Gemini API, routed through a companion proxy service (see [`gemini-proxy/`](gemini-proxy/)) so API keys never ship inside the app.
 *   **Personalized Consultations:** Get instant recommendations, layout design ideas, plant care tips, and diagnostic help (including photo-based plant diagnosis) for ailing plants.
-*   **Daily Free Quota:** Free-tier users get 3 AI queries per day, tracked server-side of the client (persisted, not reset by clearing chat history) and never consumed by a failed request.
+*   **Free Trial Quota:** Free-tier users get exactly 3 free AI queries in total, persisted client-side and never consumed by a failed request.
 
 ### 6. Eco-Acoustic Restoration Journal (Premium 👑)
 *   **Neural Restoration Index (NRI):** Automatically analyze your garden's biophilic design, unique plant types, and companion synergies to calculate a stress-relief recovery percentage.

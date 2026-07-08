@@ -115,7 +115,7 @@ fun LegalDialog(
 @Composable
 fun PrivacyPolicyContent() {
     Text(
-        text = "Last Updated: June 2026",
+        text = "Last Updated: July 2026",
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.secondary,
         modifier = Modifier.fillMaxWidth(),
@@ -144,7 +144,7 @@ fun PrivacyPolicyContent() {
 @Composable
 fun TermsOfServiceContent() {
     Text(
-        text = "Last Updated: June 2026",
+        text = "Last Updated: July 2026",
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.secondary,
         modifier = Modifier.fillMaxWidth(),

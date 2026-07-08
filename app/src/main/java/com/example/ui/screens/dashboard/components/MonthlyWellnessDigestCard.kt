@@ -38,7 +38,7 @@ fun MonthlyWellnessDigestCard(
     }
     
     val totalGardened = currentMonthLogs.size
-    val peacefulCount = currentMonthLogs.count { it.mood == "Peace`ful" || it.mood == "Peaceful" }
+    val peacefulCount = currentMonthLogs.count { it.mood == "Peaceful" }
     
     // Sort logs chronologically to get start/end wellness bloom
     val sortedLogs = remember(currentMonthLogs) { currentMonthLogs.sortedBy { it.timestamp } }

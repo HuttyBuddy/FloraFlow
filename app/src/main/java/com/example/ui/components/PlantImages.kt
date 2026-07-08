@@ -100,11 +100,42 @@ object PlantImages {
             name.contains(it.key, ignoreCase = true) || it.key.contains(name, ignoreCase = true)
         }?.value
     }
+
+    /**
+     * Maps plant name or fallback emoji to an appropriate realistic photo fallback.
+     */
+    @DrawableRes
+    fun getFallbackImage(name: String, emoji: String): Int {
+        val lowName = name.lowercase()
+        return when {
+            lowName.contains("fruit") || lowName.contains("tree") || lowName.contains("palm") || 
+            emoji == "🌳" || emoji == "🌴" || emoji == "🌲" -> {
+                R.drawable.plant_sweet_fig_tree
+            }
+            lowName.contains("succulent") || lowName.contains("cactus") || lowName.contains("aloe") || lowName.contains("jade") || 
+            emoji == "🌵" || emoji == "🟢" || emoji == "🪴" -> {
+                R.drawable.plant_jade_plant
+            }
+            lowName.contains("fern") || lowName.contains("ivy") || lowName.contains("pothos") || 
+            emoji == "🌿" || emoji == "🍃" -> {
+                R.drawable.plant_boston_fern
+            }
+            lowName.contains("rose") || lowName.contains("flower") || lowName.contains("lily") || lowName.contains("perennial") || lowName.contains("houseplant") || 
+            emoji == "🌹" || emoji == "🌺" || emoji == "🌸" || emoji == "🌼" || emoji == "🕊️" || emoji == "🪻" || emoji == "🩵" || emoji == "🧡" || emoji == "💙" || emoji == "🤍" -> {
+                R.drawable.plant_english_rose
+            }
+            lowName.contains("herb") || lowName.contains("rosemary") || lowName.contains("lavender") || lowName.contains("thyme") || 
+            emoji == "🌱" -> {
+                R.drawable.plant_rosemary
+            }
+            else -> R.drawable.plant_golden_pothos
+        }
+    }
 }
 
 /**
  * Square photo tile for a plant: shows the real species photo when available,
- * otherwise the emoji fallback on a tinted surface (used for custom plants).
+ * otherwise the realistic fallback photo on a tinted surface.
  */
 @Composable
 fun PlantPhoto(
@@ -115,19 +146,17 @@ fun PlantPhoto(
     emojiFontSize: TextUnit = 24.sp
 ) {
     val imageRes = remember(plantName) { PlantImages.forPlantName(plantName) }
+    val fallbackImageRes = remember(plantName, fallbackEmoji) { PlantImages.getFallbackImage(plantName, fallbackEmoji) }
     Box(
         modifier = modifier.clip(shape).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
         contentAlignment = Alignment.Center
     ) {
-        if (imageRes != null) {
-            Image(
-                painter = painterResource(id = imageRes),
-                contentDescription = "$plantName photo",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
-        } else {
-            Text(fallbackEmoji, fontSize = emojiFontSize, textAlign = TextAlign.Center)
-        }
+        val finalImageRes = imageRes ?: fallbackImageRes
+        Image(
+            painter = painterResource(id = finalImageRes),
+            contentDescription = "$plantName photo",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }

@@ -121,9 +121,9 @@ fun PremiumUpsellScreen(
     // Fall back to static placeholder copy only while the real Play offer is
     // unknown (loading, or debug mock mode) — never claim a trial length
     // that Play Console doesn't actually have configured.
-    val annualPrice = annualOffer?.formattedPrice ?: "$49.99"
+    val annualPrice = annualOffer?.formattedPrice ?: "$49.99 Yearly"
     val annualTrialDays = 3
-    val annualTrialLabel = "$annualTrialDays-Day Free Trial, then $annualPrice/yr"
+    val annualTrialLabel = "$annualTrialDays-Day Free Trial, then $annualPrice"
 
     val monthlyPrice = monthlyOffer?.formattedPrice ?: "$4.99"
     val monthlyTrialDays = 3
@@ -150,37 +150,40 @@ fun PremiumUpsellScreen(
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = selectAnnual,
-                        onClick = { selectAnnual = true }
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                Box {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selectAnnual,
+                            onClick = { selectAnnual = true }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
                             Text("Annual Plan", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Box(
-                                modifier = Modifier
-                                    .background(MaterialTheme.extendedColors.success.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
-                            ) {
-                                Text(
-                                    "20% OFF • BEST VALUE",
-                                    fontSize = 9.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.extendedColors.success
-                                )
-                            }
+                            Text(annualTrialLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         }
-                        Text(annualTrialLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Text(annualPrice, fontWeight = FontWeight.Black, fontSize = 14.sp)
                     }
-                    Text(annualPrice, fontWeight = FontWeight.Black, fontSize = 14.sp)
+
+                    // Best Value badge in the corner
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 8.dp, end = 8.dp)
+                            .background(MaterialTheme.extendedColors.success, RoundedCornerShape(4.dp))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            "BEST VALUE",
+                            fontSize = 8.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White
+                        )
+                    }
                 }
             }
 

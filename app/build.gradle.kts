@@ -19,8 +19,8 @@ android {
     applicationId = "com.aistudio.dreamgardendesigner.fhqpvw"
     minSdk = 24
     targetSdk = 37
-    versionCode = 19
-    versionName = "9.0.1.0"
+    versionCode = 21
+    versionName = "9.0.1.2"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     ndk {

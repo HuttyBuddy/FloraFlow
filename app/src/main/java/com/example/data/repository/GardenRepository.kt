@@ -46,26 +46,6 @@ class GardenRepository(private val gardenDao: GardenDao) {
 
     suspend fun deleteMoodLogById(id: Int) = gardenDao.deleteMoodLogById(id)
 
-    // --- Community ---
-    val allPosts: Flow<List<com.example.data.model.CommunityPost>> = gardenDao.getAllPosts()
-
-    fun getPostById(id: Int): Flow<com.example.data.model.CommunityPost?> = gardenDao.getPostById(id)
-
-    suspend fun insertPost(post: com.example.data.model.CommunityPost): Long = gardenDao.insertPost(post)
-
-    suspend fun updatePostLikes(id: Int, likes: Int, isLiked: Boolean) = gardenDao.updatePostLikes(id, likes, isLiked)
-
-    suspend fun deletePost(id: Int) {
-        gardenDao.deletePostById(id)
-        gardenDao.deleteCommentsByPostId(id)
-    }
-
-    fun getCommentsForPost(postId: Int): Flow<List<com.example.data.model.CommunityComment>> = gardenDao.getCommentsForPost(postId)
-
-    suspend fun insertComment(comment: com.example.data.model.CommunityComment): Long = gardenDao.insertComment(comment)
-
-    suspend fun updateCommentLikes(id: Int, likes: Int, isLiked: Boolean) = gardenDao.updateCommentLikes(id, likes, isLiked)
-
     // --- Care Tasks ---
     val allCareTasks: Flow<List<CareTask>> = gardenDao.getAllCareTasks()
     val pendingCareTasks: Flow<List<CareTask>> = gardenDao.getPendingCareTasks()

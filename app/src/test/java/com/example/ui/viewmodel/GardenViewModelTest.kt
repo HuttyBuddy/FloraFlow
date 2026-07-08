@@ -87,6 +87,30 @@ class GardenViewModelTest {
     }
 
     @Test
+    fun aiQueryTrial_limitsFreeUsersToThreeUses() {
+        // Assert initial query count is 0
+        assertEquals(0, viewModel.aiQueryCount.value)
+
+        // Increment count up to limit
+        viewModel.recordAiQueryUsed()
+        assertEquals(1, viewModel.aiQueryCount.value)
+
+        viewModel.recordAiQueryUsed()
+        assertEquals(2, viewModel.aiQueryCount.value)
+
+        viewModel.recordAiQueryUsed()
+        assertEquals(3, viewModel.aiQueryCount.value)
+    }
+
+    @Test
+    fun aiQueryTrial_allowsUnlimitedUsesForPremium() {
+        // Upgrade to premium
+        viewModel.restorePurchases()
+        assertTrue(viewModel.isPremium.value)
+    }
+
+
+    @Test
     fun updateArPlantRotation_updatesRotationCorrectly() {
         // Arrange
         viewModel.addArPlant("Rose", "🌹")

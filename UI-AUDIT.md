@@ -61,7 +61,7 @@ overwhelming majority — never see it. Add it to the portrait column (collapsib
 ### 5. Illegible micro-typography (below Android's 12sp floor)
 294 hardcoded `fontSize` overrides fight the type scale; the worst are genuinely illegible:
 - **7sp**: `PlannerScreen.kt:1307` ("Eraser")
-- **8sp**: `CommunityDialog.kt:400`, `AiStudioScreen.kt:1455-1567`, `LibraryScreen.kt:906`
+- **8sp**: `AiStudioScreen.kt:1455-1567`, `LibraryScreen.kt:906`
   ("⚠️ Thirsty"), `PlannerScreen.kt:658`
 - **9–10sp**: ~40 more across TherapyChart, CircularBotanicalRhythm, ScoreHistoryChart,
   PremiumUpsellScreen, SubscriptionManagementDialog, nav labels.

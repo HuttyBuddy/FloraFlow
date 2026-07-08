@@ -257,7 +257,7 @@ fun SettingsDialog(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = "v1.0.0-beta | HuttyBuddy",
+                        text = "v9.0.1.2 | HuttyBuddy",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )

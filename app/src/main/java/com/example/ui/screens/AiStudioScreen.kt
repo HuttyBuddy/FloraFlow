@@ -280,11 +280,11 @@ fun AiStudioScreen(
 
     val context = androidx.compose.ui.platform.LocalContext.current
 
-    // Persisted daily quota (not session chat-history count) — matches the
+    // Persisted trial quota (not session chat-history count) — matches the
     // actual gate in GardenViewModel.checkPremiumLimit, so clearing the chat
     // or reopening the screen can't desync the displayed remaining count.
     val userQueriesCount by viewModel.aiQueryCount.collectAsStateWithLifecycle()
-    val aiQueryDailyLimit = viewModel.aiQueryDailyLimit
+    val aiQueryLimit = viewModel.aiQueryLimit
 
     var textInput by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
@@ -713,7 +713,7 @@ fun AiStudioScreen(
             }
 
             // Send message or premium wall trigger section
-            if (!isPremium && (userQueriesCount >= aiQueryDailyLimit)) {
+            if (!isPremium && (userQueriesCount >= aiQueryLimit)) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -786,7 +786,7 @@ fun AiStudioScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "Live consultations remaining: ${(aiQueryDailyLimit - userQueriesCount).coerceAtLeast(0)}/$aiQueryDailyLimit",
+                                text = "Free consultations remaining: ${(aiQueryLimit - userQueriesCount).coerceAtLeast(0)}/$aiQueryLimit",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.secondary,
                                 fontWeight = FontWeight.SemiBold
@@ -1068,7 +1068,7 @@ fun AiStudioScreen(
                 }
 
                 // Chat Input section
-                if (!isPremium && (userQueriesCount >= aiQueryDailyLimit)) {
+                if (!isPremium && (userQueriesCount >= aiQueryLimit)) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1141,7 +1141,7 @@ fun AiStudioScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Live consultations remaining: ${(aiQueryDailyLimit - userQueriesCount).coerceAtLeast(0)}/$aiQueryDailyLimit",
+                                    text = "Free consultations remaining: ${(aiQueryLimit - userQueriesCount).coerceAtLeast(0)}/$aiQueryLimit",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.secondary,
                                     fontWeight = FontWeight.SemiBold

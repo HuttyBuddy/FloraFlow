@@ -829,7 +829,7 @@ fun PersonalizedPaywallScreen(
 
             if (isGreenZone) {
                 val maintenancePerks = listOf(
-                    "Unlimited AI Advisor" to "Get instant expert guidance whenever your space or season changes, with no daily query limit.",
+                    "Unlimited AI Advisor" to "Get instant expert guidance whenever your space or season changes, with no query limit.",
                     "Full Restoration Journal" to "Unlock every binaural soundscape session to keep your stress metrics trending low.",
                     "Progress Trends" to "See your Neural Load history over time and catch small dips before they become setbacks."
                 )

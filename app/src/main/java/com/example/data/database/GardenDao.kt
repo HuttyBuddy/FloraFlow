@@ -93,34 +93,6 @@ interface GardenDao {
     @Query("DELETE FROM care_tasks WHERE plantId IN (SELECT id FROM plants WHERE layoutId = :layoutId)")
     suspend fun deleteCareTasksByLayout(layoutId: Int)
 
-    // --- Community ---
-    @Query("SELECT * FROM community_posts ORDER BY timestamp DESC")
-    fun getAllPosts(): Flow<List<com.example.data.model.CommunityPost>>
-
-    @Query("SELECT * FROM community_posts WHERE id = :id")
-    fun getPostById(id: Int): Flow<com.example.data.model.CommunityPost?>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPost(post: com.example.data.model.CommunityPost): Long
-
-    @Query("UPDATE community_posts SET likes = :likes, isLiked = :isLiked WHERE id = :id")
-    suspend fun updatePostLikes(id: Int, likes: Int, isLiked: Boolean)
-
-    @Query("DELETE FROM community_posts WHERE id = :id")
-    suspend fun deletePostById(id: Int)
-
-    @Query("SELECT * FROM community_comments WHERE postId = :postId ORDER BY timestamp ASC")
-    fun getCommentsForPost(postId: Int): Flow<List<com.example.data.model.CommunityComment>>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertComment(comment: com.example.data.model.CommunityComment): Long
-
-    @Query("UPDATE community_comments SET likes = :likes, isLiked = :isLiked WHERE id = :id")
-    suspend fun updateCommentLikes(id: Int, likes: Int, isLiked: Boolean)
-
-    @Query("DELETE FROM community_comments WHERE postId = :postId")
-    suspend fun deleteCommentsByPostId(postId: Int)
-
     // --- Restoration Logs ---
     @Query("SELECT * FROM restoration_logs ORDER BY timestamp DESC")
     fun getAllRestorationLogs(): Flow<List<RestorationLog>>

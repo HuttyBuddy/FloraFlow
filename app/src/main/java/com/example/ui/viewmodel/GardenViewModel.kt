@@ -12,8 +12,6 @@ import com.example.data.database.GardenDatabase
 import com.example.data.model.*
 import com.example.data.repository.GardenRepository
 import androidx.core.content.edit
-import com.example.data.model.CommunityPost
-import com.example.data.model.CommunityComment
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -69,7 +67,6 @@ class GardenViewModel @JvmOverloads constructor(
     // Reactive database streams
     val allLayouts: StateFlow<List<GardenLayout>>
     val allMoodLogs: StateFlow<List<MoodLog>>
-    val allCommunityPosts: StateFlow<List<CommunityPost>>
     val allCareTasks: StateFlow<List<CareTask>>
     val pendingCareTasks: StateFlow<List<CareTask>>
     val currentWeather: StateFlow<com.example.data.repository.WeatherInfo>
@@ -769,21 +766,17 @@ class GardenViewModel @JvmOverloads constructor(
     // clearing the chat or restarting the app can't reset it, and only
     // incremented after a successful (non-error) AI response so failed
     // requests never cost the user a query.
-    val aiQueryDailyLimit = 3
+    val aiQueryLimit = 3
     private val _aiQueryCount = MutableStateFlow(0)
     val aiQueryCount: StateFlow<Int> = _aiQueryCount.asStateFlow()
 
-    private fun todayDateString(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-
-    private fun currentDailyQueryCount(): Int {
-        val storedDate = sharedPrefs.getString("ai_query_date", "")
-        return if (storedDate == todayDateString()) sharedPrefs.getInt("ai_query_count", 0) else 0
+    private fun currentAiQueryCount(): Int {
+        return sharedPrefs.getInt("ai_query_count", 0)
     }
 
-    private fun recordAiQueryUsed() {
-        val newCount = currentDailyQueryCount() + 1
+    internal fun recordAiQueryUsed() {
+        val newCount = currentAiQueryCount() + 1
         sharedPrefs.edit {
-            putString("ai_query_date", todayDateString())
             putInt("ai_query_count", newCount)
         }
         _aiQueryCount.value = newCount
@@ -909,7 +902,7 @@ class GardenViewModel @JvmOverloads constructor(
         viewModelScope.launch {
             billingManager.subscriptionBillingDate.collect { _subscriptionBillingDate.value = it }
         }
-        _aiQueryCount.value = currentDailyQueryCount()
+        _aiQueryCount.value = currentAiQueryCount()
         val nowRest = System.currentTimeMillis()
         var weekStart = sharedPrefs.getLong("restoration_trial_week_start", 0L)
         if (weekStart == 0L) {
@@ -1004,12 +997,6 @@ class GardenViewModel @JvmOverloads constructor(
                 initialValue = emptyList(),
             )
 
-        allCommunityPosts = repository.allPosts
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5000),
-                initialValue = emptyList(),
-            )
 
         allAssessmentResults = repository.allAssessmentResults
             .stateIn(
@@ -1024,54 +1011,6 @@ class GardenViewModel @JvmOverloads constructor(
                 val currentZip = weatherRepository.getUserLocationZip()
                 weatherRepository.fetchWeather(currentZip)
                 careScheduler.syncCareSchedules()
-                val existingPosts = repository.allPosts.firstOrNull() ?: emptyList()
-                if (existingPosts.isEmpty()) {
-                    val p1Id = repository.insertPost(
-                        CommunityPost(
-                            title = "The Golden Rule of Watering Succulents",
-                            content = "Always wait until the soil is bone dry before watering again. Stick a wooden skewer or your finger about 2 inches deep. If it's damp, hold off! Overwatering is the #1 killer of succulents.",
-                            category = "Tips",
-                            author = "FloraFlow Team",
-                            likes = 12
-                        )
-                    ).toInt()
-                    repository.insertComment(CommunityComment(postId = p1Id, author = "FloraFlow Support", content = "Totally agree. In winter, I only water mine once a month and they thrive!", likes = 5))
-                    repository.insertComment(CommunityComment(postId = p1Id, author = "FloraFlow Expert", content = "I learned this the hard way after losing my first zebra plant. Great advice!", likes = 3))
-
-                    val p2Id = repository.insertPost(
-                        CommunityPost(
-                            title = "My Monstera Deliciosa got its first fenestration!",
-                            content = "I've been keeping it in bright, indirect light near my east-facing window and feeding it dilute fertilizer once a month. The leaf just uncurled this morning and it's perfect! Don't lose hope if yours takes a while; consistency is key.",
-                            category = "Experiences",
-                            author = "FloraFlow Expert",
-                            likes = 24
-                        )
-                    ).toInt()
-                    repository.insertComment(CommunityComment(postId = p2Id, author = "FloraFlow Ally", content = "Congratulations! It's the best feeling ever. Can't wait for my propagation to fenestrate.", likes = 6))
-
-                    val p3Id = repository.insertPost(
-                        CommunityPost(
-                            title = "White spots on Rose leaves - help?",
-                            content = "My miniature rose bush has developed a dusty white coating on its lower leaves. Is this powdery mildew? I'm watering it from the top daily. Any tips to treat it organically would be super appreciated!",
-                            category = "Questions",
-                            author = "Gardening Novice",
-                            likes = 5
-                        )
-                    ).toInt()
-                    repository.insertComment(CommunityComment(postId = p3Id, author = "FloraFlow Botanist", content = "Definitely powdery mildew! Try to water the soil directly, not the leaves. Wet leaves invite spores.", likes = 8))
-                    repository.insertComment(CommunityComment(postId = p3Id, author = "FloraFlow Advisor", content = "You can spray it with a mixture of milk and water (40/60 ratio) in direct sunlight. It works as a natural fungicide!", likes = 10))
-                    repository.insertComment(CommunityComment(postId = p3Id, author = "FloraFlow Coach", content = "Remember to prune the affected leaves and dispose of them (don't compost them) so the spores don't spread.", likes = 4))
-
-                    val p4Id = repository.insertPost(
-                        CommunityPost(
-                            title = "Mindful Pruning: How to Connect with Your Plants",
-                            content = "Pruning isn't just about maintenance; it's a form of meditation. Approach your plant with quiet focus. Use clean shears, and as you cut dead stems, take a slow breath. Visualize making space for new, healthy growth in your own life.",
-                            category = "Tips",
-                            author = "FloraFlow Coach",
-                            likes = 18
-                        )
-                    ).toInt()
-                }
 
                 val existing = repository.allLayouts.firstOrNull() ?: emptyList()
                 if (existing.isEmpty()) {
@@ -1458,7 +1397,7 @@ class GardenViewModel @JvmOverloads constructor(
         recordAiQuery(message)
         
         val upsellMsg = "🔒 Free AI Advisor biophilic limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
-        if (checkPremiumLimit(message, upsellMsg, 3)) return
+        if (checkPremiumLimit(message, upsellMsg, aiQueryLimit)) return
 
         val isDiagRequest = message.contains("Space Diagnosis", ignoreCase = true) || _isSpaceDiagnosisMode.value
         if (isDiagRequest) {
@@ -1569,7 +1508,7 @@ class GardenViewModel @JvmOverloads constructor(
         
         val userQuery = "Suggest some visual additions and companion compatibility checks!"
         val upsellMsg = "🔒 Free AI Advisor consultation limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock advanced layout analysis, visual companion additions, and expert styling advice! 🌸✨"
-        if (checkPremiumLimit(userQuery, upsellMsg, 3)) return
+        if (checkPremiumLimit(userQuery, upsellMsg, aiQueryLimit)) return
 
         val plantsListStr = _activePlants.value.joinToString(", ") { it.name }
         val prompt = "I have a garden layout styled as a '${layout.style}' in a '${layout.climate}' climate region. " +
@@ -1593,7 +1532,7 @@ class GardenViewModel @JvmOverloads constructor(
 
         val userQuery = "Generate a companion design blueprint for my space!"
         val upsellMsg = "🔒 Free AI Advisor consultation limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock AI garden layout generator, instant database seeding, and dynamic blueprinting! 🌸✨"
-        if (checkPremiumLimit(userQuery, upsellMsg, 3)) return
+        if (checkPremiumLimit(userQuery, upsellMsg, aiQueryLimit)) return
 
         val prompt = buildLayoutSuggestionPrompt(layout)
 
@@ -1619,7 +1558,7 @@ class GardenViewModel @JvmOverloads constructor(
     private fun checkPremiumLimit(userQuery: String, upsellMessage: String, limitCount: Int): Boolean {
         if (_isPremium.value) return false
 
-        val queryCount = currentDailyQueryCount()
+        val queryCount = currentAiQueryCount()
         _aiQueryCount.value = queryCount
 
         if (queryCount >= limitCount) {
@@ -1859,123 +1798,6 @@ class GardenViewModel @JvmOverloads constructor(
     fun acceptRatePrompt() {
         _showInAppRatePrompt.value = false
         sharedPrefs.edit { putBoolean("has_rated_or_declined", true) }
-    }
-
-    // --- Community Actions ---
-    fun createPost(title: String, content: String, category: String, author: String, gridString: String = "") {
-        viewModelScope.launch(ioDispatcher) {
-            val post = CommunityPost(
-                title = title,
-                content = content,
-                category = category,
-                author = author.ifBlank { "Anonymous Gardener" },
-                gridString = gridString
-            )
-            repository.insertPost(post)
-        }
-    }
-
-    fun importLayoutGrid(importedGridString: String) {
-        val current = _activeLayout.value ?: return
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.updateLayoutGrid(current.id, importedGridString)
-            _activeLayout.value = current.copy(gridString = importedGridString)
-            saveGridSnapshot(current.id, importedGridString)
-            
-            val items = parseGridString(importedGridString)
-            val uniquePlantNames = items.map { it.plantName }.distinct()
-            
-            val existingActivePlants = repository.getPlantsForLayout(current.id).first()
-            val existingNames = existingActivePlants.map { it.name }.toSet()
-            
-            val newPlantsToInsert = mutableListOf<Plant>()
-            for (plantName in uniquePlantNames) {
-                if (plantName.isNotBlank() && plantName != "Empty" && !existingNames.contains(plantName)) {
-                    val tpl = ClimatePlants.ALL_TEMPLATES.find { it.name.equals(plantName, ignoreCase = true) }
-                    val newPlant = if (tpl != null) {
-                        Plant(
-                            layoutId = current.id,
-                            name = tpl.name,
-                            type = tpl.type,
-                            careSpring = tpl.careSpring,
-                            careSummer = tpl.careSummer,
-                            careAutumn = tpl.careAutumn,
-                            careWinter = tpl.careWinter,
-                            soilType = tpl.soilType,
-                            sunlight = tpl.sunlight,
-                            growthProgress = 20,
-                            matureSize = tpl.matureSize,
-                            wateringNeeds = tpl.wateringNeeds,
-                            bloomTime = tpl.bloomTime,
-                            pestsDiseases = tpl.pestsDiseases
-                        )
-                    } else {
-                        Plant(
-                            layoutId = current.id,
-                            name = plantName,
-                            type = "Flower",
-                            careSpring = "Water once a week, expose to partial shade.",
-                            careSummer = "Water twice a week, expose to full sun.",
-                            careAutumn = "Water once a week, shield from frost.",
-                            careWinter = "Water once a month, keep warm indoors.",
-                            soilType = "Loamy",
-                            sunlight = "Full Sun",
-                            growthProgress = 20,
-                            matureSize = "Medium",
-                            wateringNeeds = "Moderate",
-                            bloomTime = "Summer",
-                            pestsDiseases = "Aphids"
-                        )
-                    }
-                    newPlantsToInsert.add(newPlant)
-                }
-            }
-            if (newPlantsToInsert.isNotEmpty()) {
-                // ⚡ Bolt Performance Optimization:
-                // Use batch insertion to avoid the Room Database N+1 query problem.
-                // This executes a single database transaction instead of multiple
-                // separate transactions, reducing I/O overhead significantly.
-                repository.insertPlants(newPlantsToInsert)
-            }
-            refreshWidget()
-        }
-    }
-
-    fun toggleLikePost(postId: Int, currentLikes: Int, currentIsLiked: Boolean) {
-        viewModelScope.launch(ioDispatcher) {
-            val newIsLiked = !currentIsLiked
-            val newLikes = if (newIsLiked) currentLikes + 1 else (currentLikes - 1).coerceAtLeast(0)
-            repository.updatePostLikes(postId, newLikes, newIsLiked)
-        }
-    }
-
-    fun deletePost(postId: Int) {
-        viewModelScope.launch(ioDispatcher) {
-            repository.deletePost(postId)
-        }
-    }
-
-    fun getCommentsForPost(postId: Int): Flow<List<CommunityComment>> {
-        return repository.getCommentsForPost(postId)
-    }
-
-    fun addComment(postId: Int, author: String, content: String) {
-        viewModelScope.launch(ioDispatcher) {
-            val comment = CommunityComment(
-                postId = postId,
-                author = author.ifBlank { "Anonymous Gardener" },
-                content = content
-            )
-            repository.insertComment(comment)
-        }
-    }
-
-    fun toggleLikeComment(commentId: Int, currentLikes: Int, currentIsLiked: Boolean) {
-        viewModelScope.launch(ioDispatcher) {
-            val newIsLiked = !currentIsLiked
-            val newLikes = if (newIsLiked) currentLikes + 1 else (currentLikes - 1).coerceAtLeast(0)
-            repository.updateCommentLikes(commentId, newLikes, newIsLiked)
-        }
     }
 
     // --- Care Scheduler & Weather Integration Methods ---

@@ -54,7 +54,6 @@ All notable changes to the FloraFlow project will be documented in this file.
 ## [8] - 2026-06-11
 
 ### Added
-- **Community Hub**: New interactive screen for garden enthusiasts to connect and share tips.
 - **Support Center**: Integrated Help screen with FAQs and direct support channels.
 - **Engagement Tools**: Added In-App Rating prompt to collect valuable user feedback.
 - **AR Plant Rendering**: Completed the AR Lens experience with high-fidelity 3D plant models.

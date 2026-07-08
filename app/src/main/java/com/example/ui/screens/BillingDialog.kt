@@ -59,14 +59,14 @@ fun BillingDialog(
             price = "$4.99",
             period = "month",
             trial = "3-Day Free Trial",
-            description = "Try premium features: full Neural Restoration Journal access, synthesized brainwave soundscapes, and 3 free Gemini AI expert queries.",
+            description = "Unlocks unlimited Gemini-Powered AI advice, full Neural Restoration Journal access, and synthesized brainwave soundscapes.",
             isPopular = false,
             isAnnual = false
         ),
         BillingPlan(
             name = "FloraFlow PRO Annual",
-            price = "$49.99",
-            period = "year",
+            price = "$49.99 Yearly",
+            period = "",
             trial = "3-Day Free Trial",
             description = "Save 20%! Unlocks unlimited Gemini-Powered AI advice, full Eco-Acoustic journal chimes, stress metric logs, and advanced layouts.",
             isPopular = true,
@@ -424,11 +424,13 @@ fun PlanSelectionStep(
                                     fontWeight = FontWeight.Black,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
-                                Text(
-                                    text = "/ ${plan.period}",
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                if (plan.period.isNotEmpty()) {
+                                    Text(
+                                        text = "/ ${plan.period}",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
 
@@ -457,7 +459,7 @@ fun PlanSelectionStep(
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = if (plan.isAnnual) "20% OFF • BEST VALUE" else "POPULAR",
+                            text = if (plan.isAnnual) "BEST VALUE" else "POPULAR",
                             fontSize = 9.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.White,

@@ -836,7 +836,7 @@ fun PlannerScreen(
                                                 .weight(1f)
                                                 .aspectRatio(1f)
                                                 .scale(scaleVal)
-                                                .clip(RoundedCornerShape(16.dp))
+                                                .clip(RoundedCornerShape(12.dp))
                                                 .border(
                                                     width = if (isHighlighted) 3.dp else if (hasConflict) 2.2.dp else if (hasSynergy) 2.2.dp else if (item != null) 2.dp else 1.dp,
                                                     color = if (isHighlighted) Color(0xFFF57F17)
@@ -844,7 +844,7 @@ fun PlannerScreen(
                                                     else if (hasSynergy) Color(0xFF4CAF50)
                                                     else if (item != null) MaterialTheme.colorScheme.primary
                                                     else currentSoilTheme.outlineColor.copy(alpha = 0.4f),
-                                                    shape = RoundedCornerShape(16.dp)
+                                                    shape = RoundedCornerShape(12.dp)
                                                 )
                                                 .clickable {
                                                     if (isUprootModeActive) {
@@ -1085,7 +1085,7 @@ fun PlannerScreen(
                                                 ) {
                                                     Box(
                                                         modifier = Modifier
-                                                            .size(38.dp)
+                                                            .size(32.dp)
                                                             .border(
                                                                 width = 1.dp,
                                                                 color = if (hasConflict) Color(0xFFE53935).copy(alpha = 0.4f)
@@ -1104,12 +1104,12 @@ fun PlannerScreen(
                                                         PlantPhoto(
                                                             plantName = item.plantName,
                                                             fallbackEmoji = emoji,
-                                                            modifier = Modifier.size(34.dp),
+                                                            modifier = Modifier.size(28.dp),
                                                             shape = CircleShape,
-                                                            emojiFontSize = 22.sp
+                                                            emojiFontSize = 18.sp
                                                         )
                                                     }
-                                                    Spacer(modifier = Modifier.height(2.dp))
+                                                    Spacer(modifier = Modifier.height(1.dp))
                                                     Row(
                                                         verticalAlignment = Alignment.CenterVertically,
                                                         horizontalArrangement = Arrangement.Center

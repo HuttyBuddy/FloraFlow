@@ -11,11 +11,9 @@ import com.example.data.model.MoodLog
 import com.example.data.model.Plant
 import com.example.data.model.CareTask
 import com.example.data.model.RestorationLog
-import com.example.data.model.CommunityPost
-import com.example.data.model.CommunityComment
 import com.example.data.model.AssessmentResult
 
-@Database(entities = [GardenLayout::class, Plant::class, MoodLog::class, CommunityPost::class, CommunityComment::class, CareTask::class, RestorationLog::class, AssessmentResult::class], version = 7, exportSchema = true)
+@Database(entities = [GardenLayout::class, Plant::class, MoodLog::class, CareTask::class, RestorationLog::class, AssessmentResult::class], version = 8, exportSchema = true)
 abstract class GardenDatabase : RoomDatabase() {
     abstract fun gardenDao(): GardenDao
 
@@ -44,7 +42,13 @@ abstract class GardenDatabase : RoomDatabase() {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `assessment_results` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` INTEGER NOT NULL, `score` INTEGER NOT NULL, `lowestCategories` TEXT NOT NULL)")
             }
         }
-        val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_6_7)
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("DROP TABLE IF EXISTS community_posts")
+                db.execSQL("DROP TABLE IF EXISTS community_comments")
+            }
+        }
+        val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_6_7, MIGRATION_7_8)
 
         fun getDatabase(context: Context): GardenDatabase {
             return INSTANCE ?: synchronized(this) {
