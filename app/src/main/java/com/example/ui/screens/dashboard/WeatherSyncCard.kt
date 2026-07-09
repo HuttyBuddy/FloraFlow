@@ -192,7 +192,7 @@ fun WeatherSyncCard(
                 ) {
                     Icon(Icons.Default.WaterDrop, contentDescription = null, tint = themeColor, modifier = Modifier.size(18.dp))
                     Text(
-                        text = "${weather.humidity.toInt()}% Hum",
+                        text = "${weather.humidity.toInt()}% Humidity",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color(0xFF1D3C28)
