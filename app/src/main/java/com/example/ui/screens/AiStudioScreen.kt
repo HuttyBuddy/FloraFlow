@@ -58,6 +58,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -81,39 +84,35 @@ data class AttachedImage(
     val base64: String
 )
 
-fun convertUriToBase64(context: android.content.Context, uri: android.net.Uri): String? {
-    return try {
-        val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-        val originalBitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
-        inputStream.close()
-        if (originalBitmap == null) return null
-        
-        val maxDimension = 1024
-        val width = originalBitmap.width
-        val height = originalBitmap.height
-        val scaledBitmap = if (width > maxDimension || height > maxDimension) {
-            val ratio = width.toFloat() / height.toFloat()
-            val newWidth = if (ratio > 1) maxDimension else (maxDimension * ratio).toInt()
-            val newHeight = if (ratio > 1) (maxDimension / ratio).toInt() else maxDimension
-            android.graphics.Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true)
-        } else {
-            originalBitmap
+suspend fun convertUriToBase64(context: android.content.Context, uri: android.net.Uri): String? {
+    return withContext(Dispatchers.IO) {
+        try {
+            val imageLoader = coil.ImageLoader(context)
+            val request = coil.request.ImageRequest.Builder(context)
+                .data(uri)
+                .size(1024)
+                .allowHardware(false)
+                .build()
+            val result = imageLoader.execute(request)
+            if (result is coil.request.SuccessResult) {
+                val drawable = result.drawable
+                if (drawable is android.graphics.drawable.BitmapDrawable) {
+                    val bitmap = drawable.bitmap
+                    val outputStream = java.io.ByteArrayOutputStream()
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
+                    val compressedBytes = outputStream.toByteArray()
+                    outputStream.close()
+                    android.util.Base64.encodeToString(compressedBytes, android.util.Base64.NO_WRAP)
+                } else {
+                    null
+                }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("AiStudioScreen", "Error downloading/decoding image: ${e.message}")
+            null
         }
-        
-        val outputStream = java.io.ByteArrayOutputStream()
-        scaledBitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 80, outputStream)
-        val compressedBytes = outputStream.toByteArray()
-        outputStream.close()
-        
-        if (scaledBitmap != originalBitmap) {
-            scaledBitmap.recycle()
-        }
-        originalBitmap.recycle()
-        
-        android.util.Base64.encodeToString(compressedBytes, android.util.Base64.NO_WRAP)
-    } catch (e: Exception) {
-        android.util.Log.e("AiStudioScreen", "Error downscaling image: ${e.message}")
-        null
     }
 }
 
@@ -279,6 +278,7 @@ fun AiStudioScreen(
     val isAssessmentSkipped by viewModel.isAssessmentSkipped.collectAsStateWithLifecycle()
 
     val context = androidx.compose.ui.platform.LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     // Persisted trial quota (not session chat-history count) — matches the
     // actual gate in GardenViewModel.checkPremiumLimit, so clearing the chat
@@ -301,13 +301,15 @@ fun AiStudioScreen(
     ) { success ->
         if (success) {
             tempPhotoUri?.let { uri ->
-                val base64 = convertUriToBase64(context, uri)
-                if (base64 != null) {
-                    attachedImage = AttachedImage(
-                        name = uri.lastPathSegment ?: "Camera Photo",
-                        mimeType = getUriMimeType(context, uri),
-                        base64 = base64
-                    )
+                coroutineScope.launch {
+                    val base64 = convertUriToBase64(context, uri)
+                    if (base64 != null) {
+                        attachedImage = AttachedImage(
+                            name = uri.lastPathSegment ?: "Camera Photo",
+                            mimeType = getUriMimeType(context, uri),
+                            base64 = base64
+                        )
+                    }
                 }
             }
         }
@@ -318,20 +320,22 @@ fun AiStudioScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri: android.net.Uri? ->
         if (uri != null) {
-            val base64 = convertUriToBase64(context, uri)
-            if (base64 != null) {
-                var displayName = "Gallery Photo"
-                context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                    val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                    if (nameIndex != -1 && cursor.moveToFirst()) {
-                        displayName = cursor.getString(nameIndex)
+            coroutineScope.launch {
+                val base64 = convertUriToBase64(context, uri)
+                if (base64 != null) {
+                    var displayName = "Gallery Photo"
+                    context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                        val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                        if (nameIndex != -1 && cursor.moveToFirst()) {
+                            displayName = cursor.getString(nameIndex)
+                        }
                     }
+                    attachedImage = AttachedImage(
+                        name = displayName,
+                        mimeType = getUriMimeType(context, uri),
+                        base64 = base64
+                    )
                 }
-                attachedImage = AttachedImage(
-                    name = displayName,
-                    mimeType = getUriMimeType(context, uri),
-                    base64 = base64
-                )
             }
         }
         showAttachmentDialog = false
