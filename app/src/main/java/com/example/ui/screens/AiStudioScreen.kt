@@ -684,8 +684,8 @@ fun AiStudioScreen(
                                         if (isUser) {
                                             Brush.horizontalGradient(
                                                 listOf(
-                                                    Color(0xFF386641),
-                                                    Color(0xFF6A994E)
+                                                    Color(0xFF1F483E),
+                                                    Color(0xFF384F45)
                                                 )
                                             )
                                         } else {
@@ -699,7 +699,7 @@ fun AiStudioScreen(
                                     )
                                     .border(
                                         width = 1.dp,
-                                        color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                        color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                                         shape = RoundedCornerShape(
                                             topStart = 16.dp,
                                             topEnd = 16.dp,
@@ -1530,6 +1530,131 @@ fun BotanistProfileHeader(
                             modifier = Modifier.size(16.dp)
                         )
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LiveBotanistVoiceSynth(
+    isGenerating: Boolean
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
+
+    val infiniteTransition = rememberInfiniteTransition(label = "voiceSynth")
+    val offset by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 2f * PI.toFloat(),
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "sineOffset"
+    )
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .padding(vertical = 2.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.12f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.weight(1.4f)
+            ) {
+                Icon(
+                    imageVector = if (isGenerating) Icons.Default.Mic else Icons.Default.Hearing,
+                    contentDescription = "Voice synthesis feed",
+                    tint = if (isGenerating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.size(18.dp)
+                )
+                Column {
+                    Text(
+                        text = if (isGenerating) "Julian is analyzing microclimates..." else "MICROCLIMATE SYSTEM FEED STANDBY",
+                        fontSize = 8.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isGenerating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
+                        letterSpacing = 0.3.sp
+                    )
+                    Text(
+                        text = if (isGenerating) "Transmitting direct synaptic plant feedback..." else "Live monitoring active...",
+                        fontSize = 8.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Canvas(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .padding(vertical = 14.dp)
+            ) {
+                val waveWidth = size.width
+                val waveHeight = size.height
+                val midY = waveHeight / 2f
+                val baseAmplitude = if (isGenerating) 12f else 3f
+                val frequency = if (isGenerating) 0.08f else 0.04f
+
+                // Draw Wave 3 (Background Layer)
+                val points3 = mutableListOf<Offset>()
+                for (x in 0..waveWidth.toInt() step 3) {
+                    val y = midY + (baseAmplitude * 0.4f) * sin((x * frequency) + offset - 1f)
+                    points3.add(Offset(x.toFloat(), y))
+                }
+                for (i in 0 until points3.size - 1) {
+                    drawLine(
+                        color = secondaryColor.copy(alpha = 0.2f),
+                        start = points3[i],
+                        end = points3[i + 1],
+                        strokeWidth = 1.5f,
+                        cap = StrokeCap.Round
+                    )
+                }
+
+                // Draw Wave 2 (Middle Layer)
+                val points2 = mutableListOf<Offset>()
+                for (x in 0..waveWidth.toInt() step 2) {
+                    val y = midY + (baseAmplitude * 0.7f) * sin((x * frequency) + offset + 1.5f)
+                    points2.add(Offset(x.toFloat(), y))
+                }
+                for (i in 0 until points2.size - 1) {
+                    drawLine(
+                        color = primaryColor.copy(alpha = 0.4f),
+                        start = points2[i],
+                        end = points2[i + 1],
+                        strokeWidth = 2.2f,
+                        cap = StrokeCap.Round
+                    )
+                }
+
+                // Draw Wave 1 (Foreground Layer)
+                val points1 = mutableListOf<Offset>()
+                for (x in 0..waveWidth.toInt() step 2) {
+                    val y = midY + baseAmplitude * sin((x * frequency) + offset)
+                    points1.add(Offset(x.toFloat(), y))
+                }
+                for (i in 0 until points1.size - 1) {
+                    drawLine(
+                        color = if (isGenerating) primaryColor else secondaryColor.copy(alpha = 0.8f),
+                        start = points1[i],
+                        end = points1[i + 1],
+                        strokeWidth = if (isGenerating) 3.5f else 1.8f,
+                        cap = StrokeCap.Round
+                    )
                 }
             }
         }

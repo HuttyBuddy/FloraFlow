@@ -148,6 +148,7 @@ fun LibraryScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f), RoundedCornerShape(24.dp))
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
                 .padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -156,6 +157,11 @@ fun LibraryScreen(
                     .weight(1f)
                     .clip(RoundedCornerShape(20.dp))
                     .background(if (selectedTabState == 0) MaterialTheme.colorScheme.primary else Color.Transparent)
+                    .then(
+                        if (selectedTabState == 0) {
+                            Modifier.border(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                        } else Modifier
+                    )
                     .clickable { selectedTabState = 0 }
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center
@@ -185,6 +191,11 @@ fun LibraryScreen(
                     .weight(1f)
                     .clip(RoundedCornerShape(20.dp))
                     .background(if (selectedTabState == 1) MaterialTheme.colorScheme.primary else Color.Transparent)
+                    .then(
+                        if (selectedTabState == 1) {
+                            Modifier.border(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                        } else Modifier
+                    )
                     .clickable { selectedTabState = 1 }
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center

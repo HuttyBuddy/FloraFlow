@@ -156,7 +156,57 @@ fun InteractiveTherapyChart(
                     )
                 )
 
-                // 2. Draw Wellness Curve (Cubic S-curves)
+                // Draw Wellness Area Gradient
+                val pathWellnessArea = Path().apply {
+                    if (pointsWellness.isNotEmpty()) {
+                        moveTo(pointsWellness[0].x, paddingY + chartHeight)
+                        lineTo(pointsWellness[0].x, pointsWellness[0].y)
+                        for (i in 0 until pointsWellness.size - 1) {
+                            val pStart = pointsWellness[i]
+                            val pEnd = pointsWellness[i + 1]
+                            val cp1 = Offset((pStart.x + pEnd.x) / 2f, pStart.y)
+                            val cp2 = Offset((pStart.x + pEnd.x) / 2f, pEnd.y)
+                            cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, pEnd.x, pEnd.y)
+                        }
+                        lineTo(pointsWellness.last().x, paddingY + chartHeight)
+                        close()
+                    }
+                }
+                drawPath(
+                    path = pathWellnessArea,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(secondaryColor.copy(alpha = 0.15f), Color.Transparent),
+                        startY = paddingY,
+                        endY = paddingY + chartHeight
+                    )
+                )
+
+                // Draw Garden Growth Area Gradient
+                val pathGrowthArea = Path().apply {
+                    if (pointsGrowth.isNotEmpty()) {
+                        moveTo(pointsGrowth[0].x, paddingY + chartHeight)
+                        lineTo(pointsGrowth[0].x, pointsGrowth[0].y)
+                        for (i in 0 until pointsGrowth.size - 1) {
+                            val pStart = pointsGrowth[i]
+                            val pEnd = pointsGrowth[i + 1]
+                            val cp1 = Offset((pStart.x + pEnd.x) / 2f, pStart.y)
+                            val cp2 = Offset((pStart.x + pEnd.x) / 2f, pEnd.y)
+                            cubicTo(cp1.x, cp1.y, cp2.x, cp2.y, pEnd.x, pEnd.y)
+                        }
+                        lineTo(pointsGrowth.last().x, paddingY + chartHeight)
+                        close()
+                    }
+                }
+                drawPath(
+                    path = pathGrowthArea,
+                    brush = Brush.verticalGradient(
+                        colors = listOf(primaryColor.copy(alpha = 0.15f), Color.Transparent),
+                        startY = paddingY,
+                        endY = paddingY + chartHeight
+                    )
+                )
+
+                // 2. Draw Wellness Curve (Cubic S-curves) with soft Glow
                 val pathWellness = Path().apply {
                     if (pointsWellness.isNotEmpty()) {
                         moveTo(pointsWellness[0].x, pointsWellness[0].y)
@@ -171,11 +221,16 @@ fun InteractiveTherapyChart(
                 }
                 drawPath(
                     path = pathWellness,
+                    color = secondaryColor.copy(alpha = 0.25f),
+                    style = Stroke(width = 12f, cap = StrokeCap.Round)
+                )
+                drawPath(
+                    path = pathWellness,
                     color = secondaryColor,
                     style = Stroke(width = 5f, cap = StrokeCap.Round)
                 )
 
-                // 3. Draw Garden Growth Curve (Cubic S-curves)
+                // 3. Draw Garden Growth Curve (Cubic S-curves) with soft Glow
                 val pathGrowth = Path().apply {
                     if (pointsGrowth.isNotEmpty()) {
                         moveTo(pointsGrowth[0].x, pointsGrowth[0].y)
@@ -188,6 +243,11 @@ fun InteractiveTherapyChart(
                         }
                     }
                 }
+                drawPath(
+                    path = pathGrowth,
+                    color = primaryColor.copy(alpha = 0.25f),
+                    style = Stroke(width = 12f, cap = StrokeCap.Round)
+                )
                 drawPath(
                     path = pathGrowth,
                     color = primaryColor,

@@ -269,7 +269,7 @@ class MainActivity : ComponentActivity() {
                                         }
                                     },
                                     colors = TopAppBarDefaults.topAppBarColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                        containerColor = MaterialTheme.colorScheme.background
                                     )
                                 )
                             },
@@ -284,7 +284,7 @@ class MainActivity : ComponentActivity() {
                                 BoxWithConstraints(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                                        .background(MaterialTheme.colorScheme.surface)
                                         .navigationBarsPadding()
                                         .height(80.dp)
                                         .testTag("app_navigation_bar")

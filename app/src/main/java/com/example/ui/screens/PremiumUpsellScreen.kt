@@ -54,14 +54,13 @@ fun PremiumUpsellScreen(
     val crownBadge = @Composable {
         Box(
             modifier = Modifier
-                .size(80.dp)
+                .size(88.dp)
+                .border(2.dp, Brush.horizontalGradient(listOf(Color(0xFFFFD54F), Color(0xFFFFB300))), CircleShape)
+                .padding(4.dp)
                 .clip(CircleShape)
                 .background(
-                    Brush.linearGradient(
-                        colors = listOf(
-                            MaterialTheme.extendedColors.premiumGold,
-                            MaterialTheme.extendedColors.premiumGold.copy(alpha = 0.6f)
-                        )
+                    Brush.verticalGradient(
+                        colors = listOf(Color(0xFFFFF8E1), Color(0xFFFFECB3))
                     )
                 ),
             contentAlignment = Alignment.Center
@@ -69,8 +68,8 @@ fun PremiumUpsellScreen(
             Icon(
                 Icons.Default.WorkspacePremium,
                 contentDescription = "Premium Badge",
-                modifier = Modifier.size(48.dp),
-                tint = Color.White
+                modifier = Modifier.size(44.dp),
+                tint = Color(0xFFFFB300)
             )
         }
     }
@@ -222,12 +221,36 @@ fun PremiumUpsellScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            FloraFlowButton(
-                text = if (selectedTrialDays > 0) "Start $selectedTrialDays-Day Free Trial" else "Subscribe Now",
+            Button(
                 onClick = { onUpgradeClick(selectAnnual) },
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = Icons.Default.AutoAwesome
-            )
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(Color(0xFFFFD54F), Color(0xFFFFB300))
+                        ),
+                        shape = RoundedCornerShape(28.dp)
+                    ),
+                shape = RoundedCornerShape(28.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Transparent
+                )
+            ) {
+                Icon(
+                    Icons.Default.AutoAwesome,
+                    contentDescription = null,
+                    tint = Color(0xFF4A2B00),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (selectedTrialDays > 0) "Start $selectedTrialDays-Day Free Trial" else "Subscribe Now",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF4A2B00)
+                )
+            }
         }
     }
 

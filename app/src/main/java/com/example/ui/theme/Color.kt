@@ -1,6 +1,7 @@
 package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 
 // --- Biophilic Minimalism Light Palette (Product Sheet Aligned) ---
 val BiophilicBg = Color(0xFFFDF5E6)          // Pale Cream - Sunlit linen canvas
@@ -55,3 +56,19 @@ val OnWarningAmberDark = Color(0xFF4E2600)
 val ErrorRedDark = Color(0xFFE57373)
 val OnErrorRedDark = Color(0xFF4A0000)
 
+// --- Premium Redesign Gradients & Brushes ---
+val PremiumGoldGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFFE5C060), Color(0xFFC59F3F))
+)
+
+val PremiumEmeraldGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFF1F483E), Color(0xFF384F45))
+)
+
+val PremiumDarkEmeraldGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFFACCFC6), Color(0xFF88BDB3))
+)
+
+val PremiumGoldBorderBrush = Brush.linearGradient(
+    colors = listOf(Color(0xFFFFDF00), Color(0xFFD4AF37), Color(0xFFFFDF00))
+)

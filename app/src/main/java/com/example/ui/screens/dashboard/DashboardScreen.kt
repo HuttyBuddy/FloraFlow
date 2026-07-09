@@ -329,18 +329,19 @@ fun DashboardScreen(
                     viewModel.setCurrentTab(3) // AI Advisor tab
                     viewModel.sendAiChatMessage("I want to run a detailed Space Diagnosis of my environment.")
                 }
-                .testTag("dashboard_space_diagnosis_card"),
+                .testTag("dashboard_space_diagnosis_card")
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary,
+                            MaterialTheme.colorScheme.secondary
+                        )
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+                ),
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.7f)),
-            border = BorderStroke(
-                1.5.dp,
-                Brush.horizontalGradient(
-                    listOf(
-                        MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-                    )
-                )
-            )
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
         ) {
             Row(
                 modifier = Modifier
@@ -352,13 +353,13 @@ fun DashboardScreen(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.tertiary),
+                        .background(MaterialTheme.colorScheme.onPrimary),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.AutoMirrored.Filled.ManageSearch,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onTertiary,
+                        tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -368,18 +369,18 @@ fun DashboardScreen(
                         text = "Conversational Space Diagnosis",
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                     Text(
                         text = "Let Dr. Julian guide you through an audit of the state of your biophilic space",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f)
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
                     )
                 }
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.tertiary,
+                    tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -429,7 +430,7 @@ fun DashboardScreen(
                             "Your space is ready to be planted"
                         },
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
                     )
                 }
             }
@@ -510,7 +511,7 @@ fun DashboardScreen(
                     },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.2.dp, Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f), Color.Transparent)))
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             ) {
                 Column(
                     modifier = Modifier.padding(14.dp),
@@ -553,7 +554,7 @@ fun DashboardScreen(
                     },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.2.dp, Brush.verticalGradient(listOf(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f), Color.Transparent)))
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             ) {
                 Column(
                     modifier = Modifier.padding(14.dp),
@@ -597,7 +598,7 @@ fun DashboardScreen(
                     },
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.2.dp, Brush.verticalGradient(listOf(MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f), Color.Transparent)))
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             ) {
                 Column(
                     modifier = Modifier.padding(14.dp),

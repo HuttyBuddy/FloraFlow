@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
@@ -48,7 +49,6 @@ import com.example.R
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.ui.graphics.Brush
 
 enum class AssessmentScreenState {
     SPLASH, QUESTION, CALCULATING, RESULT, PERSONALIZED_PAYWALL, STEPS
@@ -190,7 +190,14 @@ fun OnboardingScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(BiophilicPrimary) // Soothing forest green brand color
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF0C2417), // Deep midnight forest green
+                        Color(0xFF1B3C25)  // Rich botanical green
+                    )
+                )
+            )
     ) {
         AnimatedContent(
             targetState = screenState,
@@ -558,7 +565,14 @@ fun CalculatingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BiophilicPrimary),
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF0C2417),
+                        Color(0xFF1B3C25)
+                    )
+                )
+            ),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -594,18 +608,39 @@ fun ResultScreen(
     score: Int,
     onSeeSteps: () -> Unit
 ) {
+    data class ZoneDetails(
+        val category: String,
+        val label: String,
+        val color: Color,
+        val brush: Brush
+    )
     val zoneInfo = remember(score) {
         when (score) {
-            in 15..20 -> Triple("GREEN ZONE", "LOW NEURAL LOAD", Color(0xFF1B4A2F))
-            in 8..14 -> Triple("YELLOW ZONE", "MODERATE NEURAL LOAD", Color(0xFF825E1B))
-            else -> Triple("RED ZONE", "HIGH NEURAL LOAD", Color(0xFF702123))
+            in 15..20 -> ZoneDetails(
+                "GREEN ZONE", 
+                "LOW NEURAL LOAD", 
+                Color(0xFF1B4A2F),
+                Brush.verticalGradient(listOf(Color(0xFF0F311C), Color(0xFF225235)))
+            )
+            in 8..14 -> ZoneDetails(
+                "YELLOW ZONE", 
+                "MODERATE NEURAL LOAD", 
+                Color(0xFF825E1B),
+                Brush.verticalGradient(listOf(Color(0xFF42300D), Color(0xFF6B4D16)))
+            )
+            else -> ZoneDetails(
+                "RED ZONE", 
+                "HIGH NEURAL LOAD", 
+                Color(0xFF702123),
+                Brush.verticalGradient(listOf(Color(0xFF3B1012), Color(0xFF631C1E)))
+            )
         }
     }
     
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(zoneInfo.third)
+            .background(zoneInfo.brush)
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -670,7 +705,7 @@ fun ResultScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text(
-                text = "${zoneInfo.first} — ${zoneInfo.second}",
+                text = "${zoneInfo.category} — ${zoneInfo.label}",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -702,7 +737,7 @@ fun ResultScreen(
             onClick = onSeeSteps,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White,
-                contentColor = zoneInfo.third
+                contentColor = zoneInfo.color
             ),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
@@ -721,7 +756,7 @@ fun ResultScreen(
         
         OutlinedButton(
             onClick = {
-                shareScoreCard(context, score, zoneInfo.first, zoneInfo.second, zoneInfo.third.toArgb())
+                shareScoreCard(context, score, zoneInfo.category, zoneInfo.label, zoneInfo.color.toArgb())
             },
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = Color.White
@@ -746,6 +781,7 @@ fun ResultScreen(
             }
         }
         
+
         Spacer(modifier = Modifier.height(24.dp))
     }
 }
