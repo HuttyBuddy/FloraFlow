@@ -20,3 +20,6 @@
 ## 2024-05-18 - Optimize nested loops with precomputed O(1) arrays
 **Learning:** During heavy Compose recompositions, nested iteration `O(N * M)` operations like `.firstOrNull()` inside UI lists or grids can severely degrade frame rate and CPU performance.
 **Action:** When a static list must be frequently queried by multiple nested UI elements, map it into a 1D or 2D Array before the loops. Lookups via direct array indices change complexity from `O(N)` to `O(1)`, resulting in massive (often >20x) iteration time improvements.
+## 2024-11-20 - Distance check mathematical optimization
+**Learning:** O(N^2) loops combined with expensive `kotlin.math.sqrt` inside Jetpack Compose `remember` blocks can lead to major UI stuttering on lists/grids.
+**Action:** Replace `sqrt` with bounding box checks (dx > 1) and calculate distance squared (`dx*dx + dy*dy <= 2.25`) for extremely fast O(1) grid adjacency checks without double allocations.
