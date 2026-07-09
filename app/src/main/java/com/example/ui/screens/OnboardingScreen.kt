@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
@@ -167,7 +168,14 @@ fun OnboardingScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF1D3C28)) // Dark green default
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF0C2417), // Deep midnight forest green
+                        Color(0xFF1B3C25)  // Rich botanical green
+                    )
+                )
+            )
     ) {
         AnimatedContent(
             targetState = screenState,
@@ -350,7 +358,7 @@ fun QuestionFlowScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF7F9F6)) // light background
+            .background(Color(0xFFFCF9F1)) // light linen canvas background
             .padding(24.dp)
     ) {
         // Top Bar: Back navigation & 10-segmented progress bar
@@ -515,7 +523,14 @@ fun CalculatingScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1D3C28)),
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF0C2417),
+                        Color(0xFF1B3C25)
+                    )
+                )
+            ),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -551,18 +566,39 @@ fun ResultScreen(
     score: Int,
     onSeeSteps: () -> Unit
 ) {
+    data class ZoneDetails(
+        val category: String,
+        val label: String,
+        val color: Color,
+        val brush: Brush
+    )
     val zoneInfo = remember(score) {
         when (score) {
-            in 15..20 -> Triple("GREEN ZONE", "LOW NEURAL LOAD", Color(0xFF1B4A2F))
-            in 8..14 -> Triple("YELLOW ZONE", "MODERATE NEURAL LOAD", Color(0xFF825E1B))
-            else -> Triple("RED ZONE", "HIGH NEURAL LOAD", Color(0xFF702123))
+            in 15..20 -> ZoneDetails(
+                "GREEN ZONE", 
+                "LOW NEURAL LOAD", 
+                Color(0xFF1B4A2F),
+                Brush.verticalGradient(listOf(Color(0xFF0F311C), Color(0xFF225235)))
+            )
+            in 8..14 -> ZoneDetails(
+                "YELLOW ZONE", 
+                "MODERATE NEURAL LOAD", 
+                Color(0xFF825E1B),
+                Brush.verticalGradient(listOf(Color(0xFF42300D), Color(0xFF6B4D16)))
+            )
+            else -> ZoneDetails(
+                "RED ZONE", 
+                "HIGH NEURAL LOAD", 
+                Color(0xFF702123),
+                Brush.verticalGradient(listOf(Color(0xFF3B1012), Color(0xFF631C1E)))
+            )
         }
     }
     
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(zoneInfo.third)
+            .background(zoneInfo.brush)
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -599,7 +635,7 @@ fun ResultScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text(
-                text = "${zoneInfo.first} — ${zoneInfo.second}",
+                text = "${zoneInfo.category} — ${zoneInfo.label}",
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -631,7 +667,7 @@ fun ResultScreen(
             onClick = onSeeSteps,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.White,
-                contentColor = zoneInfo.third
+                contentColor = zoneInfo.color
             ),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
@@ -693,7 +729,7 @@ fun ResultScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(zoneInfo.third, RoundedCornerShape(16.dp))
+                                .background(zoneInfo.brush, RoundedCornerShape(16.dp))
                                 .padding(24.dp),
                             contentAlignment = Alignment.Center
                         ) {
@@ -704,7 +740,7 @@ fun ResultScreen(
                                 Spacer(modifier = Modifier.height(12.dp))
                                 Text("$score / 20", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 32.sp)
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text(zoneInfo.second, color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text(zoneInfo.label, color = Color.White.copy(alpha = 0.8f), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text("Take your own assessment: floraflow.app", color = Color(0xFFE8C998), fontSize = 10.sp, fontWeight = FontWeight.Medium)
                             }

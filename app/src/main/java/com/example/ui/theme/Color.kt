@@ -1,6 +1,7 @@
 package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 
 // --- Natural Tones Light Palette ---
 val NaturalBg = Color(0xFFFCF9F1)          // Sunlit linen canvas
@@ -31,3 +32,20 @@ val SoilArBgDark = Color(0xFF2A261D)       // Evening campfire shadow
 val SoilBorderDark = Color(0xFF2E3228)     // Deep mud border
 val SoilNavBgDark = Color(0xFF1A1C16)      // Dark clay navigation
 val SoilSurfaceDark = Color(0xFF1B1D17)    // Dark sand surface
+
+// --- Premium Redesign Gradients & Brushes ---
+val PremiumGoldGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFFE5C060), Color(0xFFC59F3F))
+)
+
+val PremiumEmeraldGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFF1F483E), Color(0xFF384F45))
+)
+
+val PremiumDarkEmeraldGradient = Brush.horizontalGradient(
+    colors = listOf(Color(0xFFACCFC6), Color(0xFF88BDB3))
+)
+
+val PremiumGoldBorderBrush = Brush.linearGradient(
+    colors = listOf(Color(0xFFFFDF00), Color(0xFFD4AF37), Color(0xFFFFDF00))
+)

@@ -233,8 +233,8 @@ fun AiStudioScreen(
                                             if (isUser) {
                                                 Brush.horizontalGradient(
                                                     listOf(
-                                                        Color(0xFF386641),
-                                                        Color(0xFF6A994E)
+                                                        Color(0xFF1F483E),
+                                                        Color(0xFF384F45)
                                                     )
                                                 )
                                             } else {
@@ -248,7 +248,7 @@ fun AiStudioScreen(
                                         )
                                         .border(
                                             width = 1.dp,
-                                            color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                                            color = if (isUser) Color.Transparent else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                                             shape = RoundedCornerShape(
                                                 topStart = 16.dp,
                                                 topEnd = 16.dp,
@@ -995,20 +995,52 @@ fun LiveBotanistVoiceSynth(
                 val waveWidth = size.width
                 val waveHeight = size.height
                 val midY = waveHeight / 2f
-                val amplitude = if (isGenerating) 12f else 3f
+                val baseAmplitude = if (isGenerating) 12f else 3f
                 val frequency = if (isGenerating) 0.08f else 0.04f
 
-                val points = mutableListOf<Offset>()
-                for (x in 0..waveWidth.toInt() step 2) {
-                    val y = midY + amplitude * sin((x * frequency) + offset)
-                    points.add(Offset(x.toFloat(), y))
+                // Draw Wave 3 (Background Layer)
+                val points3 = mutableListOf<Offset>()
+                for (x in 0..waveWidth.toInt() step 3) {
+                    val y = midY + (baseAmplitude * 0.4f) * sin((x * frequency) + offset - 1f)
+                    points3.add(Offset(x.toFloat(), y))
+                }
+                for (i in 0 until points3.size - 1) {
+                    drawLine(
+                        color = secondaryColor.copy(alpha = 0.2f),
+                        start = points3[i],
+                        end = points3[i + 1],
+                        strokeWidth = 1.5f,
+                        cap = StrokeCap.Round
+                    )
                 }
 
-                for (i in 0 until points.size - 1) {
+                // Draw Wave 2 (Middle Layer)
+                val points2 = mutableListOf<Offset>()
+                for (x in 0..waveWidth.toInt() step 2) {
+                    val y = midY + (baseAmplitude * 0.7f) * sin((x * frequency) + offset + 1.5f)
+                    points2.add(Offset(x.toFloat(), y))
+                }
+                for (i in 0 until points2.size - 1) {
                     drawLine(
-                        color = if (isGenerating) primaryColor else secondaryColor.copy(alpha = 0.6f),
-                        start = points[i],
-                        end = points[i + 1],
+                        color = primaryColor.copy(alpha = 0.4f),
+                        start = points2[i],
+                        end = points2[i + 1],
+                        strokeWidth = 2.2f,
+                        cap = StrokeCap.Round
+                    )
+                }
+
+                // Draw Wave 1 (Foreground Layer)
+                val points1 = mutableListOf<Offset>()
+                for (x in 0..waveWidth.toInt() step 2) {
+                    val y = midY + baseAmplitude * sin((x * frequency) + offset)
+                    points1.add(Offset(x.toFloat(), y))
+                }
+                for (i in 0 until points1.size - 1) {
+                    drawLine(
+                        color = if (isGenerating) primaryColor else secondaryColor.copy(alpha = 0.8f),
+                        start = points1[i],
+                        end = points1[i + 1],
                         strokeWidth = if (isGenerating) 3.5f else 1.8f,
                         cap = StrokeCap.Round
                     )

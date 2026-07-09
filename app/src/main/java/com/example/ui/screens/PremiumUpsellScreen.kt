@@ -40,11 +40,13 @@ fun PremiumUpsellScreen(
     val crownBadge = @Composable {
         Box(
             modifier = Modifier
-                .size(80.dp)
+                .size(88.dp)
+                .border(2.dp, Brush.horizontalGradient(listOf(Color(0xFFFFD54F), Color(0xFFFFB300))), CircleShape)
+                .padding(4.dp)
                 .clip(CircleShape)
                 .background(
-                    Brush.linearGradient(
-                        colors = listOf(Color(0xFFFFD54F), Color(0xFFFFB74D))
+                    Brush.verticalGradient(
+                        colors = listOf(Color(0xFFFFF8E1), Color(0xFFFFECB3))
                     )
                 ),
             contentAlignment = Alignment.Center
@@ -52,8 +54,8 @@ fun PremiumUpsellScreen(
             Icon(
                 Icons.Default.WorkspacePremium,
                 contentDescription = "Premium Badge",
-                modifier = Modifier.size(48.dp),
-                tint = Color.White
+                modifier = Modifier.size(44.dp),
+                tint = Color(0xFFFFB300)
             )
         }
     }
@@ -112,7 +114,7 @@ fun PremiumUpsellScreen(
                 .border(
                     width = 2.dp,
                     brush = Brush.horizontalGradient(
-                        listOf(Color(0xFFFFD54F), MaterialTheme.colorScheme.primary)
+                        listOf(Color(0xFFFFD54F), Color(0xFFFFB300))
                     ),
                     shape = RoundedCornerShape(16.dp)
                 ),
@@ -140,19 +142,31 @@ fun PremiumUpsellScreen(
                     onClick = onUpgradeClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(56.dp)
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color(0xFFFFD54F), Color(0xFFFFB300))
+                            ),
+                            shape = RoundedCornerShape(28.dp)
+                        ),
                     shape = RoundedCornerShape(28.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
+                        containerColor = Color.Transparent
                     )
                 ) {
                     Icon(
                         Icons.Default.AutoAwesome,
                         contentDescription = "Upgrade",
+                        tint = Color(0xFF4A2B00),
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Upgrade to PRO", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Upgrade to PRO", 
+                        fontSize = 16.sp, 
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4A2B00)
+                    )
                 }
             }
         }

@@ -178,15 +178,15 @@ class MainActivity : ComponentActivity() {
                                         }
                                     },
                                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                        containerColor = MaterialTheme.colorScheme.background
                                     )
                                 )
                             },
                             bottomBar = {
                                 NavigationBar(
                                     modifier = Modifier.testTag("app_navigation_bar"),
-                                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                    tonalElevation = 8.dp
+                                    containerColor = MaterialTheme.colorScheme.surface,
+                                    tonalElevation = 0.dp
                                 ) {
                                     NavigationBarItem(
                                         selected = currentTab == 0,
