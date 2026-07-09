@@ -178,7 +178,7 @@ fun LibraryScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        "My Garden Care", 
+                        "Garden Care",
                         color = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
@@ -212,7 +212,7 @@ fun LibraryScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        "Species Encyclopedia", 
+                        "Plant Guide",
                         color = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
@@ -231,14 +231,14 @@ fun LibraryScreen(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Climate Recommendations",
+                    text = "Plants for $climateName",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Compatible plant templates for your $climateName climate. Tap a recommendation to plant it in your active garden layout.",
+                    text = "Tap a plant to add it to your active garden.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -291,12 +291,12 @@ fun LibraryScreen(
         ) {
             Column {
                 Text(
-                    text = "Cultivated Vegetation Hub",
+                    text = "My Garden",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Seasonal care trackers and growth indices",
+                    text = "Track care, hydration, and growth",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -359,7 +359,7 @@ fun LibraryScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        "Plant one of the $climateName recommendations above, place them on the grid canvas, or click the add button to insert custom vegetation.",
+                        "Add a recommended plant, place one on the plot, or use the add button for a custom plant.",
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.secondary
@@ -390,7 +390,7 @@ fun LibraryScreen(
                             viewModel.deletePlant(plant.id)
                         },
                         onConsultAi = {
-                            viewModel.sendAiChatMessage("Give me extreme care and growth advice for cultivating my ${plant.name} in details.")
+                            viewModel.sendAiChatMessage("Give me clear care advice for my ${plant.name}.")
                             switchToChatTab()
                         },
                         waterTask = waterTask,
@@ -622,7 +622,7 @@ fun LibraryScreen(
                         .height(32.dp)
                         .testTag("clear_all_filters_btn")
                 ) {
-                    Text("Clear All Filters", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("Clear Filters", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -714,7 +714,7 @@ fun LibraryScreen(
                 ) {
                     Icon(Icons.Default.RestartAlt, contentDescription = "Reset filter", modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Reset All Filters", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("Reset Filters", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -788,7 +788,7 @@ fun LibraryScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Clear All Filters", fontWeight = FontWeight.Bold)
+                        Text("Clear Filters", fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -886,7 +886,7 @@ fun LibraryScreen(
             ) {
                 if (selectedTabState == 0) {
                     Text(
-                        "Cultivated Sandboxes",
+                        "My Plants",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -1309,7 +1309,7 @@ fun PlantCareTrackerCard(
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
-                                    text = "💡 Did you know?",
+                                    text = "Good to know",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.tertiary
@@ -1567,7 +1567,7 @@ fun SpeciesEncyclopediaCard(
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
-                                    text = "💡 Did you know?",
+                                    text = "Good to know",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.tertiary
@@ -1596,7 +1596,7 @@ fun SpeciesEncyclopediaCard(
                                 Icon(Icons.Default.Celebration, contentDescription = "Planted success icon", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    "Planted & Growing in Greenhouse Layout!",
+                                    "Already in your garden",
                                     color = MaterialTheme.colorScheme.primary,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -1617,7 +1617,7 @@ fun SpeciesEncyclopediaCard(
                             Icon(Icons.Default.LocalFlorist, contentDescription = "Cultivate icons", modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                if (activeLayoutAvailable) "Sow in My Active Garden" else "Choose primary layout in Dashboard first",
+                                if (activeLayoutAvailable) "Plant in My Garden" else "Choose a garden first",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp
                             )
@@ -1740,7 +1740,7 @@ fun AddCustomPlantDialog(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.testTag("submit_add_custom_plant")
                     ) {
-                        Text("Cultivate")
+                        Text("Plant")
                     }
                 }
             }
@@ -1765,7 +1765,7 @@ fun GreenhouseStatsSection(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Greenhouse Climate & Vitality Monitor",
+                text = "Garden Status",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -1792,7 +1792,7 @@ fun GreenhouseStatsSection(
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("Vitality index", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary, maxLines = 1)
+                        Text("Growth", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary, maxLines = 1)
                         Text("$avgGrowth%", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }

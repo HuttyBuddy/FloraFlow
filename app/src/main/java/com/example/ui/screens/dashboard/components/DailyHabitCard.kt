@@ -96,13 +96,13 @@ fun DailyHabitCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Your Daily Growth Ring",
+                        text = "Today",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Nurture your plants and mind",
+                        text = "Care tasks and one small reset",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -142,7 +142,7 @@ fun DailyHabitCard(
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (pendingTasksToday == 0 && completedRitualsCount == totalRitualsCount) {
                         Text(
-                            text = "✨ All tasks and rituals complete! Your garden is thriving.",
+                            text = "Everything for today is done.",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -170,7 +170,7 @@ fun DailyHabitCard(
                                         .padding(10.dp)
                                 ) {
                                     Text(
-                                        text = "Name one thing in your garden that brought you peace today:",
+                                        text = "Name one thing in your garden that felt good today:",
                                         style = MaterialTheme.typography.labelSmall,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
@@ -179,7 +179,7 @@ fun DailyHabitCard(
                                     OutlinedTextField(
                                         value = gratitudeText,
                                         onValueChange = { gratitudeText = it },
-                                        placeholder = { Text("e.g. The scent of lavender blossoms...", fontSize = 11.sp) },
+                                        placeholder = { Text("e.g. The lavender smelled fresh", fontSize = 12.sp) },
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .height(56.dp)
@@ -205,7 +205,7 @@ fun DailyHabitCard(
                                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
                                         shape = RoundedCornerShape(8.dp)
                                     ) {
-                                        Text("Save Reflection", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                        Text("Save", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -214,7 +214,7 @@ fun DailyHabitCard(
                         // Section 1: Care Tasks
                         if (pendingTasksToday > 0 || completedTasksToday > 0) {
                             Text(
-                                text = "Plant Care Tasks:",
+                                text = "Care tasks",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -289,7 +289,7 @@ fun DailyHabitCard(
 
                         // Section 2: Biophilic Sensory Rituals
                         Text(
-                            text = "Daily Biophilic Rituals:",
+                            text = "Mindful reset",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.secondary

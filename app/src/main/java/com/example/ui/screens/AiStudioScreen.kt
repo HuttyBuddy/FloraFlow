@@ -65,17 +65,17 @@ import kotlin.math.PI
 import kotlin.math.sin
 
 private val AI_SUGGESTIONS_PORTRAIT = listOf(
-    "🌱 Suggest perfect companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
-    "🐛 Analyze yellowing leaves / plant pest diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
-    "🧘 Discuss therapy and nature cognitive wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?",
-    "🔍 Run a conversational Space Diagnosis" to "I want to run a detailed Space Diagnosis of my environment."
+    "Suggest companion plants" to "Suggest compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
+    "Diagnose yellow leaves" to "How do I diagnose yellowing speckled leaves on young plants, and what organic treatments should I try first?",
+    "Plan a calmer space" to "How can I adjust my garden to feel calmer and easier to maintain?",
+    "Review my space" to "I want a practical review of my garden space, including light, watering, plant placement, and next steps."
 )
 
 private val AI_SUGGESTIONS_LANDSCAPE = listOf(
-    "🌱 Suggest companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
-    "🐛 Analyze yellowing leaves diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
-    "🧘 Discuss therapy and nature wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?",
-    "🔍 Run Space Diagnosis" to "I want to run a detailed Space Diagnosis of my environment."
+    "Companion plants" to "Suggest compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
+    "Yellow leaves" to "How do I diagnose yellowing speckled leaves on young plants, and what organic treatments should I try first?",
+    "Calmer space" to "How can I adjust my garden to feel calmer and easier to maintain?",
+    "Review space" to "I want a practical review of my garden space, including light, watering, plant placement, and next steps."
 )
 
 data class AttachedImage(
@@ -553,7 +553,7 @@ fun AiStudioScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    "🌱 Live Garden Intelligence Consultation",
+                                    "Ask About Your Garden",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary,
@@ -571,7 +571,7 @@ fun AiStudioScreen(
                                 Spacer(modifier = Modifier.height(18.dp))
 
                                 Text(
-                                    "🌿 SELECT QUICK DIAGNOSTIC CHECK:",
+                                    "Start with a common question",
                                     fontWeight = FontWeight.Bold,
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.primary
@@ -757,7 +757,7 @@ fun AiStudioScreen(
                             )
                         }
                         Text(
-                            text = "You have exhausted your free credentials. Upgrade to PRO to unlock unlimited Live expert analyses, 2D model companions, and diagnostic AR overlays!",
+                            text = "You've used your free questions. Upgrade to keep asking for plant care and layout help.",
                             style = MaterialTheme.typography.bodySmall,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
@@ -796,7 +796,7 @@ fun AiStudioScreen(
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                text = "GO PRO ✨",
+                                text = "Go PRO",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold,
@@ -872,7 +872,7 @@ fun AiStudioScreen(
                         OutlinedTextField(
                             value = textInput,
                             onValueChange = { textInput = it },
-                            placeholder = { Text("Ask Julian about soil compatibility...", fontSize = 13.sp) },
+                            placeholder = { Text("Ask about a plant, pest, or layout...", fontSize = 13.sp) },
                             modifier = Modifier
                                 .weight(1f)
                                 .testTag("ai_chat_text_input"),
@@ -986,7 +986,7 @@ fun AiStudioScreen(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
-                                        "🌱 Live Garden Intelligence Consultation",
+                                        "Ask About Your Garden",
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary,
@@ -1112,7 +1112,7 @@ fun AiStudioScreen(
                                 )
                             }
                             Text(
-                                text = "You have exhausted your free credentials. Upgrade to PRO to unlock unlimited Live expert analyses, 2D model companions, and diagnostic AR overlays!",
+                                text = "You've used your free questions. Upgrade to keep asking for plant care and layout help.",
                                 style = MaterialTheme.typography.bodySmall,
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
@@ -1151,7 +1151,7 @@ fun AiStudioScreen(
                                     fontWeight = FontWeight.SemiBold
                                 )
                                 Text(
-                                    text = "GO PRO ✨",
+                                    text = "Go PRO",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Bold,
@@ -1227,7 +1227,7 @@ fun AiStudioScreen(
                             OutlinedTextField(
                                 value = textInput,
                                 onValueChange = { textInput = it },
-                                placeholder = { Text("Ask Julian about soil compatibility...", fontSize = 13.sp) },
+                                placeholder = { Text("Ask about a plant, pest, or layout...", fontSize = 13.sp) },
                                 modifier = Modifier
                                     .weight(1f)
                                     .testTag("ai_chat_text_input"),
@@ -1475,7 +1475,7 @@ fun BotanistProfileHeader(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        text = "Dr. Julian Greenleaf",
+                        text = "Dr. Julian",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleLarge.copy(fontSize = 17.sp),
                         color = MaterialTheme.colorScheme.onSurface,
@@ -1584,14 +1584,14 @@ fun LiveBotanistVoiceSynth(
                 Column {
                     Text(
                         text = if (isGenerating) "Julian is analyzing microclimates..." else "MICROCLIMATE SYSTEM FEED STANDBY",
-                        fontSize = 8.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (isGenerating) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary,
                         letterSpacing = 0.3.sp
                     )
                     Text(
                         text = if (isGenerating) "Transmitting direct synaptic plant feedback..." else "Live monitoring active...",
-                        fontSize = 8.sp,
+                        fontSize = 10.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -2030,7 +2030,7 @@ fun NeuralLoadDashboardWidget(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Take a 2-minute neural load scan to personalize Dr. Julian's recommendations.",
+                            text = "Take a 2-minute scan to personalize garden recommendations.",
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 13.sp
@@ -2117,7 +2117,7 @@ fun BreathingGardenCircle(modifier: Modifier = Modifier) {
                         modifier = Modifier.size(18.dp)
                     )
                     Text(
-                        text = "Biophilic Breather",
+                        text = "Breathing Reset",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurface

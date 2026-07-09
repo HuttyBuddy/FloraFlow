@@ -199,7 +199,7 @@ fun RestorationJournalScreen(
                 modifier = Modifier.fillMaxWidth()
             )
             Text(
-                text = "Eco-Acoustics & Sensory Mindfulness",
+                text = "Soundscapes for garden focus",
                 fontSize = 13.sp,
                 color = Color(0xFF81C784).copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
@@ -276,7 +276,7 @@ fun RestorationJournalScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "Eco-Acoustic Soundscapes",
+                                text = "Soundscapes",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFA8E6CF),
@@ -349,7 +349,7 @@ fun RestorationJournalScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("🍃 Ambient nature", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                                    Text("Ambient nature", fontSize = 12.sp, color = Color.White.copy(alpha = 0.82f))
                                     Text("${(ambientVol * 100).toInt()}%", fontSize = 12.sp, color = Color(0xFFA8E6CF))
                                 }
                                 Slider(
@@ -369,7 +369,7 @@ fun RestorationJournalScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("🧠 Binaural brainwaves", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                                    Text("Binaural layer", fontSize = 12.sp, color = Color.White.copy(alpha = 0.82f))
                                     Text("${(binauralVol * 100).toInt()}%", fontSize = 12.sp, color = Color(0xFFA8E6CF))
                                 }
                                 Slider(
@@ -609,7 +609,7 @@ fun RestorationJournalScreen(
                                 color = Color(0xFFA8E6CF)
                             )
                             Text(
-                                text = "Complete these exercises to boost your Neural Restoration Index.",
+                                text = "Complete these exercises to build a calmer garden routine.",
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.5f),
                                 modifier = Modifier.padding(bottom = 12.dp)
@@ -912,7 +912,7 @@ fun NriGaugeCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Neural Restoration Index (NRI)",
+                text = "Restoration Score",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFFA8E6CF)
@@ -969,7 +969,7 @@ fun NriGaugeCard(
                         color = Color.White
                     )
                     Text(
-                        text = "RESTORED",
+                        text = "complete",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF81C784)
@@ -1008,7 +1008,7 @@ fun NriGaugeCard(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "View Score Diagnostics",
+                    text = "View score details",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFA8E6CF)
@@ -1106,7 +1106,7 @@ fun NriGaugeCard(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Text("⚠️ Neglected Care Penalty", fontSize = 11.sp, color = Color(0xFFE57373))
+                                Text("Care tasks overdue", fontSize = 11.sp, color = Color(0xFFE57373))
                                 Text("-$penaltyScore pts", fontSize = 11.sp, color = Color(0xFFE57373), fontWeight = FontWeight.Bold)
                             }
                             Spacer(modifier = Modifier.height(4.dp))

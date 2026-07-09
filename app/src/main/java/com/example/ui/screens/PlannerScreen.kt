@@ -357,7 +357,7 @@ fun PlannerScreen(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "Design Blueprint Workspace",
+                                text = "Garden Plan",
                                 style = MaterialTheme.typography.titleSmall,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
@@ -403,7 +403,7 @@ fun PlannerScreen(
 
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Climate: ${currentLayout.climate}. Substrate: ${currentSoilTheme.name}.",
+                        text = "${currentLayout.climate} climate · ${currentSoilTheme.name} surface",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
@@ -417,7 +417,7 @@ fun PlannerScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    "AI Assistant",
+                    "Plan help",
                     style = MaterialTheme.typography.bodySmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
@@ -436,7 +436,7 @@ fun PlannerScreen(
                         },
                         modifier = Modifier
                             .weight(0.8f)
-                            .height(36.dp),
+                            .heightIn(min = 48.dp),
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 4.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
@@ -457,8 +457,8 @@ fun PlannerScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                "Layout Review",
-                                fontSize = 9.sp,
+                                "Review",
+                                style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -474,7 +474,7 @@ fun PlannerScreen(
                         },
                         modifier = Modifier
                             .weight(1.2f)
-                            .height(36.dp),
+                            .heightIn(min = 48.dp),
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 4.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
@@ -495,8 +495,8 @@ fun PlannerScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                "Blueprint Suggestion",
-                                fontSize = 9.sp,
+                                "Suggest Layout",
+                                style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -510,7 +510,7 @@ fun PlannerScreen(
         val substrateSelectorContent = @Composable {
             Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        "Surface Substrate Type",
+                        "Surface",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -734,7 +734,7 @@ fun PlannerScreen(
                         ) {
                             Icon(Icons.Default.Spa, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Auto-Sow Seeds", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("Auto-Plant", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                     }
 
@@ -752,8 +752,8 @@ fun PlannerScreen(
                             .background(
                                 Brush.horizontalGradient(
                                     colors = listOf(
-                                        Color(0xFFC62828),
-                                        Color(0xFFE53935)
+                                        MaterialTheme.extendedColors.error.copy(alpha = 0.16f),
+                                        MaterialTheme.extendedColors.error.copy(alpha = 0.08f)
                                     )
                                 )
                             ),
@@ -764,9 +764,9 @@ fun PlannerScreen(
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier.padding(vertical = 10.dp, horizontal = 2.dp)
                         ) {
-                            Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                            Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.extendedColors.error)
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Uproot All", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("Clear", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.extendedColors.error)
                         }
                     }
             }
@@ -1438,7 +1438,7 @@ fun PlannerScreen(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Complete each task to optimize your biophilic layout.",
+                            text = "Complete each step to make this plan easier to care for.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -1563,14 +1563,14 @@ fun PlannerScreen(
                                             shape = RoundedCornerShape(10.dp)
                                         ) {
                                             Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                                Text("✨ Active Synergies (No. $totalSynergies):", fontWeight = FontWeight.Bold, color = MaterialTheme.extendedColors.success, fontSize = 11.sp)
+                                                Text("Good pairings ($totalSynergies):", fontWeight = FontWeight.Bold, color = MaterialTheme.extendedColors.success, fontSize = 12.sp)
                                                 synergyPairs.forEach { pair ->
                                                     Text("• $pair", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
                                                 }
                                             }
                                         }
                                     } else {
-                                        Text("No active synergies found yet. Try placing synergistic plants adjacent to each other (e.g. Maple & Rose, Lavender & Rosemary, Cactus & Aloe).", fontSize = 11.sp, color = MaterialTheme.colorScheme.secondary)
+                                        Text("No strong pairings yet. Try placing compatible plants next to each other, like maple with rose or lavender with rosemary.", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary)
                                     }
 
                                     if (conflictPairs.isNotEmpty()) {
@@ -1580,12 +1580,12 @@ fun PlannerScreen(
                                             shape = RoundedCornerShape(10.dp)
                                         ) {
                                             Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                                Text("⚠️ Active Conflicts (No. $totalConflicts):", fontWeight = FontWeight.Bold, color = MaterialTheme.extendedColors.error, fontSize = 11.sp)
+                                                Text("Conflicts ($totalConflicts):", fontWeight = FontWeight.Bold, color = MaterialTheme.extendedColors.error, fontSize = 12.sp)
                                                 conflictPairs.forEach { pair ->
                                                     Text("• $pair", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurface)
                                                 }
                                                 Spacer(modifier = Modifier.height(2.dp))
-                                                Text("Resolve conflicts by removing or relocating clashing species.", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.extendedColors.error)
+                                                Text("Move or remove one plant from each conflicting pair.", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.extendedColors.error)
                                             }
                                         }
                                     } else if (activeGridItems.isNotEmpty()) {
@@ -1637,7 +1637,7 @@ fun PlannerScreen(
                             ) {
                                 Icon(Icons.Default.Layers, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("RENDER BLUEPRINT OF BIOPHILIC SPACE 📐", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                                Text("Save Blueprint", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.ExtraBold)
                             }
                         }
                     }

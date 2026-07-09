@@ -84,7 +84,7 @@ fun PremiumUpsellScreen(
             )
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
             Text(
-                text = "Use your phone to plan and bring your biophilic space to life. Unlock premium eco-acoustic soundscapes and biophilic design neuroscience.",
+                text = "Plan calmer gardens, ask for care help, and unlock guided restoration soundscapes.",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -102,16 +102,16 @@ fun PremiumUpsellScreen(
                 verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
             ) {
                 PremiumFeatureRow(
-                    title = "Eco-Acoustic Restoration Journal",
-                    description = "Immersive eco-acoustic binaural soundscapes & Neural Restoration Journal with dynamic stress metrics."
+                    title = "Restoration Journal",
+                    description = "Guided soundscapes, breathing sessions, and progress tracking for your garden routine."
                 )
                 PremiumFeatureRow(
-                    title = "Gemini AI Advisor",
-                    description = "Biophilic design neuroscience assistant. Point your phone at any space to envision, plan, and get expert botany advice."
+                    title = "AI Garden Help",
+                    description = "Ask about pests, light, watering, plant pairings, and layout ideas."
                 )
                 PremiumFeatureRow(
-                    title = "Unlimited Blueprints & Layouts",
-                    description = "Plan professional-grade garden layouts on the interactive grid blueprint without design training."
+                    title = "Unlimited Garden Plans",
+                    description = "Create and save more layouts as your space changes."
                 )
             }
         }

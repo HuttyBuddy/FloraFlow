@@ -45,6 +45,9 @@ import androidx.core.content.edit
 
 import androidx.compose.ui.draw.blur
 import com.example.ui.screens.dashboard.components.*
+import com.example.ui.components.ButtonVariant
+import com.example.ui.components.FloraFlowButton
+import com.example.ui.components.FloraFlowMetricTile
 
 @Composable
 fun DashboardScreen(
@@ -366,13 +369,13 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Conversational Space Diagnosis",
+                        text = "Ask About This Space",
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Text(
-                        text = "Let Dr. Julian guide you through an audit of the state of your biophilic space",
+                        text = "Get a quick read on light, plants, layout, and next steps.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
                     )
@@ -418,19 +421,15 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "FloraFlow Garden Space",
+                        text = "Today",
                         fontWeight = FontWeight.ExtraBold,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Text(
-                        text = if (activeLayout != null) {
-                            "Project: ${activeLayout?.name}"
-                        } else {
-                            "Your space is ready to be planted"
-                        },
+                        text = activeLayout?.name?.let { "Next steps for $it" } ?: "Create a garden plan to get tailored care.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.88f)
                     )
                 }
             }
@@ -450,35 +449,24 @@ fun DashboardScreen(
                 },
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Button(
+            FloraFlowButton(
+                text = "Plan Garden",
                 onClick = { showCreateDialog = true },
                 modifier = Modifier
                     .weight(1f)
-                    .height(48.dp)
                     .testTag("action_create_layout"),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                contentPadding = PaddingValues(horizontal = 8.dp)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Create layout", modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Plant a New Seed", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-            }
+                leadingIcon = Icons.Default.Add
+            )
             
-            Button(
+            FloraFlowButton(
+                text = "Switch Plan",
                 onClick = { showLayoutSelector = true },
                 modifier = Modifier
                     .weight(1f)
-                    .height(48.dp)
                     .testTag("action_choose_layout"),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                contentPadding = PaddingValues(horizontal = 8.dp)
-            ) {
-                Icon(Icons.Default.Eco, contentDescription = "Choose layout", modifier = Modifier.size(18.dp))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Visit a Garden", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
-            }
+                variant = ButtonVariant.Subtle,
+                leadingIcon = Icons.Default.Eco
+            )
         }
     }
 
@@ -489,11 +477,15 @@ fun DashboardScreen(
         ) {
             val totalMinutes = moodLogs.sumOf { it.activityMinutes }
             val avgMood = if (moodLogs.isNotEmpty()) moodLogs.map { it.moodScore }.average() else 0.0
+            val locale = LocalConfiguration.current.locales[0]
 
             var isPressedTime by remember { mutableStateOf(false) }
             val scaleTime by animateFloatAsState(if (isPressedTime) 0.95f else 1f, label = "ScaleTime")
 
-            Card(
+            FloraFlowMetricTile(
+                label = "Garden time",
+                value = "$totalMinutes min",
+                icon = Icons.Default.Timer,
                 modifier = Modifier
                     .weight(1f)
                     .scale(scaleTime)
@@ -508,35 +500,17 @@ fun DashboardScreen(
                                 showLogMoodDialog = true
                             }
                         )
-                    },
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            ) {
-                Column(
-                    modifier = Modifier.padding(14.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(Icons.Default.Timer, contentDescription = "Timer", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "$totalMinutes mins",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                    Text(
-                        text = "Time in the Garden",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
+                    }
+            )
 
             var isPressedWellness by remember { mutableStateOf(false) }
             val scaleWellness by animateFloatAsState(if (isPressedWellness) 0.95f else 1f, label = "ScaleWellness")
 
-            Card(
+            FloraFlowMetricTile(
+                label = "Mood",
+                value = String.format(locale, "%.1f/5", avgMood),
+                icon = Icons.Default.FavoriteBorder,
+                accentColor = MaterialTheme.colorScheme.tertiary,
                 modifier = Modifier
                     .weight(1f)
                     .scale(scaleWellness)
@@ -551,36 +525,16 @@ fun DashboardScreen(
                                 showLogMoodDialog = true
                             }
                         )
-                    },
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            ) {
-                Column(
-                    modifier = Modifier.padding(14.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(Icons.Default.FavoriteBorder, contentDescription = "Wellness", tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(24.dp))
-                    Spacer(modifier = Modifier.height(6.dp))
-                    val locale = LocalConfiguration.current.locales[0]
-                    Text(
-                        text = String.format(locale, "%.1f/5", avgMood),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                    Text(
-                        text = "Wellness Bloom",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
+                    }
+            )
 
             var isPressedPlants by remember { mutableStateOf(false) }
             val scalePlants by animateFloatAsState(if (isPressedPlants) 0.95f else 1f, label = "ScalePlants")
 
-            Card(
+            FloraFlowMetricTile(
+                label = "Plants",
+                value = "${activePlants.size}",
+                icon = Icons.Default.Spa,
                 modifier = Modifier
                     .weight(1f)
                     .scale(scalePlants)
@@ -595,30 +549,8 @@ fun DashboardScreen(
                                 viewModel.setCurrentTab(1)
                             }
                         )
-                    },
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            ) {
-                Column(
-                    modifier = Modifier.padding(14.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(Icons.Default.Spa, contentDescription = "Plants count", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "${activePlants.size} items",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                    Text(
-                        text = "Plants Tended",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
+                    }
+            )
         }
     }
 
@@ -752,6 +684,14 @@ fun DashboardScreen(
             if (needsReassessment) {
                 item { reassessmentPromptBanner() }
             }
+            item { headerContent() }
+            item {
+                WeatherSyncCard(
+                    weather = weather,
+                    onWeatherClick = { showZipDialog = true }
+                )
+            }
+            item { DailyHabitCard(viewModel = viewModel) }
             if (isAssessmentSkipped) {
                 item { skippedAssessmentBanner() }
             } else if (assessmentScore != null) {
@@ -769,14 +709,6 @@ fun DashboardScreen(
                     )
                 }
             }
-            item { headerContent() }
-            item {
-                WeatherSyncCard(
-                    weather = weather,
-                    onWeatherClick = { showZipDialog = true }
-                )
-            }
-            item { DailyHabitCard(viewModel = viewModel) }
             item { MindfulBreathingCard(viewModel = viewModel) }
             item { CompanionSynergyCard(activeLayout = activeLayout) }
             item {
@@ -824,6 +756,12 @@ fun DashboardScreen(
                 if (needsReassessment) {
                     reassessmentPromptBanner()
                 }
+                headerContent()
+                WeatherSyncCard(
+                    weather = weather,
+                    onWeatherClick = { showZipDialog = true }
+                )
+                DailyHabitCard(viewModel = viewModel)
                 if (isAssessmentSkipped) {
                     skippedAssessmentBanner()
                 } else if (assessmentScore != null) {
@@ -839,12 +777,6 @@ fun DashboardScreen(
                         onSearchDatabase = { viewModel.setLibrarySearchQuery(it) }
                     )
                 }
-                headerContent()
-                WeatherSyncCard(
-                    weather = weather,
-                    onWeatherClick = { showZipDialog = true }
-                )
-                DailyHabitCard(viewModel = viewModel)
                 MindfulBreathingCard(viewModel = viewModel)
                 CompanionSynergyCard(activeLayout = activeLayout)
                 Box(modifier = Modifier.fillMaxWidth()) {

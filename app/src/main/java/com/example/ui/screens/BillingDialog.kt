@@ -699,14 +699,14 @@ fun SuccessReceiptStep(
         }
 
         Text(
-            text = "Payment Entitlements Verified!",
+            text = "You're on FloraFlow PRO",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Black,
             color = MaterialTheme.extendedColors.success
         )
 
         Text(
-            text = "Congratulations! FloraFlow PRO state is unlocked and persistent on your Google Play account. You now have unrestricted access to premium models and visualizers.",
+            text = "Your subscription is active through Google Play. Premium planning, AI help, and restoration tools are ready.",
             fontSize = 12.sp,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -726,7 +726,7 @@ fun SuccessReceiptStep(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    "GOOGLE PLAY SUBSCRIPTION RECEIPT",
+                    "GOOGLE PLAY SUBSCRIPTION",
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -735,19 +735,19 @@ fun SuccessReceiptStep(
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
-                ReceiptItemRow(label = "Subscribed Plan Tier", value = activePlan.name)
+                ReceiptItemRow(label = "Plan", value = activePlan.name)
                 ReceiptItemRow(label = "Transaction Order ID", value = transactionId ?: "Synced from Google Play")
-                ReceiptItemRow(label = "Trial Period Entitlement", value = activePlan.trial)
-                ReceiptItemRow(label = "Payment Authorized price", value = "${activePlan.price} / ${activePlan.period}")
-                ReceiptItemRow(label = "Automatic Renewal Date", value = billingDate ?: "Next Month")
-                ReceiptItemRow(label = "Billing Status", value = "ACTIVE")
+                ReceiptItemRow(label = "Trial", value = activePlan.trial)
+                ReceiptItemRow(label = "Price", value = "${activePlan.price} / ${activePlan.period}")
+                ReceiptItemRow(label = "Renews", value = billingDate ?: "Next month")
+                ReceiptItemRow(label = "Status", value = "Active")
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         FloraFlowButton(
-            text = "Launch My Premium Garden Tools 🚀",
+            text = "Start Using PRO",
             onClick = onDismiss,
             modifier = Modifier
                 .fillMaxWidth()
