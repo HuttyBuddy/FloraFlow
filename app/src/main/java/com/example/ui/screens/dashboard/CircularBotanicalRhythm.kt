@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.MoodLog
 import com.example.ui.components.MoodImages
+import com.example.ui.theme.extendedColors
 import kotlin.math.atan2
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -73,10 +74,9 @@ fun CircularBotanicalRhythm(
     val strokeWidthDp = 16.dp
     val spacingDp = 12.dp
 
-    // Harmonic colors
-    val waterColor = Color(0xFF0284C7)      // Vibrant sky blue
-    val pruneColor = Color(0xFFF97316)      // Warm sunset orange
-    val outdoorsColor = Color(0xFF10B981)   // Radiant spring emerald
+    val waterColor = MaterialTheme.colorScheme.primary
+    val pruneColor = MaterialTheme.colorScheme.tertiary
+    val outdoorsColor = MaterialTheme.extendedColors.success
     val trackBgColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
 
     // Inner mood bubble gradient definition

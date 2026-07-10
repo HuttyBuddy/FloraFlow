@@ -21,12 +21,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.example.ui.theme.extendedColors
 import com.example.ui.theme.spacing
 
 enum class ButtonVariant {
     Filled,
     Outlined,
-    Text
+    Text,
+    Destructive,
+    Premium,
+    Subtle
 }
 
 @Composable
@@ -81,16 +85,35 @@ fun FloraFlowButton(
     val shape = MaterialTheme.shapes.small
 
     when (variant) {
-        ButtonVariant.Filled -> {
+        ButtonVariant.Filled,
+        ButtonVariant.Destructive,
+        ButtonVariant.Premium,
+        ButtonVariant.Subtle -> {
+            val colors = when (variant) {
+                ButtonVariant.Destructive -> ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.extendedColors.error,
+                    contentColor = MaterialTheme.extendedColors.onError
+                )
+                ButtonVariant.Premium -> ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.extendedColors.premiumGold,
+                    contentColor = MaterialTheme.colorScheme.onSecondary
+                )
+                ButtonVariant.Subtle -> ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
+                else -> ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+
             Button(
                 onClick = onClick,
                 modifier = modifier.heightIn(min = 48.dp),
                 enabled = enabled && !loading,
                 shape = shape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                colors = colors
             ) {
                 content()
             }

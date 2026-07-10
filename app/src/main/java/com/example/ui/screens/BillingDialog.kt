@@ -358,7 +358,7 @@ fun PlanSelectionStep(
             val backgroundGradient = if (isSelected) {
                 Brush.linearGradient(
                     listOf(
-                        Color(0xFFE8F5E9).copy(alpha = 0.35f),
+                        MaterialTheme.extendedColors.success.copy(alpha = 0.10f),
                         MaterialTheme.colorScheme.surface
                     )
                 )
@@ -379,7 +379,7 @@ fun PlanSelectionStep(
                             width = if (isSelected) 2.dp else 1.dp,
                             brush = if (isSelected) {
                                 Brush.linearGradient(
-                                    listOf(MaterialTheme.colorScheme.primary, Color(0xFFFFD54F))
+                                    listOf(MaterialTheme.colorScheme.primary, MaterialTheme.extendedColors.premiumGold)
                                 )
                             } else {
                                 SolidColor(borderColor)
@@ -692,10 +692,10 @@ fun SuccessReceiptStep(
         Box(
             modifier = Modifier
                 .size(64.dp)
-                .background(Color(0xFFE8F5E9), CircleShape),
+                .background(MaterialTheme.extendedColors.success.copy(alpha = 0.16f), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.Check, contentDescription = "Paid", tint = Color(0xFF2E7D32), modifier = Modifier.size(36.dp))
+            Icon(Icons.Default.Check, contentDescription = "Paid", tint = MaterialTheme.extendedColors.success, modifier = Modifier.size(36.dp))
         }
 
         Text(

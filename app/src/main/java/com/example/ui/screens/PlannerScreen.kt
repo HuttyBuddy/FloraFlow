@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.*
+import com.example.ui.components.ButtonVariant
+import com.example.ui.components.FloraFlowButton
 import com.example.ui.viewmodel.GardenViewModel
 import com.example.ui.theme.extendedColors
 import androidx.compose.foundation.Canvas
@@ -705,70 +707,29 @@ fun PlannerScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                    // Auto-Sow Seeds button
-                    Button(
+                    FloraFlowButton(
+                        text = "Auto-Sow Seeds",
                         onClick = {
                             viewModel.autoSowClimateSeeds()
                             triggerLeafFlutter = true
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                        contentPadding = PaddingValues(),
                         modifier = Modifier
                             .weight(1.3f)
-                            .testTag("quick_sow_button")
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color(0xFF2E7D32),
-                                        Color(0xFF4CAF50)
-                                    )
-                                )
-                            ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 2.dp)
-                        ) {
-                            Icon(Icons.Default.Spa, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Auto-Sow Seeds", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        }
-                    }
+                            .testTag("quick_sow_button"),
+                        leadingIcon = Icons.Default.Spa
+                    )
 
-                    // Uproot All button
-                    Button(
+                    FloraFlowButton(
+                        text = "Uproot All",
                         onClick = {
                             viewModel.clearLayoutGrid()
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
-                        contentPadding = PaddingValues(),
                         modifier = Modifier
                             .weight(0.7f)
-                            .testTag("clear_grid_button")
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color(0xFFC62828),
-                                        Color(0xFFE53935)
-                                    )
-                                )
-                            ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(vertical = 10.dp, horizontal = 2.dp)
-                        ) {
-                            Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Uproot All", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        }
-                    }
+                            .testTag("clear_grid_button"),
+                        variant = ButtonVariant.Destructive,
+                        leadingIcon = Icons.Default.DeleteSweep
+                    )
             }
         }
 
@@ -785,13 +746,13 @@ fun PlannerScreen(
                         horizontalArrangement = Arrangement.End
                     ) {
                         Text(
-                            text = "FILTER ACTIVE 🎯",
+                            text = "FILTER ACTIVE",
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFC62828),
+                            color = MaterialTheme.extendedColors.onError,
                             modifier = Modifier
                                 .clickable { highlightedPlantName = null }
-                                .background(Color(0xFFFFEBEE), RoundedCornerShape(4.dp))
+                                .background(MaterialTheme.extendedColors.error, RoundedCornerShape(4.dp))
                                 .padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
@@ -1308,12 +1269,12 @@ fun PlannerScreen(
                                         selectedSeedTemplate = null
                                     },
                                 colors = CardDefaults.cardColors(
-                                    containerColor = if (isSelected) Color(0xFFC62828).copy(alpha = 0.18f) 
+                                    containerColor = if (isSelected) MaterialTheme.extendedColors.error.copy(alpha = 0.18f)
                                                      else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                                 ),
                                 border = BorderStroke(
                                     width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) Color(0xFFC62828) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+                                    color = if (isSelected) MaterialTheme.extendedColors.error else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
@@ -1328,13 +1289,13 @@ fun PlannerScreen(
                                         text = "Eraser", 
                                         fontSize = 11.sp, 
                                         fontWeight = FontWeight.Bold, 
-                                        color = if (isSelected) Color(0xFFC62828) else MaterialTheme.colorScheme.onSurface, 
+                                        color = if (isSelected) MaterialTheme.extendedColors.error else MaterialTheme.colorScheme.onSurface,
                                         maxLines = 1
                                     )
                                     Text(
                                         text = "Clear Cell", 
                                         fontSize = 10.sp, 
-                                        color = if (isSelected) Color(0xFFC62828).copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), 
+                                        color = if (isSelected) MaterialTheme.extendedColors.error.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                         maxLines = 1
                                     )
                                 }
@@ -1851,7 +1812,7 @@ fun PlannerScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    if (hasConflict) Color(0xFFFFEBEE) else if (hasSynergy) Color(0xFFE8F5E9) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                    if (hasConflict) MaterialTheme.extendedColors.error.copy(alpha = 0.12f) else if (hasSynergy) MaterialTheme.extendedColors.success.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
                                     RoundedCornerShape(12.dp)
                                 )
                                 .padding(12.dp)
@@ -1860,7 +1821,7 @@ fun PlannerScreen(
                                 text = "Occupant: ${currentOccupant.plantName} ${getEmojiForPlantName(currentOccupant.plantName)}",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = if (hasConflict) Color(0xFFC62828) else if (hasSynergy) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
+                                color = if (hasConflict) MaterialTheme.extendedColors.error else if (hasSynergy) MaterialTheme.extendedColors.success else MaterialTheme.colorScheme.onSurface
                             )
                             if (hasSynergy) {
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -1877,7 +1838,7 @@ fun PlannerScreen(
                                 Text(
                                     text = "⚠️ COMPANION CONFLICT WARNING: Staged too close to an incompatible species! These plants compete for nutrients, attract pests, or clash in water needs.",
                                     fontSize = 11.sp,
-                                    color = Color(0xFFC62828),
+                                    color = MaterialTheme.extendedColors.error,
                                     fontWeight = FontWeight.Bold,
                                     lineHeight = 15.sp
                                 )

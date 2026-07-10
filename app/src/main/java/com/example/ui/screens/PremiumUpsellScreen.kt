@@ -55,7 +55,11 @@ fun PremiumUpsellScreen(
         Box(
             modifier = Modifier
                 .size(88.dp)
-                .border(2.dp, Brush.horizontalGradient(listOf(Color(0xFFFFD54F), Color(0xFFFFB300))), CircleShape)
+                .border(
+                    2.dp,
+                    MaterialTheme.extendedColors.premiumGold,
+                    CircleShape
+                )
                 .padding(4.dp)
                 .clip(CircleShape)
                 .background(
@@ -69,7 +73,7 @@ fun PremiumUpsellScreen(
                 Icons.Default.WorkspacePremium,
                 contentDescription = "Premium Badge",
                 modifier = Modifier.size(44.dp),
-                tint = Color(0xFFFFB300)
+                tint = MaterialTheme.extendedColors.premiumGold
             )
         }
     }
@@ -173,9 +177,9 @@ fun PremiumUpsellScreen(
                             ) {
                                 Text(
                                     "BEST VALUE",
-                                    fontSize = 8.sp,
+                                    style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.ExtraBold,
-                                    color = Color.White
+                                    color = MaterialTheme.extendedColors.onSuccess
                                 )
                             }
                         }
@@ -220,36 +224,15 @@ fun PremiumUpsellScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Button(
+            FloraFlowButton(
+                text = if (selectedTrialDays > 0) "Start $selectedTrialDays-Day Free Trial" else "Subscribe Now",
                 onClick = { onUpgradeClick(selectAnnual) },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(Color(0xFFFFD54F), Color(0xFFFFB300))
-                        ),
-                        shape = RoundedCornerShape(28.dp)
-                    ),
-                shape = RoundedCornerShape(28.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent
-                )
-            ) {
-                Icon(
-                    Icons.Default.AutoAwesome,
-                    contentDescription = null,
-                    tint = Color(0xFF4A2B00),
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = if (selectedTrialDays > 0) "Start $selectedTrialDays-Day Free Trial" else "Subscribe Now",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A2B00)
-                )
-            }
+                    .heightIn(min = 56.dp),
+                variant = ButtonVariant.Premium,
+                leadingIcon = Icons.Default.AutoAwesome
+            )
         }
     }
 

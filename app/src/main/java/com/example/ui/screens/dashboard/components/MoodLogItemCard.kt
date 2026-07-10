@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.example.data.model.MoodLog
 import com.example.ui.components.MoodPhoto
 import com.example.ui.theme.SoilSageDark
+import com.example.ui.theme.extendedColors
 import com.example.ui.theme.spacing
 
 @Composable
@@ -38,6 +39,9 @@ fun MoodLogItemCard(
     }
 
     val isDark = MaterialTheme.colorScheme.primary == SoilSageDark
+    val waterColor = MaterialTheme.colorScheme.primary
+    val pruneColor = MaterialTheme.colorScheme.tertiary
+    val outdoorsColor = MaterialTheme.extendedColors.success
     val itemBgColor = if (isDark) {
         when (log.mood) {
             "Peaceful" -> Color(0xFF2C1E30)
@@ -133,13 +137,13 @@ fun MoodLogItemCard(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0xFF0284C7).copy(alpha = 0.15f))
+                                    .background(waterColor.copy(alpha = 0.15f))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = "💧 Watered",
-                                    fontSize = 9.sp,
-                                    color = Color(0xFF0284C7),
+                                    fontSize = 10.sp,
+                                    color = waterColor,
                                     fontWeight = FontWeight.Bold,
                                     maxLines = 1, softWrap = false
                                 )
@@ -149,13 +153,13 @@ fun MoodLogItemCard(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0xFFF97316).copy(alpha = 0.15f))
+                                    .background(pruneColor.copy(alpha = 0.15f))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = "✂️ Pruned",
-                                    fontSize = 9.sp,
-                                    color = Color(0xFFF97316),
+                                    fontSize = 10.sp,
+                                    color = pruneColor,
                                     fontWeight = FontWeight.Bold,
                                     maxLines = 1, softWrap = false
                                 )
@@ -165,13 +169,13 @@ fun MoodLogItemCard(
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(Color(0xFF10B981).copy(alpha = 0.15f))
+                                    .background(outdoorsColor.copy(alpha = 0.15f))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
                                     text = "🍃 Outdoors",
-                                    fontSize = 9.sp,
-                                    color = Color(0xFF10B981),
+                                    fontSize = 10.sp,
+                                    color = outdoorsColor,
                                     fontWeight = FontWeight.Bold,
                                     maxLines = 1, softWrap = false
                                 )
