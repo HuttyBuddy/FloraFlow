@@ -149,40 +149,39 @@ fun PremiumUpsellScreen(
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Box {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = selectAnnual,
-                            onClick = { selectAnnual = true }
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = selectAnnual,
+                        onClick = { selectAnnual = true }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text("Annual Plan", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                            Text(annualTrialLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Box(
+                                modifier = Modifier
+                                    .background(MaterialTheme.extendedColors.success, RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 8.dp, vertical = 2.dp)
+                            ) {
+                                Text(
+                                    "BEST VALUE",
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color.White
+                                )
+                            }
                         }
-                        Text(annualPrice, fontWeight = FontWeight.Black, fontSize = 14.sp)
+                        Text(annualTrialLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                     }
-
-                    // Best Value badge in the corner
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 8.dp, end = 8.dp)
-                            .background(MaterialTheme.extendedColors.success, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 8.dp, vertical = 4.dp)
-                    ) {
-                        Text(
-                            "BEST VALUE",
-                            fontSize = 8.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color.White
-                        )
-                    }
+                    Text(annualPrice, fontWeight = FontWeight.Black, fontSize = 14.sp)
                 }
             }
 
