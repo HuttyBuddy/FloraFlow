@@ -1,0 +1,7 @@
+💡 What: Extracted several static lists (like `tracks`, `moods`, `timers`, and `waves`) from `@Composable` functions into top-level constants in `RestorationJournalScreen.kt`.
+
+🎯 Why: In Jetpack Compose, defining static lists or structures directly inside a `@Composable` block forces the JVM to re-allocate these objects on every single recomposition. Given that `AudioWaveformVisualizer` animates based on state, this caused `List` and `Triple` allocations to happen on every frame (up to 60fps), leading to unnecessary garbage collection overhead and potential frame drops.
+
+📊 Impact: Reduces memory churn and GC overhead by completely eliminating redundant object allocations during `RestorationJournalScreen` recompositions and waveform animations.
+
+🔬 Measurement: Verified by observing the elimination of per-frame object allocations in the Android Studio memory profiler during playback.
