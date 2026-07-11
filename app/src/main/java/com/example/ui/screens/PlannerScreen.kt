@@ -47,6 +47,34 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.nativeCanvas
 import com.example.ui.components.PlantPhoto
 
+// Optimization: Hoisted companionRules to prevent unnecessary allocation during nested loop iteration.
+private val companionRules = listOf(
+    setOf("rose", "maple"),
+    setOf("rose", "lavender"),
+    setOf("lavender", "juniper"),
+    setOf("cactus", "aloe"),
+    setOf("marigold", "ivy"),
+    setOf("ivy", "basil"),
+    setOf("aster", "thyme"),
+    setOf("columbine", "fern"),
+    setOf("rosemary", "lavender"),
+    setOf("rosemary", "thyme")
+)
+
+// Optimization: Hoisted conflictRules to prevent unnecessary allocation during nested loop iteration.
+private val conflictRules = listOf(
+    setOf("ivy", "cactus"),         // Moisture conflict
+    setOf("fern", "cactus"),        // Moisture conflict
+    setOf("lavender", "fern"),      // Sunlight/shade conflict
+    setOf("rosemary", "fern"),      // Moisture/shade mismatch
+    setOf("basil", "cactus"),       // Water requirements mismatch
+    setOf("pothos", "cactus"),      // Water mismatch
+    setOf("maple", "cactus"),       // Water requirements mismatch
+    setOf("rose", "cactus"),        // Water requirements conflict
+    setOf("mint", "rose"),          // Invasive root competition
+    setOf("mint", "lavender")       // Moisture conflict
+)
+
 fun plantMatchesRule(plantName: String, ruleName: String): Boolean {
     val words = plantName.lowercase().split(Regex("[^a-zA-Z0-9]+")).filter { it.isNotBlank() }
     return words.contains(ruleName.lowercase())
@@ -58,19 +86,6 @@ fun checkPlantSynergy(plant1: String, plant2: String): Boolean {
     val p2 = plant2.lowercase()
     if (p1 == p2) return false // diversity is key
     
-    val companionRules = listOf(
-        setOf("rose", "maple"),
-        setOf("rose", "lavender"),
-        setOf("lavender", "juniper"),
-        setOf("cactus", "aloe"),
-        setOf("marigold", "ivy"),
-        setOf("ivy", "basil"),
-        setOf("aster", "thyme"),
-        setOf("columbine", "fern"),
-        setOf("rosemary", "lavender"),
-        setOf("rosemary", "thyme")
-    )
-    
     return companionRules.any { rule ->
         rule.any { r -> plantMatchesRule(p1, r) } && rule.any { r -> plantMatchesRule(p2, r) }
     }
@@ -80,19 +95,6 @@ fun checkPlantConflict(plant1: String, plant2: String): Boolean {
     val p1 = plant1.lowercase()
     val p2 = plant2.lowercase()
     if (p1 == p2) return false
-    
-    val conflictRules = listOf(
-        setOf("ivy", "cactus"),         // Moisture conflict
-        setOf("fern", "cactus"),        // Moisture conflict
-        setOf("lavender", "fern"),      // Sunlight/shade conflict
-        setOf("rosemary", "fern"),      // Moisture/shade mismatch
-        setOf("basil", "cactus"),       // Water requirements mismatch
-        setOf("pothos", "cactus"),      // Water mismatch
-        setOf("maple", "cactus"),       // Water requirements mismatch
-        setOf("rose", "cactus"),        // Water requirements conflict
-        setOf("mint", "rose"),          // Invasive root competition
-        setOf("mint", "lavender")       // Moisture conflict
-    )
     
     return conflictRules.any { rule ->
         rule.any { r -> plantMatchesRule(p1, r) } && rule.any { r -> plantMatchesRule(p2, r) }
@@ -184,6 +186,46 @@ data class SoilTheme(
     val description: String
 )
 
+
+// Optimization: Hoisted soilThemes to prevent unnecessary allocation on every recomposition.
+private val soilThemes = listOf(
+    SoilTheme(
+        name = "Loam 🟫",
+        bgColors = listOf(Color(0xFFEFEBE9), Color(0xFFD7CCC8)),
+        outlineColor = Color(0xFF8D6E63),
+        slotBgColor = Color(0xFF5D4037).copy(alpha = 0.08f),
+        description = "Rich organic tilled loam soil with excellent moisture absorption."
+    ),
+    SoilTheme(
+        name = "Sand 🟧",
+        bgColors = listOf(Color(0xFFFFF8E1), Color(0xFFFFECB3)),
+        outlineColor = Color(0xFFFFB74D),
+        slotBgColor = Color(0xFFE65100).copy(alpha = 0.08f),
+        description = "Coarse gritty sand. Extremely well draining workspace."
+    ),
+    SoilTheme(
+        name = "Pebbles ⬜",
+        bgColors = listOf(Color(0xFFECEFF1), Color(0xFFCFD8DC)),
+        outlineColor = Color(0xFF78909C),
+        slotBgColor = Color(0xFF37474F).copy(alpha = 0.08f),
+        description = "Smoothed stones. Best suited for raked spaces."
+    ),
+    SoilTheme(
+        name = "Clay 🟥",
+        bgColors = listOf(Color(0xFFF4A460), Color(0xFFCD853F)),
+        outlineColor = Color(0xFFD2691E),
+        slotBgColor = Color(0xFF8B4513).copy(alpha = 0.08f),
+        description = "Heavy nutrient-rich clay. Retains moisture for water-loving plants."
+    ),
+    SoilTheme(
+        name = "Mulch 🟫",
+        bgColors = listOf(Color(0xFF4E342E), Color(0xFF271C19)),
+        outlineColor = Color(0xFF6D4C41),
+        slotBgColor = Color(0xFF3E2723).copy(alpha = 0.08f),
+        description = "Organic wood chips and compost. Great for weed prevention and warmth."
+    )
+)
+
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun PlannerScreen(
@@ -211,43 +253,6 @@ fun PlannerScreen(
     val isTablet = configuration.smallestScreenWidthDp >= 600
     val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
 
-    val soilThemes = listOf(
-        SoilTheme(
-            name = "Loam 🟫",
-            bgColors = listOf(Color(0xFFEFEBE9), Color(0xFFD7CCC8)),
-            outlineColor = Color(0xFF8D6E63),
-            slotBgColor = Color(0xFF5D4037).copy(alpha = 0.08f),
-            description = "Rich organic tilled loam soil with excellent moisture absorption."
-        ),
-        SoilTheme(
-            name = "Sand 🟧",
-            bgColors = listOf(Color(0xFFFFF8E1), Color(0xFFFFECB3)),
-            outlineColor = Color(0xFFFFB74D),
-            slotBgColor = Color(0xFFE65100).copy(alpha = 0.08f),
-            description = "Coarse gritty sand. Extremely well draining workspace."
-        ),
-        SoilTheme(
-            name = "Pebbles ⬜",
-            bgColors = listOf(Color(0xFFECEFF1), Color(0xFFCFD8DC)),
-            outlineColor = Color(0xFF78909C),
-            slotBgColor = Color(0xFF37474F).copy(alpha = 0.08f),
-            description = "Smoothed stones. Best suited for raked spaces."
-        ),
-        SoilTheme(
-            name = "Clay 🟥",
-            bgColors = listOf(Color(0xFFF4A460), Color(0xFFCD853F)),
-            outlineColor = Color(0xFFD2691E),
-            slotBgColor = Color(0xFF8B4513).copy(alpha = 0.08f),
-            description = "Heavy nutrient-rich clay. Retains moisture for water-loving plants."
-        ),
-        SoilTheme(
-            name = "Mulch 🟫",
-            bgColors = listOf(Color(0xFF4E342E), Color(0xFF271C19)),
-            outlineColor = Color(0xFF6D4C41),
-            slotBgColor = Color(0xFF3E2723).copy(alpha = 0.08f),
-            description = "Organic wood chips and compost. Great for weed prevention and warmth."
-        )
-    )
     var selectedSoilIdx by remember { mutableIntStateOf(0) }
     val currentSoilTheme = soilThemes[selectedSoilIdx]
 

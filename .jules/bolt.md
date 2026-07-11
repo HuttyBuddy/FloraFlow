@@ -20,3 +20,6 @@
 ## 2024-05-18 - Optimize nested loops with precomputed O(1) arrays
 **Learning:** During heavy Compose recompositions, nested iteration `O(N * M)` operations like `.firstOrNull()` inside UI lists or grids can severely degrade frame rate and CPU performance.
 **Action:** When a static list must be frequently queried by multiple nested UI elements, map it into a 1D or 2D Array before the loops. Lookups via direct array indices change complexity from `O(N)` to `O(1)`, resulting in massive (often >20x) iteration time improvements.
+## 2026-07-03 - Prevent Jetpack Compose Re-allocations
+**Learning:** Defining static lists (like `listOf(setOf(...))` for configurations) inside helper functions that are called during heavy nested UI loops, or inside `@Composable` functions themselves, causes excessive memory allocations during recomposition or high-frequency calculation.
+**Action:** Always extract static configuration objects, such as rule sets and UI state themes, to top-level `private val` constants outside of functions and Composables to minimize garbage collection overhead.
