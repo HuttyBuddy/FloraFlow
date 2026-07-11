@@ -10,3 +10,7 @@
 ## 2026-06-24 - Add explicit contentDescription for Search Icons
 **Learning:** IconButtons with visual indicators like Search often have missing or null content descriptions, rendering them invisible or confusing for screen-reader users.
 **Action:** Always provide a clear explicit 'contentDescription' string for informative Icons acting as or accompanying UI controls (e.g. 'Search', 'Clear filter'), instead of setting it to null.
+
+## 2026-06-25 - Add explicit Call-to-Action in Empty States
+**Learning:** Empty states with only explanatory text or icons leave users without a clear path forward, causing friction during onboarding or first-time use.
+**Action:** Always provide a clear, distinct button or actionable component (e.g., 'Log First Mood') directly inside the empty state card to guide the user into the primary flow.
