@@ -40,34 +40,34 @@ fun CompanionSynergyCard(
     var expanded by remember { mutableStateOf(false) }
 
     // Pairwise companion checks for adjacent plants (distance <= 1.5)
-    val synergies = remember(gridItems) {
-        val list = mutableListOf<Pair<GridPlantItem, GridPlantItem>>()
+    // ⚡ Bolt Performance Optimization:
+    // Combined multiple passes into a single loop to avoid O(N^2) redundancy.
+    // Replaced expensive sqrt() with boundary checks and squared distance comparisons.
+    val (synergies, conflicts) = remember(gridItems) {
+        val synList = mutableListOf<Pair<GridPlantItem, GridPlantItem>>()
+        val confList = mutableListOf<Pair<GridPlantItem, GridPlantItem>>()
         for (i in 0 until gridItems.size) {
             for (j in i + 1 until gridItems.size) {
                 val item1 = gridItems[i]
                 val item2 = gridItems[j]
-                val dist = sqrt(((item1.x - item2.x) * (item1.x - item2.x) + (item1.y - item2.y) * (item1.y - item2.y)).toDouble())
-                if (dist <= 1.5 && checkPlantSynergy(item1.plantName, item2.plantName)) {
-                    list.add(Pair(item1, item2))
-                }
-            }
-        }
-        list
-    }
+                val dx = item1.x - item2.x
+                val dy = item1.y - item2.y
 
-    val conflicts = remember(gridItems) {
-        val list = mutableListOf<Pair<GridPlantItem, GridPlantItem>>()
-        for (i in 0 until gridItems.size) {
-            for (j in i + 1 until gridItems.size) {
-                val item1 = gridItems[i]
-                val item2 = gridItems[j]
-                val dist = sqrt(((item1.x - item2.x) * (item1.x - item2.x) + (item1.y - item2.y) * (item1.y - item2.y)).toDouble())
-                if (dist <= 1.5 && checkPlantConflict(item1.plantName, item2.plantName)) {
-                    list.add(Pair(item1, item2))
+                // Early exit boundary check
+                if (dx < -1 || dx > 1 || dy < -1 || dy > 1) continue
+
+                // Squared distance check (1.5^2 = 2.25)
+                val distSq = dx * dx + dy * dy
+                if (distSq <= 2.25) {
+                    if (checkPlantSynergy(item1.plantName, item2.plantName)) {
+                        synList.add(Pair(item1, item2))
+                    } else if (checkPlantConflict(item1.plantName, item2.plantName)) {
+                        confList.add(Pair(item1, item2))
+                    }
                 }
             }
         }
-        list
+        Pair(synList, confList)
     }
 
     val hasIssues = conflicts.isNotEmpty()
