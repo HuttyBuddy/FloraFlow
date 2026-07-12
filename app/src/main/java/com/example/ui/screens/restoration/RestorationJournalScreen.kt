@@ -1,5 +1,7 @@
 package com.example.ui.screens.restoration
 
+import com.example.ui.copy.RestorationLanguage
+
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.animation.*
@@ -283,7 +285,7 @@ fun RestorationJournalScreen(
                                 modifier = Modifier.align(Alignment.Start)
                             )
                             Text(
-                                text = "Living nature scenes generated in real time, layered with binaural brainwave tones",
+                                text = RestorationLanguage.sessionDescription,
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.5f),
                                 modifier = Modifier
@@ -369,7 +371,7 @@ fun RestorationJournalScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("🧠 Binaural brainwaves", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                                    Text("🧠 Focus tones", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
                                     Text("${(binauralVol * 100).toInt()}%", fontSize = 12.sp, color = Color(0xFFA8E6CF))
                                 }
                                 Slider(
@@ -418,7 +420,7 @@ fun RestorationJournalScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("🌀 Brainwave Frequency ($brainwaveState)", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                                    Text("🌀 Focus tone ($brainwaveState)", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
                                     Text(String.format(java.util.Locale.US, "%.1f Hz", diffFreq), fontSize = 12.sp, color = Color(0xFFA8E6CF))
                                 }
                                 Slider(
@@ -609,7 +611,7 @@ fun RestorationJournalScreen(
                                 color = Color(0xFFA8E6CF)
                             )
                             Text(
-                                text = "Complete these exercises to boost your Neural Restoration Index.",
+                                text = "Complete any exercises that help you make the session your own.",
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.5f),
                                 modifier = Modifier.padding(bottom = 12.dp)

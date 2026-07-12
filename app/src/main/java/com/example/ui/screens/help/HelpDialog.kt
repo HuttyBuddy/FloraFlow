@@ -62,13 +62,13 @@ val faqs = listOf(
     FAQItem(
         id = 3,
         question = "How do I use the Restoration Journal?",
-        answer = "The Restoration Journal calculates a Neural Restoration Index (NRI) representing stress relief based on your garden's biophilic design. Open the 'Restoration' tab to adjust soundscape volumes, choose a binaural beat frequency (Alpha, Theta, or Delta), and check off mindful sensory tasks linked to your plants. Free users get a trial of 3 play/log sessions before upgrading to PRO.",
+        answer = "The Restoration Journal is a space for optional nature-sound sessions and reflection. Open the 'Restoration' tab to adjust soundscape volumes, choose a focus tone, and check off mindful sensory tasks linked to your plants. Free users get a trial of 3 play/log sessions before upgrading to PRO.",
         category = "Restoration"
     ),
     FAQItem(
         id = 4,
         question = "Is a premium subscription required?",
-        answer = "FloraFlow is free for basic layout planning and greenhouse inventory. It includes a trial of premium features (3 free Garden Counsel queries and 3 free Restoration play/log sessions). FloraFlow PRO unlocks unlimited Garden Counsel consultations, full Eco-Acoustic Restoration Journal tracking with brainwave frequencies, and custom biophilic design index metrics.",
+        answer = "FloraFlow is free for basic layout planning and garden inventory. It includes a trial of premium features (3 free Garden Counsel queries and 3 free Restoration play/log sessions). FloraFlow PRO unlocks unlimited Garden Counsel consultations, the full Eco-Acoustic Restoration Journal, and richer space-design insights.",
         category = "Premium"
     ),
     FAQItem(

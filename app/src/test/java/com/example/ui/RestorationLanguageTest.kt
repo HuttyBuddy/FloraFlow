@@ -17,4 +17,12 @@ class RestorationLanguageTest {
     fun scoreLabel_uses_restoration_language_not_medical_language() {
         assertEquals("Space Restoration Score", RestorationLanguage.scoreLabel)
     }
+
+    @Test
+    fun sessionDescription_frames_audio_as_relaxation_not_treatment() {
+        assertEquals(
+            "Layered nature sounds for a calm, intentional pause.",
+            RestorationLanguage.sessionDescription,
+        )
+    }
 }
