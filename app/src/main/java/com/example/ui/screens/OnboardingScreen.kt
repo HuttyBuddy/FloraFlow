@@ -41,6 +41,7 @@ import com.example.ui.components.FloraFlowButton
 import com.example.ui.components.FloraFlowCard
 import com.example.ui.components.ButtonVariant
 import com.example.ui.copy.RestorationLanguage
+import com.example.ui.copy.AssessmentDestination
 import com.example.ui.theme.BiophilicPrimary
 import com.example.ui.theme.BiophilicSecondary
 import kotlinx.coroutines.delay
@@ -120,70 +121,70 @@ fun OnboardingScreen(
                 "Optimize your nature view",
                 "You scored ${categoryScores["NATURE VIEWS"] ?: 0}/2 on Nature Views. Clear visual blockages or place plants in your direct line of sight to simulate natural depth.",
                 "Design my layout →",
-                1
+                AssessmentDestination.tabFor("NATURE VIEWS")
             ),
             "LIVING PLANTS" to NextStepInfo(
                 "LIVING PLANTS",
                 "Add living material to your work area",
                 "You scored ${categoryScores["LIVING PLANTS"] ?: 0}/2 on Living Plants. Adding 2-3 plants to your primary space is the single highest-impact change for your score.",
                 "Find plants for my space →",
-                3
+                AssessmentDestination.tabFor("LIVING PLANTS")
             ),
             "NATURAL LIGHT" to NextStepInfo(
                 "NATURAL LIGHT",
                 "Reposition toward natural light",
                 "You scored ${categoryScores["NATURAL LIGHT"] ?: 0}/2 on Natural Light. Even partial repositioning toward natural light helps lower stress and restore calm.",
                 "Design my layout →",
-                1
+                AssessmentDestination.tabFor("NATURAL LIGHT")
             ),
             "ACOUSTIC CALM" to NextStepInfo(
                 "ACOUSTIC CALM",
                 "Introduce acoustic masking",
                 "You scored ${categoryScores["ACOUSTIC CALM"] ?: 0}/2 on Acoustic Calm. Mask distracting background noise to quiet your mind.",
                 "Find soothing soundscapes →",
-                3
+                AssessmentDestination.tabFor("ACOUSTIC CALM")
             ),
             "NATURAL MATERIALS" to NextStepInfo(
                 "NATURAL MATERIALS",
                 "Introduce one natural texture",
                 "You scored ${categoryScores["NATURAL MATERIALS"] ?: 0}/2 on Natural Materials. A wood surface, woven rug, or stone object changes your sensory baseline immediately.",
                 "Browse material ideas →",
-                2
+                AssessmentDestination.tabFor("NATURAL MATERIALS")
             ),
             "AIR & VENTILATION" to NextStepInfo(
                 "AIR & VENTILATION",
                 "Enhance active airflow",
                 "You scored ${categoryScores["AIR & VENTILATION"] ?: 0}/2 on Air & Ventilation. Get 10 minutes of fresh air twice daily, or use a gentle oscillating fan to mimic natural wind.",
                 "Ask Advisor for advice →",
-                3
+                AssessmentDestination.tabFor("AIR & VENTILATION")
             ),
             "ORGANIC FORMS" to NextStepInfo(
                 "ORGANIC FORMS",
                 "Introduce organic patterns",
                 "You scored ${categoryScores["ORGANIC FORMS"] ?: 0}/2 on Organic Forms. Incorporate curved decor or botanical prints to soften sharp, institutional room angles.",
                 "Browse decoration ideas →",
-                2
+                AssessmentDestination.tabFor("ORGANIC FORMS")
             ),
             "WATER FEATURES" to NextStepInfo(
                 "WATER FEATURES",
                 "Add sound of moving water",
                 "You scored ${categoryScores["WATER FEATURES"] ?: 0}/2 on Water Features. A small tabletop fountain or rain sound machine helps soothe stress and slow down a racing mind.",
                 "Explore water elements →",
-                3
+                AssessmentDestination.tabFor("WATER FEATURES")
             ),
             "SENSORY RICHNESS" to NextStepInfo(
                 "SENSORY RICHNESS",
                 "Stimulate with natural scents",
                 "You scored ${categoryScores["SENSORY RICHNESS"] ?: 0}/2 on Sensory Richness. Use natural cedarwood, pine, or lavender oils to signal calm and safety to your brain.",
                 "Get aromatic tips →",
-                3
+                AssessmentDestination.tabFor("SENSORY RICHNESS")
             ),
             "SEASONAL AWARENESS" to NextStepInfo(
                 "SEASONAL AWARENESS",
                 "Align with current season",
                 "You scored ${categoryScores["SEASONAL AWARENESS"] ?: 0}/2 on Seasonal Awareness. Bring seasonal flowers into your space or adjust light cycles to stay synced with natural rhythms.",
                 "Browse seasonal plants →",
-                2
+                AssessmentDestination.tabFor("SEASONAL AWARENESS")
             )
         )
     }
@@ -254,7 +255,7 @@ fun OnboardingScreen(
                             // assessment engagement — not just users who
                             // scored low. Copy adapts to the zone inside
                             // PersonalizedPaywallScreen (see below).
-                            screenState = AssessmentScreenState.PERSONALIZED_PAYWALL
+                            screenState = AssessmentScreenState.STEPS
                         }
                     )
                 }
