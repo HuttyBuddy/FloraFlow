@@ -58,6 +58,7 @@ import com.example.ui.theme.MyApplicationTheme
 import com.example.ui.theme.extendedColors
 import com.example.ui.theme.spacing
 import com.example.ui.viewmodel.GardenViewModel
+import com.example.ui.copy.AppDestination
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -318,7 +319,7 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.fillMaxSize(),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        // Tab 0: Dashboard
+                                        // Tab 0: Today
                                         Box(
                                             modifier = Modifier
                                                 .weight(1f)
@@ -339,13 +340,13 @@ class MainActivity : ComponentActivity() {
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Dashboard,
-                                                    contentDescription = "Dashboard",
+                                                    contentDescription = AppDestination.TODAY.accessibilityLabel,
                                                     modifier = Modifier.size(22.dp),
                                                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
                                                 Spacer(modifier = Modifier.height(2.dp))
                                                 Text(
-                                                    text = "Dashboard",
+                                                    text = AppDestination.TODAY.label,
                                                     style = uniformTextStyle,
                                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
@@ -355,7 +356,7 @@ class MainActivity : ComponentActivity() {
                                             }
                                         }
  
-                                        // Tab 1: My Plot
+                                        // Tab 1: Plan
                                         Box(
                                             modifier = Modifier
                                                 .weight(1f)
@@ -383,13 +384,13 @@ class MainActivity : ComponentActivity() {
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Explore,
-                                                    contentDescription = "My Plot",
+                                                    contentDescription = AppDestination.PLAN.accessibilityLabel,
                                                     modifier = Modifier.size(22.dp),
                                                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
                                                 Spacer(modifier = Modifier.height(2.dp))
                                                 Text(
-                                                    text = "My Plot",
+                                                    text = AppDestination.PLAN.label,
                                                     style = uniformTextStyle,
                                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
@@ -399,7 +400,7 @@ class MainActivity : ComponentActivity() {
                                             }
                                         }
  
-                                        // Tab 2: Greenhouse
+                                        // Tab 2: My Garden
                                         Box(
                                             modifier = Modifier
                                                 .weight(1f)
@@ -420,13 +421,13 @@ class MainActivity : ComponentActivity() {
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Spa,
-                                                    contentDescription = "Greenhouse",
+                                                    contentDescription = AppDestination.MY_GARDEN.accessibilityLabel,
                                                     modifier = Modifier.size(22.dp),
                                                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
                                                 Spacer(modifier = Modifier.height(2.dp))
                                                 Text(
-                                                    text = "Greenhouse",
+                                                    text = AppDestination.MY_GARDEN.label,
                                                     style = uniformTextStyle,
                                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
@@ -436,7 +437,7 @@ class MainActivity : ComponentActivity() {
                                             }
                                         }
  
-                                        // Tab 3: Counsel
+                                        // Tab 3: Garden Counsel
                                         Box(
                                             modifier = Modifier
                                                 .weight(1f)
@@ -464,13 +465,13 @@ class MainActivity : ComponentActivity() {
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.SmartToy,
-                                                    contentDescription = "Garden Counsel",
+                                                    contentDescription = AppDestination.COUNSEL.accessibilityLabel,
                                                     modifier = Modifier.size(22.dp),
                                                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
                                                 Spacer(modifier = Modifier.height(2.dp))
                                                 Text(
-                                                    text = "Counsel",
+                                                    text = AppDestination.COUNSEL.label,
                                                     style = uniformTextStyle,
                                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
@@ -508,13 +509,13 @@ class MainActivity : ComponentActivity() {
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.SelfImprovement,
-                                                    contentDescription = "Restoration",
+                                                    contentDescription = AppDestination.RESTORATION.accessibilityLabel,
                                                     modifier = Modifier.size(22.dp),
                                                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
                                                 Spacer(modifier = Modifier.height(2.dp))
                                                 Text(
-                                                    text = "Restoration",
+                                                    text = AppDestination.RESTORATION.label,
                                                     style = uniformTextStyle,
                                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                                     maxLines = 1,
