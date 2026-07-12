@@ -20,3 +20,4 @@
 ## 2024-05-18 - Optimize nested loops with precomputed O(1) arrays
 **Learning:** During heavy Compose recompositions, nested iteration `O(N * M)` operations like `.firstOrNull()` inside UI lists or grids can severely degrade frame rate and CPU performance.
 **Action:** When a static list must be frequently queried by multiple nested UI elements, map it into a 1D or 2D Array before the loops. Lookups via direct array indices change complexity from `O(N)` to `O(1)`, resulting in massive (often >20x) iteration time improvements.
+## 2024-11-23 - Avoid Expensive Operations in Nested Loops\n**Learning:** Computing heavy operations like `sqrt()` inside a double loop (`O(N^2)`) creates a major performance bottleneck for UI frame rendering.\n**Action:** Optimize by replacing distance logic with boundary checks (`dx > 1`) and comparing squared differences (`distSq <= 2.25`) to achieve much faster, math-light iteration.
