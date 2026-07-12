@@ -46,6 +46,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.nativeCanvas
 import com.example.ui.components.PlantPhoto
+import com.example.ui.copy.AssessmentFocus
 
 fun plantMatchesRule(plantName: String, ruleName: String): Boolean {
     val words = plantName.lowercase().split(Regex("[^a-zA-Z0-9]+")).filter { it.isNotBlank() }
@@ -193,6 +194,7 @@ fun PlannerScreen(
 ) {
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
     val activePlants by viewModel.activePlants.collectAsStateWithLifecycle()
+    val assessmentPriorities by viewModel.lowestCategories.collectAsStateWithLifecycle()
 
     var showCellConfigDialog by remember { mutableStateOf<Pair<Int, Int>?>(null) } // Row, Col of clicked cell
     var highlightedPlantName by remember { mutableStateOf<String?>(null) }
@@ -204,7 +206,11 @@ fun PlannerScreen(
 
     var selectedSeedTemplate by remember { mutableStateOf<PlantTemplate?>(null) }
     var isUprootModeActive by remember { mutableStateOf(false) }
-    var selectedTrayTab by remember { mutableStateOf(0) } // 0 = Indoor, 1 = Outdoor
+    var selectedTrayTab by remember(activeLayout?.style) {
+        mutableIntStateOf(
+            if (SpaceType.fromStyle(activeLayout?.style.orEmpty()) == SpaceType.INDOOR) 0 else 1
+        )
+    }
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -371,6 +377,12 @@ fun PlannerScreen(
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
+                            Text(
+                                text = "${SpaceType.fromStyle(currentLayout.style).label} · ${currentLayout.style}",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.secondary
+                            )
                         }
                         val snapshots = remember(currentLayout.id, currentLayout.gridString) {
                             viewModel.getGridSnapshots(currentLayout.id)
@@ -409,6 +421,32 @@ fun PlannerScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary
                     )
+                    assessmentPriorities.firstOrNull()?.let { priority ->
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("planner_assessment_focus"),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)
+                            )
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Text(
+                                    text = "Start with $priority",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    text = AssessmentFocus.actionFor(priority),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
