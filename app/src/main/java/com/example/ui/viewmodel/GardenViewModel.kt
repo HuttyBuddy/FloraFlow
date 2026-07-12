@@ -420,7 +420,7 @@ class GardenViewModel @JvmOverloads constructor(
                             query = "Lavender",
                             displayText = "Relaxing Lavender",
                             category = "Restoration Boost",
-                            explanation = "Since you visited Restoration: Lavender is clinically proven to lower stress."
+                            explanation = "Since you visited Restoration: Lavender can add a calming scent and color to your space."
                         )
                     )
                     suggestions.add(

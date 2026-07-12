@@ -45,6 +45,8 @@ import androidx.core.content.edit
 
 import androidx.compose.ui.draw.blur
 import com.example.ui.screens.dashboard.components.*
+import com.example.ui.copy.RestorationLanguage
+import com.example.data.model.SpaceType
 
 @Composable
 fun DashboardScreen(
@@ -109,7 +111,7 @@ fun DashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "You haven't taken your Neural Load assessment yet. Take a 2-minute assessment to personalize your space.",
+                    text = "You haven't completed your ${RestorationLanguage.scoreLabel.lowercase()} yet. Take two minutes to personalize your space.",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = bannerText,
@@ -157,7 +159,7 @@ fun DashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Your last Neural Load assessment was completed 30 days ago. Audit your biophilic sanctuary progress now!",
+                    text = "Your last space restoration check was completed 30 days ago. See how your space has changed.",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = bannerText,
@@ -418,14 +420,14 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "FloraFlow Garden Space",
+                        text = activeLayout?.let { SpaceType.fromStyle(it.style).label } ?: "My space",
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Text(
                         text = if (activeLayout != null) {
-                            "Project: ${activeLayout?.name}"
+                            "${activeLayout?.name} · ${activeLayout?.style}"
                         } else {
                             "Your space is ready to be planted"
                         },
@@ -462,7 +464,7 @@ fun DashboardScreen(
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Create layout", modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Plant a New Seed", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                Text("Create a Space", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
             }
             
             Button(
@@ -477,7 +479,7 @@ fun DashboardScreen(
             ) {
                 Icon(Icons.Default.Eco, contentDescription = "Choose layout", modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Visit a Garden", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+                Text("Switch Space", fontSize = 11.sp, fontWeight = FontWeight.Bold, maxLines = 1)
             }
         }
     }

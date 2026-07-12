@@ -4,6 +4,23 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Index
 
+/**
+ * A display-level classification derived from an existing layout style.
+ * It preserves the current Room schema while allowing the product to lead
+ * with the user's real space, indoors or outdoors.
+ */
+enum class SpaceType(val label: String) {
+    INDOOR("Indoor space"),
+    OUTDOOR("Outdoor space");
+
+    companion object {
+        fun fromStyle(style: String): SpaceType = when (style.trim().lowercase()) {
+            "indoor area", "urban balcony" -> INDOOR
+            else -> OUTDOOR
+        }
+    }
+}
+
 @Entity(tableName = "garden_layouts")
 data class GardenLayout(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

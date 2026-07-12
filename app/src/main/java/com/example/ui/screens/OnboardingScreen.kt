@@ -40,6 +40,7 @@ import com.example.ui.viewmodel.GardenViewModel
 import com.example.ui.components.FloraFlowButton
 import com.example.ui.components.FloraFlowCard
 import com.example.ui.components.ButtonVariant
+import com.example.ui.copy.RestorationLanguage
 import com.example.ui.theme.BiophilicPrimary
 import com.example.ui.theme.BiophilicSecondary
 import kotlinx.coroutines.delay
@@ -351,7 +352,7 @@ fun SplashWelcomeScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Take a 2-minute Neural Load assessment — find out if your environment is helping or hurting your nervous system.",
+            text = RestorationLanguage.assessmentIntro,
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = 16.sp,
                 color = Color.White.copy(alpha = 0.85f),
@@ -543,7 +544,7 @@ fun CalculatingScreen(
     
     LaunchedEffect(Unit) {
         delay(800)
-        textToShow = "Calculating Neural Load..."
+        textToShow = "Reviewing your space..."
         delay(800)
         textToShow = "Generating your results..."
         delay(900)
@@ -649,7 +650,7 @@ fun ResultScreen(
         Spacer(modifier = Modifier.height(48.dp))
         
         Text(
-            text = "Your Neural Load Score",
+            text = RestorationLanguage.scoreLabel,
             style = MaterialTheme.typography.labelLarge.copy(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
