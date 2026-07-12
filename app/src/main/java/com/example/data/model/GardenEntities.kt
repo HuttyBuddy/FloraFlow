@@ -88,6 +88,22 @@ object DailyFocus {
         )
 }
 
+/** Finds distinct, catalog-backed plant names in Garden Counsel advice. */
+object PlantRecommendationMatcher {
+    fun extract(message: String, candidates: List<String>): List<String> {
+        val remaining = message.lowercase()
+        return candidates
+            .sortedByDescending { it.length }
+            .filter { remaining.contains(it.lowercase()) }
+            .fold(mutableListOf()) { matches, candidate ->
+                if (matches.none { existing -> existing.contains(candidate, ignoreCase = true) }) {
+                    matches += candidate
+                }
+                matches
+            }
+    }
+}
+
 
 // Helper class for UI Grid mapping
 data class GridPlantItem(

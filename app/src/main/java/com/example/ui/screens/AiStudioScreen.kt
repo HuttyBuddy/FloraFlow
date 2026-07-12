@@ -20,6 +20,8 @@ import android.graphics.BitmapFactory
 import androidx.compose.ui.graphics.asImageBitmap
 import com.example.ui.components.PlantImages
 import com.example.data.api.Content
+import com.example.data.model.PlantRecommendationMatcher
+import com.example.data.model.ClimatePlants
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -123,7 +125,8 @@ fun getUriMimeType(context: android.content.Context, uri: android.net.Uri): Stri
 @Composable
 fun ChatBubbleContent(
     content: Content,
-    isUser: Boolean
+    isUser: Boolean,
+    onAddPlant: (String) -> Unit = {}
 ) {
     val text = remember(content) { content.parts.firstOrNull { it.text != null }?.text ?: "" }
     val userImageBitmap = remember(content) {
@@ -157,15 +160,7 @@ fun ChatBubbleContent(
 
     val detectedPlants = remember(text) {
         if (text.isBlank()) emptyList() else {
-            val matches = mutableListOf<String>()
-            val sortedNames = plantNames.sortedByDescending { it.length }
-            val lowerText = text.lowercase()
-            for (name in sortedNames) {
-                if (lowerText.contains(name.lowercase()) && !matches.any { it.contains(name, ignoreCase = true) }) {
-                    matches.add(name)
-                }
-            }
-            matches.mapNotNull { name ->
+            PlantRecommendationMatcher.extract(text, plantNames).mapNotNull { name ->
                 PlantImages.forPlantName(name)?.let { resId -> name to resId }
             }
         }
@@ -227,7 +222,7 @@ fun ChatBubbleContent(
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)),
                         modifier = Modifier
                             .width(85.dp)
-                            .height(105.dp)
+                            .height(if (isUser) 105.dp else 132.dp)
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -253,6 +248,15 @@ fun ChatBubbleContent(
                                 lineHeight = 11.sp,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                             )
+                            if (!isUser) {
+                                TextButton(
+                                    onClick = { onAddPlant(name) },
+                                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp),
+                                    modifier = Modifier.height(24.dp)
+                                ) {
+                                    Text("Add to space", fontSize = 8.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
                         }
                     }
                 }
@@ -709,7 +713,14 @@ fun AiStudioScreen(
                                     )
                                     .padding(horizontal = 14.dp, vertical = 10.dp)
                             ) {
-                                ChatBubbleContent(content = content, isUser = isUser)
+                                ChatBubbleContent(
+                                    content = content,
+                                    isUser = isUser,
+                                    onAddPlant = { name ->
+                                        val template = ClimatePlants.ALL_TEMPLATES.firstOrNull { it.name.equals(name, ignoreCase = true) }
+                                        viewModel.addPlant(name, template?.type ?: "Plant", template)
+                                    }
+                                )
                             }
                         }
                     }
@@ -1063,7 +1074,14 @@ fun AiStudioScreen(
                                             )
                                             .padding(horizontal = 14.dp, vertical = 10.dp)
                                     ) {
-                                        ChatBubbleContent(content = content, isUser = isUser)
+                                        ChatBubbleContent(
+                                            content = content,
+                                            isUser = isUser,
+                                            onAddPlant = { name ->
+                                                val template = ClimatePlants.ALL_TEMPLATES.firstOrNull { it.name.equals(name, ignoreCase = true) }
+                                                viewModel.addPlant(name, template?.type ?: "Plant", template)
+                                            }
+                                        )
                                     }
                                 }
                             }
