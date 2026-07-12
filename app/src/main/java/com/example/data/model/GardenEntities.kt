@@ -79,6 +79,15 @@ data class CareTask(
     val intervalDays: Int = 7
 )
 
+/** Selects the one care action that most needs the user's attention today. */
+object DailyFocus {
+    fun nextTask(tasks: List<CareTask>, now: Long = System.currentTimeMillis()): CareTask? =
+        tasks.minWithOrNull(
+            compareBy<CareTask> { if (it.dueDate <= now) 0 else 1 }
+                .thenBy { it.dueDate }
+        )
+}
+
 
 // Helper class for UI Grid mapping
 data class GridPlantItem(

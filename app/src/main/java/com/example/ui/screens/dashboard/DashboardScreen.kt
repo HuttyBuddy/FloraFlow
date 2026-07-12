@@ -47,6 +47,7 @@ import androidx.compose.ui.draw.blur
 import com.example.ui.screens.dashboard.components.*
 import com.example.ui.copy.RestorationLanguage
 import com.example.data.model.SpaceType
+import com.example.data.model.DailyFocus
 
 @Composable
 fun DashboardScreen(
@@ -56,6 +57,7 @@ fun DashboardScreen(
     val layouts by viewModel.allLayouts.collectAsStateWithLifecycle()
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
     val activePlants by viewModel.activePlants.collectAsStateWithLifecycle()
+    val pendingCareTasks by viewModel.pendingCareTasks.collectAsStateWithLifecycle()
     val moodLogs by viewModel.allMoodLogs.collectAsStateWithLifecycle()
     val isAssessmentSkipped by viewModel.isAssessmentSkipped.collectAsStateWithLifecycle()
     val assessmentScore by viewModel.assessmentScore.collectAsStateWithLifecycle()
@@ -439,6 +441,64 @@ fun DashboardScreen(
         }
     }
 
+    val todayActionContent = @Composable {
+        val nextTask = DailyFocus.nextTask(pendingCareTasks)
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("dashboard_today_action"),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Today in your space",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                if (nextTask != null) {
+                    Text(
+                        text = "${nextTask.taskType.lowercase().replaceFirstChar { it.titlecase() }} ${nextTask.plantName}",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = if (nextTask.dueDate <= System.currentTimeMillis()) "Due now" else "Coming up next",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                    )
+                    Button(
+                        onClick = { viewModel.completeCareTask(nextTask) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Text("Mark complete", fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    Text(
+                        text = "Your care list is clear. Add a plant or refine your plan for the next small improvement.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    OutlinedButton(
+                        onClick = { viewModel.setCurrentTab(1) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Open My Plot", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+    }
+
     val quickActionsContent = @Composable {
         Row(
             modifier = Modifier
@@ -772,6 +832,7 @@ fun DashboardScreen(
                 }
             }
             item { headerContent() }
+            item { todayActionContent() }
             item {
                 WeatherSyncCard(
                     weather = weather,
@@ -842,6 +903,7 @@ fun DashboardScreen(
                     )
                 }
                 headerContent()
+                todayActionContent()
                 WeatherSyncCard(
                     weather = weather,
                     onWeatherClick = { showZipDialog = true }
