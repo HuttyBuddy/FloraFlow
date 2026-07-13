@@ -1356,8 +1356,12 @@ fun PlannerScreen(
         }
 
         val layoutDesignChecklistContent = @Composable {
-            val totalConflicts = activeGridItems.count { hasNeighborConflict(it.x, it.y, activeGridItems) }
-            val totalSynergies = activeGridItems.count { hasNeighborSynergy(it.x, it.y, activeGridItems) }
+            // Performance Optimization: Hoisted grid item mapping to an O(1) 2D array before loop iterations
+            // Reduces neighbor lookup from O(N) list traversal to O(1) direct array access.
+            val gridMap = Array<GridPlantItem?>(25) { null }
+            activeGridItems.forEach { gridMap[it.x * 5 + it.y] = it }
+            val totalConflicts = activeGridItems.count { hasNeighborConflictOptimized(it.x, it.y, gridMap) }
+            val totalSynergies = activeGridItems.count { hasNeighborSynergyOptimized(it.x, it.y, gridMap) }
             
             val task1Completed = true
             val task2Completed = activeGridItems.isNotEmpty()
@@ -1787,8 +1791,12 @@ fun PlannerScreen(
         val row = cellDialogCoords.first
         val col = cellDialogCoords.second
         val currentOccupant = activeGridItems.firstOrNull { it.x == row && it.y == col }
-        val hasSynergy = currentOccupant != null && hasNeighborSynergy(row, col, activeGridItems)
-        val hasConflict = currentOccupant != null && hasNeighborConflict(row, col, activeGridItems)
+        // Performance Optimization: Hoisted grid item mapping to an O(1) 2D array before loop iterations
+            // Reduces neighbor lookup from O(N) list traversal to O(1) direct array access.
+            val gridMap = Array<GridPlantItem?>(25) { null }
+        activeGridItems.forEach { gridMap[it.x * 5 + it.y] = it }
+        val hasSynergy = currentOccupant != null && hasNeighborSynergyOptimized(row, col, gridMap)
+        val hasConflict = currentOccupant != null && hasNeighborConflictOptimized(row, col, gridMap)
 
         Dialog(onDismissRequest = { showCellConfigDialog = null }) {
             Surface(
@@ -2099,15 +2107,17 @@ fun PlannerScreen(
                              }
                              
                              // Nodes
+                             val gridMapNodes = Array<GridPlantItem?>(25) { null }
+                             activeGridItems.forEach { gridMapNodes[it.x * 5 + it.y] = it }
                              for (r in 0..4) {
                                  for (c in 0..4) {
-                                     val item = activeGridItems.firstOrNull { it.x == r && it.y == c }
+                                     val item = gridMapNodes.getOrNull(r * 5 + c)
                                      val cx = startX + (c + 0.5f) * cellWidth
                                      val cy = startY + (r + 0.5f) * cellHeight
                                      
                                      if (item != null) {
-                                         val hasConflict = hasNeighborConflict(r, c, activeGridItems)
-                                         val hasSynergy = hasNeighborSynergy(r, c, activeGridItems)
+                                         val hasConflict = hasNeighborConflictOptimized(r, c, gridMapNodes)
+                                         val hasSynergy = hasNeighborSynergyOptimized(r, c, gridMapNodes)
                                          
                                          // Node bg
                                          drawCircle(
@@ -2185,8 +2195,10 @@ fun PlannerScreen(
                                )
                           } else {
                                activeGridItems.forEach { item ->
-                                   val synergy = hasNeighborSynergy(item.x, item.y, activeGridItems)
-                                   val conflict = hasNeighborConflict(item.x, item.y, activeGridItems)
+                                   val gridMapNodesList = Array<GridPlantItem?>(25) { null }
+                                   activeGridItems.forEach { gridMapNodesList[it.x * 5 + it.y] = it }
+                                   val synergy = hasNeighborSynergyOptimized(item.x, item.y, gridMapNodesList)
+                                   val conflict = hasNeighborConflictOptimized(item.x, item.y, gridMapNodesList)
                                    val details = when {
                                        synergy -> " ✅ [COMPANION SYNERGY ACTIVE]"
                                        conflict -> " ⚠️ [NEIGHBOR CONFLICT WARNING]"
@@ -2415,7 +2427,9 @@ fun shareGardenSnapshot(
     canvas.drawText("Therapeutic Garden", size - 220f, size - 50f, watermarkSubPaint)
     
     val totalPlants = gridItems.size
-    val synergyCount = gridItems.count { hasNeighborSynergy(it.x, it.y, gridItems) }
+    val gridMapForSynergy = Array<GridPlantItem?>(25) { null }
+    gridItems.forEach { gridMapForSynergy[it.x * 5 + it.y] = it }
+    val synergyCount = gridItems.count { hasNeighborSynergyOptimized(it.x, it.y, gridMapForSynergy) }
     
     val statsPaint = android.graphics.Paint().apply {
         color = 0xFF1F483E.toInt()
