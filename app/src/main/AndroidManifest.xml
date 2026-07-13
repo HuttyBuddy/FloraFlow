@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-sdk tools:overrideLibrary="io.github.sceneview.ar, io.github.sceneview, androidx.camera.video, androidx.camera.view, androidx.camera.lifecycle, androidx.camera.camera2, androidx.camera.core" />
+    <uses-sdk tools:overrideLibrary="androidx.camera.video, androidx.camera.view, androidx.camera.lifecycle, androidx.camera.camera2, androidx.camera.core" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -13,8 +13,6 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" tools:replace="android:required" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" tools:replace="android:required" />
     <uses-feature android:name="android.hardware.camera.front" android:required="false" tools:node="replace" />
-    <uses-feature android:name="android.hardware.camera.ar" android:required="false" tools:node="merge" />
-    <uses-feature android:name="android.hardware.camera.any" android:required="false" tools:node="merge" />
     <uses-feature android:name="android.hardware.camera.capability.manual_sensor" android:required="false" tools:node="merge" />
     <uses-feature android:name="android.hardware.camera.capability.raw" android:required="false" tools:node="merge" />
     <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" tools:node="replace" />
@@ -22,8 +20,6 @@
     <uses-feature android:name="android.hardware.sensor.light" android:required="false" tools:node="replace" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" tools:node="replace" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" tools:node="replace" />
-    <uses-feature android:name="com.google.ar.core" android:required="false" tools:replace="android:required" />
-    <uses-feature android:glEsVersion="0x00030000" android:required="false" tools:replace="android:required" />
 
     <supports-screens
         android:anyDensity="true"
@@ -41,12 +37,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
-
-        <meta-data android:name="com.google.ar.core" android:value="optional" />
-        <meta-data
-            android:name="com.google.ar.core.min_apk_version"
-            android:value="260760000"
-            tools:replace="android:value" />
 
         <activity
             android:name=".MainActivity"
