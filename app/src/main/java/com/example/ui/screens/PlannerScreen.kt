@@ -2450,7 +2450,7 @@ fun shareGardenSnapshot(
         textSize = 18f
         isAntiAlias = true
     }
-    canvas.drawText("Therapeutic Garden", size - 220f, size - 50f, watermarkSubPaint)
+    canvas.drawText("Biophilic Space", size - 220f, size - 50f, watermarkSubPaint)
     
     val totalPlants = gridItems.size
     val synergyCount = gridItems.count { hasNeighborSynergy(it.x, it.y, gridItems) }
@@ -2478,7 +2478,7 @@ fun shareGardenSnapshot(
             type = "image/png"
             putExtra(android.content.Intent.EXTRA_STREAM, uri)
             putExtra(android.content.Intent.EXTRA_SUBJECT, "My FloraFlow Sanctuary")
-            putExtra(android.content.Intent.EXTRA_TEXT, "Look at the therapeutic sanctuary I just designed using FloraFlow! 🌸🌿 #FloraFlow")
+            putExtra(android.content.Intent.EXTRA_TEXT, "Look at the biophilic space I just designed using FloraFlow! 🌸🌿 #FloraFlow")
             addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         
