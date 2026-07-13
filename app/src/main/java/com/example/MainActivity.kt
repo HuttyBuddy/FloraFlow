@@ -494,7 +494,7 @@ class MainActivity : ComponentActivity() {
                                                 .onGloballyPositioned { coordinates ->
                                                     val rect = coordinates.boundsInRoot()
                                                     viewModel.updateWalkthroughTarget(
-                                                        WalkthroughStep.AR_LENS_TAB,
+                                                        WalkthroughStep.RESTORATION_TAB,
                                                         ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
                                                     )
                                                 },

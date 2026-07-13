@@ -244,7 +244,7 @@ fun WalkthroughOverlay(
                                     WalkthroughStep.DASHBOARD_STATS -> "📈"
                                     WalkthroughStep.PLANNER_TAB -> "📐"
                                     WalkthroughStep.AI_ADVISOR_TAB -> "🔬"
-                                    WalkthroughStep.AR_LENS_TAB -> "🧘"
+                                    WalkthroughStep.RESTORATION_TAB -> "🧘"
                                 }
                                 Text(textOrIcon, fontSize = 24.sp)
                             }
@@ -255,7 +255,7 @@ fun WalkthroughOverlay(
                                 WalkthroughStep.DASHBOARD_STATS -> "Mindfulness Tracker"
                                 WalkthroughStep.PLANNER_TAB -> "My Plot Grid"
                                 WalkthroughStep.AI_ADVISOR_TAB -> "Garden Counsel"
-                                WalkthroughStep.AR_LENS_TAB -> "Restoration Journal"
+                                WalkthroughStep.RESTORATION_TAB -> "Restoration Journal"
                             }
 
                             Text(
@@ -267,12 +267,12 @@ fun WalkthroughOverlay(
                             )
 
                             val description = when (currentStep) {
-                                WalkthroughStep.WELCOME -> "Let's take a quick interactive tour to get familiar with your new therapeutic garden helper."
-                                WalkthroughStep.DASHBOARD_GARDEN -> "This is your Garden Hub. Tap 'Plant a New Seed' to create indoor spaces or switch active layouts via 'Visit a Garden'."
-                                WalkthroughStep.DASHBOARD_STATS -> "The Botanical Rhythm wheel links your daily gardening habits (watering, pruning, outdoors time) with your wellness log."
+                                WalkthroughStep.WELCOME -> "Let's take a quick tour of your biophilic design and plant-care tools."
+                                WalkthroughStep.DASHBOARD_GARDEN -> "This is your space hub. Create an indoor or outdoor space, then switch between your active designs here."
+                                WalkthroughStep.DASHBOARD_STATS -> "Track simple gardening routines, such as watering, pruning, and outdoor time."
                                 WalkthroughStep.PLANNER_TAB -> "Switch to My Plot to drag-and-drop crops on a companion planting grid with spacing safety alerts."
-                                WalkthroughStep.AI_ADVISOR_TAB -> "Consult Dr. Julian Greenleaf, your live Garden Counsel, for plant stress diagnostics, soil pH balance, and mindfulness support."
-                                WalkthroughStep.AR_LENS_TAB -> "Enter the Restoration Journal to listen to calming binaural waves and check off daily mindfulness tasks mapped to your plant layout."
+                                WalkthroughStep.AI_ADVISOR_TAB -> "Use Garden Counsel for plant-care questions, soil guidance, and practical design ideas."
+                                WalkthroughStep.RESTORATION_TAB -> "Use Restoration for optional nature sounds and a quiet moment alongside your plant-care routine."
                             }
 
                             Text(
@@ -318,7 +318,7 @@ fun WalkthroughOverlay(
                                                 onTabChange(4) // Transition to Restoration Journal
                                                 viewModel.nextWalkthroughStep()
                                             }
-                                            WalkthroughStep.AR_LENS_TAB -> {
+                                            WalkthroughStep.RESTORATION_TAB -> {
                                                 onTabChange(0) // Return to Dashboard
                                                 viewModel.nextWalkthroughStep()
                                             }
@@ -327,11 +327,11 @@ fun WalkthroughOverlay(
                                     modifier = Modifier.weight(1.3f),
                                     shape = RoundedCornerShape(10.dp)
                                 ) {
-                                    val buttonText = if (currentStep == WalkthroughStep.AR_LENS_TAB) "Finish" else "Next"
+                                    val buttonText = if (currentStep == WalkthroughStep.RESTORATION_TAB) "Finish" else "Next"
                                     Text(buttonText, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Icon(
-                                        imageVector = if (currentStep == WalkthroughStep.AR_LENS_TAB) Icons.Default.Check else Icons.Default.ArrowForward,
+                                        imageVector = if (currentStep == WalkthroughStep.RESTORATION_TAB) Icons.Default.Check else Icons.Default.ArrowForward,
                                         contentDescription = "Walkthrough Action",
                                         modifier = Modifier.size(14.dp)
                                     )

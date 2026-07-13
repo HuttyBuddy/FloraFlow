@@ -39,7 +39,7 @@ enum class WalkthroughStep {
     DASHBOARD_STATS,
     PLANNER_TAB,
     AI_ADVISOR_TAB,
-    AR_LENS_TAB
+    RESTORATION_TAB
 }
 
 data class ScreenRect(
