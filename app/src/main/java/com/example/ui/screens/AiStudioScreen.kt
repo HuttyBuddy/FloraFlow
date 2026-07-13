@@ -492,7 +492,7 @@ fun AiStudioScreen(
             ) {
                 ControlTabButton(
                     icon = Icons.Default.Favorite,
-                    label = "Neural Scan",
+                    label = "Space Check",
                     active = showNeuralLoad,
                     onClick = { showNeuralLoad = !showNeuralLoad },
                     modifier = Modifier.weight(1f)
@@ -1935,9 +1935,9 @@ fun NeuralLoadDashboardWidget(
                     else -> Color(0xFFF44336)
                 }
                 val zoneName = when (assessmentScore) {
-                    in 15..20 -> "Green Zone — Low Neural Load"
-                    in 8..14 -> "Yellow Zone — Moderate Load"
-                    else -> "Red Zone — High Neural Load"
+                    in 15..20 -> "Green Zone — Strong restoration support"
+                    in 8..14 -> "Yellow Zone — Room to grow"
+                    else -> "Red Zone — Start with one change"
                 }
 
                 Row(
@@ -1955,7 +1955,7 @@ fun NeuralLoadDashboardWidget(
                                 .background(zoneColor, CircleShape)
                         )
                         Text(
-                            text = "Neural Load Score",
+                            text = "Space Restoration Score",
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurface
@@ -2033,7 +2033,7 @@ fun NeuralLoadDashboardWidget(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Favorite,
-                            contentDescription = "Health scan icon",
+                            contentDescription = "Space check icon",
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
@@ -2041,14 +2041,14 @@ fun NeuralLoadDashboardWidget(
 
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "Optimize Biophilic Harmony",
+                            text = "Check your biophilic space",
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Take a 2-minute neural load scan to personalize Dr. Julian's recommendations.",
+                            text = "Answer 10 practical questions to personalize Dr. Julian's recommendations.",
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 13.sp
@@ -2061,7 +2061,7 @@ fun NeuralLoadDashboardWidget(
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.height(32.dp)
                     ) {
-                        Text("Scan", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Text("Start", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

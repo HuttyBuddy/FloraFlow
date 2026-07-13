@@ -53,14 +53,14 @@ class GardenWidgetProvider : AppWidgetProvider() {
                     in 8..14 -> "Yellow Zone"
                     else -> "Red Zone"
                 }
-                "Neural Load: $score/20 ($zone)"
+                "Space score: $score/20 ($zone)"
             } else {
-                "Neural Load: Not Taken"
+                "Space score: Not taken"
             }
 
             val appPrefs = context.getSharedPreferences("floraflow_prefs", Context.MODE_PRIVATE)
             val isAssessmentSkipped = appPrefs.getBoolean("assessment_skipped", false)
-            val finalNeuralStr = if (isAssessmentSkipped) "Neural Load: Skipped" else neuralStr
+            val finalNeuralStr = if (isAssessmentSkipped) "Space check: Skipped" else neuralStr
 
             val step1 = appPrefs.getBoolean("step_1_completed", false)
             val step2 = appPrefs.getBoolean("step_2_completed", false)

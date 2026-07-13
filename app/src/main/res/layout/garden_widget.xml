@@ -54,12 +54,12 @@
         android:singleLine="true"
         android:layout_marginBottom="4dp" />
 
-    <!-- Neural Load score -->
+    <!-- Space restoration score -->
     <TextView
         android:id="@+id/widget_neural_load"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Neural Load: --"
+        android:text="Space score: --"
         android:textColor="#FF1F483E"
         android:textSize="12sp"
         android:textStyle="bold"
