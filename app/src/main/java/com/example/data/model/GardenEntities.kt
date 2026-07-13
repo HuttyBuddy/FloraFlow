@@ -144,6 +144,18 @@ fun toGridString(items: List<GridPlantItem>): String {
     return items.joinToString("|") { it.toString() }
 }
 
+object GridPlacement {
+    fun firstAvailable(items: List<GridPlantItem>, width: Int = 5, height: Int = 5): Pair<Int, Int>? {
+        val occupied = items.map { it.x to it.y }.toSet()
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                if (x to y !in occupied) return x to y
+            }
+        }
+        return null
+    }
+}
+
 @Entity(tableName = "restoration_logs")
 data class RestorationLog(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

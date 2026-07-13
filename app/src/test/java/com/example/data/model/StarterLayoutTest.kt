@@ -16,4 +16,14 @@ class StarterLayoutTest {
     fun gridFor_handles_a_single_starter_plant() {
         assertEquals("0,0,Snake Plant", StarterLayout.gridFor(listOf("Snake Plant")))
     }
+
+    @Test
+    fun firstAvailable_returns_the_first_unoccupied_cell() {
+        assertEquals(
+            Pair(0, 1),
+            GridPlacement.firstAvailable(
+                listOf(GridPlantItem(0, 0, "Snake Plant"))
+            )
+        )
+    }
 }

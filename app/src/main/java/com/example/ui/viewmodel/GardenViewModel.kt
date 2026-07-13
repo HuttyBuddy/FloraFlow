@@ -1298,6 +1298,12 @@ class GardenViewModel @JvmOverloads constructor(
                 pestsDiseases = template?.pestsDiseases ?: "Aphids, Powdery Mildew"
             )
             repository.insertPlant(newPlant)
+            GridPlacement.firstAvailable(parseGridString(layout.gridString))?.let { (x, y) ->
+                val updatedGrid = toGridString(parseGridString(layout.gridString) + GridPlantItem(x, y, name))
+                repository.updateLayoutGrid(layout.id, updatedGrid)
+                _activeLayout.value = layout.copy(gridString = updatedGrid)
+                saveGridSnapshot(layout.id, updatedGrid)
+            }
             careScheduler.syncCareSchedules()
         }
     }
