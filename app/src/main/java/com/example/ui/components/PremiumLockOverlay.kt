@@ -50,7 +50,7 @@ fun PremiumLockOverlay(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Track your neural restoration index history over time with FloraFlow PRO.",
+                text = "Track your restoration-session history over time with FloraFlow PRO.",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.White.copy(alpha = 0.8f),
                 textAlign = TextAlign.Center,

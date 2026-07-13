@@ -657,7 +657,7 @@ class SoundscapeService : Service() {
                 "Restoration Soundscapes",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Background Nature & Binaural Beat playback for neural restoration"
+                description = "Background nature sounds and focus-tone playback for restorative breaks"
             }
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)

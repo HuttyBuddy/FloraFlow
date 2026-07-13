@@ -741,7 +741,7 @@ fun RestorationJournalScreen(
                                       textAlign = TextAlign.Center
                                   )
                                   Text(
-                                      text = "You have completed your 3 free trial sessions. Upgrade to FloraFlow PRO for unlimited Forest Breeze, Gentle Rain & Ocean Wave sessions — living soundscapes that never loop — plus sleep timer fade-outs and neural restoration tracking!",
+                                      text = "You have completed your 3 free trial sessions. Upgrade to FloraFlow PRO for unlimited Forest Breeze, Gentle Rain, and Ocean Wave sessions, plus sleep-timer fade-outs and session history.",
                                       fontSize = 12.sp,
                                       color = Color.White.copy(alpha = 0.75f),
                                       textAlign = TextAlign.Center,
@@ -914,7 +914,7 @@ fun NriGaugeCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Neural Restoration Index (NRI)",
+                text = "Restoration Progress",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFFA8E6CF)
@@ -1000,7 +1000,7 @@ fun NriGaugeCard(
             Divider(color = Color(0xFF81C784).copy(alpha = 0.1f))
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Expandable Diagnostics Toggle Button
+            // Expandable score details
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -1010,7 +1010,7 @@ fun NriGaugeCard(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "View Score Diagnostics",
+                    text = "View Score Details",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFFA8E6CF)
@@ -1018,7 +1018,7 @@ fun NriGaugeCard(
                 Spacer(modifier = Modifier.width(6.dp))
                 Icon(
                     imageVector = Icons.Default.ExpandMore,
-                    contentDescription = if (isExpanded) "Collapse diagnostics" else "Expand diagnostics",
+                    contentDescription = if (isExpanded) "Collapse score details" else "Expand score details",
                     tint = Color(0xFFA8E6CF),
                     modifier = Modifier
                         .size(16.dp)

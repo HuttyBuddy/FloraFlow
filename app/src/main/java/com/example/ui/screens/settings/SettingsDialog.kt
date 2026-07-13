@@ -179,7 +179,7 @@ fun SettingsDialog(
 
                     SettingsActionRow(
                         title = "Retake Biophilic Assessment",
-                        subtitle = "Recalculate your Neural Load score & tips",
+                        subtitle = "Refresh your space restoration score and practical tips",
                         icon = Icons.Default.Eco,
                         iconTint = MaterialTheme.colorScheme.primary,
                         onClick = {
@@ -191,7 +191,7 @@ fun SettingsDialog(
                     val simulate30Days by viewModel.simulate30Days.collectAsState()
                     SettingsActionRow(
                         title = if (simulate30Days) "Disable 30-Day Simulation" else "Simulate 30 Days Elapsed",
-                        subtitle = "Toggle the monthly Neural Load audit reminder",
+                        subtitle = "Toggle the monthly space-check reminder",
                         icon = Icons.Default.Timer,
                         iconTint = if (simulate30Days) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                         onClick = {

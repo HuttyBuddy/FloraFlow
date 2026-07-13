@@ -41,13 +41,13 @@ fun BiophilicProfileCard(
     val zoneInfo = when (score) {
         in 15..20 -> BiophilicZoneInfo(
             "Green Zone",
-            "Environment supports nervous system calm and natural focus.",
+            "Your space already includes several restorative elements.",
             Color(0xFF2E7D32),
             Color(0xFFE8F5E9)
         )
         in 8..14 -> BiophilicZoneInfo(
             "Yellow Zone",
-            "A few elements are missing, quietly draining focus/energy.",
+            "A few practical biophilic elements are ready to add.",
             Color(0xFFF57F17),
             Color(0xFFFFFDE7)
         )
@@ -314,14 +314,14 @@ private data class BiophilicZoneInfo(
 
 private fun getBiophilicCategoryTip(category: String): Pair<String, String> {
     return when (category.uppercase()) {
-        "NATURE VIEWS" -> Pair("Optimize nature views", "Clear obstructions from your view. Place your plant layout directly in your line of sight to rest eye muscles.")
-        "LIVING PLANTS" -> Pair("Add plant variety", "Sow at least 2-3 distinct plants (e.g., ivy, bonsai) in your space to lower sympathetic nervous system arousal.")
-        "NATURAL LIGHT" -> Pair("Maximize daylight", "Set your desk/sitting area within 5 feet of natural light to regulate sleep cycles and cortisol.")
+        "NATURE VIEWS" -> Pair("Optimize nature views", "Clear obstructions from your view and place a plant where you will notice it each day.")
+        "LIVING PLANTS" -> Pair("Add plant variety", "Start with two or three easy-care plants matched to the light in your space.")
+        "NATURAL LIGHT" -> Pair("Maximize daylight", "Place your desk or sitting area near the brightest suitable natural light.")
         "ACOUSTIC CALM" -> Pair("Introduce sound masking", "Place a tabletop moving water feature or play soothing botanical rain sounds to mask distracting background hums.")
-        "NATURAL MATERIALS" -> Pair("Introduce natural textures", "Integrate materials like wood, cork, or a clay plant pot into your setup to stabilize stress baselines.")
+        "NATURAL MATERIALS" -> Pair("Introduce natural textures", "Bring in wood, cork, woven fibers, or clay planters for warmth and texture.")
         "AIR & VENTILATION" -> Pair("Enhance ventilation", "Get 10 minutes of fresh air twice daily, or place a quiet oscillating fan near plants to simulate natural breeze.")
         "ORGANIC FORMS" -> Pair("Adopt organic layouts", "Incorporate rounded pots, curved paths, or prints of leaf shapes to soften sharp institutional wall corners.")
-        "WATER FEATURES" -> Pair("Water soundscape sync", "Sow moisture-loving plants or stream rainfall sounds when gardening to lower blood pressure and anxiety.")
+        "WATER FEATURES" -> Pair("Water soundscape sync", "Try a subtle water feature or rainfall sounds during a gardening break if they suit your space.")
         "SENSORY RICHNESS" -> Pair("Stimulate sensory triggers", "Introduce highly aromatic herbs (lavender, pine, mint) near your workspace. Inhale their scent during breaks.")
         "SEASONAL AWARENESS" -> Pair("Align with natural cycles", "Adjust light durations to match current seasons. Keep a seasonal plant blooming nearby.")
         else -> Pair("Enhance natural presence", "Add organic shapes, living greenery, and natural daylight zones to complete your biophilic shelter.")

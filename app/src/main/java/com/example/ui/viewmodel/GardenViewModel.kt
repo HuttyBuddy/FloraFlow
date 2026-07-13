@@ -1430,9 +1430,9 @@ class GardenViewModel @JvmOverloads constructor(
                 "6. CRITICAL IMAGE REQUIREMENT: Whenever you recommend, mention, or suggest plants, always refer to them by their standard names (e.g., 'Snake Plant', 'Lavender', 'Monstera Deliciosa', 'Bonsai Juniper', 'Rosemary', 'Peace Lily', 'Fiddle Leaf Fig', 'ZZ Plant', etc.) so that the Counsel tab can display real photo outputs and examples inline."
             } else if (score != null) {
                 val zone = when (score) {
-                    in 15..20 -> "Green Zone — Low Neural Load"
-                    in 8..14 -> "Yellow Zone — Moderate Neural Load"
-                    else -> "Red Zone — High Neural Load"
+                    in 15..20 -> "Green Zone — Strong restoration support"
+                    in 8..14 -> "Yellow Zone — Room to grow"
+                    else -> "Red Zone — Start with one change"
                 }
                 val categoriesStr = categories.joinToString(", ")
                 "You are the FloraFlow Biophilic Design Advisor. You help users make their indoor and outdoor spaces feel more restorative through specific, practical design changes.\n\n" +
