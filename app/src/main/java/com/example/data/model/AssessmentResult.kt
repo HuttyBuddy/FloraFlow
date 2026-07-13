@@ -15,4 +15,7 @@ data class AssessmentResult(
 object AssessmentScope {
     fun latestForLayout(results: List<AssessmentResult>, layoutId: Int?): AssessmentResult? =
         layoutId?.let { id -> results.filter { it.layoutId == id }.maxByOrNull { it.timestamp } }
+
+    fun needsAssessment(results: List<AssessmentResult>, layoutId: Int?): Boolean =
+        layoutId != null && latestForLayout(results, layoutId) == null
 }

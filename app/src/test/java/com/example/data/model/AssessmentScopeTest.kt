@@ -16,4 +16,14 @@ class AssessmentScopeTest {
         assertEquals(2, AssessmentScope.latestForLayout(results, 4)?.id)
         assertNull(AssessmentScope.latestForLayout(results, null))
     }
+
+    @Test
+    fun needsAssessment_is_true_when_the_active_space_has_no_result() {
+        val results = listOf(
+            AssessmentResult(id = 1, score = 12, lowestCategories = "NATURAL LIGHT", layoutId = 4)
+        )
+
+        assertEquals(true, AssessmentScope.needsAssessment(results, 9))
+        assertEquals(false, AssessmentScope.needsAssessment(results, 4))
+    }
 }

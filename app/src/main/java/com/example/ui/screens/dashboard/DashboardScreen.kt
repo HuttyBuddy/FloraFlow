@@ -86,6 +86,10 @@ fun DashboardScreen(
     var showLogMoodDialog by remember { mutableStateOf(false) }
     var showZipDialog by remember { mutableStateOf(false) }
 
+    val activeSpaceNeedsAssessment = remember(assessmentHistory, activeLayout?.id) {
+        com.example.data.model.AssessmentScope.needsAssessment(assessmentHistory, activeLayout?.id)
+    }
+
     val density = LocalDensity.current
     val windowInfo = LocalWindowInfo.current
     val isWideScreen = with(density) { windowInfo.containerSize.width.toDp() >= 600.dp }
@@ -500,6 +504,25 @@ fun DashboardScreen(
         }
     }
 
+    val activeSpaceAssessmentPrompt = @Composable {
+        Card(
+            modifier = Modifier.fillMaxWidth().testTag("dashboard_assess_active_space"),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Make this space personal", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    "Assess ${activeLayout?.name ?: "this space"} to get a tailored indoor or outdoor plan.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Button(onClick = { viewModel.resetAssessment() }, modifier = Modifier.fillMaxWidth()) {
+                    Text("Assess this space")
+                }
+            }
+        }
+    }
+
     val quickActionsContent = @Composable {
         Row(
             modifier = Modifier
@@ -817,6 +840,8 @@ fun DashboardScreen(
             }
             if (isAssessmentSkipped) {
                 item { skippedAssessmentBanner() }
+            } else if (activeSpaceNeedsAssessment) {
+                item { activeSpaceAssessmentPrompt() }
             } else if ((activeAssessment?.score ?: assessmentScore) != null) {
                 item {
                     BiophilicProfileCard(
@@ -893,6 +918,8 @@ fun DashboardScreen(
                 }
                 if (isAssessmentSkipped) {
                     skippedAssessmentBanner()
+                } else if (activeSpaceNeedsAssessment) {
+                    activeSpaceAssessmentPrompt()
                 } else if ((activeAssessment?.score ?: assessmentScore) != null) {
                     BiophilicProfileCard(
                         score = activeAssessment?.score ?: assessmentScore ?: 0,
