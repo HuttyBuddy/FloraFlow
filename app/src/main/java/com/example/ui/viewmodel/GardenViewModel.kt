@@ -1162,6 +1162,9 @@ class GardenViewModel @JvmOverloads constructor(
                 )
             }
             repository.insertPlants(initialPlants)
+            // A new space begins with starter plants, so immediately create
+            // their recurring care tasks for the Today experience.
+            careScheduler.syncCareSchedules()
             
             _activeLayout.value = created
             recordPositiveInteraction()
