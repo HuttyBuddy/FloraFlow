@@ -25,4 +25,12 @@ class RestorationLanguageTest {
             RestorationLanguage.sessionDescription,
         )
     }
+
+    @Test
+    fun assessmentPrompt_invites_a_practical_space_check() {
+        assertEquals(
+            "How restorative does your space feel?",
+            RestorationLanguage.assessmentPrompt,
+        )
+    }
 }

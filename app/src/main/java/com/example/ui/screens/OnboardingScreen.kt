@@ -340,7 +340,7 @@ fun SplashWelcomeScreen(
         Spacer(modifier = Modifier.weight(1f))
         
         Text(
-            text = "How much stress is your space creating?",
+            text = RestorationLanguage.assessmentPrompt,
             style = MaterialTheme.typography.headlineLarge.copy(
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
@@ -620,19 +620,19 @@ fun ResultScreen(
         when (score) {
             in 15..20 -> ZoneDetails(
                 "GREEN ZONE", 
-                "LOW NEURAL LOAD", 
+                "STRONG RESTORATION SUPPORT",
                 Color(0xFF1B4A2F),
                 Brush.verticalGradient(listOf(Color(0xFF0F311C), Color(0xFF225235)))
             )
             in 8..14 -> ZoneDetails(
                 "YELLOW ZONE", 
-                "MODERATE NEURAL LOAD", 
+                "ROOM TO GROW",
                 Color(0xFF825E1B),
                 Brush.verticalGradient(listOf(Color(0xFF42300D), Color(0xFF6B4D16)))
             )
             else -> ZoneDetails(
                 "RED ZONE", 
-                "HIGH NEURAL LOAD", 
+                "START WITH ONE CHANGE",
                 Color(0xFF702123),
                 Brush.verticalGradient(listOf(Color(0xFF3B1012), Color(0xFF631C1E)))
             )
@@ -681,11 +681,11 @@ fun ResultScreen(
         if (prevScore != -1) {
             val delta = score - prevScore
             val textDelta = if (delta > 0) {
-                "Your Neural Load improved from $prevScore/20 to $score/20 (+$delta)!"
+                "Your space restoration score improved from $prevScore/20 to $score/20 (+$delta)!"
             } else if (delta < 0) {
-                "Your Neural Load went from $prevScore/20 to $score/20 ($delta)."
+                "Your space restoration score went from $prevScore/20 to $score/20 ($delta)."
             } else {
-                "Your Neural Load remained at $score/20."
+                "Your space restoration score remained at $score/20."
             }
             Text(
                 text = textDelta,
@@ -720,9 +720,9 @@ fun ResultScreen(
         
         Text(
             text = when (score) {
-                in 15..20 -> "Your environment is highly supportive of your nervous system. Biophilic cues are abundant, promoting natural calm, focus, and restoration. Maintain this healthy balance!"
-                in 8..14 -> "Your space has a few natural elements missing, which might be quietly draining your energy and focus. The good news is that small, simple changes can make a big difference."
-                else -> "Your space might be adding to your daily stress. Without enough natural light, plants, or fresh air, it's easy to feel tired and unfocused. Let's make a few simple adjustments to turn your room into a restorative sanctuary."
+                in 15..20 -> "Your space already includes many restorative elements. Keep the routines and plant care that make it feel welcoming and alive."
+                in 8..14 -> "Your space has a few natural elements missing. Small, practical changes can make it feel more comfortable, alive, and personal."
+                else -> "Your space has a strong opportunity for improvement. Start with one small change, such as light, living plants, or fresh air, then build from there."
             },
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = 16.sp,
