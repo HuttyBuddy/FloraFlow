@@ -71,6 +71,7 @@ class GardenViewModel @JvmOverloads constructor(
     val pendingCareTasks: StateFlow<List<CareTask>>
     val currentWeather: StateFlow<com.example.data.repository.WeatherInfo>
     val allAssessmentResults: StateFlow<List<AssessmentResult>>
+    val activeAssessment: StateFlow<AssessmentResult?>
 
     // Active selection states
     private val _activeLayout = MutableStateFlow<GardenLayout?>(null)
@@ -627,7 +628,8 @@ class GardenViewModel @JvmOverloads constructor(
             repository.insertAssessmentResult(
                 AssessmentResult(
                     score = score,
-                    lowestCategories = categories.joinToString(",")
+                    lowestCategories = categories.joinToString(","),
+                    layoutId = activeLayout.value?.id
                 )
             )
         }
@@ -1004,6 +1006,10 @@ class GardenViewModel @JvmOverloads constructor(
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList(),
             )
+
+        activeAssessment = combine(activeLayout, allAssessmentResults) { layout, results ->
+            AssessmentScope.latestForLayout(results, layout?.id)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
         viewModelScope.launch(ioDispatcher) {
             try {

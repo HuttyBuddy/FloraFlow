@@ -62,6 +62,7 @@ fun DashboardScreen(
     val isAssessmentSkipped by viewModel.isAssessmentSkipped.collectAsStateWithLifecycle()
     val assessmentScore by viewModel.assessmentScore.collectAsStateWithLifecycle()
     val lowestCategories by viewModel.lowestCategories.collectAsStateWithLifecycle()
+    val activeAssessment by viewModel.activeAssessment.collectAsStateWithLifecycle()
     val weather by viewModel.currentWeather.collectAsStateWithLifecycle()
 
     val step1Completed by viewModel.step1Completed.collectAsStateWithLifecycle()
@@ -816,11 +817,14 @@ fun DashboardScreen(
             }
             if (isAssessmentSkipped) {
                 item { skippedAssessmentBanner() }
-            } else if (assessmentScore != null) {
+            } else if ((activeAssessment?.score ?: assessmentScore) != null) {
                 item {
                     BiophilicProfileCard(
-                        score = assessmentScore ?: 0,
-                        lowestCategories = lowestCategories,
+                        score = activeAssessment?.score ?: assessmentScore ?: 0,
+                        lowestCategories = activeAssessment?.lowestCategories
+                            ?.split(",")
+                            ?.filter { it.isNotBlank() }
+                            ?: lowestCategories,
                         onRetakeClick = { viewModel.resetAssessment() },
                         step1Completed = step1Completed,
                         step2Completed = step2Completed,
@@ -889,10 +893,13 @@ fun DashboardScreen(
                 }
                 if (isAssessmentSkipped) {
                     skippedAssessmentBanner()
-                } else if (assessmentScore != null) {
+                } else if ((activeAssessment?.score ?: assessmentScore) != null) {
                     BiophilicProfileCard(
-                        score = assessmentScore ?: 0,
-                        lowestCategories = lowestCategories,
+                        score = activeAssessment?.score ?: assessmentScore ?: 0,
+                        lowestCategories = activeAssessment?.lowestCategories
+                            ?.split(",")
+                            ?.filter { it.isNotBlank() }
+                            ?: lowestCategories,
                         onRetakeClick = { viewModel.resetAssessment() },
                         step1Completed = step1Completed,
                         step2Completed = step2Completed,
