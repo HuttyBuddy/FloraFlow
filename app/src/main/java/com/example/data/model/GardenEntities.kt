@@ -154,3 +154,11 @@ data class RestorationLog(
     val soundscapeTrack: String
 )
 
+/** A visible, gentle starting point for a newly created 5×5 space. */
+object StarterLayout {
+    fun gridFor(plantNames: List<String>): String = buildList {
+        plantNames.getOrNull(0)?.let { add(GridPlantItem(0, 0, it)) }
+        plantNames.getOrNull(1)?.let { add(GridPlantItem(4, 4, it)) }
+    }.let(::toGridString)
+}
+

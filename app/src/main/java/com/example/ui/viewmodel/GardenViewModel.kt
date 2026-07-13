@@ -1138,7 +1138,8 @@ class GardenViewModel @JvmOverloads constructor(
 
     fun createLayout(name: String, style: String, climate: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val defaultGrid = ""
+            val templates = ClimatePlants.getTemplatesForClimate(climate).take(2)
+            val defaultGrid = StarterLayout.gridFor(templates.map { it.name })
             val newLayout = GardenLayout(
                 name = name,
                 style = style,
@@ -1148,7 +1149,6 @@ class GardenViewModel @JvmOverloads constructor(
             val layoutId = repository.insertLayout(newLayout).toInt()
             val created = newLayout.copy(id = layoutId)
             
-            val templates = ClimatePlants.getTemplatesForClimate(climate).take(2)
             val initialPlants = templates.map { tpl ->
                 Plant(
                     layoutId = layoutId,
