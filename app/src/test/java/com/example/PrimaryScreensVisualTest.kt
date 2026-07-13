@@ -2,9 +2,7 @@ package com.example
 
 import android.app.Application
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onRoot
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.*
 import androidx.test.core.app.ApplicationProvider
 import com.example.ui.screens.*
 import com.example.ui.screens.restoration.RestorationJournalScreen
@@ -71,6 +69,18 @@ class PrimaryScreensVisualTest {
         }
         composeTestRule.waitForIdle()
         composeTestRule.onRoot().captureRoboImage(filePath = "src/test/screenshots/dashboard_screen.png")
+    }
+
+    @Test
+    fun dashboard_keeps_space_actions_in_the_persistent_top_section() {
+        viewModel.completeOnboarding()
+        composeTestRule.setContent {
+            MyApplicationTheme {
+                DashboardScreen(viewModel = viewModel)
+            }
+        }
+
+        composeTestRule.onNodeWithTag("persistent_space_actions").assertExists()
     }
 
     @Test

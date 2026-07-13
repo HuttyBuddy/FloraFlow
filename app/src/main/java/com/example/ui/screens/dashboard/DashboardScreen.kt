@@ -527,6 +527,7 @@ fun DashboardScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .testTag("persistent_space_actions")
                 .onGloballyPositioned { coordinates ->
                     val rect = coordinates.boundsInRoot()
                     viewModel.updateWalkthroughTarget(
@@ -835,6 +836,16 @@ fun DashboardScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
         ) {
+            stickyHeader {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    Box(modifier = Modifier.padding(vertical = 8.dp)) {
+                        quickActionsContent()
+                    }
+                }
+            }
             if (needsReassessment) {
                 item { reassessmentPromptBanner() }
             }
@@ -891,7 +902,6 @@ fun DashboardScreen(
                 }
             }
             item { SeasonalCareCoachCard(activePlants = activePlants) }
-            item { quickActionsContent() }
             item { statisticsContent() }
             item { canvasChartContent() }
             item { scoreHistoryCardContent() }
@@ -937,6 +947,7 @@ fun DashboardScreen(
                     )
                 }
                 headerContent()
+                quickActionsContent()
                 todayActionContent()
                 WeatherSyncCard(
                     weather = weather,
@@ -963,7 +974,6 @@ fun DashboardScreen(
                     }
                 }
                 SeasonalCareCoachCard(activePlants = activePlants)
-                quickActionsContent()
                 statisticsContent()
                 Spacer(modifier = Modifier.height(16.dp))
             }
