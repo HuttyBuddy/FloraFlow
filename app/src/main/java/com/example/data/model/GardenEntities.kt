@@ -19,6 +19,8 @@ enum class SpaceType(val label: String) {
             else -> OUTDOOR
         }
     }
+
+    fun stylesFor(styles: List<String>): List<String> = styles.filter { fromStyle(it) == this }
 }
 
 @Entity(tableName = "garden_layouts")

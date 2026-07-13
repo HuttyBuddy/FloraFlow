@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.data.model.GardenLayout
 import com.example.data.model.ClimatePlants
+import com.example.data.model.SpaceType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,11 +31,21 @@ fun CreateLayoutDialog(
     onCreate: (name: String, style: String, climate: String) -> Unit
 ) {
     var name by remember { mutableStateOf("") }
+    var selectedSpaceType by remember { mutableStateOf(SpaceType.INDOOR) }
+    val availableStyles = remember(selectedSpaceType) {
+        selectedSpaceType.stylesFor(ClimatePlants.STYLES)
+    }
     var selectedStyle by remember { mutableStateOf(ClimatePlants.STYLES[0]) }
     var selectedClimate by remember { mutableStateOf(ClimatePlants.CLIMATES[0]) }
 
     var expandedStyle by remember { mutableStateOf(false) }
     var expandedClimate by remember { mutableStateOf(false) }
+
+    LaunchedEffect(availableStyles) {
+        if (selectedStyle !in availableStyles) {
+            selectedStyle = availableStyles.first()
+        }
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -49,7 +60,7 @@ fun CreateLayoutDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Design Botanic Haven",
+                    text = "Create a Biophilic Space",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -60,13 +71,29 @@ fun CreateLayoutDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Garden Project Name") },
+                    label = { Text("Space name") },
                     modifier = Modifier.fillMaxWidth().testTag("add_layout_name"),
-                    placeholder = { Text("My Courtyard Oasis") },
+                    placeholder = { Text("Living room retreat") },
                     shape = RoundedCornerShape(12.dp)
                 )
 
-                // Style Dropdown
+                Text(
+                    text = "Where are you designing?",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SpaceType.entries.forEach { spaceType ->
+                        FilterChip(
+                            selected = selectedSpaceType == spaceType,
+                            onClick = { selectedSpaceType = spaceType },
+                            label = { Text(spaceType.label) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                // Style dropdown filtered to the selected space type.
                 ExposedDropdownMenuBox(
                     expanded = expandedStyle,
                     onExpandedChange = { expandedStyle = it }
@@ -75,7 +102,7 @@ fun CreateLayoutDialog(
                         value = selectedStyle,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Design Theme Style") },
+                        label = { Text("Style for this space") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedStyle) },
                         modifier = Modifier.menuAnchor().fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
@@ -84,7 +111,7 @@ fun CreateLayoutDialog(
                         expanded = expandedStyle,
                         onDismissRequest = { expandedStyle = false }
                     ) {
-                        ClimatePlants.STYLES.forEach { style ->
+                        availableStyles.forEach { style ->
                             DropdownMenuItem(
                                 text = { Text(style) },
                                 onClick = {
@@ -105,7 +132,7 @@ fun CreateLayoutDialog(
                         value = selectedClimate,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Physical Soil Climate") },
+                        label = { Text("Growing conditions") },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedClimate) },
                         modifier = Modifier.menuAnchor().fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp)
@@ -147,7 +174,7 @@ fun CreateLayoutDialog(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.testTag("submit_create_layout")
                     ) {
-                        Text("Seed Blueprint")
+                        Text("Create Space")
                     }
                 }
             }
