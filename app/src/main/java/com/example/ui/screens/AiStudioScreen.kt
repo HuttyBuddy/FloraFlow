@@ -768,7 +768,7 @@ fun AiStudioScreen(
                             )
                         }
                         Text(
-                            text = "You have exhausted your free credentials. Upgrade to PRO to unlock unlimited Live expert analyses, 2D model companions, and diagnostic AR overlays!",
+                            text = "You have used your free Advisor requests. Upgrade to PRO for unlimited plant guidance, design support, and richer space-planning tools.",
                             style = MaterialTheme.typography.bodySmall,
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
@@ -1130,7 +1130,7 @@ fun AiStudioScreen(
                                 )
                             }
                             Text(
-                                text = "You have exhausted your free credentials. Upgrade to PRO to unlock unlimited Live expert analyses, 2D model companions, and diagnostic AR overlays!",
+                                text = "You have used your free Advisor requests. Upgrade to PRO for unlimited plant guidance, design support, and richer space-planning tools.",
                                 style = MaterialTheme.typography.bodySmall,
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.9f)
