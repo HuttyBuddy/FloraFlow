@@ -111,34 +111,6 @@ class GardenViewModelTest {
 
 
     @Test
-    fun updateArPlantRotation_updatesRotationCorrectly() {
-        // Arrange
-        viewModel.addArPlant("Rose", "🌹")
-        viewModel.addArPlant("Tulip", "🌷")
-
-        val plants = viewModel.arPlacedPlants.value
-        assertEquals(2, plants.size)
-        val id1 = plants[0].id
-        val id2 = plants[1].id
-
-        // Act - Positive rotation
-        viewModel.updateArPlantRotation(id1, 90f)
-        var updatedPlants = viewModel.arPlacedPlants.value
-        assertEquals(90f, updatedPlants.find { it.id == id1 }?.rotationDegrees)
-        assertEquals(0f, updatedPlants.find { it.id == id2 }?.rotationDegrees) // Unchanged
-
-        // Act - Negative rotation (should be normalized to 0-360)
-        viewModel.updateArPlantRotation(id1, -90f)
-        updatedPlants = viewModel.arPlacedPlants.value
-        assertEquals(270f, updatedPlants.find { it.id == id1 }?.rotationDegrees)
-
-        // Act - Over 360 rotation (should be normalized to 0-360)
-        viewModel.updateArPlantRotation(id2, 400f)
-        updatedPlants = viewModel.arPlacedPlants.value
-        assertEquals(40f, updatedPlants.find { it.id == id2 }?.rotationDegrees)
-    }
-
-    @Test
     fun setLibrarySearchQuery_updatesStateFlow() {
         assertEquals("", viewModel.librarySearchQuery.value)
         viewModel.setLibrarySearchQuery("fern")

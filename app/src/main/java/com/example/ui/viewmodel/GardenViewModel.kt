@@ -90,10 +90,6 @@ class GardenViewModel @JvmOverloads constructor(
     private val _isAiLoading = MutableStateFlow(value = false)
     val isAiLoading: StateFlow<Boolean> = _isAiLoading.asStateFlow()
 
-    // Mock AR Lens Placement States
-    private val _arPlacedPlants = MutableStateFlow<List<ArPlantPlacement>>(emptyList())
-    val arPlacedPlants: StateFlow<List<ArPlantPlacement>> = _arPlacedPlants.asStateFlow()
-
     // Premium Global Season State
     private val _currentSeason = MutableStateFlow<String>("Summer")
     val currentSeason: StateFlow<String> = _currentSeason.asStateFlow()
@@ -1648,79 +1644,6 @@ class GardenViewModel @JvmOverloads constructor(
         } catch (_: Exception) {}
     }
 
-    // --- Real AR Control Methods (Fixed parameters and list manipulation) ---
-    fun addArPlant(name: String, emoji: String, customX: Float? = null, customY: Float? = null, customZ: Float? = null) {
-        val list = _arPlacedPlants.value.toMutableList()
-        val nextId = (list.maxOfOrNull { it.id } ?: 0) + 1
-        
-        val spawnX = customX ?: 0f
-        val spawnY = customY ?: 0f
-        val spawnZ = customZ ?: -1.0f 
-
-        android.util.Log.d("FloraFlow", "addArPlant called: name=$name, emoji=$emoji, nextId=$nextId, x=$spawnX, y=$spawnY, z=$spawnZ")
-
-        list.add(
-            ArPlantPlacement(
-                id = nextId,
-                name = name,
-                emoji = emoji,
-                positionX = spawnX,
-                positionY = spawnY,
-                positionZ = spawnZ,
-                scale = 1.0f,
-                rotationDegrees = 0f
-            )
-        )
-        _arPlacedPlants.value = list
-        recordPositiveInteraction()
-    }
-
-    fun updateArPlantPosition(id: Int, dx: Float, dy: Float) {
-        val list = _arPlacedPlants.value.map {
-            if (it.id == id) {
-                it.copy(positionX = it.positionX + dx, positionY = it.positionY + dy)
-            } else it
-        }
-        _arPlacedPlants.value = list
-    }
-
-    fun updateArPlantScaling(id: Int, scale: Float) {
-        val list = _arPlacedPlants.value.map {
-            if (it.id == id) {
-                it.copy(scale = scale.coerceIn(0.3f, 3.0f))
-            } else it
-        }
-        _arPlacedPlants.value = list
-    }
-
-    fun updateArPlantRotation(id: Int, rotationDegrees: Float) {
-        val list = _arPlacedPlants.value.map {
-            if (it.id == id) {
-                it.copy(rotationDegrees = (rotationDegrees % 360f + 360f) % 360f)
-            } else it
-        }
-        _arPlacedPlants.value = list
-    }
-
-    fun removeArPlant(id: Int) {
-        val list = _arPlacedPlants.value.toMutableList()
-        list.removeAll { it.id == id }
-        _arPlacedPlants.value = list
-    }
-
-    fun clearArPlants() {
-        _arPlacedPlants.value = emptyList()
-    }
-
-    fun updateArPlant3DPosition(id: Int, x: Float, y: Float, z: Float) {
-        val list = _arPlacedPlants.value.map {
-            if (it.id == id) {
-                it.copy(positionX = x, positionY = y, positionZ = z)
-            } else it
-        }
-        _arPlacedPlants.value = list
-    }
-
     // --- Feedback Operations ---
     fun submitFeedback(category: String, rating: Int, comments: String, email: String) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -2065,18 +1988,6 @@ class GardenViewModel @JvmOverloads constructor(
         super.onCleared()
     }
 }
-
-// --- Corrected 3D Spatial Position Entity ---
-data class ArPlantPlacement(
-    val id: Int,
-    val name: String,
-    val emoji: String,
-    val positionX: Float,
-    val positionY: Float,
-    val positionZ: Float, // Correctly named depth mapping
-    val scale: Float,
-    val rotationDegrees: Float
-)
 
 // Themed User Feedback Submission Entity
 data class FeedbackSubmission(
