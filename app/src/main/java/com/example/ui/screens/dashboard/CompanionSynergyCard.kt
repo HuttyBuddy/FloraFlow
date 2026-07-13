@@ -39,6 +39,8 @@ fun CompanionSynergyCard(
 
     var expanded by remember { mutableStateOf(false) }
 
+    // Performance Optimization: Replaced Math.sqrt() with squared distance comparisons (distSq <= 2.25)
+    // This eliminates O(N^2) expensive floating-point square root operations during grid scanning.
     // Pairwise companion checks for adjacent plants (distance <= 1.5)
     val synergies = remember(gridItems) {
         val list = mutableListOf<Pair<GridPlantItem, GridPlantItem>>()
@@ -46,8 +48,10 @@ fun CompanionSynergyCard(
             for (j in i + 1 until gridItems.size) {
                 val item1 = gridItems[i]
                 val item2 = gridItems[j]
-                val dist = sqrt(((item1.x - item2.x) * (item1.x - item2.x) + (item1.y - item2.y) * (item1.y - item2.y)).toDouble())
-                if (dist <= 1.5 && checkPlantSynergy(item1.plantName, item2.plantName)) {
+                val dx = item1.x - item2.x
+                val dy = item1.y - item2.y
+                val distSq = dx * dx + dy * dy
+                if (distSq <= 2.25 && checkPlantSynergy(item1.plantName, item2.plantName)) {
                     list.add(Pair(item1, item2))
                 }
             }
@@ -61,8 +65,10 @@ fun CompanionSynergyCard(
             for (j in i + 1 until gridItems.size) {
                 val item1 = gridItems[i]
                 val item2 = gridItems[j]
-                val dist = sqrt(((item1.x - item2.x) * (item1.x - item2.x) + (item1.y - item2.y) * (item1.y - item2.y)).toDouble())
-                if (dist <= 1.5 && checkPlantConflict(item1.plantName, item2.plantName)) {
+                val dx = item1.x - item2.x
+                val dy = item1.y - item2.y
+                val distSq = dx * dx + dy * dy
+                if (distSq <= 2.25 && checkPlantConflict(item1.plantName, item2.plantName)) {
                     list.add(Pair(item1, item2))
                 }
             }
