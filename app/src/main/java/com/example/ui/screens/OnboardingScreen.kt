@@ -803,9 +803,9 @@ fun PersonalizedPaywallScreen(
 ) {
     val zoneInfo = remember(score) {
         when (score) {
-            in 15..20 -> Triple("GREEN ZONE", "LOW NEURAL LOAD", Color(0xFF1B4A2F))
-            in 8..14 -> Triple("YELLOW ZONE", "MODERATE NEURAL LOAD", Color(0xFF825E1B))
-            else -> Triple("RED ZONE", "HIGH NEURAL LOAD", Color(0xFF702123))
+            in 15..20 -> Triple("GREEN ZONE", "STRONG RESTORATION SUPPORT", Color(0xFF1B4A2F))
+            in 8..14 -> Triple("YELLOW ZONE", "ROOM TO GROW", Color(0xFF825E1B))
+            else -> Triple("RED ZONE", "START WITH ONE CHANGE", Color(0xFF702123))
         }
     }
     val isGreenZone = score >= 15
@@ -853,7 +853,7 @@ fun PersonalizedPaywallScreen(
 
             Text(
                 text = if (isGreenZone) {
-                    "Your score of $score/20 (${zoneInfo.second}) shows your space is already supporting your nervous system well. PRO helps you maintain and deepen that with advanced tools:"
+                    "Your score of $score/20 (${zoneInfo.second}) shows your space already includes many restorative elements. PRO helps you keep building on them with advanced tools:"
                 } else {
                     "Based on your score of $score/20 (${zoneInfo.second}), we have generated a customized environment restoration plan targeting your lowest areas:"
                 },
@@ -868,8 +868,8 @@ fun PersonalizedPaywallScreen(
             if (isGreenZone) {
                 val maintenancePerks = listOf(
                     "Unlimited AI Advisor" to "Get instant expert guidance whenever your space or season changes, with no query limit.",
-                    "Full Restoration Journal" to "Unlock every binaural soundscape session to keep your stress metrics trending low.",
-                    "Progress Trends" to "See your Neural Load history over time and catch small dips before they become setbacks."
+                    "Full Restoration Journal" to "Unlock every nature-sound session for a more intentional pause in your day.",
+                    "Progress Trends" to "See your space-assessment history and revisit the improvements that matter most."
                 )
                 maintenancePerks.forEach { (title, detail) ->
                     Card(
@@ -939,15 +939,15 @@ fun PersonalizedPaywallScreen(
                                 )
                                 Text(
                                     text = when (category) {
-                                        "NATURAL LIGHT" -> "Critical light deprivation. Unlock tailored light-boost layouts to boost your melatonin & circadian rhythm."
-                                        "LIVING PLANTS" -> "Low biophilic plant density. Unlock low-maintenance botanical layouts to oxygenate your room."
-                                        "ACOUSTIC CALM" -> "High cognitive noise pollution. Unlock custom binaural soundscapes to decrease cortisol levels."
+                                        "NATURAL LIGHT" -> "Bring the most-used area closer to available daylight with a tailored layout."
+                                        "LIVING PLANTS" -> "Add a low-maintenance plant grouping matched to your light and care routine."
+                                        "ACOUSTIC CALM" -> "Create a quieter pause with nature sounds and a calmer seating zone."
                                         "NATURE VIEWS" -> "Sparse nature connectivity. Unlock spatial layouts designed to maximize nature views."
                                         "NATURAL MATERIALS" -> "Artificial texture dominance. Unlock recommendations for biophilic materials and natural fibers."
-                                        "AIR & VENTILATION" -> "Stale airflow. Unlock guidance on fresh-air rhythms to reset your nervous system."
+                                        "AIR & VENTILATION" -> "Build a practical fresh-air rhythm around your daily routine."
                                         "ORGANIC FORMS" -> "Rigid, institutional shapes. Unlock curated organic decor and layout suggestions."
                                         "WATER FEATURES" -> "Missing the sound of water. Unlock soothing water-feature soundscapes and layout ideas."
-                                        "SENSORY RICHNESS" -> "Sensory-flat environment. Unlock scent and texture recommendations that signal safety to your brain."
+                                        "SENSORY RICHNESS" -> "Add scent, texture, and seasonal details that make the space feel more personal."
                                         "SEASONAL AWARENESS" -> "Disconnected from seasonal rhythms. Unlock seasonal planting and light-cycle guidance."
                                         else -> "Unlock a fully personalized biophilic restoration plan tailored to your space."
                                     },
@@ -1013,7 +1013,7 @@ fun shareScoreCard(context: android.content.Context, score: Int, zoneName: Strin
         textAlign = android.graphics.Paint.Align.CENTER
         isAntiAlias = true
     }
-    canvas.drawText("FloraFlow Neural Load", size / 2f, 100f, titlePaint)
+    canvas.drawText("FloraFlow Space Restoration", size / 2f, 100f, titlePaint)
     
     // Draw score number "X / 20"
     val scorePaint = android.graphics.Paint().apply {
@@ -1067,7 +1067,7 @@ fun shareScoreCard(context: android.content.Context, score: Int, zoneName: Strin
             type = "image/png"
             putExtra(android.content.Intent.EXTRA_STREAM, uri)
             putExtra(android.content.Intent.EXTRA_SUBJECT, "My Biophilic Assessment Score")
-            putExtra(android.content.Intent.EXTRA_TEXT, "I just assessed my room's environment using FloraFlow. My Neural Load Score is $score/20 ($zoneDesc). Optimize your environment with FloraFlow!")
+            putExtra(android.content.Intent.EXTRA_TEXT, "I just assessed my room's environment using FloraFlow. My Space Restoration Score is $score/20 ($zoneDesc). Plan a more biophilic space with FloraFlow!")
             addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
         

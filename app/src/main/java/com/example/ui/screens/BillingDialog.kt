@@ -59,7 +59,7 @@ fun BillingDialog(
             price = "$4.99",
             period = "month",
             trial = "3-Day Free Trial",
-            description = "Unlocks unlimited Gemini-Powered AI advice, full Neural Restoration Journal access, and synthesized brainwave soundscapes.",
+            description = "Unlocks unlimited Gemini-Powered AI advice, full Restoration Journal access, and nature-sound sessions.",
             isPopular = false,
             isAnnual = false
         ),
@@ -68,7 +68,7 @@ fun BillingDialog(
             price = "$49.99 Yearly",
             period = "",
             trial = "3-Day Free Trial",
-            description = "Save 20%! Unlocks unlimited Gemini-Powered AI advice, full Eco-Acoustic journal chimes, stress metric logs, and advanced layouts.",
+            description = "Save 20%! Unlocks unlimited Gemini-Powered AI advice, full eco-acoustic sessions, assessment history, and advanced layouts.",
             isPopular = true,
             isAnnual = true
         )

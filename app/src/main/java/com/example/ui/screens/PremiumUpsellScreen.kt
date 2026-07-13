@@ -107,11 +107,11 @@ fun PremiumUpsellScreen(
             ) {
                 PremiumFeatureRow(
                     title = "Eco-Acoustic Restoration Journal",
-                    description = "Immersive eco-acoustic binaural soundscapes & Neural Restoration Journal with dynamic stress metrics."
+                    description = "Immersive eco-acoustic nature soundscapes and a Restoration Journal for intentional pauses."
                 )
                 PremiumFeatureRow(
                     title = "Gemini AI Advisor",
-                    description = "Biophilic design neuroscience assistant. Point your phone at any space to envision, plan, and get expert botany advice."
+                    description = "Biophilic design assistant for planning spaces and getting practical botany advice."
                 )
                 PremiumFeatureRow(
                     title = "Unlimited Blueprints & Layouts",
