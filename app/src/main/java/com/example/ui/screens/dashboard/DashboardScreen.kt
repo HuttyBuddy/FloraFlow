@@ -336,7 +336,7 @@ fun DashboardScreen(
                 .fillMaxWidth()
                 .clickable {
                     viewModel.setCurrentTab(3) // AI Advisor tab
-                    viewModel.sendAiChatMessage("I want to run a detailed Space Diagnosis of my environment.")
+                    viewModel.sendAiChatMessage("I want to run a detailed Space Check of my environment.")
                 }
                 .testTag("dashboard_space_diagnosis_card")
                 .background(
@@ -375,7 +375,7 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Conversational Space Diagnosis",
+                        text = "Conversational Space Check",
                         fontWeight = FontWeight.ExtraBold,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onPrimary

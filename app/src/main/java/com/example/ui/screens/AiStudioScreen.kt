@@ -70,14 +70,14 @@ private val AI_SUGGESTIONS_PORTRAIT = listOf(
     "🌱 Suggest perfect companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
     "🐛 Check yellowing leaves or pests" to "How can I identify yellowing or speckled leaves on young plants, and what plant-safe treatment should I try first?",
     "🧘 Make a restorative garden break" to "How can I use a green garden to create a calmer, more intentional daily break?",
-    "🔍 Run a conversational Space Diagnosis" to "I want to run a detailed Space Diagnosis of my environment."
+    "🔍 Run a conversational Space Check" to "I want to run a detailed Space Check of my environment."
 )
 
 private val AI_SUGGESTIONS_LANDSCAPE = listOf(
     "🌱 Suggest companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
     "🐛 Check yellowing leaves or pests" to "How can I identify yellowing or speckled leaves on young plants, and what plant-safe treatment should I try first?",
     "🧘 Make a restorative garden break" to "How can I use a green garden to create a calmer, more intentional daily break?",
-    "🔍 Run Space Diagnosis" to "I want to run a detailed Space Diagnosis of my environment."
+    "🔍 Run Space Check" to "I want to run a detailed Space Check of my environment."
 )
 
 data class AttachedImage(

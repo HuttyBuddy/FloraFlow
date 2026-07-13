@@ -1401,10 +1401,11 @@ class GardenViewModel @JvmOverloads constructor(
         if (message.isBlank() && imageBytesBase64 == null) return
         recordAiQuery(message)
         
-        val upsellMsg = "🔒 Free AI Advisor biophilic limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
+        val upsellMsg = "🔒 Free AI Advisor biophilic limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany guidance! 🌸✨"
         if (checkPremiumLimit(message, upsellMsg, aiQueryLimit)) return
 
-        val isDiagRequest = message.contains("Space Diagnosis", ignoreCase = true) || _isSpaceDiagnosisMode.value
+        val isDiagRequest = message.contains("Space Check", ignoreCase = true) ||
+            message.contains("Space Diagnosis", ignoreCase = true) || _isSpaceDiagnosisMode.value
         if (isDiagRequest) {
             _isSpaceDiagnosisMode.value = true
         }
@@ -1425,7 +1426,7 @@ class GardenViewModel @JvmOverloads constructor(
             val score = _assessmentScore.value
             val categories = _lowestCategories.value
             val systemIns = if (_isSpaceDiagnosisMode.value) {
-                "You are the FloraFlow Space Diagnosis Assistant. Your goal is to guide the user through a friendly, step-by-step conversational audit of their room/space to determine its biophilic conditions.\n\n" +
+                "You are the FloraFlow Space Check Assistant. Your goal is to guide the user through a friendly, step-by-step conversational audit of their room or outdoor space to understand its biophilic conditions.\n\n" +
                 "INSTRUCTIONS:\n" +
                 "1. If this is the start of the diagnosis (e.g. the user asks to run a detailed diagnosis), introduce yourself warmly as Dr. Julian and ask them about their space, specifically focusing on: Nature Views, Living Plants, Natural Light, Acoustic Calm, Natural Materials, Air & Ventilation, Organic Forms, Water Features, Sensory Richness, and Seasonal Awareness.\n" +
                 "2. Ask them questions one by one or in a friendly, conversational group so they do not feel overwhelmed.\n" +
