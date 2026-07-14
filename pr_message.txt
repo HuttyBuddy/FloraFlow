@@ -1,0 +1,6 @@
+🧹 [Code Health] Remove unused Text import in PlantImages.kt
+
+🎯 **What:** Removed an unused import (`androidx.compose.material3.Text`) from `PlantImages.kt`.
+💡 **Why:** This reduces clutter, avoids unnecessary dependency references in the file, and adheres to code health best practices by removing dead code. It improves the maintainability and readability of the codebase without changing functionality.
+✅ **Verification:** Verified the code compiles successfully without regressions (`./gradlew compileDebugKotlin`), and ran the corresponding UI tests (`./gradlew app:testDebugUnitTest --tests com.example.PrimaryScreensVisualTest`) to confirm no integrations broke.
+✨ **Result:** A cleaner `PlantImages.kt` file.
