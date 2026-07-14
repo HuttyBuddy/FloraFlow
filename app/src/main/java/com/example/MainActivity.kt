@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.Videocam
-import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.WorkspacePremium
 import androidx.compose.material.icons.filled.Feedback
