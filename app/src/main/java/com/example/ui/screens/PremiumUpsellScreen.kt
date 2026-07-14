@@ -88,7 +88,7 @@ fun PremiumUpsellScreen(
             )
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
             Text(
-                text = "Use your phone to plan and bring your biophilic space to life. Unlock premium eco-acoustic soundscapes and biophilic design neuroscience.",
+                text = "Design a space you'll actually return to. Unlock deeper guidance, unlimited plans, and restorative routines for every indoor or outdoor space.",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -106,16 +106,20 @@ fun PremiumUpsellScreen(
                 verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
             ) {
                 PremiumFeatureRow(
-                    title = "Eco-Acoustic Restoration Journal",
-                    description = "Immersive eco-acoustic nature soundscapes and a Restoration Journal for intentional pauses."
+                    title = "Unlimited spaces and blueprints",
+                    description = "Create, compare, and refine plans for every room, patio, balcony, or garden."
                 )
                 PremiumFeatureRow(
-                    title = "Gemini AI Advisor",
-                    description = "Biophilic design assistant for planning spaces and getting practical botany advice."
+                    title = "AI design guidance",
+                    description = "Get practical plant, light, layout, and companion-plant advice for your active space."
                 )
                 PremiumFeatureRow(
-                    title = "Unlimited Blueprints & Layouts",
-                    description = "Plan professional-grade garden layouts on the interactive grid blueprint without design training."
+                    title = "Restoration journal and soundscapes",
+                    description = "Build calming breaks around your plants and track the routines that help you reset."
+                )
+                PremiumFeatureRow(
+                    title = "Advanced space insights",
+                    description = "Revisit assessments, see priority improvements, and keep each space's plan focused."
                 )
             }
         }
@@ -126,11 +130,11 @@ fun PremiumUpsellScreen(
     // that Play Console doesn't actually have configured.
     val annualPrice = annualOffer?.formattedPrice ?: "$49.99 Yearly"
     val annualTrialDays = 3
-    val annualTrialLabel = "$annualTrialDays-Day Free Trial, then $annualPrice"
+    val annualTrialLabel = "$annualTrialDays days free, then $annualPrice"
 
     val monthlyPrice = monthlyOffer?.formattedPrice ?: "$4.99"
     val monthlyTrialDays = 3
-    val monthlyTrialLabel = "$monthlyTrialDays-Day Free Trial, then $monthlyPrice/mo"
+    val monthlyTrialLabel = "$monthlyTrialDays days free, then $monthlyPrice/mo"
 
     val selectedTrialDays = if (selectAnnual) annualTrialDays else monthlyTrialDays
 
@@ -225,13 +229,20 @@ fun PremiumUpsellScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             FloraFlowButton(
-                text = if (selectedTrialDays > 0) "Start $selectedTrialDays-Day Free Trial" else "Subscribe Now",
+                text = if (selectedTrialDays > 0) "Start free for $selectedTrialDays days" else "Subscribe Now",
                 onClick = { onUpgradeClick(selectAnnual) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 56.dp),
                 variant = ButtonVariant.Premium,
                 leadingIcon = Icons.Default.AutoAwesome
+            )
+            Text(
+                text = "Cancel anytime in Google Play. No charge until your trial ends.",
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
