@@ -1,4 +1,5 @@
 [versions]
+securityCrypto = "1.1.0-alpha06"
 agp = "9.2.1"
 coreKtx = "1.19.0"
 junit = "4.13.2"
@@ -46,6 +47,7 @@ splashscreen = "1.0.1"
 fragment = "1.8.9"
 
 [libraries]
+androidx-security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "securityCrypto" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
