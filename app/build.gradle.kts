@@ -185,4 +185,5 @@ dependencies {
   implementation(libs.androidx.fragment.ktx)
   implementation(libs.play.billing)
   implementation(libs.play.billing.ktx)
+  implementation(libs.androidx.security.crypto)
 }

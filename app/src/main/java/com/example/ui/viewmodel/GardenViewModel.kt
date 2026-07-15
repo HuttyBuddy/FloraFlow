@@ -21,6 +21,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import android.content.Intent
 import android.content.Context
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import android.os.Build
 import com.example.ui.screens.checkPlantSynergy
 import com.example.billing.BillingManager
@@ -760,6 +762,18 @@ class GardenViewModel @JvmOverloads constructor(
     val showInAppRatePrompt: StateFlow<Boolean> = _showInAppRatePrompt.asStateFlow()
 
     private val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", Context.MODE_PRIVATE)
+    private val encryptedSharedPrefs by lazy {
+        val masterKey = MasterKey.Builder(application)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        EncryptedSharedPreferences.create(
+            application,
+            "secret_feedback_prefs",
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )
+    }
     val billingManager = BillingManager(application)
 
     // Daily free-tier AI query quota. Persisted (not chat-history-derived) so
@@ -948,7 +962,14 @@ class GardenViewModel @JvmOverloads constructor(
             ThemeMode.SYSTEM -> null
         }
 
-        val savedFeedback = sharedPrefs.getString("feedback_submissions_list", null)
+        // Migrate old feedback if exists
+        val oldFeedback = sharedPrefs.getString("feedback_submissions_list", null)
+        if (oldFeedback != null) {
+            encryptedSharedPrefs.edit { putString("feedback_submissions_list", oldFeedback) }
+            sharedPrefs.edit { remove("feedback_submissions_list") }
+        }
+
+        val savedFeedback = encryptedSharedPrefs.getString("feedback_submissions_list", null)
         if (savedFeedback != null) {
             val list = savedFeedback.split("###").mapNotNull { FeedbackSubmission.fromSerializedString(it) }
             _feedbackSubmissions.value = list
@@ -1730,7 +1751,7 @@ class GardenViewModel @JvmOverloads constructor(
             _feedbackSubmissions.value = updatedList
             
             val serialized = updatedList.joinToString("###") { it.toSerializedString() }
-            sharedPrefs.edit { putString("feedback_submissions_list", serialized) }
+            encryptedSharedPrefs.edit { putString("feedback_submissions_list", serialized) }
             
             val formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSd7fkPwyJnIshmYdUNxtXwE8MjKawHs7mnGCZeQTB8qzcAHsg/formResponse"
             val formBody = FormBody.Builder()
