@@ -1648,7 +1648,9 @@ class GardenViewModel @JvmOverloads constructor(
         val spawnY = customY ?: 0f
         val spawnZ = customZ ?: -1.0f 
 
-        android.util.Log.d("FloraFlow", "addArPlant called: name=$name, emoji=$emoji, nextId=$nextId, x=$spawnX, y=$spawnY, z=$spawnZ")
+        if (BuildConfig.DEBUG) {
+            android.util.Log.d("FloraFlow", "addArPlant called: name=$name, emoji=$emoji, nextId=$nextId, x=$spawnX, y=$spawnY, z=$spawnZ")
+        }
 
         list.add(
             ArPlantPlacement(
