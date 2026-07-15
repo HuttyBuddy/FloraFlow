@@ -27,13 +27,7 @@ abstract class GardenDatabase : RoomDatabase() {
         // fallbackToDestructiveMigration — a missing migration should fail
         // loudly in dev/CI (via the migration test using the exported schema
         // in app/schemas/), not silently wipe every user's garden data in
-        // production. Example for the next bump (v7 -> v8):
-        //
-        // val MIGRATION_7_8 = object : Migration(7, 8) {
-        //     override fun migrate(db: SupportSQLiteDatabase) {
-        //         db.execSQL("ALTER TABLE plants ADD COLUMN newColumn TEXT NOT NULL DEFAULT ''")
-        //     }
-        // }
+        // production.
         val MIGRATION_6_7 = object : Migration(6, 7) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 // Add restoration_logs table
