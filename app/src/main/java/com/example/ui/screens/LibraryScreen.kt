@@ -92,6 +92,7 @@ fun LibraryScreen(
     }
 
     var showAddPlantDialog by remember { mutableStateOf(false) }
+    var plantToDelete by remember { mutableStateOf<Int?>(null) }
     var expandedPlantId by remember { mutableStateOf<Int?>(null) }
     var selectedTabState by remember { mutableIntStateOf(0) } // 0 = My Garden, 1 = Species Encyclopedia
 
@@ -387,7 +388,7 @@ fun LibraryScreen(
                             viewModel.updatePlantProgress(plant.id, progress)
                         },
                         onDeletePlant = {
-                            viewModel.deletePlant(plant.id)
+                            plantToDelete = plant.id
                         },
                         onConsultAi = {
                             viewModel.sendAiChatMessage("Give me extreme care and growth advice for cultivating my ${plant.name} in details.")
@@ -904,6 +905,32 @@ fun LibraryScreen(
     }
 
     // Add Custom Plant Dialog
+
+    if (plantToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { plantToDelete = null },
+            title = { Text("Uproot Plant", fontWeight = FontWeight.Bold) },
+            text = { Text("Are you sure you want to remove this plant from your garden? This action cannot be undone.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        plantToDelete?.let { viewModel.deletePlant(it) }
+                        plantToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Uproot")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { plantToDelete = null }) {
+                    Text("Cancel")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.testTag("delete_plant_dialog")
+        )
+    }
     if (showAddPlantDialog) {
         AddCustomPlantDialog(
             onDismiss = { showAddPlantDialog = false },
