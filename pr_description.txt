@@ -1,0 +1,4 @@
+🎯 **What:** Removed unused import `ArrowForward` in `OnboardingScreen.kt`.
+💡 **Why:** This removes dead code, ensuring imports are clean and reducing the file size and maintaining hygiene.
+✅ **Verification:** Verified by running `./gradlew compileDebugKotlin` and tests `./gradlew app:testDebugUnitTest --tests com.example.PrimaryScreensVisualTest`.
+✨ **Result:** A cleaner file free from unused material icon imports.
