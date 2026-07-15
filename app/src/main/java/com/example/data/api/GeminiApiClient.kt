@@ -4,6 +4,7 @@ import com.example.BuildConfig
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -81,6 +82,15 @@ object GeminiApiClient {
         .connectTimeout(60, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS)
+        .addInterceptor { chain: Interceptor.Chain ->
+            val original = chain.request()
+            val request = original.newBuilder()
+                .header("Cache-Control", "no-store, no-cache")
+                .header("User-Agent", "FloraFlow-Secure-Client/1.0")
+                .method(original.method, original.body)
+                .build()
+            chain.proceed(request)
+        }
         .build()
 
     // Moshi Instance — relies solely on generated adapters (@JsonClass(generateAdapter = true))
