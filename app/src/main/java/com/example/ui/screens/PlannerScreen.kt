@@ -531,7 +531,7 @@ fun PlannerScreen(
                             .padding(vertical = 4.dp, horizontal = 2.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        soilThemes.forEachIndexed { index, theme ->
+                        SOIL_THEMES.forEachIndexed { index, theme ->
                             val isSelected = selectedSoilIdx == index
                             val animatedScale by animateFloatAsState(
                                 targetValue = if (isSelected) 1.03f else 1.0f,
