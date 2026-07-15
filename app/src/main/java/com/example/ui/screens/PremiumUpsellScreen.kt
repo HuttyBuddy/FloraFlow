@@ -54,7 +54,7 @@ fun PremiumUpsellScreen(
     val crownBadge = @Composable {
         Box(
             modifier = Modifier
-                .size(88.dp)
+                .size(64.dp)
                 .border(
                     2.dp,
                     MaterialTheme.extendedColors.premiumGold,
@@ -72,7 +72,7 @@ fun PremiumUpsellScreen(
             Icon(
                 Icons.Default.WorkspacePremium,
                 contentDescription = "Premium Badge",
-                modifier = Modifier.size(44.dp),
+                modifier = Modifier.size(32.dp),
                 tint = MaterialTheme.extendedColors.premiumGold
             )
         }
@@ -82,14 +82,14 @@ fun PremiumUpsellScreen(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "FloraFlow PRO",
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
             Text(
                 text = "Design a space you'll actually return to. Unlock deeper guidance, unlimited plans, and restorative routines for every indoor or outdoor space.",
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -98,12 +98,14 @@ fun PremiumUpsellScreen(
 
     val featuresList = @Composable {
         FloraFlowCard(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = 4.dp
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(20.dp)),
+            elevation = 0.dp
         ) {
             Column(
-                modifier = Modifier.padding(MaterialTheme.spacing.large),
-                verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
                 PremiumFeatureRow(
                     title = "Unlimited spaces and blueprints",
@@ -128,7 +130,7 @@ fun PremiumUpsellScreen(
     // Fall back to static placeholder copy only while the real Play offer is
     // unknown (loading, or debug mock mode) — never claim a trial length
     // that Play Console doesn't actually have configured.
-    val annualPrice = annualOffer?.formattedPrice ?: "$49.99 Yearly"
+    val annualPrice = annualOffer?.formattedPrice ?: "$49.99/year"
     val annualTrialDays = 3
     val annualTrialLabel = "$annualTrialDays days free, then $annualPrice"
 
@@ -160,7 +162,7 @@ fun PremiumUpsellScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(18.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
@@ -172,7 +174,7 @@ fun PremiumUpsellScreen(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Annual Plan", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            Text("Annual", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                             Spacer(modifier = Modifier.width(8.dp))
                             Box(
                                 modifier = Modifier
@@ -180,14 +182,15 @@ fun PremiumUpsellScreen(
                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    "BEST VALUE",
+                                    "SAVE 17%",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = MaterialTheme.extendedColors.onSuccess
                                 )
                             }
                         }
-                        Text(annualTrialLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Text(annualTrialLabel, fontSize = 13.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Text("Less than $4.17/month", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Text(annualPrice, fontWeight = FontWeight.Black, fontSize = 14.sp)
                 }
@@ -210,7 +213,7 @@ fun PremiumUpsellScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(18.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
@@ -219,8 +222,8 @@ fun PremiumUpsellScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Monthly Plan", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        Text(monthlyTrialLabel, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Monthly", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(monthlyTrialLabel, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Text(monthlyPrice, fontWeight = FontWeight.Black, fontSize = 14.sp)
                 }
@@ -232,8 +235,8 @@ fun PremiumUpsellScreen(
                 text = if (selectedTrialDays > 0) "Start free for $selectedTrialDays days" else "Subscribe Now",
                 onClick = { onUpgradeClick(selectAnnual) },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 56.dp),
+                .fillMaxWidth()
+                .heightIn(min = 58.dp),
                 variant = ButtonVariant.Premium,
                 leadingIcon = Icons.Default.AutoAwesome
             )
@@ -275,18 +278,18 @@ fun PremiumUpsellScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(MaterialTheme.spacing.large)
+                    .padding(horizontal = 24.dp, vertical = 20.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Top
             ) {
-                Spacer(modifier = Modifier.height(28.dp))
+                Spacer(modifier = Modifier.height(52.dp))
                 crownBadge()
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
+                Spacer(modifier = Modifier.height(16.dp))
                 titleSection()
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
+                Spacer(modifier = Modifier.height(28.dp))
                 featuresList()
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
+                Spacer(modifier = Modifier.height(24.dp))
                 ctaPricingCard()
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
                 restoreButton()
