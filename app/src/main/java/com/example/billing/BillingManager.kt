@@ -11,6 +11,7 @@ import com.example.BuildConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -336,10 +337,10 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     fun executeMockPurchase(productId: String) {
         if (!BuildConfig.DEBUG) return
         val tier = if (productId == PRODUCT_YEARLY) "FloraFlow PRO Annual" else "FloraFlow PRO Monthly"
-        val txId = "GPA." + (1000..9999).random().toString() + "-" +
-                (1000..9999).random().toString() + "-" +
-                (1000..9999).random().toString() + "-" +
-                (10000..99999).random().toString()
+        val txId = "GPA." + (SecureRandom().nextInt(9000) + 1000).toString() + "-" +
+                (SecureRandom().nextInt(9000) + 1000).toString() + "-" +
+                (SecureRandom().nextInt(9000) + 1000).toString() + "-" +
+                (SecureRandom().nextInt(90000) + 10000).toString()
 
         val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
         val cal = Calendar.getInstance()

@@ -17,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import okhttp3.FormBody
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import android.content.Intent
@@ -1774,7 +1775,16 @@ class GardenViewModel @JvmOverloads constructor(
 
             if (!isTesting) {
                 try {
-                    val client = OkHttpClient()
+                    val client = OkHttpClient.Builder()
+                        .addInterceptor { chain: Interceptor.Chain ->
+                            val original = chain.request()
+                            val requestBuilder = original.newBuilder()
+                                .header("Cache-Control", "no-store, no-cache")
+                                .header("User-Agent", "FloraFlow-Secure-Client/1.0")
+                                .method(original.method, original.body)
+                            chain.proceed(requestBuilder.build())
+                        }
+                        .build()
                     val response = client.newCall(request).execute()
                     
                     if (response.isSuccessful) {
