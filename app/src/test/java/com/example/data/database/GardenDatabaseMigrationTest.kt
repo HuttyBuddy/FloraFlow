@@ -5,6 +5,8 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -41,6 +43,15 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32])
 class GardenDatabaseMigrationTest {
+
+    @Test
+    fun migration8To9AddsNullableAssessmentLayoutId() {
+        val database = mock<androidx.sqlite.db.SupportSQLiteDatabase>()
+
+        GardenDatabase.MIGRATION_8_9.migrate(database)
+
+        verify(database).execSQL("ALTER TABLE assessment_results ADD COLUMN layoutId INTEGER")
+    }
 
     // Directly exercises Room's own schema validation against a real,
     // persisted SQLite file (not in-memory) using the current entity set

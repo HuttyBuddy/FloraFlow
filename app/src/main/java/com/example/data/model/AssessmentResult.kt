@@ -8,5 +8,6 @@ data class AssessmentResult(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val timestamp: Long = System.currentTimeMillis(),
     val score: Int,
-    val lowestCategories: String // Comma-separated list of categories
+    val lowestCategories: String, // Comma-separated list of categories
+    val layoutId: Int? = null
 )

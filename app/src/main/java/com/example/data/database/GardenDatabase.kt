@@ -13,7 +13,7 @@ import com.example.data.model.CareTask
 import com.example.data.model.RestorationLog
 import com.example.data.model.AssessmentResult
 
-@Database(entities = [GardenLayout::class, Plant::class, MoodLog::class, CareTask::class, RestorationLog::class, AssessmentResult::class], version = 8, exportSchema = true)
+@Database(entities = [GardenLayout::class, Plant::class, MoodLog::class, CareTask::class, RestorationLog::class, AssessmentResult::class], version = 9, exportSchema = true)
 abstract class GardenDatabase : RoomDatabase() {
     abstract fun gardenDao(): GardenDao
 
@@ -48,7 +48,12 @@ abstract class GardenDatabase : RoomDatabase() {
                 db.execSQL("DROP TABLE IF EXISTS community_comments")
             }
         }
-        val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_6_7, MIGRATION_7_8)
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE assessment_results ADD COLUMN layoutId INTEGER")
+            }
+        }
+        val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
 
         fun getDatabase(context: Context): GardenDatabase {
             return INSTANCE ?: synchronized(this) {
