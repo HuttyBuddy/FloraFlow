@@ -19,7 +19,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const APP_SHARED_SECRET = process.env.APP_SHARED_SECRET;
 
 if (!APP_SHARED_SECRET) {
-    console.warn('WARNING: APP_SHARED_SECRET is not set. The proxy will accept unauthenticated requests from anyone who finds this URL.');
+    console.error('ERROR: APP_SHARED_SECRET is not set. The proxy will reject all requests.');
 }
 
 // Coarse per-IP rate limit. Tune based on real free-tier usage (3 AI
@@ -35,8 +35,8 @@ app.use(limiter);
 
 function requireAppSecret(req, res, next) {
     if (!APP_SHARED_SECRET) {
-        // Fail open only when no secret is configured (e.g. local dev).
-        return next();
+        // Fail closed when no secret is configured to prevent authentication bypass.
+        return res.status(500).json({ error: 'Server configuration error: APP_SHARED_SECRET not set' });
     }
     const provided = req.header('X-App-Secret');
     if (provided !== APP_SHARED_SECRET) {
