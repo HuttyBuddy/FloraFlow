@@ -251,9 +251,7 @@ fun PlannerScreen(
     var selectedTrayTab by remember { mutableStateOf(0) } // 0 = Indoor, 1 = Outdoor
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-    val isTablet = configuration.smallestScreenWidthDp >= 600
-    val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
+    val isWideScreen = configuration.screenWidthDp >= 720
 
     var selectedSoilIdx by remember { mutableIntStateOf(0) }
     val currentSoilTheme = SOIL_THEMES[selectedSoilIdx]
@@ -721,18 +719,18 @@ fun PlannerScreen(
                             triggerLeafFlutter = true
                         },
                         modifier = Modifier
-                            .weight(1.3f)
+                            .weight(1f)
                             .testTag("quick_sow_button"),
                         leadingIcon = Icons.Default.Spa
                     )
 
                     FloraFlowButton(
-                        text = "Uproot All",
+                        text = "Clear Layout",
                         onClick = {
                             viewModel.clearLayoutGrid()
                         },
                         modifier = Modifier
-                            .weight(0.7f)
+                            .weight(1f)
                             .testTag("clear_grid_button"),
                         variant = ButtonVariant.Destructive,
                         leadingIcon = Icons.Default.DeleteSweep
@@ -1459,12 +1457,20 @@ fun PlannerScreen(
                             isExpanded = expandedTasks[2] == true,
                             onToggleExpand = { expandedTasks[2] = !(expandedTasks[2] ?: false) }
                         ) {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                actionsPanelContent()
-                                gridPlannerContent()
+                            if (isWideScreen) {
+                                Text(
+                                    text = "Use the design workspace beside this checklist to place, move, or clear plants.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } else {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    actionsPanelContent()
+                                    gridPlannerContent()
+                                }
                             }
                         }
 
@@ -1764,7 +1770,7 @@ fun PlannerScreen(
             ) {
                 Column(
                     modifier = Modifier
-                        .weight(0.55f)
+                        .weight(0.42f)
                         .fillMaxHeight()
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -1776,12 +1782,14 @@ fun PlannerScreen(
 
                 Column(
                     modifier = Modifier
-                        .weight(0.45f)
+                        .weight(0.58f)
                         .fillMaxHeight()
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     layoutInfoContent()
+                    actionsPanelContent()
+                    gridPlannerContent()
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
