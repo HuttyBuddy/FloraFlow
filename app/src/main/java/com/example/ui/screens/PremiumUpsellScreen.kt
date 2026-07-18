@@ -45,9 +45,7 @@ fun PremiumUpsellScreen(
     annualOffer: com.example.billing.BillingManager.OfferInfo? = null
 ) {
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-    val isTablet = configuration.smallestScreenWidthDp >= 600
-    val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
+    val isWideScreen = configuration.screenWidthDp >= 720
 
     var selectAnnual by remember { mutableStateOf(true) }
 
@@ -273,15 +271,12 @@ fun PremiumUpsellScreen(
                 crownBadge()
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
                 titleSection()
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
-                featuresList()
-                Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.large))
                 ctaPricingCard()
                 Spacer(modifier = Modifier.height(MaterialTheme.spacing.medium))
                 restoreButton()
-                
-
-
+                Spacer(modifier = Modifier.height(MaterialTheme.spacing.extraLarge))
+                featuresList()
                 Spacer(modifier = Modifier.height(48.dp))
             }
         } else {
