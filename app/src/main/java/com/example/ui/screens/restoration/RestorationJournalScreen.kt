@@ -231,7 +231,7 @@ fun RestorationJournalScreen(
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
-                            text = if (restorationTrialCount < 3) "Free Trial: $restorationTrialCount/3 plays remaining" else "Trial Exhausted (3/3) - Go PRO 👑",
+                            text = if (restorationTrialCount < 3) "Free Trial: ${3 - restorationTrialCount}/3 plays remaining" else "Trial Exhausted (3/3) - Go PRO 👑",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = if (restorationTrialCount < 3) Color(0xFFFFB74D) else Color(0xFFE57373)
@@ -322,8 +322,8 @@ fun RestorationJournalScreen(
                                             )
                                             Text(
                                                 text = track.scene,
-                                                fontSize = 9.sp,
-                                                color = if (isSelected) Color(0xFF81C784) else Color.White.copy(alpha = 0.4f)
+                                                fontSize = 11.sp,
+                                                color = if (isSelected) Color(0xFF81C784) else Color.White.copy(alpha = 0.72f)
                                             )
                                         }
                                     }
@@ -334,9 +334,9 @@ fun RestorationJournalScreen(
                             val currentTrackDesc = tracks.find { it.name == currentTrack }?.description ?: ""
                             Text(
                                 text = currentTrackDesc,
-                                fontSize = 11.sp,
-                                color = Color.White.copy(alpha = 0.6f),
-                                lineHeight = 15.sp,
+                                fontSize = 12.sp,
+                                color = Color.White.copy(alpha = 0.78f),
+                                lineHeight = 17.sp,
                                 modifier = Modifier.padding(vertical = 12.dp)
                             )
 
