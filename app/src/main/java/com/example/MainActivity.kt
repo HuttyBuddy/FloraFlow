@@ -44,6 +44,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.IntOffset
@@ -307,7 +311,11 @@ class MainActivity : ComponentActivity() {
                                                 .weight(1f)
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .clickable {
+                                                .semantics {
+                                                    role = Role.Tab
+                                                    selected = currentTab == 0
+                                                }
+                                                .clickable(role = Role.Tab) {
                                                     viewModel.setCurrentTab(0)
                                                 }
                                                 .testTag("nav_tab_dashboard"),
@@ -344,7 +352,11 @@ class MainActivity : ComponentActivity() {
                                                 .weight(1f)
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .clickable {
+                                                .semantics {
+                                                    role = Role.Tab
+                                                    selected = currentTab == 1
+                                                }
+                                                .clickable(role = Role.Tab) {
                                                     viewModel.setCurrentTab(1)
                                                 }
                                                 .testTag("nav_tab_planner")
@@ -388,7 +400,11 @@ class MainActivity : ComponentActivity() {
                                                 .weight(1f)
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .clickable {
+                                                .semantics {
+                                                    role = Role.Tab
+                                                    selected = currentTab == 2
+                                                }
+                                                .clickable(role = Role.Tab) {
                                                     viewModel.setCurrentTab(2)
                                                 }
                                                 .testTag("nav_tab_greenhouse"),
@@ -425,7 +441,11 @@ class MainActivity : ComponentActivity() {
                                                 .weight(1f)
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .clickable {
+                                                .semantics {
+                                                    role = Role.Tab
+                                                    selected = currentTab == 3
+                                                }
+                                                .clickable(role = Role.Tab) {
                                                     viewModel.setCurrentTab(3)
                                                 }
                                                 .testTag("nav_tab_ai")
@@ -469,7 +489,11 @@ class MainActivity : ComponentActivity() {
                                                 .weight(1f)
                                                 .fillMaxHeight()
                                                 .clip(RoundedCornerShape(12.dp))
-                                                .clickable {
+                                                .semantics {
+                                                    role = Role.Tab
+                                                    selected = currentTab == 4
+                                                }
+                                                .clickable(role = Role.Tab) {
                                                     viewModel.setCurrentTab(4)
                                                 }
                                                 .testTag("nav_tab_ar")
