@@ -10,7 +10,9 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [36])
+// SDK 36 requires a Java 21 test runtime. The project and CI build on Java 17,
+// so exercise the latest Robolectric SDK supported by that runtime.
+@Config(sdk = [35])
 class ExampleRobolectricTest {
 
   @Test

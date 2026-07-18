@@ -764,6 +764,16 @@ class GardenViewModel @JvmOverloads constructor(
 
     private val sharedPrefs = application.getSharedPreferences("floraflow_billing_prefs", Context.MODE_PRIVATE)
     private val encryptedSharedPrefs by lazy {
+        // Robolectric runs on the host JVM, where the AndroidKeyStore provider does not
+        // exist. Keep production feedback encrypted while giving JVM tests an isolated,
+        // deterministic preference store.
+        if (Build.FINGERPRINT == "robolectric") {
+            return@lazy application.getSharedPreferences(
+                "secret_feedback_prefs_robolectric",
+                Context.MODE_PRIVATE
+            )
+        }
+
         val masterKey = MasterKey.Builder(application)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
