@@ -457,9 +457,7 @@ fun AiStudioScreen(
     }
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-    val isTablet = configuration.smallestScreenWidthDp >= 600
-    val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
+    val isWideScreen = configuration.screenWidthDp >= 720
 
     if (!isWideScreen) {
         val scrollState = rememberScrollState()

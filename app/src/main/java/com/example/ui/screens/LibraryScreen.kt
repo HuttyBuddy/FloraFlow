@@ -136,9 +136,7 @@ fun LibraryScreen(
     }
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
-    val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp || configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-    val isTablet = configuration.smallestScreenWidthDp >= 600
-    val isWideScreen = isLandscape && (isTablet || configuration.screenWidthDp >= 600)
+    val isWideScreen = configuration.screenWidthDp >= 720
 
     // ----------------------------------------------------
     // LOCAL COMPOSABLES (extracted layout segments)
@@ -597,7 +595,7 @@ fun LibraryScreen(
             ) {
                 val resolvedClimate = remember(zipInput) { ClimatePlants.mapZipToClimate(zipInput) }
                 Text(
-                    text = if (zipInput.isNotBlank()) "Climate: $resolvedClimate" else "Showing species from all around the world",
+                    text = if (zipInput.isNotBlank()) "Local climate for $zipInput: $resolvedClimate" else "Showing species from all climates",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
