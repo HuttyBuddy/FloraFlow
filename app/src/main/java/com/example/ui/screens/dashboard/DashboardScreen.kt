@@ -109,7 +109,7 @@ fun DashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "You haven't taken your Neural Load assessment yet. Take a 2-minute assessment to personalize your space.",
+                    text = "Personalize your indoor or outdoor space with a 2-minute biophilic assessment.",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = bannerText,
@@ -124,7 +124,7 @@ fun DashboardScreen(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "Begin Your Garden Journey",
+                        text = "Personalize My Space",
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )
@@ -157,7 +157,7 @@ fun DashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Your last Neural Load assessment was completed 30 days ago. Audit your biophilic sanctuary progress now!",
+                    text = "Your space assessment is 30 days old. Refresh it to keep design, care, and restoration guidance relevant.",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = bannerText,
