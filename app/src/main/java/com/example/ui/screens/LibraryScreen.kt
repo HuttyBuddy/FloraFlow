@@ -292,12 +292,12 @@ fun LibraryScreen(
         ) {
             Column {
                 Text(
-                    text = "Cultivated Vegetation Hub",
+                    text = "Plants in This Space",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Seasonal care trackers and growth indices",
+                    text = "Seasonal care, health, and growth",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )

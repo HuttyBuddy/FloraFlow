@@ -339,7 +339,7 @@ fun PlannerScreen(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Please select or generate a garden workspace in the Dashboard screen first to layout specific plant variables on the interactive grid blueprint.",
+                text = "Choose a space from Dashboard to start designing its plant layout.",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.secondary
@@ -502,7 +502,7 @@ fun PlannerScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                "Blueprint Suggestion",
+                                "Design Suggestion",
                                 fontSize = 9.sp,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
@@ -1397,7 +1397,7 @@ fun PlannerScreen(
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Layout Design Checklist 📋",
+                            text = "Design Checklist",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -1583,7 +1583,7 @@ fun PlannerScreen(
 
                         ChecklistItem(
                             title = "4. Consult AI Advisor",
-                            description = "Ask the AI Architect for custom layout reviews or design ideas.",
+                            description = "Ask the FloraFlow AI guide to review your layout or suggest refinements.",
                             statusText = if (hasConsultedAi) "Consulted AI Advisor" else "Pending AI review",
                             isCompleted = task4Completed,
                             isExpanded = expandedTasks[4] == true,
@@ -1594,7 +1594,7 @@ fun PlannerScreen(
 
                         ChecklistItem(
                             title = "5. Export Blueprint",
-                            description = "Render and download the final layout as an architect vector file.",
+                            description = "Preview and export the finished layout for reference or sharing.",
                             statusText = if (hasExportedBlueprint) "Blueprint exported successfully" else "Ready to export",
                             isCompleted = task5Completed,
                             isExpanded = expandedTasks[5] == true,
@@ -1710,7 +1710,7 @@ fun PlannerScreen(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "Yard Spacing Density",
+                            text = "Planting Density",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
