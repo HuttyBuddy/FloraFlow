@@ -95,7 +95,9 @@ class MainActivity : ComponentActivity() {
             val currentTab by viewModel.currentTab.collectAsState()
             val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
 
-            val forceDarkStatusBar = useDarkTheme || (currentTab == 4 && isOnboardingCompleted)
+            // The app bar remains light in the Restoration tab, so keep dark status-bar
+            // icons there instead of switching them to low-contrast light icons.
+            val forceDarkStatusBar = useDarkTheme
 
             val statusBarStyle = if (forceDarkStatusBar) {
                 androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
