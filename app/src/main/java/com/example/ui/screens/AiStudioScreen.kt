@@ -67,14 +67,14 @@ import kotlin.math.sin
 private val AI_SUGGESTIONS_PORTRAIT = listOf(
     "🌱 Suggest perfect companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
     "🐛 Analyze yellowing leaves / plant pest diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
-    "🧘 Discuss therapy and nature cognitive wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?",
+    "🧘 Explore nature-based wellbeing" to "How can caring for and spending time in my green space support calm, focus, and a restorative daily routine?",
     "🔍 Run a conversational Space Diagnosis" to "I want to run a detailed Space Diagnosis of my environment."
 )
 
 private val AI_SUGGESTIONS_LANDSCAPE = listOf(
     "🌱 Suggest companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
     "🐛 Analyze yellowing leaves diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
-    "🧘 Discuss therapy and nature wellness" to "How does maintaining, smelling, or surrounding ourselves with a green garden reduce cortisol levels and improve microclimate mindfulness?",
+    "🧘 Explore nature-based wellbeing" to "How can caring for and spending time in my green space support calm, focus, and a restorative daily routine?",
     "🔍 Run Space Diagnosis" to "I want to run a detailed Space Diagnosis of my environment."
 )
 
@@ -553,7 +553,7 @@ fun AiStudioScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    "🌱 Live Garden Intelligence Consultation",
+                                    "🌱 Personalized Biophilic Guidance",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary,
@@ -986,7 +986,7 @@ fun AiStudioScreen(
                                     horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
                                     Text(
-                                        "🌱 Live Garden Intelligence Consultation",
+                                        "🌱 Personalized Biophilic Guidance",
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary,
@@ -1461,7 +1461,7 @@ fun BotanistProfileHeader(
 
                 Image(
                     painter = painterResource(id = R.drawable.julian_avatar),
-                    contentDescription = "Dr. Julian Greenleaf",
+                    contentDescription = "Julian, FloraFlow AI guide",
                     modifier = Modifier
                         .size(44.dp)
                         .clip(CircleShape),
@@ -1475,7 +1475,7 @@ fun BotanistProfileHeader(
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Text(
-                        text = "Dr. Julian Greenleaf",
+                        text = "Julian, FloraFlow AI Guide",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleLarge.copy(fontSize = 17.sp),
                         color = MaterialTheme.colorScheme.onSurface,
@@ -1492,7 +1492,7 @@ fun BotanistProfileHeader(
                 }
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = if (isAiLoading && aiStatus.isNotBlank()) aiStatus else "Live Agent, PhD in Botanical Systems",
+                    text = if (isAiLoading && aiStatus.isNotBlank()) aiStatus else "Biophilic design, plant care, and wellbeing guidance",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                     lineHeight = 16.sp
