@@ -35,7 +35,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.*
-import com.example.ui.components.ButtonVariant
 import com.example.ui.components.FloraFlowButton
 import com.example.ui.viewmodel.GardenViewModel
 import com.example.ui.theme.extendedColors
@@ -242,6 +241,7 @@ fun PlannerScreen(
     var highlightedPlantName by remember { mutableStateOf<String?>(null) }
     var showBlueprintDialog by remember { mutableStateOf(false) }
     var showTimelapseDialog by remember { mutableStateOf(false) }
+    var showClearConfirmation by remember { mutableStateOf(false) }
     var triggerLeafFlutter by remember { mutableStateOf(false) }
     var hasTriggeredFullGarden by remember(activeLayout?.id) { mutableStateOf(false) }
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -252,6 +252,7 @@ fun PlannerScreen(
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val isWideScreen = configuration.screenWidthDp >= 720
+    var isSubstratePickerExpanded by remember(isWideScreen) { mutableStateOf(isWideScreen) }
 
     var selectedSoilIdx by remember { mutableIntStateOf(0) }
     val currentSoilTheme = SOIL_THEMES[selectedSoilIdx]
@@ -266,7 +267,7 @@ fun PlannerScreen(
 
     val expandedTasks = remember { mutableStateMapOf<Int, Boolean>().apply {
         put(1, false)
-        put(2, true)
+        put(2, false)
         put(3, false)
         put(4, false)
         put(5, false)
@@ -442,8 +443,8 @@ fun PlannerScreen(
                             hasConsultedAi = true
                         },
                         modifier = Modifier
-                            .weight(0.8f)
-                            .height(36.dp),
+                            .weight(1f)
+                            .heightIn(min = 44.dp),
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 4.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
@@ -464,8 +465,8 @@ fun PlannerScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                "Layout Review",
-                                fontSize = 9.sp,
+                                "Review my plot",
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -480,8 +481,8 @@ fun PlannerScreen(
                             hasConsultedAi = true
                         },
                         modifier = Modifier
-                            .weight(1.2f)
-                            .height(36.dp),
+                            .weight(1f)
+                            .heightIn(min = 44.dp),
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 4.dp),
                         colors = ButtonDefaults.outlinedButtonColors(
@@ -502,8 +503,8 @@ fun PlannerScreen(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                "Design Suggestion",
-                                fontSize = 9.sp,
+                                "Suggest a layout",
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 maxLines = 1,
                                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
@@ -713,7 +714,7 @@ fun PlannerScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                     FloraFlowButton(
-                        text = "Auto-Sow Seeds",
+                        text = "Auto-fill plot",
                         onClick = {
                             viewModel.autoSowClimateSeeds()
                             triggerLeafFlutter = true
@@ -724,17 +725,64 @@ fun PlannerScreen(
                         leadingIcon = Icons.Default.Spa
                     )
 
-                    FloraFlowButton(
-                        text = "Clear Layout",
-                        onClick = {
-                            viewModel.clearLayoutGrid()
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .testTag("clear_grid_button"),
-                        variant = ButtonVariant.Destructive,
-                        leadingIcon = Icons.Default.DeleteSweep
-                    )
+                    OutlinedButton(
+                        onClick = { showClearConfirmation = true },
+                        enabled = activeGridItems.isNotEmpty(),
+                        modifier = Modifier.testTag("clear_grid_button"),
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                    ) {
+                        Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Clear", fontWeight = FontWeight.SemiBold)
+                    }
+            }
+        }
+
+        val substratePanelContent = @Composable {
+            if (isSubstratePickerExpanded) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    substrateSelectorContent()
+                    TextButton(
+                        onClick = { isSubstratePickerExpanded = false },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text("Done")
+                    }
+                }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(Brush.verticalGradient(currentSoilTheme.bgColors))
+                                .border(1.dp, currentSoilTheme.outlineColor.copy(alpha = 0.5f), CircleShape)
+                        )
+                        Column {
+                            Text("Surface", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(currentSoilTheme.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                    TextButton(onClick = { isSubstratePickerExpanded = true }) {
+                        Icon(Icons.Default.Tune, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Change")
+                    }
+                }
             }
         }
 
@@ -743,8 +791,91 @@ fun PlannerScreen(
                 modifier = Modifier
                     .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Choose a plant", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = when {
+                                isUprootModeActive -> "Eraser selected — tap a planted square"
+                                selectedSeedTemplate != null -> "${selectedSeedTemplate!!.name} selected — tap squares to plant"
+                                else -> "Select a plant, then tap the plot"
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    SingleChoiceSegmentedButtonRow {
+                        listOf("Indoor", "Outdoor").forEachIndexed { index, label ->
+                            SegmentedButton(
+                                selected = selectedTrayTab == index,
+                                onClick = {
+                                    selectedTrayTab = index
+                                    selectedSeedTemplate = null
+                                    isUprootModeActive = false
+                                },
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = 2),
+                                icon = {}
+                            ) { Text(label, fontSize = 11.sp) }
+                        }
+                    }
+                }
+
+                androidx.compose.foundation.lazy.LazyRow(
+                    modifier = Modifier.fillMaxWidth().testTag("plant_palette"),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    item {
+                        FilterChip(
+                            selected = isUprootModeActive,
+                            onClick = {
+                                isUprootModeActive = !isUprootModeActive
+                                selectedSeedTemplate = null
+                            },
+                            label = { Text("Erase") },
+                            leadingIcon = { Icon(Icons.Default.Backspace, contentDescription = null, modifier = Modifier.size(18.dp)) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
+                                selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer,
+                                selectedLeadingIconColor = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        )
+                    }
+                    val templates = ClimatePlants.getTemplatesForPlanner(
+                        activeLayout?.climate ?: "",
+                        isIndoor = selectedTrayTab == 0
+                    )
+                    items(templates, key = { it.name }) { template ->
+                        val isSelected = selectedSeedTemplate?.name == template.name
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = {
+                                selectedSeedTemplate = if (isSelected) null else template
+                                if (!isSelected) viewModel.recordSeedSelected(template.name)
+                                isUprootModeActive = false
+                            },
+                            label = { Text(template.name, maxLines = 1) },
+                            leadingIcon = {
+                                PlantPhoto(
+                                    plantName = template.name,
+                                    fallbackEmoji = template.iconEmoji,
+                                    modifier = Modifier.size(24.dp),
+                                    shape = CircleShape,
+                                    emojiFontSize = 13.sp
+                                )
+                            }
+                        )
+                    }
+                }
+
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
                 if (highlightedPlantName != null) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
@@ -1210,153 +1341,6 @@ fun PlannerScreen(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Seed Tray Header
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Seed Tray Selector:",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-
-                        // Tabs
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier
-                                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
-                                .padding(2.dp)
-                        ) {
-                            val tabs = listOf("Indoor", "Outdoor")
-                            tabs.forEachIndexed { index, label ->
-                                val isSelected = selectedTrayTab == index
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                                        .clickable { 
-                                            selectedTrayTab = index
-                                            selectedSeedTemplate = null
-                                            isUprootModeActive = false
-                                        }
-                                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                                ) {
-                                    Text(
-                                        text = label,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // LazyRow Tray
-                    androidx.compose.foundation.lazy.LazyRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        item {
-                            val isSelected = isUprootModeActive
-                            Card(
-                                modifier = Modifier
-                                    .width(76.dp)
-                                    .heightIn(min = 48.dp)
-                                    .clickable {
-                                        isUprootModeActive = !isUprootModeActive
-                                        selectedSeedTemplate = null
-                                    },
-                                colors = CardDefaults.cardColors(
-                                    containerColor = if (isSelected) MaterialTheme.extendedColors.error.copy(alpha = 0.18f)
-                                                     else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                                ),
-                                border = BorderStroke(
-                                    width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) MaterialTheme.extendedColors.error else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
-                                ),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 8.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    Text("🧹", fontSize = 16.sp)
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
-                                        text = "Eraser", 
-                                        fontSize = 11.sp, 
-                                        fontWeight = FontWeight.Bold, 
-                                        color = if (isSelected) MaterialTheme.extendedColors.error else MaterialTheme.colorScheme.onSurface,
-                                        maxLines = 1
-                                    )
-                                    Text(
-                                        text = "Clear Cell", 
-                                        fontSize = 10.sp, 
-                                        color = if (isSelected) MaterialTheme.extendedColors.error.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                                        maxLines = 1
-                                    )
-                                }
-                            }
-                        }
-
-                        val templates = ClimatePlants.getTemplatesForPlanner(
-                            activeLayout?.climate ?: "",
-                            isIndoor = selectedTrayTab == 0
-                        )
-
-                        items(templates, key = { it.name }) { template ->
-                            val isSelected = selectedSeedTemplate?.name == template.name
-                            val accentColor = if (selectedTrayTab == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                            Card(
-                                modifier = Modifier
-                                    .width(76.dp)
-                                    .heightIn(min = 48.dp)
-                                    .clickable {
-                                        if (isSelected) {
-                                            selectedSeedTemplate = null
-                                        } else {
-                                            selectedSeedTemplate = template
-                                            viewModel.recordSeedSelected(template.name)
-                                            isUprootModeActive = false
-                                        }
-                                    },
-                                colors = CardDefaults.cardColors(
-                                    containerColor = if (isSelected) accentColor.copy(alpha = 0.15f) 
-                                                     else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                                ),
-                                border = BorderStroke(
-                                    width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) accentColor else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
-                                ),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 8.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-                                    PlantPhoto(
-                                        plantName = template.name,
-                                        fallbackEmoji = template.iconEmoji,
-                                        modifier = Modifier.size(32.dp),
-                                        shape = CircleShape,
-                                        emojiFontSize = 16.sp
-                                    )
-                                    Spacer(modifier = Modifier.height(2.dp))
-                                    Text(template.name, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                                    Text(template.type, fontSize = 10.sp, color = if (isSelected) accentColor.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f), maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                                }
-                            }
-                        }
-                    }
             }
         }
 
@@ -1364,19 +1348,15 @@ fun PlannerScreen(
             val totalConflicts = activeGridItems.count { hasNeighborConflict(it.x, it.y, activeGridItems) }
             val totalSynergies = activeGridItems.count { hasNeighborSynergy(it.x, it.y, activeGridItems) }
             
-            val task1Completed = true
-            val task2Completed = activeGridItems.isNotEmpty()
             val task3Completed = activeGridItems.isNotEmpty() && totalConflicts == 0
             val task4Completed = hasConsultedAi
             val task5Completed = hasExportedBlueprint
             
-            val completedCount = (if (task1Completed) 1 else 0) +
-                                  (if (task2Completed) 1 else 0) +
-                                  (if (task3Completed) 1 else 0) +
+            val completedCount = (if (task3Completed) 1 else 0) +
                                   (if (task4Completed) 1 else 0) +
                                   (if (task5Completed) 1 else 0)
             
-            val progressFraction = completedCount.toFloat() / 5f
+            val progressFraction = completedCount.toFloat() / 3f
             val animatedProgress by animateFloatAsState(
                 targetValue = progressFraction,
                 animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
@@ -1397,14 +1377,14 @@ fun PlannerScreen(
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Design Checklist",
+                            text = "Refine and finish",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Complete each task to optimize your biophilic layout.",
+                            text = "Check plant relationships, get guidance, then share your plan.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -1417,7 +1397,7 @@ fun PlannerScreen(
                     ) {
                         LinearProgressIndicator(
                             progress = { animatedProgress },
-                            color = if (completedCount == 5) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
+                            color = if (completedCount == 3) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
                             trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f),
                             modifier = Modifier
                                 .weight(1f)
@@ -1425,10 +1405,10 @@ fun PlannerScreen(
                                 .clip(RoundedCornerShape(4.dp))
                         )
                         Text(
-                            text = "$completedCount / 5 Tasks",
+                            text = "$completedCount / 3 checks",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (completedCount == 5) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
+                            color = if (completedCount == 3) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
                         )
                     }
 
@@ -1439,43 +1419,7 @@ fun PlannerScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         ChecklistItem(
-                            title = "1. Select Surface Substrate",
-                            description = "Choose loam, sand, pebbles, clay, or mulch matching your climate.",
-                            statusText = "Selected: ${currentSoilTheme.name}",
-                            isCompleted = task1Completed,
-                            isExpanded = expandedTasks[1] == true,
-                            onToggleExpand = { expandedTasks[1] = !(expandedTasks[1] ?: false) }
-                        ) {
-                            substrateSelectorContent()
-                        }
-
-                        ChecklistItem(
-                            title = "2. Sow Seeds on Sector Grid",
-                            description = "Tap sectors on the 5x5 layout grid to sow and place plants.",
-                            statusText = "${activeGridItems.size} / 25 sectors occupied",
-                            isCompleted = task2Completed,
-                            isExpanded = expandedTasks[2] == true,
-                            onToggleExpand = { expandedTasks[2] = !(expandedTasks[2] ?: false) }
-                        ) {
-                            if (isWideScreen) {
-                                Text(
-                                    text = "Use the design workspace beside this checklist to place, move, or clear plants.",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            } else {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                    actionsPanelContent()
-                                    gridPlannerContent()
-                                }
-                            }
-                        }
-
-                        ChecklistItem(
-                            title = "3. Optimize Companion Synergies",
+                            title = "Companion check",
                             description = "Arrange neighboring species to activate synergies and clear conflicts.",
                             statusText = "Synergies: $totalSynergies | Conflicts: $totalConflicts",
                             isCompleted = task3Completed,
@@ -1582,7 +1526,7 @@ fun PlannerScreen(
                         }
 
                         ChecklistItem(
-                            title = "4. Consult AI Advisor",
+                            title = "Ask FloraFlow",
                             description = "Ask the FloraFlow AI guide to review your layout or suggest refinements.",
                             statusText = if (hasConsultedAi) "Consulted AI Advisor" else "Pending AI review",
                             isCompleted = task4Completed,
@@ -1593,7 +1537,7 @@ fun PlannerScreen(
                         }
 
                         ChecklistItem(
-                            title = "5. Export Blueprint",
+                            title = "Preview and share",
                             description = "Preview and export the finished layout for reference or sharing.",
                             statusText = if (hasExportedBlueprint) "Blueprint exported successfully" else "Ready to export",
                             isCompleted = task5Completed,
@@ -1611,7 +1555,7 @@ fun PlannerScreen(
                             ) {
                                 Icon(Icons.Default.Layers, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("RENDER BLUEPRINT OF BIOPHILIC SPACE 📐", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+                                Text("Preview blueprint", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -1757,8 +1701,41 @@ fun PlannerScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 layoutInfoContent()
-                layoutDesignChecklistContent()
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        substratePanelContent()
+                    }
+                }
+                Card(
+                    modifier = Modifier.fillMaxWidth().testTag("plot_workspace"),
+                    shape = RoundedCornerShape(20.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text("Your plot", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                                Text("${activeGridItems.size} of 25 spaces planted", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                        actionsPanelContent()
+                        gridPlannerContent()
+                    }
+                }
                 progressDensityContent()
+                layoutDesignChecklistContent()
                 Spacer(modifier = Modifier.height(16.dp))
             }
         } else {
@@ -1775,8 +1752,17 @@ fun PlannerScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    layoutDesignChecklistContent()
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            substratePanelContent()
+                        }
+                    }
                     progressDensityContent()
+                    layoutDesignChecklistContent()
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
@@ -1788,12 +1774,57 @@ fun PlannerScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     layoutInfoContent()
-                    actionsPanelContent()
-                    gridPlannerContent()
+                    Card(
+                        modifier = Modifier.fillMaxWidth().testTag("plot_workspace"),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(18.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text("Your plot", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                                    Text("${activeGridItems.size} of 25 spaces planted", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                            actionsPanelContent()
+                            gridPlannerContent()
+                        }
+                    }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }
+    }
+
+    if (showClearConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showClearConfirmation = false },
+            icon = { Icon(Icons.Default.DeleteSweep, contentDescription = null) },
+            title = { Text("Clear this plot?") },
+            text = { Text("This removes every plant from the 5 × 5 layout. Your saved plant collection will stay intact.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.clearLayoutGrid()
+                        selectedSeedTemplate = null
+                        isUprootModeActive = false
+                        showClearConfirmation = false
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                ) { Text("Clear plot") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearConfirmation = false }) { Text("Keep plot") }
+            }
+        )
     }
 
     // --- Cell Configuration Dialog ---
