@@ -336,7 +336,7 @@ fun SplashWelcomeScreen(
         Spacer(modifier = Modifier.weight(1f))
         
         Text(
-            text = "How much stress is your space creating?",
+            text = "Design a space that helps you thrive",
             style = MaterialTheme.typography.headlineLarge.copy(
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
@@ -349,7 +349,7 @@ fun SplashWelcomeScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Take a 2-minute Neural Load assessment — find out if your environment is helping or hurting your nervous system.",
+            text = "Personalize an indoor or outdoor space with biophilic design, plant care, and restorative guidance.",
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = 16.sp,
                 color = Color.White.copy(alpha = 0.85f),
@@ -362,7 +362,7 @@ fun SplashWelcomeScreen(
         Spacer(modifier = Modifier.weight(1f))
         
         FloraFlowButton(
-            text = "Start My Assessment",
+            text = "Personalize My Space",
             onClick = onStart,
             modifier = Modifier
                 .fillMaxWidth()
@@ -372,7 +372,7 @@ fun SplashWelcomeScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Skip for now →",
+            text = "Explore first →",
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
