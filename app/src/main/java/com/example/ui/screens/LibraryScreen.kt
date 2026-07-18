@@ -1092,23 +1092,6 @@ fun PlantCareTrackerCard(
                                 }
                             }
                         }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                text = "Growth: ${plant.growthProgress}%",
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary,
-                                maxLines = 1
-                            )
-                            GrowthTreeRingsIndicator(
-                                progress = plant.growthProgress.toFloat(),
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
                     }
 
                     Row(
@@ -1129,6 +1112,22 @@ fun PlantCareTrackerCard(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.secondary,
                             maxLines = 1
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = "Growth: ${plant.growthProgress}%",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        GrowthTreeRingsIndicator(
+                            progress = plant.growthProgress.toFloat(),
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
