@@ -31,3 +31,4 @@ node_modules/
 /diff*.txt
 /diff*.patch
 temp_original*.kt
+.gstack/
