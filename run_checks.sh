@@ -1,0 +1,2 @@
+./gradlew lintDebug
+./gradlew testDebugUnitTest
