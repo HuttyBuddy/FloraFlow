@@ -47,6 +47,29 @@ import com.example.data.model.GridPlantItem
 import com.example.ui.screens.checkPlantSynergy
 import kotlin.math.*
 
+
+// --- Performance Optimization: Extracted static lists ---
+// Defining static lists (like tracks, moods, timers, and waves) outside of @Composable functions
+// prevents unnecessary memory allocations and garbage collection overhead during frequent
+// recompositions or 60fps animations, significantly improving UI smoothness and battery life.
+
+private val SOUNDSCAPE_TRACKS = listOf(
+    SoundscapeTrackInfo("Alpha Focus", "Forest Breeze 🍃", 200f, 10f, "A living forest breeze with hand-struck wind chimes, under Alpha waves (10Hz) for alert, relaxed focus. Generated live — it never loops or repeats."),
+    SoundscapeTrackInfo("Theta Meditate", "Gentle Rain 🌧️", 200f, 6f, "Soft rainfall with droplets scattered around you, under Theta waves (6Hz) for deep visualization and mental stillness. Generated live — it never loops or repeats."),
+    SoundscapeTrackInfo("Delta Sleep", "Ocean Waves 🌊", 150f, 2.5f, "Slow ocean swells breaking in the distance, under Delta waves (2.5Hz) for physical healing and deep sleep. Generated live — it never loops or repeats.")
+)
+
+private val MOOD_OPTIONS = listOf("Peaceful", "Energized", "Refreshed", "Stressed", "Overwhelmed")
+
+private val SLEEP_TIMER_OPTIONS = listOf(0, 15, 30, 60)
+
+private val WAVE_PROPERTIES = listOf(
+    Triple(androidx.compose.ui.graphics.Color(0xFF81C784).copy(alpha = 0.4f), 1.5f, 14f),     // Wave 1
+    Triple(androidx.compose.ui.graphics.Color(0xFFA8E6CF).copy(alpha = 0.5f), 2.2f, 8f),      // Wave 2
+    Triple(androidx.compose.ui.graphics.Color(0xFF4DB6AC).copy(alpha = 0.3f), 0.9f, 18f)      // Wave 3
+)
+// --------------------------------------------------------
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun RestorationJournalScreen(
@@ -161,12 +184,8 @@ fun RestorationJournalScreen(
 
     var completedTasksList = remember { mutableStateListOf<String>() }
 
-    // Soundscape tracks definition — each pairs a brainwave preset with its own living nature scene
-    val tracks = listOf(
-        SoundscapeTrackInfo("Alpha Focus", "Forest Breeze 🍃", 200f, 10f, "A living forest breeze with hand-struck wind chimes, under Alpha waves (10Hz) for alert, relaxed focus. Generated live — it never loops or repeats."),
-        SoundscapeTrackInfo("Theta Meditate", "Gentle Rain 🌧️", 200f, 6f, "Soft rainfall with droplets scattered around you, under Theta waves (6Hz) for deep visualization and mental stillness. Generated live — it never loops or repeats."),
-        SoundscapeTrackInfo("Delta Sleep", "Ocean Waves 🌊", 150f, 2.5f, "Slow ocean swells breaking in the distance, under Delta waves (2.5Hz) for physical healing and deep sleep. Generated live — it never loops or repeats.")
-    )
+    // Soundscape tracks definition
+    val tracks = SOUNDSCAPE_TRACKS
 
     // Base background gradient
     Box(
@@ -546,7 +565,7 @@ fun RestorationJournalScreen(
                                     .padding(bottom = 16.dp),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                listOf("Peaceful", "Energized", "Refreshed", "Stressed", "Overwhelmed").forEach { mood ->
+                                MOOD_OPTIONS.forEach { mood ->
                                     FilterChip(
                                         selected = viewModel.selectedMood.collectAsState().value == mood,
                                         onClick = { viewModel.updateSelectedMood(mood) },
@@ -1162,7 +1181,7 @@ fun SleepTimerRow(
                 fontSize = 12.sp,
                 color = Color.White.copy(alpha = 0.7f)
             )
-            listOf(0, 15, 30, 60).forEach { minutes ->
+            SLEEP_TIMER_OPTIONS.forEach { minutes ->
                 val isSelected = selectedMinutes == minutes
                 Box(
                     modifier = Modifier
@@ -1221,19 +1240,15 @@ fun AudioWaveformVisualizer(
         label = "amplitude"
     )
 
+    val density = androidx.compose.ui.platform.LocalDensity.current
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
         val centerY = height / 2
 
         // Draw 3 overlaying waves with different properties (color, speed, amplitude)
-        val waves = listOf(
-            Triple(Color(0xFF81C784).copy(alpha = 0.4f), 1.5f, 14.dp.toPx()),     // Wave 1
-            Triple(Color(0xFFA8E6CF).copy(alpha = 0.5f), 2.2f, 8.dp.toPx()),      // Wave 2
-            Triple(Color(0xFF4DB6AC).copy(alpha = 0.3f), 0.9f, 18.dp.toPx())      // Wave 3
-        )
-
-        waves.forEachIndexed { index, (color, frequencyFactor, maxAmplitude) ->
+        WAVE_PROPERTIES.forEachIndexed { index, (color, frequencyFactor, maxAmplitudeDp) ->
+            val maxAmplitude = maxAmplitudeDp * density.density
             val path = androidx.compose.ui.graphics.Path()
             val currentAmplitude = maxAmplitude * amplitudeMultiplier
             
