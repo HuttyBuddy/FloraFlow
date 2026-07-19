@@ -2144,16 +2144,20 @@ fun PlannerScreen(
                                  }
                              }
                              
+                             // Precompute O(1) map
+                             val gridMap = Array<GridPlantItem?>(25) { null }
+                             activeGridItems.forEach { gridMap[it.x * 5 + it.y] = it }
+
                              // Nodes
                              for (r in 0..4) {
                                  for (c in 0..4) {
-                                     val item = activeGridItems.firstOrNull { it.x == r && it.y == c }
+                                     val item = gridMap[r * 5 + c]
                                      val cx = startX + (c + 0.5f) * cellWidth
                                      val cy = startY + (r + 0.5f) * cellHeight
                                      
                                      if (item != null) {
-                                         val hasConflict = hasNeighborConflict(r, c, activeGridItems)
-                                         val hasSynergy = hasNeighborSynergy(r, c, activeGridItems)
+                                         val hasConflict = hasNeighborConflictOptimized(r, c, gridMap)
+                                         val hasSynergy = hasNeighborSynergyOptimized(r, c, gridMap)
                                          
                                          // Node bg
                                          drawCircle(
