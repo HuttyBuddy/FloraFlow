@@ -728,6 +728,13 @@ fun DashboardScreen(
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.secondary
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = { showLogMoodDialog = true },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Log First Mood")
+                    }
                 }
             }
         } else {
