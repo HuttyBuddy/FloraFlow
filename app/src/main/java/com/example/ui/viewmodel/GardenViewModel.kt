@@ -1798,12 +1798,18 @@ class GardenViewModel @JvmOverloads constructor(
                     val response = client.newCall(request).execute()
                     
                     if (response.isSuccessful) {
-                        android.util.Log.d("FloraFlow", "Feedback successfully synced with Google Forms CRM!")
+                        if (com.example.BuildConfig.DEBUG) {
+                            android.util.Log.d("FloraFlow", "Feedback successfully synced with Google Forms CRM!")
+                        }
                     } else {
-                        android.util.Log.e("FloraFlow", "Google Forms Sync returned non-success code: ${response.code}. Saved locally.")
+                        if (com.example.BuildConfig.DEBUG) {
+                            android.util.Log.e("FloraFlow", "Google Forms Sync returned non-success code: ${response.code}. Saved locally.")
+                        }
                     }
                 } catch (e: Exception) {
-                    android.util.Log.e("FloraFlow", "Google Forms Sync failed: ${e.message}. Saved locally as offline fallback.")
+                    if (com.example.BuildConfig.DEBUG) {
+                        android.util.Log.e("FloraFlow", "Google Forms Sync failed: ${e.message}. Saved locally as offline fallback.")
+                    }
                 } finally {
                     _isSubmittingFeedback.value = false
                     _feedbackSuccess.value = true
