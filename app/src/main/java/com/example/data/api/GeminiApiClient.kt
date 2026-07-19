@@ -99,7 +99,7 @@ object GeminiApiClient {
     private val moshi = Moshi.Builder()
         .build()
 
-    val service: GeminiApiService by lazy {
+    var service: GeminiApiService = run {
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
