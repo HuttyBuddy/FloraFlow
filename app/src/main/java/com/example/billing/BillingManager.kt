@@ -100,13 +100,7 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
             .setProductType(BillingClient.ProductType.SUBS)
             .build()
         billingClient.queryPurchasesAsync(params) { billingResult, purchasesList ->
-            if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
-                _lastQueryError.value = null
-                processPurchases(purchasesList, allowRevoke = true)
-            } else {
-                Log.e("BillingManager", "Query purchases failed: ${billingResult.debugMessage}")
-                _lastQueryError.value = billingResult.debugMessage
-            }
+            handlePurchasesResult(billingResult, purchasesList, allowRevoke = true)
         }
     }
 
@@ -115,12 +109,18 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     // for revocation — an incomplete delivery here must not strip an existing
     // subscriber's premium. Only queryPurchases() (above) can revoke.
     override fun onPurchasesUpdated(billingResult: BillingResult, purchases: List<Purchase>?) {
+        handlePurchasesResult(billingResult, purchases, allowRevoke = false)
+    }
+
+    private fun handlePurchasesResult(billingResult: BillingResult, purchases: List<Purchase>?, allowRevoke: Boolean) {
         if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && purchases != null) {
-            processPurchases(purchases, allowRevoke = false)
+            _lastQueryError.value = null
+            processPurchases(purchases, allowRevoke)
         } else if (billingResult.responseCode == BillingClient.BillingResponseCode.USER_CANCELED) {
             Log.i("BillingManager", "User cancelled Play Store purchase.")
         } else {
-            Log.e("BillingManager", "Purchase failed: ${billingResult.debugMessage}")
+            val prefix = if (allowRevoke) "Query purchases" else "Purchase"
+            Log.e("BillingManager", "$prefix failed: ${billingResult.debugMessage}")
             _lastQueryError.value = billingResult.debugMessage
         }
     }
