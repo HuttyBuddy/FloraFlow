@@ -23,3 +23,7 @@
 ## 2024-03-24 - [Avoid `sqrt` in 2D Grid Calculations]
 **Learning:** In highly nested, frequency-executed grid loops (like checking all plant pairs for synergies/conflicts), `kotlin.math.sqrt` is heavily inefficient compared to squared distance comparisons (`dx*dx + dy*dy`). Additionally, looping over the same collection twice to compute related lists adds unnecessary O(N^2) overhead.
 **Action:** Always combine related O(N^2) inner calculations into a single loop pass where possible, and substitute `sqrt` distance calculations with integer-based squared comparisons for instant performance gains.
+## 2024-07-24 - Hoisting Compose Configurations
+
+**Learning:** When moving allocations like paths out of a `Canvas` block to prevent GC churn in Jetpack Compose, directly calculating dimensions using `Dp.toPx()` inside a `remember` block fails because it lacks the `Density` context provided by the `DrawScope`.
+**Action:** Store raw `Dp` configurations in the `remember` cache and perform the `.toPx()` conversion on the fly inside the `Canvas` draw phase where `Density` is available.
