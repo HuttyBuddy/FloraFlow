@@ -249,6 +249,17 @@ fun FaqTabContent() {
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            searchQuery = ""
+                            selectedCategory = "All"
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Clear All Filters", fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         } else {
