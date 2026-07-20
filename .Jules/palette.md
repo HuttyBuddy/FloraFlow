@@ -10,3 +10,7 @@
 ## 2026-06-24 - Add explicit contentDescription for Search Icons
 **Learning:** IconButtons with visual indicators like Search often have missing or null content descriptions, rendering them invisible or confusing for screen-reader users.
 **Action:** Always provide a clear explicit 'contentDescription' string for informative Icons acting as or accompanying UI controls (e.g. 'Search', 'Clear filter'), instead of setting it to null.
+
+## 2026-07-20 - Add explicit contentDescription for Icons
+**Learning:** Icon controls without contentDescription are confusing for screen reader users.
+**Action:** Always provide a clear explicit 'contentDescription' string for informative Icons instead of setting it to null.
