@@ -2069,6 +2069,10 @@ fun BotanistLiveSignalWave(
         label = "secondPhase"
     )
 
+    // Optimization: Cache Path objects to prevent GC churn on every frame during continuous animation
+    val wavePath1 = remember { Path() }
+    val wavePath2 = remember { Path() }
+
     Canvas(
         modifier = modifier
             .fillMaxWidth()
@@ -2077,8 +2081,9 @@ fun BotanistLiveSignalWave(
         val width = size.width
         val height = size.height
         val points = 80
-        val wavePath1 = Path()
-        val wavePath2 = Path()
+
+        wavePath1.reset() // Reuse cached Path
+        wavePath2.reset() // Reuse cached Path
 
         wavePath1.moveTo(0f, height / 2f)
         wavePath2.moveTo(0f, height / 2f)

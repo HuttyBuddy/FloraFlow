@@ -1222,20 +1222,28 @@ fun AudioWaveformVisualizer(
         label = "amplitude"
     )
 
+    // Optimization: Hoist static data and cache Path objects to prevent GC churn on every frame
+    val waves = remember {
+        listOf(
+            Triple(Color(0xFF81C784).copy(alpha = 0.4f), 1.5f, 14.dp),     // Wave 1
+            Triple(Color(0xFFA8E6CF).copy(alpha = 0.5f), 2.2f, 8.dp),      // Wave 2
+            Triple(Color(0xFF4DB6AC).copy(alpha = 0.3f), 0.9f, 18.dp)      // Wave 3
+        )
+    }
+    val paths = remember { List(3) { androidx.compose.ui.graphics.Path() } }
+
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
         val centerY = height / 2
 
-        // Draw 3 overlaying waves with different properties (color, speed, amplitude)
-        val waves = listOf(
-            Triple(Color(0xFF81C784).copy(alpha = 0.4f), 1.5f, 14.dp.toPx()),     // Wave 1
-            Triple(Color(0xFFA8E6CF).copy(alpha = 0.5f), 2.2f, 8.dp.toPx()),      // Wave 2
-            Triple(Color(0xFF4DB6AC).copy(alpha = 0.3f), 0.9f, 18.dp.toPx())      // Wave 3
-        )
+        val stroke = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
 
-        waves.forEachIndexed { index, (color, frequencyFactor, maxAmplitude) ->
-            val path = androidx.compose.ui.graphics.Path()
+        waves.forEachIndexed { index, (color, frequencyFactor, maxAmplitudeDp) ->
+            val path = paths[index]
+            path.reset() // Reuse cached Path
+
+            val maxAmplitude = maxAmplitudeDp.toPx()
             val currentAmplitude = maxAmplitude * amplitudeMultiplier
             
             for (x in 0..width.toInt() step 4) {
@@ -1254,7 +1262,7 @@ fun AudioWaveformVisualizer(
             drawPath(
                 path = path,
                 color = color,
-                style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+                style = stroke
             )
         }
     }
