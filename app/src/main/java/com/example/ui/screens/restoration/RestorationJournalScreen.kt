@@ -111,8 +111,9 @@ fun RestorationJournalScreen(
                 val item2 = gridItems[j]
                 val dx = item1.x - item2.x
                 val dy = item1.y - item2.y
-                val dist = sqrt((dx * dx + dy * dy).toDouble())
-                if (dist <= 1.5 && checkPlantSynergy(item1.plantName, item2.plantName)) {
+                // Optimized: avoided expensive sqrt() for distance comparison (dist <= 1.5 -> distSq <= 2.25)
+                val distSq = dx * dx + dy * dy
+                if (distSq <= 2.25f && checkPlantSynergy(item1.plantName, item2.plantName)) {
                     synergyCount++
                 }
             }
