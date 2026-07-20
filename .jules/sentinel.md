@@ -1,4 +1,4 @@
-## 2024-05-24 - Conditional Debug Logging for Sensitive Data
-**Vulnerability:** Information Disclosure (CWE-532) - Sensitive AR plant placement coordinate data and IDs were unconditionally written to Android system logs (`logcat`) via `android.util.Log.d`.
-**Learning:** Hardcoded log statements in production environments leak sensitive information to any app with log-reading permissions or users running ADB. The built-in `android.util.Log` doesn't automatically strip calls in release variants unless configured via ProGuard/R8, which can be unreliable.
-**Prevention:** Always wrap sensitive `android.util.Log` calls in `if (BuildConfig.DEBUG) { ... }` (ensuring the app-specific `BuildConfig` is used) or leverage a logging framework like Timber that cleanly manages development vs. production environments out of the box.
+## 2024-07-20 - Sensitive Data Exposure via Logging
+**Vulnerability:** Application logs were exposing internal API state and potential failure messages unrestrictedly.
+**Learning:** Even diagnostic logs can leak sensitive backend URL parameters or state configurations if they aren't stripped from production builds.
+**Prevention:** Always wrap diagnostic `Log.e` or `Log.d` statements with `if (BuildConfig.DEBUG)` using the application's BuildConfig to ensure they are compiled out or skipped in release builds.
