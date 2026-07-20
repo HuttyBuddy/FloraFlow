@@ -104,7 +104,7 @@ fun CompanionSynergyCard(
                 ) {
                     Icon(
                         imageVector = if (hasIssues) Icons.Default.Warning else Icons.Default.Eco,
-                        contentDescription = null,
+                        contentDescription = "Companion Compatibility Insights",
                         tint = if (hasIssues) Color(0xFFC62828) else if (hasSynergies) Color(0xFF2E7D32) else MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(24.dp)
                     )

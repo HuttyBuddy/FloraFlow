@@ -77,7 +77,7 @@ fun MonthlyWellnessDigestCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.Book,
-                    contentDescription = null,
+                    contentDescription = "Wellness Digest",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
