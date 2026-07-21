@@ -1,4 +1,19 @@
 import java.util.Properties
+import org.gradle.api.GradleException
+
+val restorativeValidation = providers.gradleProperty("restorativeValidation").orNull
+  ?.trim()
+  ?.lowercase()
+  ?.let { value ->
+    when (value) {
+      "true" -> true
+      "false" -> false
+      else -> throw GradleException(
+        "restorativeValidation must be 'true' or 'false', but was '$value'."
+      )
+    }
+  }
+  ?: false
 
 plugins {
   alias(libs.plugins.android.application)
@@ -58,6 +73,7 @@ android {
 
   buildTypes {
     release {
+      buildConfigField("boolean", "RESTORATIVE_VALIDATION", "false")
       isCrunchPngs = false
       isMinifyEnabled = true
       isShrinkResources = true
@@ -68,6 +84,7 @@ android {
       }
     }
     debug {
+      buildConfigField("boolean", "RESTORATIVE_VALIDATION", restorativeValidation.toString())
       signingConfig = signingConfigs.getByName("debugConfig")
     }
   }
@@ -141,7 +158,7 @@ dependencies {
   implementation(libs.androidx.compose.ui.text.google.fonts)
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.core.ktx)
-  // implementation(libs.androidx.datastore.preferences)
+  implementation(libs.androidx.datastore.preferences)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
   implementation(libs.androidx.lifecycle.viewmodel.compose)
