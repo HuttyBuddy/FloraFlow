@@ -45,6 +45,7 @@ import androidx.core.content.edit
 
 import androidx.compose.ui.draw.blur
 import com.example.ui.screens.dashboard.components.*
+import com.example.data.model.GardenLayout
 
 @Composable
 fun DashboardScreen(
@@ -79,6 +80,7 @@ fun DashboardScreen(
     var showCreateDialog by remember { mutableStateOf(false) }
     var showLayoutSelector by remember { mutableStateOf(false) }
     var showLogMoodDialog by remember { mutableStateOf(false) }
+    var layoutToDelete by remember { mutableStateOf<GardenLayout?>(null) }
     var showZipDialog by remember { mutableStateOf(false) }
 
     val density = LocalDensity.current
@@ -908,7 +910,31 @@ fun DashboardScreen(
                 showLayoutSelector = false
             },
             onDelete = { lay ->
-                viewModel.deleteLayout(lay)
+                layoutToDelete = lay
+            }
+        )
+    }
+
+    layoutToDelete?.let { lay ->
+        AlertDialog(
+            onDismissRequest = { layoutToDelete = null },
+            title = { Text("Delete Garden Layout?") },
+            text = { Text("Are you sure you want to delete '${lay.name}'? This action cannot be undone.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteLayout(lay)
+                        layoutToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { layoutToDelete = null }) {
+                    Text("Cancel")
+                }
             }
         )
     }
