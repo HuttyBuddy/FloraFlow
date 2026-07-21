@@ -245,7 +245,9 @@ class SoundscapeService : Service() {
                 )
             }
         } catch (e: Exception) {
-            android.util.Log.e("SoundscapeService", "AudioTrack init failed: ${e.message}")
+            if (com.example.BuildConfig.DEBUG) {
+                android.util.Log.e("SoundscapeService", "AudioTrack init failed: ${e.message}")
+            }
             return
         }
         track.play()
