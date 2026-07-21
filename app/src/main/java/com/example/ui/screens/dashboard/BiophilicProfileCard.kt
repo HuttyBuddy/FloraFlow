@@ -90,7 +90,7 @@ fun BiophilicProfileCard(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(
                         imageVector = Icons.Default.SelfImprovement,
-                        contentDescription = null,
+                        contentDescription = "Biophilic Sanctuary Profile",
                         tint = zoneColor,
                         modifier = Modifier.size(24.dp)
                     )
@@ -170,7 +170,7 @@ fun BiophilicProfileCard(
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Spa,
-                                        contentDescription = null,
+                                        contentDescription = "Spa",
                                         tint = MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(16.dp)
                                     )
@@ -297,7 +297,7 @@ fun BiophilicProfileCard(
                     .fillMaxWidth()
                     .testTag("biophilic_retake_assessment_btn")
             ) {
-                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(Icons.Default.Refresh, contentDescription = "Retake Assessment", modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
                 Text("Retake Onboarding Assessment", fontSize = 12.sp, fontWeight = FontWeight.Bold)
             }

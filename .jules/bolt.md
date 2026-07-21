@@ -23,3 +23,6 @@
 ## 2024-03-24 - [Avoid `sqrt` in 2D Grid Calculations]
 **Learning:** In highly nested, frequency-executed grid loops (like checking all plant pairs for synergies/conflicts), `kotlin.math.sqrt` is heavily inefficient compared to squared distance comparisons (`dx*dx + dy*dy`). Additionally, looping over the same collection twice to compute related lists adds unnecessary O(N^2) overhead.
 **Action:** Always combine related O(N^2) inner calculations into a single loop pass where possible, and substitute `sqrt` distance calculations with integer-based squared comparisons for instant performance gains.
+## 2024-08-05 - Jetpack Compose Canvas Allocation Churn
+**Learning:** Instantiating objects like `Path`, `Stroke`, or static `listOf(...)` configurations directly inside a `Canvas { ... }` block causes severe garbage collection churn because the draw phase can execute up to 60fps during continuous animations.
+**Action:** Always extract object allocations out of the `Canvas` draw phase. Cache reusable objects like `Path` using `remember` blocks and reset them inside the draw phase using `path.reset()`. Extract static configuration data to `remember` blocks or top-level constants.

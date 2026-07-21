@@ -358,7 +358,7 @@ fun DashboardScreen(
                 ) {
                     Icon(
                         Icons.AutoMirrored.Filled.ManageSearch,
-                        contentDescription = null,
+                        contentDescription = "Space Diagnosis",
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(22.dp)
                     )
@@ -379,7 +379,7 @@ fun DashboardScreen(
                 }
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
+                    contentDescription = "Go to Space Diagnosis",
                     tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
                     modifier = Modifier.size(22.dp)
                 )

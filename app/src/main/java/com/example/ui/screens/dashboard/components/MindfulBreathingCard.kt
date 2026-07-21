@@ -134,7 +134,7 @@ fun MindfulBreathingCard(
             ) {
                 Icon(
                     imageVector = Icons.Default.SelfImprovement,
-                    contentDescription = null,
+                    contentDescription = "Mindful Breathing",
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(24.dp)
                 )
