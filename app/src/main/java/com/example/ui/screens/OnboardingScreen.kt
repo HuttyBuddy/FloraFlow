@@ -759,7 +759,7 @@ fun ResultScreen(
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = Color.White
             ),
-            border = borderStrokeShare(),
+            border = ShareBorderStroke,
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
@@ -784,8 +784,7 @@ fun ResultScreen(
     }
 }
 
-@Composable
-fun borderStrokeShare() = androidx.compose.foundation.BorderStroke(
+private val ShareBorderStroke = androidx.compose.foundation.BorderStroke(
     width = 1.dp,
     color = Color.White.copy(alpha = 0.5f)
 )
