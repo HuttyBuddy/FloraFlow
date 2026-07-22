@@ -33,7 +33,7 @@ class RestorativeValidationScreenTest {
             }
         }
 
-        composeRule.onNodeWithText("Back").performScrollTo().performClick()
+        composeRule.onNodeWithContentDescription("Back").performClick()
         composeRule.waitForIdle()
 
         assertEquals(listOf(RestorationIntentAliasForTest.back), intents)
@@ -50,7 +50,7 @@ class RestorativeValidationScreenTest {
         }
 
         composeRule.onNodeWithText("Choose one option above to continue.").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Close").performClick()
+        composeRule.onNodeWithContentDescription("Close").performClick()
         composeRule.onNodeWithText("Save draft and exit").assertIsDisplayed()
         composeRule.onNodeWithText("Discard").assertIsDisplayed()
         composeRule.onNodeWithText("Cancel").assertIsDisplayed()

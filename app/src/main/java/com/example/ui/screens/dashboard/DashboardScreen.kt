@@ -168,7 +168,7 @@ fun DashboardScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
-                        onClick = { viewModel.resetAssessment() },
+                        onClick = { viewModel.startRestorativeCornerAssessment() },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = buttonBg,
                             contentColor = buttonText
@@ -759,7 +759,7 @@ fun DashboardScreen(
                     BiophilicProfileCard(
                         score = assessmentScore ?: 0,
                         lowestCategories = lowestCategories,
-                        onRetakeClick = { viewModel.resetAssessment() },
+                        onRetakeClick = { viewModel.startRestorativeCornerAssessment() },
                         step1Completed = step1Completed,
                         step2Completed = step2Completed,
                         step3Completed = step3Completed,
@@ -830,7 +830,7 @@ fun DashboardScreen(
                     BiophilicProfileCard(
                         score = assessmentScore ?: 0,
                         lowestCategories = lowestCategories,
-                        onRetakeClick = { viewModel.resetAssessment() },
+                        onRetakeClick = { viewModel.startRestorativeCornerAssessment() },
                         step1Completed = step1Completed,
                         step2Completed = step2Completed,
                         step3Completed = step3Completed,

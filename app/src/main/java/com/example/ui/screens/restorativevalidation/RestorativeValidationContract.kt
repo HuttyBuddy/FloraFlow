@@ -382,7 +382,7 @@ object RestorativeReducer {
             RestorativeStep.SPACE -> RestorativeStep.LIGHT
             RestorativeStep.PLANTS -> RestorativeStep.SPACE
             RestorativeStep.PLAN -> RestorativeStep.PLANTS
-            RestorativeStep.SAVED -> return state
+            RestorativeStep.SAVED -> RestorativeStep.PLAN
         }
         return state.copy(step = prior, plan = if (state.step == RestorativeStep.PLAN) null else state.plan, error = null)
     }

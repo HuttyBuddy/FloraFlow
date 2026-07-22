@@ -290,16 +290,31 @@ fun BiophilicProfileCard(
                 Spacer(modifier = Modifier.height(8.dp))
             }
 
-            OutlinedButton(
-                onClick = onRetakeClick,
-                shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("biophilic_retake_assessment_btn")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(Icons.Default.Refresh, contentDescription = "Retake Assessment", modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("Retake Onboarding Assessment", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                OutlinedButton(
+                    onClick = onRetakeClick,
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("biophilic_retake_assessment_btn")
+                ) {
+                    Icon(Icons.Default.Refresh, contentDescription = "Retake Assessment", modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Retake", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Button(
+                    onClick = { onNavigate(3) }, // Navigate to community/chat tab
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.Share, contentDescription = "Share to Community", modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Share Score", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

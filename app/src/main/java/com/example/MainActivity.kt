@@ -100,22 +100,6 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        if (!startupMode.runsProductionStartup) {
-            enableEdgeToEdge()
-            setContent {
-                MyApplicationTheme(typography = RestorativeValidationTypography) {
-                    val validationViewModel: RestorativeValidationViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
-                        factory = RestorativeValidationViewModel.factory(applicationContext),
-                    )
-                    RestorativeValidationRoute(
-                        viewModel = validationViewModel,
-                        onExit = ::finish,
-                    )
-                }
-            }
-            return
-        }
-
         com.example.analytics.AnalyticsHelper.initialize(applicationContext)
 
         try {
@@ -129,12 +113,30 @@ class MainActivity : ComponentActivity() {
             android.util.Log.e("MainActivity", "Failed to schedule CareSyncWorker: ${e.message}")
         }
 
+        var initialValidationActive by mutableStateOf(!startupMode.runsProductionStartup)
+
         setContent {
+            val showRestorativeValidationFlow by viewModel.showRestorativeValidationFlow.collectAsState()
+            val isValidationActive = initialValidationActive || showRestorativeValidationFlow
             val isDarkThemeOverridden by viewModel.isDarkTheme.collectAsState()
             val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
             val useDarkTheme = isDarkThemeOverridden ?: systemDark
 
-            val currentTab by viewModel.currentTab.collectAsState()
+            if (isValidationActive) {
+                MyApplicationTheme(typography = RestorativeValidationTypography) {
+                    val validationViewModel: RestorativeValidationViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                        factory = RestorativeValidationViewModel.factory(applicationContext),
+                    )
+                    RestorativeValidationRoute(
+                        viewModel = validationViewModel,
+                        onExit = {
+                            initialValidationActive = false
+                            viewModel.dismissRestorativeCornerAssessment()
+                        },
+                    )
+                }
+            } else {
+                val currentTab by viewModel.currentTab.collectAsState()
             val isOnboardingCompleted by viewModel.isOnboardingCompleted.collectAsState()
 
             // The app bar remains light in the Restoration tab, so keep dark status-bar
@@ -641,6 +643,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
     }
 
 

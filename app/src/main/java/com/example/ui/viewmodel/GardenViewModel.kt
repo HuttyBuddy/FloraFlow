@@ -108,6 +108,18 @@ class GardenViewModel @JvmOverloads constructor(
     private val _isPremium = MutableStateFlow(false)
     val isPremium: StateFlow<Boolean> = _isPremium.asStateFlow()
 
+    // Restorative Corner Assessment State (Unified Assessment Flow)
+    private val _showRestorativeValidationFlow = MutableStateFlow(false)
+    val showRestorativeValidationFlow: StateFlow<Boolean> = _showRestorativeValidationFlow.asStateFlow()
+
+    fun startRestorativeCornerAssessment() {
+        _showRestorativeValidationFlow.value = true
+    }
+
+    fun dismissRestorativeCornerAssessment() {
+        _showRestorativeValidationFlow.value = false
+    }
+
     private val _restorationTrialCount = MutableStateFlow(0)
     val restorationTrialCount: StateFlow<Int> = _restorationTrialCount.asStateFlow()
 
@@ -1195,6 +1207,55 @@ class GardenViewModel @JvmOverloads constructor(
             }
             repository.insertPlants(initialPlants)
             
+            _activeLayout.value = created
+            recordPositiveInteraction()
+        }
+    }
+
+    fun createMeditationCornerLayout(light: String, spaceSize: String, plantNames: List<String>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val gridItems = plantNames.mapIndexed { idx, pName ->
+                GridPlantItem(x = idx + 1, y = 2, plantName = pName)
+            }
+            val gridString = toGridString(gridItems)
+            val newLayout = GardenLayout(
+                name = "Restorative Meditation Corner",
+                style = "Sanctuary",
+                climate = light,
+                layoutDetails = "Space: $spaceSize",
+                gridString = gridString
+            )
+            val layoutId = repository.insertLayout(newLayout).toInt()
+            val created = newLayout.copy(id = layoutId)
+
+            val plantsToInsert = plantNames.map { name ->
+                Plant(
+                    layoutId = layoutId,
+                    name = name,
+                    type = "Restorative Plant",
+                    careSpring = "Water once a week, expose to $light.",
+                    careSummer = "Water twice a week, keep soil moist.",
+                    careAutumn = "Reduce watering as daylight shortens.",
+                    careWinter = "Protect from cold drafts, mist foliage.",
+                    soilType = "Well-draining potting mix",
+                    sunlight = light,
+                    growthProgress = 30,
+                    wateringNeeds = "Moderate"
+                )
+            }
+            repository.insertPlants(plantsToInsert)
+
+            val now = System.currentTimeMillis()
+            val careTasks = plantNames.mapIndexed { idx, name ->
+                CareTask(
+                    plantId = layoutId * 100 + idx + 1,
+                    plantName = name,
+                    taskType = "WATER",
+                    dueDate = now + (3 + idx) * 86400000L
+                )
+            }
+            repository.insertCareTasks(careTasks)
+
             _activeLayout.value = created
             recordPositiveInteraction()
         }

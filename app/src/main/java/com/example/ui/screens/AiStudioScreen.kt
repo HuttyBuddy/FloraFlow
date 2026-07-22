@@ -325,7 +325,7 @@ fun AiStudioScreen(
                 NeuralLoadDashboardWidget(
                     assessmentScore = assessmentScore,
                     lowestCategories = lowestCategories,
-                    onStartAssessment = { viewModel.resetAssessment() }
+                    onStartAssessment = { viewModel.startRestorativeCornerAssessment() }
                 )
             }
 

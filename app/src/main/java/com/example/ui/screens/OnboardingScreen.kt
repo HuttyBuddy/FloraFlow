@@ -208,9 +208,8 @@ fun OnboardingScreen(
                 AssessmentScreenState.SPLASH -> {
                     SplashWelcomeScreen(
                         onStart = {
-                            answers.clear()
-                            currentQuestionIdx = 0
-                            screenState = AssessmentScreenState.QUESTION
+                            viewModel.startRestorativeCornerAssessment()
+                            viewModel.completeOnboarding()
                         },
                         onSkip = { viewModel.skipAssessment() }
                     )

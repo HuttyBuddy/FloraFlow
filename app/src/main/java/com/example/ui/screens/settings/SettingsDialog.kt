@@ -184,7 +184,7 @@ fun SettingsDialog(
                         iconTint = MaterialTheme.colorScheme.primary,
                         onClick = {
                             onDismiss()
-                            viewModel.resetAssessment()
+                            viewModel.startRestorativeCornerAssessment()
                         }
                     )
 

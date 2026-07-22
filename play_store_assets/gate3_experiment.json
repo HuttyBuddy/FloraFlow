@@ -1,0 +1,27 @@
+{
+  "gate": "Gate 3",
+  "experimentName": "Restorative Corner Store-Listing Experiment",
+  "listingMetadata": {
+    "title": "FloraFlow: Garden & Biophilic Space Designer",
+    "shortDescription": "Design a calming indoor meditation corner shaped around your light and space.",
+    "fullDescription": "FloraFlow helps you transform any indoor corner into a soothing, restorative biophilic sanctuary. Assess your space's natural light and dimensions, receive tailored plant placement guidance, and take doable steps to bring natural calm into your daily life.",
+    "screenshotCaptions": [
+      {
+        "position": 1,
+        "caption": "Turn one indoor corner into a place for calm.",
+        "assetFile": "play_store_assets/enhanced/Screenshot_1_enhanced.png"
+      },
+      {
+        "position": 2,
+        "caption": "Get placement guidance shaped around your light and available room.",
+        "assetFile": "play_store_assets/enhanced/Screenshot_2_enhanced.png"
+      },
+      {
+        "position": 3,
+        "caption": "Save one doable change. Return to your corner.",
+        "assetFile": "play_store_assets/enhanced/Screenshot_3_enhanced.png"
+      }
+    ]
+  },
+  "targetTrack": "Internal / Production A/B Experiment"
+}

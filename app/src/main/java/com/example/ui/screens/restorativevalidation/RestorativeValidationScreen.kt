@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -67,7 +68,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 
 @Composable
 fun RestorativeValidationRoute(
@@ -150,13 +154,53 @@ internal fun RestorativeValidationScreen(
                 .navigationBarsPadding()
                 .fillMaxSize(),
         ) {
-            if (hasMeaningfulDraft && !terminalFailure) {
+            if (!terminalFailure) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    TextButton(onClick = { showCloseDialog = true }, modifier = Modifier.height(48.dp)) {
-                        Text("Close", fontSize = 16.sp)
+                    if (state.step != RestorativeStep.PROMISE) {
+                        IconButton(
+                            onClick = { onIntent(RestorativeIntent.Back) },
+                            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    } else {
+                        IconButton(
+                            onClick = onExit,
+                            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Exit restorative corner",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    }
+
+                    IconButton(
+                        onClick = {
+                            if (hasMeaningfulDraft) {
+                                showCloseDialog = true
+                            } else {
+                                onExit()
+                            }
+                        },
+                        modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
                     }
                 }
             }
@@ -188,7 +232,7 @@ internal fun RestorativeValidationScreen(
                             RestorativeStep.SPACE -> SpaceStage(state, onIntent)
                             RestorativeStep.PLANTS -> PlantsStage(state, onIntent)
                             RestorativeStep.PLAN -> PlanStage(state, onIntent)
-                            RestorativeStep.SAVED -> SavedStage(state, onIntent)
+                            RestorativeStep.SAVED -> SavedStage(state, onIntent, onExit)
                         }
                         state.error?.let { ErrorNotice(it, state.step, onIntent) }
                     }
@@ -448,7 +492,7 @@ private fun BotanicalCornerComposition(plan: StarterPlan) {
 }
 
 @Composable
-private fun SavedStage(state: RestorativeUiState, onIntent: (RestorativeIntent) -> Unit) {
+private fun SavedStage(state: RestorativeUiState, onIntent: (RestorativeIntent) -> Unit, onExit: () -> Unit = {}) {
     Spacer(Modifier.height(40.dp))
     Text("Saved", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
     Text("Your restorative corner has a starting point", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.semantics { heading() })
@@ -475,6 +519,14 @@ private fun SavedStage(state: RestorativeUiState, onIntent: (RestorativeIntent) 
     )
     state.intendedNextStep?.let {
         Text("Next step: $it", fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+    }
+    Button(
+        onClick = onExit,
+        modifier = Modifier.fillMaxWidth().height(52.dp),
+    ) {
+        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Done & Return to App", fontSize = 16.sp, fontWeight = FontWeight.Bold)
     }
     OutlinedButton(
         onClick = { onIntent(RestorativeIntent.OpenPlacementGuidance) },
