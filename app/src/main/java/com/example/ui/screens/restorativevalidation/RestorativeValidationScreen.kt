@@ -1,6 +1,8 @@
 package com.example.ui.screens.restorativevalidation
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -19,8 +21,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,7 +34,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,6 +44,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -49,6 +56,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun RestorativeValidationRoute(
     viewModel: RestorativeValidationViewModel,
+    onExit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -56,6 +64,7 @@ fun RestorativeValidationRoute(
         state = state,
         onStart = viewModel::startJourney,
         onIntent = viewModel::onIntent,
+        onExit = onExit,
         modifier = modifier,
     )
 }
@@ -65,8 +74,20 @@ internal fun RestorativeValidationScreen(
     state: RestorativeUiState,
     onStart: () -> Unit,
     onIntent: (RestorativeIntent) -> Unit,
+    onExit: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    var showCloseDialog by rememberSaveable { mutableStateOf(false) }
+    val hasMeaningfulDraft = state.draft.experimentId != null && state.step != RestorativeStep.SAVED
+    val terminalFailure = state.error is RestorativeError.TerminalEvidenceFailure
+
+    BackHandler(enabled = hasMeaningfulDraft && !state.isBusy && !terminalFailure) {
+        onIntent(RestorativeIntent.Back)
+    }
+    LaunchedEffect(state.exitRequested) {
+        if (state.exitRequested) onExit()
+    }
+
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             modifier = Modifier
@@ -74,6 +95,16 @@ internal fun RestorativeValidationScreen(
                 .navigationBarsPadding()
                 .fillMaxSize(),
         ) {
+            if (hasMeaningfulDraft && !terminalFailure) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    TextButton(onClick = { showCloseDialog = true }, modifier = Modifier.height(48.dp)) {
+                        Text("Close", fontSize = 16.sp)
+                    }
+                }
+            }
             if (state.step != RestorativeStep.PROMISE) {
                 LinearProgressIndicator(
                     progress = { state.progress },
@@ -102,13 +133,44 @@ internal fun RestorativeValidationScreen(
                             RestorativeStep.SPACE -> SpaceStage(state, onIntent)
                             RestorativeStep.PLANTS -> PlantsStage(state, onIntent)
                             RestorativeStep.PLAN -> PlanStage(state, onIntent)
-                            RestorativeStep.SAVED -> SavedStage(state)
+                            RestorativeStep.SAVED -> SavedStage(state, onIntent)
                         }
-                        state.error?.let { ErrorNotice(it) }
+                        state.error?.let { ErrorNotice(it, state.step, onIntent) }
                     }
                 }
             }
         }
+    }
+
+    if (showCloseDialog) {
+        AlertDialog(
+            onDismissRequest = { showCloseDialog = false },
+            title = { Text("Leave your corner plan?", modifier = Modifier.semantics { heading() }) },
+            text = { Text("You can keep this draft for later or discard this test attempt.", fontSize = 16.sp) },
+            confirmButton = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = {
+                            showCloseDialog = false
+                            onIntent(RestorativeIntent.SaveDraftAndExit)
+                        },
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                    ) { Text("Save draft and exit", fontSize = 16.sp) }
+                    OutlinedButton(
+                        onClick = {
+                            showCloseDialog = false
+                            onIntent(RestorativeIntent.DiscardDraftAndExit)
+                        },
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                    ) { Text("Discard", fontSize = 16.sp) }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCloseDialog = false }, modifier = Modifier.height(48.dp)) {
+                    Text("Cancel", fontSize = 16.sp)
+                }
+            },
+        )
     }
 }
 
@@ -145,9 +207,9 @@ private fun LightStage(state: RestorativeUiState, onIntent: (RestorativeIntent) 
     StageHeader("1 of 3", "What light reaches your space?", "Think about the area during most of the day.")
     ChoiceGrid(
         choices = listOf(
-            LightChoice.LOW to ("Low light" to "Away from windows or softly lit"),
-            LightChoice.MEDIUM to ("Medium light" to "Gentle, indirect daylight"),
-            LightChoice.BRIGHT to ("Bright light" to "Close to a bright window"),
+            LightChoice.LOW to ("Low, indirect light" to "Away from windows or softly lit"),
+            LightChoice.MEDIUM to ("Bright, indirect light" to "Close to a bright window without direct rays"),
+            LightChoice.BRIGHT to ("Some direct sun" to "Sunlight reaches the space for part of the day"),
             LightChoice.UNSURE to ("Not sure" to "We’ll choose flexible plants"),
         ),
         selected = state.draft.light,
@@ -161,9 +223,9 @@ private fun SpaceStage(state: RestorativeUiState, onIntent: (RestorativeIntent) 
     StageHeader("2 of 3", "How much room can you give it?", "A calm corner can begin with a single surface.")
     ChoiceGrid(
         choices = listOf(
-            AvailableSpace.TABLETOP to ("Tabletop" to "A desk, shelf, or side table"),
-            AvailableSpace.SMALL_CORNER to ("Small corner" to "Room for one floor plant and accents"),
-            AvailableSpace.OPEN_CORNER to ("Open corner" to "A chair-side or floor arrangement"),
+            AvailableSpace.TABLETOP to ("Shelf or tabletop" to "A desk, shelf, or side table"),
+            AvailableSpace.SMALL_CORNER to ("Small floor corner" to "Room for one floor plant and accents"),
+            AvailableSpace.OPEN_CORNER to ("Larger corner" to "A chair-side or floor arrangement"),
         ),
         selected = state.draft.availableSpace,
         onSelect = { onIntent(RestorativeIntent.SelectSpace(it)) },
@@ -207,6 +269,13 @@ private object RestorationIntentAlias {
 private fun PlanStage(state: RestorativeUiState, onIntent: (RestorativeIntent) -> Unit) {
     StageHeader("YOUR STARTER PLAN", "A quiet corner, shaped around you", "Keep it simple. Give each plant a clear role in the space.")
     state.plan?.let { plan ->
+        Text("My meditation corner", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+        Text(
+            "${state.draft.light?.plainLanguage()}  •  ${state.draft.availableSpace?.plainLanguage()}",
+            fontSize = 16.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        BotanicalCornerComposition(plan)
         Card(shape = RoundedCornerShape(20.dp)) {
             Column {
                 plan.placements.forEachIndexed { index, placement ->
@@ -227,6 +296,12 @@ private fun PlanStage(state: RestorativeUiState, onIntent: (RestorativeIntent) -
                             Text(placement.role.plainLanguage(), fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             ValidationPlantCatalog.find(plant.slug)?.let {
                                 Text(it.suitabilityReason, fontSize = 16.sp, lineHeight = 23.sp)
+                                Text(
+                                    "Safety: ${it.safetyStatus.presentation}",
+                                    fontSize = 16.sp,
+                                    lineHeight = 22.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                         }
                     }
@@ -235,22 +310,134 @@ private fun PlanStage(state: RestorativeUiState, onIntent: (RestorativeIntent) -
             }
         }
     }
+    Text(
+        "This starter plan does not screen for pet, child, allergy, or medical safety.",
+        fontSize = 16.sp,
+        lineHeight = 22.sp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
     Text("Your first pause", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
     Text("Sit beside the space for two quiet minutes. Notice the leaves, light, and your breathing—nothing to complete.", fontSize = 17.sp, lineHeight = 25.sp)
-    NavigationActions(state, onIntent, continueLabel = "Save my corner")
+    HorizontalDivider()
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        OutlinedButton(
+            onClick = { onIntent(RestorativeIntent.EditSpace) },
+            enabled = !state.isBusy,
+            modifier = Modifier.weight(1f).height(52.dp),
+        ) { Text("Adjust space", fontSize = 15.sp, textAlign = TextAlign.Center) }
+        OutlinedButton(
+            onClick = { onIntent(RestorativeIntent.EditPlants) },
+            enabled = !state.isBusy,
+            modifier = Modifier.weight(1f).height(52.dp),
+        ) { Text("Change plants", fontSize = 15.sp, textAlign = TextAlign.Center) }
+    }
+    PrimaryAction(
+        label = "Save my corner",
+        enabled = state.canContinue,
+        onClick = { onIntent(RestorativeIntent.SavePlan) },
+        busy = state.isBusy,
+    )
 }
 
 @Composable
-private fun SavedStage(state: RestorativeUiState) {
+private fun BotanicalCornerComposition(plan: StarterPlan) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .background(MaterialTheme.colorScheme.tertiaryContainer, RoundedCornerShape(24.dp))
+            .semantics {
+                contentDescription = "Meditation corner composition with ${plan.placements.size} numbered plant positions"
+            },
+    ) {
+        Box(
+            Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(52.dp)
+                .background(MaterialTheme.colorScheme.secondaryContainer),
+        )
+        Row(
+            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 22.dp, vertical = 30.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            plan.placements.forEachIndexed { index, placement ->
+                Box(
+                    modifier = Modifier
+                        .sizeIn(minWidth = 48.dp, minHeight = if (index % 2 == 0) 92.dp else 68.dp)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), RoundedCornerShape(50)),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .sizeIn(minWidth = 36.dp, minHeight = 36.dp)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            placement.number.toString(),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SavedStage(state: RestorativeUiState, onIntent: (RestorativeIntent) -> Unit) {
     Spacer(Modifier.height(40.dp))
     Text("Saved", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
     Text("Your restorative corner has a starting point", style = MaterialTheme.typography.displaySmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.semantics { heading() })
     Text("You can return here when you’re ready to place the plants. Start with one small move; the space does not need to be perfect.", fontSize = 18.sp, lineHeight = 27.sp)
-    state.plan?.let { plan ->
-        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
-            Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Your plan", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-                Text(plan.plants.joinToString("  •  ") { it.canonicalName }, fontSize = 16.sp, lineHeight = 24.sp)
+    Text("What feels doable next?", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.semantics { heading() })
+    Text("FloraFlow will remember this as your next step.", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    listOf(
+        "Move a chair into the corner",
+        "Place one plant beside where I sit",
+        "Clear a nearby surface",
+    ).forEach { option ->
+        ChoiceCard(
+            title = option,
+            detail = "A small physical start",
+            selected = state.nextStepDecisionRecorded && state.intendedNextStep == option,
+            onClick = { onIntent(RestorativeIntent.SelectNextStep(option)) },
+        )
+    }
+    ChoiceCard(
+        title = "I’ll decide later",
+        detail = "Your saved plan will still be here",
+        selected = state.nextStepDecisionRecorded && state.intendedNextStep == null,
+        onClick = { onIntent(RestorativeIntent.SelectNextStep(null)) },
+    )
+    state.intendedNextStep?.let {
+        Text("Next step: $it", fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+    }
+    OutlinedButton(
+        onClick = { onIntent(RestorativeIntent.OpenPlacementGuidance) },
+        modifier = Modifier.fillMaxWidth().height(52.dp),
+    ) { Text(if (state.placementGuidanceExpanded) "Placement guidance open" else "View placement guidance", fontSize = 16.sp) }
+    if (state.placementGuidanceExpanded) SavedPlacementGuidance(state)
+}
+
+@Composable
+private fun SavedPlacementGuidance(state: RestorativeUiState) {
+    val plan = state.plan ?: return
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Text("My meditation corner", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+            plan.placements.forEach { placement ->
+                val plant = plan.plants.first { it.slug == placement.plantSlug }
+                Text(
+                    "${placement.number}. ${plant.canonicalName} — ${placement.role.plainLanguage()}",
+                    fontSize = 16.sp,
+                    lineHeight = 23.sp,
+                )
             }
         }
     }
@@ -386,7 +573,11 @@ private fun PrimaryAction(
 }
 
 @Composable
-private fun ErrorNotice(error: RestorativeError) {
+private fun ErrorNotice(
+    error: RestorativeError,
+    step: RestorativeStep,
+    onIntent: (RestorativeIntent) -> Unit,
+) {
     val message = when (error) {
         RestorativeError.NoMatch -> "We couldn’t find a simple match yet. Go back and try another light or space option."
         is RestorativeError.PersistenceFailure -> "Your progress could not be saved just now. Please try again."
@@ -394,10 +585,31 @@ private fun ErrorNotice(error: RestorativeError) {
         is RestorativeError.InternalFailure -> "Something interrupted this step. Please go back and try again."
     }
     Text(message, fontSize = 16.sp, color = MaterialTheme.colorScheme.error, lineHeight = 23.sp)
+    if (error is RestorativeError.PersistenceFailure) {
+        OutlinedButton(
+            onClick = {
+                onIntent(if (step == RestorativeStep.PLAN) RestorativeIntent.SavePlan else RestorativeIntent.RetryLoad)
+            },
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+        ) { Text("Try again", fontSize = 16.sp) }
+    }
 }
 
 private fun PlacementRole.plainLanguage(): String = when (this) {
     PlacementRole.FLOOR_ANCHOR -> "Place on the floor to give the corner a calm visual anchor."
     PlacementRole.TABLETOP_ACCENT -> "Place within easy view on a table, shelf, or stand."
     PlacementRole.TRAILING_EDGE -> "Place on a raised edge so the leaves can soften the space."
+}
+
+private fun LightChoice.plainLanguage(): String = when (this) {
+    LightChoice.LOW -> "Low, indirect light"
+    LightChoice.MEDIUM -> "Bright, indirect light"
+    LightChoice.BRIGHT -> "Some direct sun"
+    LightChoice.UNSURE -> "Light not yet known"
+}
+
+private fun AvailableSpace.plainLanguage(): String = when (this) {
+    AvailableSpace.TABLETOP -> "Shelf or tabletop"
+    AvailableSpace.SMALL_CORNER -> "Small floor corner"
+    AvailableSpace.OPEN_CORNER -> "Larger corner"
 }

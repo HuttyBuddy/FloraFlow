@@ -43,7 +43,7 @@ class RestorativeValidationViewModelTest {
         assertEquals(RestorativeStep.LIGHT, viewModel.uiState.value.step)
         assertEquals("experiment-1", store.journey?.experimentId)
         assertEquals(100L, store.journey?.createdAtEpochMillis)
-        assertEquals(listOf("journey_started"), store.events.map { it.name })
+        assertEquals(listOf("restorative_space_started"), store.events.map { it.name })
     }
 
     @Test
@@ -79,7 +79,7 @@ class RestorativeValidationViewModelTest {
         assertEquals(RestorativeStep.SAVED, viewModel.uiState.value.step)
         assertEquals(JourneyStatus.SAVED, store.journey?.status)
         assertEquals(200L, store.journey?.savedAtEpochMillis)
-        assertTrue(store.events.any { it.name == "starter_plan_created" })
+        assertTrue(store.events.any { it.name == "starter_plan_rendered" })
         assertTrue(store.events.any { it.name == "starter_plan_saved" })
     }
 
@@ -116,13 +116,102 @@ class RestorativeValidationViewModelTest {
         assertEquals(plan.plan, viewModel.uiState.value.plan)
     }
 
+    @Test
+    fun `retryable load can recover without creating a new experiment`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        val store = FakeStore().apply {
+            readResultOverride = StoreReadResult.RetryableFailure("JOURNEY_READ_IO")
+        }
+        val viewModel = RestorativeValidationViewModel(store = store, workerDispatcher = dispatcher)
+        advanceUntilIdle()
+        assertTrue(viewModel.uiState.value.error is RestorativeError.PersistenceFailure)
+
+        store.readResultOverride = null
+        viewModel.onIntent(RestorativeIntent.RetryLoad)
+        advanceUntilIdle()
+
+        assertEquals(RestorativeStep.PROMISE, viewModel.uiState.value.step)
+        assertEquals(null, viewModel.uiState.value.error)
+        assertTrue(store.events.isEmpty())
+    }
+
+    @Test
+    fun `discard removes the draft and requests exit`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        var id = 0
+        val store = FakeStore()
+        val viewModel = RestorativeValidationViewModel(
+            store = store,
+            idProvider = ValidationIdProvider { "id-${++id}" },
+            workerDispatcher = dispatcher,
+        )
+        advanceUntilIdle()
+        viewModel.startJourney()
+        advanceUntilIdle()
+
+        viewModel.onIntent(RestorativeIntent.DiscardDraftAndExit)
+        advanceUntilIdle()
+
+        assertEquals(null, store.journey)
+        assertTrue(store.events.isEmpty())
+        assertTrue(viewModel.uiState.value.exitRequested)
+    }
+
+    @Test
+    fun `saved return separates passive reopen from deliberate next step`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        val plan = RestorativeRecommendationEngine.createPlan(
+            light = LightChoice.BRIGHT,
+            availableSpace = AvailableSpace.TABLETOP,
+            ownedPlantSlugs = emptyList(),
+        ) as RecommendationResult.Match
+        val store = FakeStore(
+            journey = RestorativeJourneyRecord(
+                experimentId = "returning",
+                experimentSpaceId = "space-1",
+                status = JourneyStatus.SAVED,
+                light = LightChoice.BRIGHT,
+                availableSpace = AvailableSpace.TABLETOP,
+                inputMode = InputMode.RECOMMEND_FROM_SCRATCH,
+                plants = plan.plan.plants,
+                placements = plan.plan.placements,
+                createdAtEpochMillis = 10L,
+                savedAtEpochMillis = 100L,
+            )
+        )
+        var id = 0
+        val viewModel = RestorativeValidationViewModel(
+            store = store,
+            clock = ValidationClock { 200L },
+            idProvider = ValidationIdProvider { "event-${++id}" },
+            workerDispatcher = dispatcher,
+        )
+        advanceUntilIdle()
+
+        assertEquals(listOf("app_reopened_72h"), store.events.map { it.name })
+        viewModel.onIntent(RestorativeIntent.SelectNextStep("Move a chair into the corner"))
+        viewModel.onIntent(RestorativeIntent.OpenPlacementGuidance)
+        advanceUntilIdle()
+
+        assertEquals("Move a chair into the corner", store.journey?.intendedNextStep)
+        assertTrue(store.journey?.nextStepDecisionRecorded == true)
+        assertEquals(2, store.events.count { it.name == "meaningful_return_72h" })
+        assertTrue(store.events.filter { it.name == "meaningful_return_72h" }.all {
+            it.properties["researcher_prompted"] == "false"
+        })
+    }
+
     private class FakeStore(
         var journey: RestorativeJourneyRecord? = null,
     ) : RestorativeValidationStore {
         val events = mutableListOf<ValidationEventRecord>()
+        var readResultOverride: StoreReadResult<RestorativeJourneyRecord>? = null
 
         override suspend fun readJourney(): StoreReadResult<RestorativeJourneyRecord> =
-            journey?.let { StoreReadResult.Available(it) } ?: StoreReadResult.Missing
+            readResultOverride ?: journey?.let { StoreReadResult.Available(it) } ?: StoreReadResult.Missing
 
         override suspend fun writeJourney(record: RestorativeJourneyRecord): StoreWriteResult {
             journey = record
@@ -140,5 +229,11 @@ class RestorativeValidationViewModelTest {
 
         override suspend fun prepareExport(exportedAtEpochMillis: Long): PrepareExportResult =
             PrepareExportResult.TerminalFailure("NOT_USED")
+
+        override suspend fun discardDraft(): StoreWriteResult {
+            journey = null
+            events.clear()
+            return StoreWriteResult.Success
+        }
     }
 }

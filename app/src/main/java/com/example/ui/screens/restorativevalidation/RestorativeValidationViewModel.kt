@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.BuildConfig
 import java.util.UUID
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +31,8 @@ class RestorativeValidationViewModel internal constructor(
     private val _uiState = MutableStateFlow(RestorativeUiState(isBusy = true))
     val uiState: StateFlow<RestorativeUiState> = _uiState.asStateFlow()
     private var journeyCreatedAtEpochMillis: Long = 0L
+    private var currentRecord: RestorativeJourneyRecord? = null
+    private var pendingExperimentSpaceId: String? = null
 
     init {
         viewModelScope.launch { restoreJourney() }
@@ -40,6 +43,11 @@ class RestorativeValidationViewModel internal constructor(
             RestorativeIntent.GeneratePlan -> generateOrAdvance()
             RestorativeIntent.SavePlan -> savePlan()
             is RestorativeIntent.Start -> start(intent.experimentId)
+            RestorativeIntent.RetryLoad -> retryLoad()
+            RestorativeIntent.SaveDraftAndExit -> saveDraftAndExit()
+            RestorativeIntent.DiscardDraftAndExit -> discardDraftAndExit()
+            is RestorativeIntent.SelectNextStep -> selectNextStep(intent.value)
+            RestorativeIntent.OpenPlacementGuidance -> openPlacementGuidance()
             is RestorativeIntent.PlanReady,
             RestorativeIntent.SaveComplete -> Unit // Completion intents are owned by this ViewModel.
             else -> updateAndPersist(intent)
@@ -51,7 +59,21 @@ class RestorativeValidationViewModel internal constructor(
     private suspend fun restoreJourney() {
         _uiState.value = when (val result = store.readJourney()) {
             StoreReadResult.Missing -> RestorativeUiState()
-            is StoreReadResult.Available -> stateFrom(result.value)
+            is StoreReadResult.Available -> {
+                currentRecord = result.value
+                val restored = stateFrom(result.value)
+                if (result.value.status == JourneyStatus.SAVED && restored.isReturnWithinWindow) {
+                    appendEvent(
+                        experimentId = result.value.experimentId,
+                        name = "app_reopened_72h",
+                        properties = savedEventProperties(result.value) + mapOf(
+                            "notification_received" to "false",
+                            "researcher_prompted" to "false",
+                        ),
+                    )
+                }
+                restored
+            }
             is StoreReadResult.RetryableFailure -> RestorativeUiState(
                 error = RestorativeError.PersistenceFailure(result.stableCode),
             )
@@ -59,6 +81,12 @@ class RestorativeValidationViewModel internal constructor(
                 error = RestorativeError.TerminalEvidenceFailure(result.stableCode),
             )
         }
+    }
+
+    private fun retryLoad() {
+        if (_uiState.value.error !is RestorativeError.PersistenceFailure) return
+        _uiState.value = _uiState.value.copy(isBusy = true, error = null)
+        viewModelScope.launch { restoreJourney() }
     }
 
     private fun start(experimentId: String) {
@@ -69,7 +97,14 @@ class RestorativeValidationViewModel internal constructor(
         _uiState.value = updated
         viewModelScope.launch {
             persistDraft(updated)
-            appendEvent(experimentId, "journey_started")
+            appendEvent(
+                experimentId = experimentId,
+                name = "restorative_space_started",
+                properties = mapOf(
+                    "entry_source" to "gate_2_validation",
+                    "app_version" to BuildConfig.VERSION_NAME,
+                ),
+            )
         }
     }
 
@@ -96,6 +131,7 @@ class RestorativeValidationViewModel internal constructor(
 
         val light = updated.draft.light ?: return failInternal("PLAN_LIGHT_MISSING")
         val space = updated.draft.availableSpace ?: return failInternal("PLAN_SPACE_MISSING")
+        val generationStartedAt = clock.nowEpochMillis()
         viewModelScope.launch {
             val recommendation = withContext(workerDispatcher) {
                 RestorativeRecommendationEngine.createPlan(light, space, updated.draft.ownedPlantSlugs)
@@ -108,7 +144,24 @@ class RestorativeValidationViewModel internal constructor(
                     )
                     _uiState.value = planned
                     persistDraft(planned)
-                    updated.draft.experimentId?.let { appendEvent(it, "starter_plan_created") }
+                    updated.draft.experimentId?.let {
+                        appendEvent(
+                            experimentId = it,
+                            name = "starter_plan_rendered",
+                            properties = mapOf(
+                                "input_mode" to requireNotNull(updated.draft.inputMode).name,
+                                "owned_plant_count" to recommendation.plan.plants.count { plant ->
+                                    plant.source == PlantSource.OWNED
+                                }.toString(),
+                                "recommendation_count" to recommendation.plan.plants.count { plant ->
+                                    plant.source == PlantSource.RECOMMENDED
+                                }.toString(),
+                                "duration_ms" to (clock.nowEpochMillis() - generationStartedAt)
+                                    .coerceAtLeast(0L)
+                                    .toString(),
+                            ),
+                        )
+                    }
                 }
                 RecommendationResult.NoMatch -> _uiState.value = updated.copy(
                     isBusy = false,
@@ -126,17 +179,29 @@ class RestorativeValidationViewModel internal constructor(
         val experimentId = busy.draft.experimentId ?: return failInternal("SAVE_EXPERIMENT_MISSING")
         val plan = busy.plan ?: return failInternal("SAVE_PLAN_MISSING")
         val now = clock.nowEpochMillis()
+        val experimentSpaceId = currentRecord?.experimentSpaceId
+            ?: pendingExperimentSpaceId
+            ?: idProvider.nextId().also { pendingExperimentSpaceId = it }
         val record = recordFrom(busy).copy(
+            experimentSpaceId = experimentSpaceId,
             status = JourneyStatus.SAVED,
             plants = plan.plants,
             placements = plan.placements,
-            intendedNextStep = "Place one plant where you can pause beside it.",
+            intendedNextStep = null,
             savedAtEpochMillis = now,
         )
         viewModelScope.launch {
             when (val result = store.writeJourney(record)) {
                 StoreWriteResult.Success, StoreWriteResult.Duplicate -> {
-                    appendEvent(experimentId, "starter_plan_saved")
+                    currentRecord = record
+                    pendingExperimentSpaceId = record.experimentSpaceId
+                    appendEvent(
+                        experimentId = experimentId,
+                        name = "starter_plan_saved",
+                        properties = savedEventProperties(record) + mapOf(
+                            "intended_change_confirmed" to "false",
+                        ),
+                    )
                     _uiState.value = RestorativeReducer.reduce(_uiState.value, RestorativeIntent.SaveComplete)
                 }
                 is StoreWriteResult.RetryableFailure -> _uiState.value = busy.copy(
@@ -152,9 +217,10 @@ class RestorativeValidationViewModel internal constructor(
     }
 
     private suspend fun persistDraft(state: RestorativeUiState) {
-        val result = store.writeJourney(recordFrom(state))
+        val record = recordFrom(state)
+        val result = store.writeJourney(record)
         when (result) {
-            StoreWriteResult.Success, StoreWriteResult.Duplicate -> Unit
+            StoreWriteResult.Success, StoreWriteResult.Duplicate -> currentRecord = record
             is StoreWriteResult.RetryableFailure -> _uiState.value = _uiState.value.copy(
                 isBusy = false,
                 error = RestorativeError.PersistenceFailure(result.stableCode),
@@ -166,14 +232,20 @@ class RestorativeValidationViewModel internal constructor(
         }
     }
 
-    private suspend fun appendEvent(experimentId: String, name: String) {
+    private suspend fun appendEvent(
+        experimentId: String,
+        name: String,
+        properties: Map<String, String> = emptyMap(),
+        actionIdentifier: String? = null,
+    ) {
         store.appendEvent(
             ValidationEventRecord(
                 eventId = idProvider.nextId(),
                 experimentId = experimentId,
                 name = name,
-                deduplicationKey = validationEventDeduplicationKey(experimentId, name),
+                deduplicationKey = validationEventDeduplicationKey(experimentId, name, actionIdentifier),
                 timestampEpochMillis = clock.nowEpochMillis(),
+                properties = mapOf("experiment_id" to experimentId) + properties,
             )
         )
     }
@@ -201,6 +273,11 @@ class RestorativeValidationViewModel internal constructor(
                 ownedPlantSlugs = record.plants.filter { it.source == PlantSource.OWNED }.map { it.slug },
             ),
             plan = plan,
+            intendedNextStep = record.intendedNextStep,
+            nextStepDecisionRecorded = record.nextStepDecisionRecorded,
+            isReturnWithinWindow = record.status == JourneyStatus.SAVED && record.savedAtEpochMillis?.let {
+                clock.nowEpochMillis() in it..(it + RETURN_WINDOW_MILLIS)
+            } == true,
         )
     }
 
@@ -213,15 +290,103 @@ class RestorativeValidationViewModel internal constructor(
         }
         return RestorativeJourneyRecord(
             experimentId = experimentId,
+            experimentSpaceId = currentRecord?.experimentSpaceId,
             status = JourneyStatus.DRAFT,
             light = state.draft.light,
             availableSpace = state.draft.availableSpace,
             inputMode = state.draft.inputMode,
             plants = state.plan?.plants ?: selectedOwned,
             placements = state.plan?.placements.orEmpty(),
+            intendedNextStep = state.intendedNextStep,
+            nextStepDecisionRecorded = state.nextStepDecisionRecorded,
             createdAtEpochMillis = journeyCreatedAtEpochMillis.takeIf { it > 0L } ?: clock.nowEpochMillis(),
+            savedAtEpochMillis = currentRecord?.savedAtEpochMillis,
         )
     }
+
+    private fun saveDraftAndExit() {
+        val state = _uiState.value
+        if (state.draft.experimentId == null || state.step == RestorativeStep.SAVED) return
+        viewModelScope.launch {
+            persistDraft(state)
+            if (_uiState.value.error == null) {
+                _uiState.value = _uiState.value.copy(exitRequested = true)
+            }
+        }
+    }
+
+    private fun discardDraftAndExit() {
+        val state = _uiState.value
+        if (state.draft.experimentId == null || state.step == RestorativeStep.SAVED) return
+        viewModelScope.launch {
+            when (val result = store.discardDraft()) {
+                StoreWriteResult.Success, StoreWriteResult.Duplicate -> {
+                    currentRecord = null
+                    _uiState.value = state.copy(exitRequested = true)
+                }
+                is StoreWriteResult.RetryableFailure -> _uiState.value = state.copy(
+                    error = RestorativeError.PersistenceFailure(result.stableCode),
+                )
+                is StoreWriteResult.TerminalFailure -> _uiState.value = state.copy(
+                    error = RestorativeError.TerminalEvidenceFailure(result.stableCode),
+                )
+            }
+        }
+    }
+
+    private fun selectNextStep(value: String?) {
+        val previous = _uiState.value
+        val updated = RestorativeReducer.reduce(previous, RestorativeIntent.SelectNextStep(value))
+        if (updated == previous) return
+        _uiState.value = updated
+        val record = currentRecord ?: return failInternal("NEXT_STEP_RECORD_MISSING")
+        val saved = record.copy(
+            intendedNextStep = value,
+            nextStepDecisionRecorded = true,
+        )
+        viewModelScope.launch {
+            when (val result = store.writeJourney(saved)) {
+                StoreWriteResult.Success, StoreWriteResult.Duplicate -> {
+                    currentRecord = saved
+                    if (updated.isReturnWithinWindow) recordMeaningfulReturn(saved, "update_next_step")
+                }
+                is StoreWriteResult.RetryableFailure -> _uiState.value = updated.copy(
+                    error = RestorativeError.PersistenceFailure(result.stableCode),
+                )
+                is StoreWriteResult.TerminalFailure -> _uiState.value = updated.copy(
+                    error = RestorativeError.TerminalEvidenceFailure(result.stableCode),
+                )
+            }
+        }
+    }
+
+    private fun openPlacementGuidance() {
+        val previous = _uiState.value
+        val updated = RestorativeReducer.reduce(previous, RestorativeIntent.OpenPlacementGuidance)
+        if (updated == previous) return
+        _uiState.value = updated
+        currentRecord?.takeIf { updated.isReturnWithinWindow }?.let { record ->
+            viewModelScope.launch { recordMeaningfulReturn(record, "open_placement_guidance") }
+        }
+    }
+
+    private suspend fun recordMeaningfulReturn(record: RestorativeJourneyRecord, action: String) {
+        appendEvent(
+            experimentId = record.experimentId,
+            name = "meaningful_return_72h",
+            actionIdentifier = action,
+            properties = savedEventProperties(record) + mapOf(
+                "return_action" to action,
+                "notification_received" to "false",
+                "researcher_prompted" to "false",
+            ),
+        )
+    }
+
+    private fun savedEventProperties(record: RestorativeJourneyRecord): Map<String, String> = mapOf(
+        "experiment_space_id" to (record.experimentSpaceId ?: record.experimentId),
+        "experiment_id" to record.experimentId,
+    )
 
     private fun failInternal(code: String) {
         _uiState.value = _uiState.value.copy(
@@ -231,6 +396,8 @@ class RestorativeValidationViewModel internal constructor(
     }
 
     companion object {
+        private const val RETURN_WINDOW_MILLIS = 72L * 60L * 60L * 1000L
+
         fun factory(context: Context): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {

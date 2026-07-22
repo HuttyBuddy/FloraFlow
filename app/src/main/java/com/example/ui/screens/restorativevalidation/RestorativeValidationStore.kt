@@ -59,6 +59,7 @@ interface RestorativeValidationStore {
     suspend fun readLedger(): StoreReadResult<ValidationEventLedger>
     suspend fun appendEvent(event: ValidationEventRecord): StoreWriteResult
     suspend fun prepareExport(exportedAtEpochMillis: Long): PrepareExportResult
+    suspend fun discardDraft(): StoreWriteResult
 }
 
 internal class PreferencesRestorativeValidationStore(
@@ -202,6 +203,20 @@ internal class PreferencesRestorativeValidationStore(
         } catch (_: NoSuchAlgorithmException) {
             PrepareExportResult.TerminalFailure("EXPORT_HASH_UNAVAILABLE")
         }
+    }
+
+    override suspend fun discardDraft(): StoreWriteResult = try {
+        dataStore.edit { preferences ->
+            preferences.remove(JOURNEY_KEY)
+            preferences.remove(LEDGER_KEY)
+        }
+        StoreWriteResult.Success
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (_: IOException) {
+        StoreWriteResult.RetryableFailure("DISCARD_WRITE_IO")
+    } catch (_: CorruptionException) {
+        StoreWriteResult.TerminalFailure("DISCARD_DATASTORE_CORRUPT")
     }
 
     private suspend fun <T> readRecord(

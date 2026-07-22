@@ -106,7 +106,10 @@ class MainActivity : ComponentActivity() {
                     val validationViewModel: RestorativeValidationViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
                         factory = RestorativeValidationViewModel.factory(applicationContext),
                     )
-                    RestorativeValidationRoute(viewModel = validationViewModel)
+                    RestorativeValidationRoute(
+                        viewModel = validationViewModel,
+                        onExit = ::finish,
+                    )
                 }
             }
             return

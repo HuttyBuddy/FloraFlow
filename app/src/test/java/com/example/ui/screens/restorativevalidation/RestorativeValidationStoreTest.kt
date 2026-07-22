@@ -87,6 +87,25 @@ class RestorativeValidationStoreTest {
     }
 
     @Test
+    fun `explicit draft discard clears journey and matching ledger together`() = runTest {
+        val journey = savedJourney().copy(status = JourneyStatus.DRAFT, savedAtEpochMillis = null)
+        val event = ValidationEventRecord(
+            eventId = "event-1",
+            experimentId = journey.experimentId,
+            name = "restorative_space_started",
+            deduplicationKey = validationEventDeduplicationKey(journey.experimentId, "restorative_space_started"),
+            timestampEpochMillis = 100L,
+        )
+        store.writeJourney(journey)
+        store.appendEvent(event)
+
+        assertEquals(StoreWriteResult.Success, store.discardDraft())
+
+        assertEquals(StoreReadResult.Missing, store.readJourney())
+        assertEquals(StoreReadResult.Missing, store.readLedger())
+    }
+
+    @Test
     fun `malformed journey is terminal and is not replaced`() = runTest {
         val key = stringPreferencesKey("restorative_journey_record")
         dataStore.edit { it[key] = "{not-json" }

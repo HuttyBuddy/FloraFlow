@@ -92,6 +92,7 @@ data class PlacementRecord(
 data class RestorativeJourneyRecord(
     val schemaVersion: Int = RESTORATIVE_SCHEMA_VERSION,
     val experimentId: String,
+    val experimentSpaceId: String? = null,
     val status: JourneyStatus,
     val light: LightChoice? = null,
     val availableSpace: AvailableSpace? = null,
@@ -99,6 +100,7 @@ data class RestorativeJourneyRecord(
     val plants: List<PlantSelectionRecord> = emptyList(),
     val placements: List<PlacementRecord> = emptyList(),
     val intendedNextStep: String? = null,
+    val nextStepDecisionRecorded: Boolean = false,
     val createdAtEpochMillis: Long,
     val savedAtEpochMillis: Long? = null,
 )
@@ -144,6 +146,11 @@ data class RestorativeUiState(
     val plan: StarterPlan? = null,
     val isBusy: Boolean = false,
     val error: RestorativeError? = null,
+    val intendedNextStep: String? = null,
+    val nextStepDecisionRecorded: Boolean = false,
+    val isReturnWithinWindow: Boolean = false,
+    val placementGuidanceExpanded: Boolean = false,
+    val exitRequested: Boolean = false,
 ) {
     val canContinue: Boolean
         get() = when (step) {
@@ -184,6 +191,13 @@ sealed interface RestorativeIntent {
     data object SavePlan : RestorativeIntent
     data object SaveComplete : RestorativeIntent
     data object Back : RestorativeIntent
+    data object RetryLoad : RestorativeIntent
+    data object SaveDraftAndExit : RestorativeIntent
+    data object DiscardDraftAndExit : RestorativeIntent
+    data class SelectNextStep(val value: String?) : RestorativeIntent
+    data object OpenPlacementGuidance : RestorativeIntent
+    data object EditSpace : RestorativeIntent
+    data object EditPlants : RestorativeIntent
 }
 
 data class StarterPlan(
@@ -268,6 +282,29 @@ object RestorativeReducer {
             } else state
 
             RestorativeIntent.Back -> back(state)
+            RestorativeIntent.RetryLoad,
+            RestorativeIntent.SaveDraftAndExit,
+            RestorativeIntent.DiscardDraftAndExit -> state
+
+            is RestorativeIntent.SelectNextStep -> if (state.step == RestorativeStep.SAVED) {
+                state.copy(
+                    intendedNextStep = intent.value,
+                    nextStepDecisionRecorded = true,
+                    error = null,
+                )
+            } else state
+
+            RestorativeIntent.OpenPlacementGuidance -> if (state.step == RestorativeStep.SAVED) {
+                state.copy(placementGuidanceExpanded = true)
+            } else state
+
+            RestorativeIntent.EditSpace -> if (state.step == RestorativeStep.PLAN) {
+                state.copy(step = RestorativeStep.SPACE, plan = null, error = null)
+            } else state
+
+            RestorativeIntent.EditPlants -> if (state.step == RestorativeStep.PLAN) {
+                state.copy(step = RestorativeStep.PLANTS, plan = null, error = null)
+            } else state
         }
     }
 
