@@ -2443,7 +2443,11 @@ fun shareGardenSnapshot(
             val scaledLogo = android.graphics.Bitmap.createScaledBitmap(logoSrc, 80, 80, true)
             canvas.drawBitmap(scaledLogo, size - 260f, size - 140f, null)
         }
-    } catch (_: Exception) {}
+    } catch (e: Exception) {
+        if (com.example.BuildConfig.DEBUG) {
+            android.util.Log.e("PlannerScreen", "Failed to draw logo", e)
+        }
+    }
     
     val watermarkTitlePaint = android.graphics.Paint().apply {
         color = 0xFF1F483E.toInt()
