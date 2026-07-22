@@ -192,384 +192,21 @@ class MainActivity : ComponentActivity() {
                         Scaffold(
                             modifier = Modifier.fillMaxSize(),
                             topBar = {
-                                @OptIn(ExperimentalMaterial3Api::class)
-                                CenterAlignedTopAppBar(
-                                    title = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Image(
-                                                painter = painterResource(id = R.drawable.ic_logo_heart),
-                                                contentDescription = "FloraFlow Logo",
-                                                modifier = Modifier
-                                                    .size(28.dp)
-                                                    .clip(RoundedCornerShape(6.dp))
-                                            )
-                                            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                                            Text(
-                                                text = "FloraFlow",
-                                                fontWeight = FontWeight.ExtraBold,
-                                                style = MaterialTheme.typography.titleLarge,
-                                                color = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    },
-                                    actions = {
-                                        IconButton(
-                                            onClick = {
-                                                if (isPremium) {
-                                                    viewModel.setSubscriptionManagementVisible(true)
-                                                } else {
-                                                    viewModel.upgradeToPremium()
-                                                }
-                                            },
-                                            modifier = Modifier.testTag("premium_key_status_crown")
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.WorkspacePremium,
-                                                contentDescription = "Subscription Info Status",
-                                                tint = if (isPremium) MaterialTheme.extendedColors.premiumGold else MaterialTheme.colorScheme.onSurface
-                                            )
-                                        }
-
-                                        var showMenu by remember { mutableStateOf(false) }
-                                        Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
-                                            IconButton(
-                                                onClick = { showMenu = true },
-                                                modifier = Modifier.testTag("more_options_button")
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.MoreVert,
-                                                    contentDescription = "More options"
-                                                )
-                                            }
-                                            DropdownMenu(
-                                                expanded = showMenu,
-                                                onDismissRequest = { showMenu = false }
-                                            ) {
-                                                DropdownMenuItem(
-                                                    text = { Text("Share App Feedback") },
-                                                    onClick = {
-                                                        showMenu = false
-                                                        showFeedbackDialog = true
-                                                    },
-                                                    leadingIcon = {
-                                                        Icon(
-                                                            imageVector = Icons.Default.Feedback,
-                                                            contentDescription = "Feedback"
-                                                        )
-                                                    },
-                                                    modifier = Modifier.testTag("feedback_button")
-                                                )
-                                                DropdownMenuItem(
-                                                    text = { Text("Help & Support") },
-                                                    onClick = {
-                                                        showMenu = false
-                                                        showHelpDialog = true
-                                                    },
-                                                    leadingIcon = {
-                                                        Icon(
-                                                            imageVector = Icons.AutoMirrored.Filled.HelpOutline,
-                                                            contentDescription = "Help"
-                                                        )
-                                                    },
-                                                    modifier = Modifier.testTag("help_button")
-                                                )
-                                                DropdownMenuItem(
-                                                    text = { Text("Settings") },
-                                                    onClick = {
-                                                        showMenu = false
-                                                        showSettingsDialog = true
-                                                    },
-                                                    leadingIcon = {
-                                                        Icon(
-                                                            imageVector = Icons.Default.Settings,
-                                                            contentDescription = "Settings"
-                                                        )
-                                                    },
-                                                    modifier = Modifier.testTag("settings_button")
-                                                )
-                                            }
-                                        }
-                                    },
-                                    colors = TopAppBarDefaults.topAppBarColors(
-                                        containerColor = MaterialTheme.colorScheme.background
-                                    )
+                                AppTopBar(
+                                    isPremium = isPremium,
+                                    onUpgradeClick = { viewModel.upgradeToPremium() },
+                                    onManageSubscriptionClick = { viewModel.setSubscriptionManagementVisible(true) },
+                                    onFeedbackClick = { showFeedbackDialog = true },
+                                    onHelpClick = { showHelpDialog = true },
+                                    onSettingsClick = { showSettingsDialog = true }
                                 )
                             },
                             bottomBar = {
-                                val labelFontSize = 10.sp
-                                val uniformTextStyle = MaterialTheme.typography.labelSmall.copy(
-                                    fontSize = labelFontSize,
-                                    letterSpacing = 0.sp,
-                                    fontWeight = FontWeight.Medium
+                                AppBottomBar(
+                                    currentTab = currentTab,
+                                    onTabSelected = { viewModel.setCurrentTab(it) },
+                                    onWalkthroughTargetUpdate = { step, rect -> viewModel.updateWalkthroughTarget(step, rect) }
                                 )
-                                
-                                BoxWithConstraints(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.surface)
-                                        .navigationBarsPadding()
-                                        .height(80.dp)
-                                        .testTag("app_navigation_bar")
-                                ) {
-                                    val barWidth = maxWidth
-                                    val tabWidth = barWidth / 5
-                                    val layoutDirection = androidx.compose.ui.platform.LocalLayoutDirection.current
-                                    val isLtr = layoutDirection == androidx.compose.ui.unit.LayoutDirection.Ltr
-                                    
-                                    val indicatorOffset by androidx.compose.animation.core.animateDpAsState(
-                                        targetValue = tabWidth * currentTab,
-                                        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
-                                        label = "tabIndicatorOffset"
-                                    )
- 
-                                    // Sliding indicator pill
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(vertical = 17.5.dp, horizontal = 6.dp)
-                                            .width(tabWidth - 12.dp)
-                                            .fillMaxHeight()
-                                            .offset {
-                                                val xOffset = indicatorOffset.roundToPx()
-                                                IntOffset(x = if (isLtr) xOffset else -xOffset, y = 0)
-                                            }
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f))
-                                    )
- 
-                                    Row(
-                                        modifier = Modifier.fillMaxSize(),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        // Tab 0: Dashboard
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .fillMaxHeight()
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .semantics {
-                                                    role = Role.Tab
-                                                    selected = currentTab == 0
-                                                }
-                                                .clickable(role = Role.Tab) {
-                                                    viewModel.setCurrentTab(0)
-                                                }
-                                                .testTag("nav_tab_dashboard"),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            val isSelected = currentTab == 0
-                                            val scale by animateFloatAsState(targetValue = if (isSelected) 1.06f else 1.0f, label = "tabScale0")
-                                            Column(
-                                                horizontalAlignment = Alignment.CenterHorizontally,
-                                                verticalArrangement = Arrangement.Center,
-                                                modifier = Modifier.scale(scale)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Dashboard,
-                                                    contentDescription = "Dashboard",
-                                                    modifier = Modifier.size(22.dp),
-                                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                                Spacer(modifier = Modifier.height(2.dp))
-                                                Text(
-                                                    text = "Dashboard",
-                                                    style = uniformTextStyle,
-                                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    maxLines = 1,
-                                                    softWrap = false,
-                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                                )
-                                            }
-                                        }
- 
-                                        // Tab 1: My Plot
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .fillMaxHeight()
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .semantics {
-                                                    role = Role.Tab
-                                                    selected = currentTab == 1
-                                                }
-                                                .clickable(role = Role.Tab) {
-                                                    viewModel.setCurrentTab(1)
-                                                }
-                                                .testTag("nav_tab_planner")
-                                                .onGloballyPositioned { coordinates ->
-                                                    val rect = coordinates.boundsInRoot()
-                                                    viewModel.updateWalkthroughTarget(
-                                                        WalkthroughStep.PLANNER_TAB,
-                                                        ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
-                                                    )
-                                                },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            val isSelected = currentTab == 1
-                                            val scale by animateFloatAsState(targetValue = if (isSelected) 1.06f else 1.0f, label = "tabScale1")
-                                            Column(
-                                                horizontalAlignment = Alignment.CenterHorizontally,
-                                                verticalArrangement = Arrangement.Center,
-                                                modifier = Modifier.scale(scale)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Explore,
-                                                    contentDescription = "My Plot",
-                                                    modifier = Modifier.size(22.dp),
-                                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                                Spacer(modifier = Modifier.height(2.dp))
-                                                Text(
-                                                    text = "My Plot",
-                                                    style = uniformTextStyle,
-                                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    maxLines = 1,
-                                                    softWrap = false,
-                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                                )
-                                            }
-                                        }
- 
-                                        // Tab 2: Greenhouse
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .fillMaxHeight()
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .semantics {
-                                                    role = Role.Tab
-                                                    selected = currentTab == 2
-                                                }
-                                                .clickable(role = Role.Tab) {
-                                                    viewModel.setCurrentTab(2)
-                                                }
-                                                .testTag("nav_tab_greenhouse"),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            val isSelected = currentTab == 2
-                                            val scale by animateFloatAsState(targetValue = if (isSelected) 1.06f else 1.0f, label = "tabScale2")
-                                            Column(
-                                                horizontalAlignment = Alignment.CenterHorizontally,
-                                                verticalArrangement = Arrangement.Center,
-                                                modifier = Modifier.scale(scale)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Spa,
-                                                    contentDescription = "Greenhouse",
-                                                    modifier = Modifier.size(22.dp),
-                                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                                Spacer(modifier = Modifier.height(2.dp))
-                                                Text(
-                                                    text = "Greenhouse",
-                                                    style = uniformTextStyle,
-                                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    maxLines = 1,
-                                                    softWrap = false,
-                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                                )
-                                            }
-                                        }
- 
-                                        // Tab 3: Counsel
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .fillMaxHeight()
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .semantics {
-                                                    role = Role.Tab
-                                                    selected = currentTab == 3
-                                                }
-                                                .clickable(role = Role.Tab) {
-                                                    viewModel.setCurrentTab(3)
-                                                }
-                                                .testTag("nav_tab_ai")
-                                                .onGloballyPositioned { coordinates ->
-                                                    val rect = coordinates.boundsInRoot()
-                                                    viewModel.updateWalkthroughTarget(
-                                                        WalkthroughStep.AI_ADVISOR_TAB,
-                                                        ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
-                                                    )
-                                                },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            val isSelected = currentTab == 3
-                                            val scale by animateFloatAsState(targetValue = if (isSelected) 1.06f else 1.0f, label = "tabScale3")
-                                            Column(
-                                                horizontalAlignment = Alignment.CenterHorizontally,
-                                                verticalArrangement = Arrangement.Center,
-                                                modifier = Modifier.scale(scale)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.SmartToy,
-                                                    contentDescription = "Garden Counsel",
-                                                    modifier = Modifier.size(22.dp),
-                                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                                Spacer(modifier = Modifier.height(2.dp))
-                                                Text(
-                                                    text = "Counsel",
-                                                    style = uniformTextStyle,
-                                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    maxLines = 1,
-                                                    softWrap = false,
-                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                                )
-                                            }
-                                        }
- 
-                                        // Tab 4: Restoration
-                                        Box(
-                                            modifier = Modifier
-                                                .weight(1f)
-                                                .fillMaxHeight()
-                                                .clip(RoundedCornerShape(12.dp))
-                                                .semantics {
-                                                    role = Role.Tab
-                                                    selected = currentTab == 4
-                                                }
-                                                .clickable(role = Role.Tab) {
-                                                    viewModel.setCurrentTab(4)
-                                                }
-                                                .testTag("nav_tab_ar")
-                                                .onGloballyPositioned { coordinates ->
-                                                    val rect = coordinates.boundsInRoot()
-                                                    viewModel.updateWalkthroughTarget(
-                                                        WalkthroughStep.AR_LENS_TAB,
-                                                        ScreenRect(rect.left, rect.top, rect.right, rect.bottom)
-                                                    )
-                                                },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            val isSelected = currentTab == 4
-                                            val scale by animateFloatAsState(targetValue = if (isSelected) 1.06f else 1.0f, label = "tabScale4")
-                                            Column(
-                                                horizontalAlignment = Alignment.CenterHorizontally,
-                                                verticalArrangement = Arrangement.Center,
-                                                modifier = Modifier.scale(scale)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.SelfImprovement,
-                                                    contentDescription = "Restoration",
-                                                    modifier = Modifier.size(22.dp),
-                                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                                Spacer(modifier = Modifier.height(2.dp))
-                                                Text(
-                                                    text = "Restoration",
-                                                    style = uniformTextStyle,
-                                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    maxLines = 1,
-                                                    softWrap = false,
-                                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         ) { innerPadding ->
                             val safeBottomPadding = innerPadding.calculateBottomPadding()
@@ -644,3 +281,280 @@ class MainActivity : ComponentActivity() {
     }
 
 
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppTopBar(
+    isPremium: Boolean,
+    onUpgradeClick: () -> Unit,
+    onManageSubscriptionClick: () -> Unit,
+    onFeedbackClick: () -> Unit,
+    onHelpClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
+    CenterAlignedTopAppBar(
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_logo_heart),
+                    contentDescription = "FloraFlow Logo",
+                    modifier = Modifier
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                )
+                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+                Text(
+                    text = "FloraFlow",
+                    fontWeight = FontWeight.ExtraBold,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        },
+        actions = {
+            IconButton(
+                onClick = {
+                    if (isPremium) {
+                        onManageSubscriptionClick()
+                    } else {
+                        onUpgradeClick()
+                    }
+                },
+                modifier = Modifier.testTag("premium_key_status_crown")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.WorkspacePremium,
+                    contentDescription = "Subscription Info Status",
+                    tint = if (isPremium) MaterialTheme.extendedColors.premiumGold else MaterialTheme.colorScheme.onSurface
+                )
+            }
+
+            var showMenu by remember { mutableStateOf(false) }
+            Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
+                IconButton(
+                    onClick = { showMenu = true },
+                    modifier = Modifier.testTag("more_options_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "More options"
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Share App Feedback") },
+                        onClick = {
+                            showMenu = false
+                            onFeedbackClick()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Feedback,
+                                contentDescription = "Feedback"
+                            )
+                        },
+                        modifier = Modifier.testTag("feedback_button")
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Help & Support") },
+                        onClick = {
+                            showMenu = false
+                            onHelpClick()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                                contentDescription = "Help"
+                            )
+                        },
+                        modifier = Modifier.testTag("help_button")
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Settings") },
+                        onClick = {
+                            showMenu = false
+                            onSettingsClick()
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = "Settings"
+                            )
+                        },
+                        modifier = Modifier.testTag("settings_button")
+                    )
+                }
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.background
+        )
+    )
+}
+
+@Composable
+private fun RowScope.AppBottomBarTab(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    tabIndex: Int,
+    currentTab: Int,
+    testTag: String,
+    onTabSelected: (Int) -> Unit,
+    onGloballyPositioned: ((androidx.compose.ui.layout.LayoutCoordinates) -> Unit)? = null
+) {
+    val isSelected = currentTab == tabIndex
+    var modifier = Modifier
+        .weight(1f)
+        .fillMaxHeight()
+        .clip(RoundedCornerShape(12.dp))
+        .semantics {
+            role = Role.Tab
+            selected = isSelected
+        }
+        .clickable(role = Role.Tab) {
+            onTabSelected(tabIndex)
+        }
+        .testTag(testTag)
+
+    if (onGloballyPositioned != null) {
+        modifier = modifier.onGloballyPositioned(onGloballyPositioned)
+    }
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        val scale by animateFloatAsState(targetValue = if (isSelected) 1.06f else 1.0f, label = "tabScale$tabIndex")
+        val uniformTextStyle = MaterialTheme.typography.labelSmall.copy(
+            fontSize = 10.sp,
+            letterSpacing = 0.sp,
+            fontWeight = FontWeight.Medium
+        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.scale(scale)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                modifier = Modifier.size(22.dp),
+                tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = title,
+                style = uniformTextStyle,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                softWrap = false,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun AppBottomBar(
+    currentTab: Int,
+    onTabSelected: (Int) -> Unit,
+    onWalkthroughTargetUpdate: (WalkthroughStep, ScreenRect) -> Unit
+) {
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .navigationBarsPadding()
+            .height(80.dp)
+            .testTag("app_navigation_bar")
+    ) {
+        val barWidth = maxWidth
+        val tabWidth = barWidth / 5
+        val layoutDirection = androidx.compose.ui.platform.LocalLayoutDirection.current
+        val isLtr = layoutDirection == androidx.compose.ui.unit.LayoutDirection.Ltr
+
+        val indicatorOffset by androidx.compose.animation.core.animateDpAsState(
+            targetValue = tabWidth * currentTab,
+            animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow),
+            label = "tabIndicatorOffset"
+        )
+
+        // Sliding indicator pill
+        Box(
+            modifier = Modifier
+                .padding(vertical = 17.5.dp, horizontal = 6.dp)
+                .width(tabWidth - 12.dp)
+                .fillMaxHeight()
+                .offset {
+                    val xOffset = indicatorOffset.roundToPx()
+                    IntOffset(x = if (isLtr) xOffset else -xOffset, y = 0)
+                }
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f))
+        )
+
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AppBottomBarTab(
+                title = "Dashboard",
+                icon = Icons.Default.Dashboard,
+                tabIndex = 0,
+                currentTab = currentTab,
+                testTag = "nav_tab_dashboard",
+                onTabSelected = onTabSelected
+            )
+            AppBottomBarTab(
+                title = "My Plot",
+                icon = Icons.Default.Explore,
+                tabIndex = 1,
+                currentTab = currentTab,
+                testTag = "nav_tab_planner",
+                onTabSelected = onTabSelected,
+                onGloballyPositioned = { coordinates ->
+                    val rect = coordinates.boundsInRoot()
+                    onWalkthroughTargetUpdate(WalkthroughStep.PLANNER_TAB, ScreenRect(rect.left, rect.top, rect.right, rect.bottom))
+                }
+            )
+            AppBottomBarTab(
+                title = "Greenhouse",
+                icon = Icons.Default.Spa,
+                tabIndex = 2,
+                currentTab = currentTab,
+                testTag = "nav_tab_greenhouse",
+                onTabSelected = onTabSelected
+            )
+            AppBottomBarTab(
+                title = "Counsel",
+                icon = Icons.Default.SmartToy,
+                tabIndex = 3,
+                currentTab = currentTab,
+                testTag = "nav_tab_ai",
+                onTabSelected = onTabSelected,
+                onGloballyPositioned = { coordinates ->
+                    val rect = coordinates.boundsInRoot()
+                    onWalkthroughTargetUpdate(WalkthroughStep.AI_ADVISOR_TAB, ScreenRect(rect.left, rect.top, rect.right, rect.bottom))
+                }
+            )
+            AppBottomBarTab(
+                title = "Restoration",
+                icon = Icons.Default.SelfImprovement,
+                tabIndex = 4,
+                currentTab = currentTab,
+                testTag = "nav_tab_ar",
+                onTabSelected = onTabSelected,
+                onGloballyPositioned = { coordinates ->
+                    val rect = coordinates.boundsInRoot()
+                    onWalkthroughTargetUpdate(WalkthroughStep.AR_LENS_TAB, ScreenRect(rect.left, rect.top, rect.right, rect.bottom))
+                }
+            )
+        }
+    }
+}
