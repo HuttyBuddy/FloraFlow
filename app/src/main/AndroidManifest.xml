@@ -64,6 +64,19 @@
             android:exported="false"
             tools:replace="android:enabled" />
 
+        <receiver
+            android:name="androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver"
+            android:enabled="${automaticStartupEnabled}"
+            android:exported="false"
+            tools:replace="android:enabled" />
+
+        <receiver
+            android:name="androidx.work.impl.diagnostics.DiagnosticsReceiver"
+            android:enabled="${automaticStartupEnabled}"
+            android:exported="true"
+            android:permission="android.permission.DUMP"
+            tools:replace="android:enabled" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
