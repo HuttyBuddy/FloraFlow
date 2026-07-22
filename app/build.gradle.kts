@@ -34,8 +34,8 @@ android {
     applicationId = "com.aistudio.dreamgardendesigner.fhqpvw"
     minSdk = 24
     targetSdk = 37
-    versionCode = 21
-    versionName = "9.0.1.2"
+    versionCode = 22
+    versionName = "9.0.1.3"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     manifestPlaceholders["automaticStartupEnabled"] = "true"

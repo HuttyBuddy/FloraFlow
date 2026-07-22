@@ -2,6 +2,11 @@
 
 All notable changes to the FloraFlow project will be documented in this file.
 
+## [9.0.1.3] - 2026-07-22
+
+### Changed
+- **Play Console Compliance**: Upgraded the Google Play Billing Library from 7.0.0 to 9.0.0 to meet Google's Aug 30, 2026 requirement (version 8.0.0+) and migrated `BillingManager` to the new `PendingPurchasesParams` and `QueryProductDetailsResult` APIs. `targetSdk`/`compileSdk` already target API 36+ (37); publishing this build resolves the associated target-API compliance warning.
+
 ## [9.0.1.2] - 2026-07-03
 
 ### Fixed

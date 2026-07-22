@@ -60,7 +60,10 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
     private fun initializeBillingClient() {
         billingClient = BillingClient.newBuilder(context)
             .setListener(this)
-            .enablePendingPurchases()
+            .enablePendingPurchases(
+                PendingPurchasesParams.newBuilder().enableOneTimeProducts().build()
+            )
+            .enableAutoServiceReconnection()
             .build()
 
         startConnection()
@@ -225,10 +228,10 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
             .setProductList(productList)
             .build()
 
-        billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+        billingClient.queryProductDetailsAsync(params) { billingResult, queryProductDetailsResult ->
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                 val result = mutableMapOf<String, OfferInfo>()
-                for (productDetails in productDetailsList) {
+                for (productDetails in queryProductDetailsResult.productDetailsList) {
                     val offers = productDetails.subscriptionOfferDetails ?: continue
                     val trialPhase = offers.asSequence()
                         .flatMap { it.pricingPhases.pricingPhaseList.asSequence() }
@@ -292,7 +295,8 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
             .setProductList(productList)
             .build()
 
-        billingClient.queryProductDetailsAsync(params) { billingResult, productDetailsList ->
+        billingClient.queryProductDetailsAsync(params) { billingResult, queryProductDetailsResult ->
+            val productDetailsList = queryProductDetailsResult.productDetailsList
             if (billingResult.responseCode == BillingClient.BillingResponseCode.OK && productDetailsList.isNotEmpty()) {
                 val productDetails = productDetailsList[0]
 
