@@ -82,6 +82,9 @@ class GardenViewModel @JvmOverloads constructor(
     private val _activePlants = MutableStateFlow<List<Plant>>(emptyList())
     val activePlants: StateFlow<List<Plant>> = _activePlants.asStateFlow()
 
+    // Cache for expensive grid parsing
+    private var _cachedGridItems = Pair<String, List<GridPlantItem>>("", emptyList())
+
     // Real-time AI chat stream
     private val _aiChatHistory = MutableStateFlow<List<Content>>(emptyList())
     val aiChatHistory: StateFlow<List<Content>> = _aiChatHistory.asStateFlow()
@@ -1938,7 +1941,12 @@ class GardenViewModel @JvmOverloads constructor(
         val diversityScore = (uniqueTypes.size * 10).coerceAtMost(40)
         
         // 2. Synergy Score (max 40%)
-        val gridItems = parseGridString(layout.gridString)
+        val currentGridString = layout.gridString
+        if (_cachedGridItems.first != currentGridString) {
+            _cachedGridItems = Pair(currentGridString, parseGridString(currentGridString))
+        }
+        val gridItems = _cachedGridItems.second
+
         var synergyCount = 0
         for (i in gridItems.indices) {
             for (j in i + 1 until gridItems.size) {
