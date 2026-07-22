@@ -601,39 +601,42 @@ fun CalculatingScreen(
     }
 }
 
+data class ZoneDetails(
+    val category: String,
+    val label: String,
+    val color: Color,
+    val brush: Brush
+)
+
+fun getZoneDetails(score: Int): ZoneDetails {
+    return when (score) {
+        in 15..20 -> ZoneDetails(
+            "GREEN ZONE",
+            "LOW NEURAL LOAD",
+            Color(0xFF1B4A2F),
+            Brush.verticalGradient(listOf(Color(0xFF0F311C), Color(0xFF225235)))
+        )
+        in 8..14 -> ZoneDetails(
+            "YELLOW ZONE",
+            "MODERATE NEURAL LOAD",
+            Color(0xFF825E1B),
+            Brush.verticalGradient(listOf(Color(0xFF42300D), Color(0xFF6B4D16)))
+        )
+        else -> ZoneDetails(
+            "RED ZONE",
+            "HIGH NEURAL LOAD",
+            Color(0xFF702123),
+            Brush.verticalGradient(listOf(Color(0xFF3B1012), Color(0xFF631C1E)))
+        )
+    }
+}
+
 @Composable
 fun ResultScreen(
     score: Int,
     onSeeSteps: () -> Unit
 ) {
-    data class ZoneDetails(
-        val category: String,
-        val label: String,
-        val color: Color,
-        val brush: Brush
-    )
-    val zoneInfo = remember(score) {
-        when (score) {
-            in 15..20 -> ZoneDetails(
-                "GREEN ZONE", 
-                "LOW NEURAL LOAD", 
-                Color(0xFF1B4A2F),
-                Brush.verticalGradient(listOf(Color(0xFF0F311C), Color(0xFF225235)))
-            )
-            in 8..14 -> ZoneDetails(
-                "YELLOW ZONE", 
-                "MODERATE NEURAL LOAD", 
-                Color(0xFF825E1B),
-                Brush.verticalGradient(listOf(Color(0xFF42300D), Color(0xFF6B4D16)))
-            )
-            else -> ZoneDetails(
-                "RED ZONE", 
-                "HIGH NEURAL LOAD", 
-                Color(0xFF702123),
-                Brush.verticalGradient(listOf(Color(0xFF3B1012), Color(0xFF631C1E)))
-            )
-        }
-    }
+    val zoneInfo = remember(score) { getZoneDetails(score) }
     
     Column(
         modifier = Modifier
@@ -646,141 +649,166 @@ fun ResultScreen(
     ) {
         Spacer(modifier = Modifier.height(48.dp))
         
-        Text(
-            text = "Your Neural Load Score",
-            style = MaterialTheme.typography.labelLarge.copy(
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White.copy(alpha = 0.7f)
-            )
-        )
+        ResultScoreDisplay(score)
+        ResultScoreComparison(score)
         
         Spacer(modifier = Modifier.height(16.dp))
         
+        ResultZoneBadge(zoneInfo)
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        ResultZoneDescription(score)
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        ResultActionButtons(score, zoneInfo, onSeeSteps)
+
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun ResultScoreDisplay(score: Int) {
+    Text(
+        text = "Your Neural Load Score",
+        style = MaterialTheme.typography.labelLarge.copy(
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White.copy(alpha = 0.7f)
+        )
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Text(
+        text = "$score / 20",
+        style = MaterialTheme.typography.displayLarge.copy(
+            fontSize = 56.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color.White
+        )
+    )
+}
+
+@Composable
+private fun ResultScoreComparison(score: Int) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val sharedPrefs = remember { context.getSharedPreferences("floraflow_billing_prefs", android.content.Context.MODE_PRIVATE) }
+    val prevScore = remember { sharedPrefs.getInt("prev_assessment_score", -1) }
+
+    if (prevScore != -1) {
+        val delta = score - prevScore
+        val textDelta = if (delta > 0) {
+            "Your Neural Load improved from $prevScore/20 to $score/20 (+$delta)!"
+        } else if (delta < 0) {
+            "Your Neural Load went from $prevScore/20 to $score/20 ($delta)."
+        } else {
+            "Your Neural Load remained at $score/20."
+        }
         Text(
-            text = "$score / 20",
-            style = MaterialTheme.typography.displayLarge.copy(
-                fontSize = 56.sp,
-                fontWeight = FontWeight.ExtraBold,
+            text = textDelta,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White.copy(alpha = 0.95f)
+            ),
+            modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun ResultZoneBadge(zoneInfo: ZoneDetails) {
+    Box(
+        modifier = Modifier
+            .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(24.dp))
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = "${zoneInfo.category} — ${zoneInfo.label}",
+            style = MaterialTheme.typography.bodyMedium.copy(
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
                 color = Color.White
             )
         )
+    }
+}
 
-        val context = androidx.compose.ui.platform.LocalContext.current
-        // Must match the prefs file GardenViewModel actually writes
-        // prev_assessment_score to ("floraflow_billing_prefs") — this
-        // previously read a different, always-empty file, so the
-        // score-improved comparison below could never render.
-        val sharedPrefs = remember { context.getSharedPreferences("floraflow_billing_prefs", android.content.Context.MODE_PRIVATE) }
-        val prevScore = remember { sharedPrefs.getInt("prev_assessment_score", -1) }
+@Composable
+private fun ResultZoneDescription(score: Int) {
+    Text(
+        text = when (score) {
+            in 15..20 -> "Your environment is highly supportive of your nervous system. Biophilic cues are abundant, promoting natural calm, focus, and restoration. Maintain this healthy balance!"
+            in 8..14 -> "Your space has a few natural elements missing, which might be quietly draining your energy and focus. The good news is that small, simple changes can make a big difference."
+            else -> "Your space might be adding to your daily stress. Without enough natural light, plants, or fresh air, it's easy to feel tired and unfocused. Let's make a few simple adjustments to turn your room into a restorative sanctuary."
+        },
+        style = MaterialTheme.typography.bodyLarge.copy(
+            fontSize = 16.sp,
+            color = Color.White.copy(alpha = 0.9f),
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp
+        ),
+        modifier = Modifier.padding(horizontal = 12.dp)
+    )
+}
 
-        if (prevScore != -1) {
-            val delta = score - prevScore
-            val textDelta = if (delta > 0) {
-                "Your Neural Load improved from $prevScore/20 to $score/20 (+$delta)!"
-            } else if (delta < 0) {
-                "Your Neural Load went from $prevScore/20 to $score/20 ($delta)."
-            } else {
-                "Your Neural Load remained at $score/20."
-            }
-            Text(
-                text = textDelta,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White.copy(alpha = 0.95f)
-                ),
-                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
-                textAlign = TextAlign.Center
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Box(
-            modifier = Modifier
-                .background(Color.White.copy(alpha = 0.15f), RoundedCornerShape(24.dp))
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Text(
-                text = "${zoneInfo.category} — ${zoneInfo.label}",
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            )
-        }
-        
-        Spacer(modifier = Modifier.height(32.dp))
-        
+@Composable
+private fun ResultActionButtons(
+    score: Int,
+    zoneInfo: ZoneDetails,
+    onSeeSteps: () -> Unit
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    Button(
+        onClick = onSeeSteps,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.White,
+            contentColor = zoneInfo.color
+        ),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .testTag("result_see_steps_btn")
+    ) {
         Text(
-            text = when (score) {
-                in 15..20 -> "Your environment is highly supportive of your nervous system. Biophilic cues are abundant, promoting natural calm, focus, and restoration. Maintain this healthy balance!"
-                in 8..14 -> "Your space has a few natural elements missing, which might be quietly draining your energy and focus. The good news is that small, simple changes can make a big difference."
-                else -> "Your space might be adding to your daily stress. Without enough natural light, plants, or fresh air, it's easy to feel tired and unfocused. Let's make a few simple adjustments to turn your room into a restorative sanctuary."
-            },
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontSize = 16.sp,
-                color = Color.White.copy(alpha = 0.9f),
-                textAlign = TextAlign.Center,
-                lineHeight = 24.sp
-            ),
-            modifier = Modifier.padding(horizontal = 12.dp)
+            text = "See My Next Steps",
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
         )
-        
-        Spacer(modifier = Modifier.weight(1f))
-        
-        Button(
-            onClick = onSeeSteps,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.White,
-                contentColor = zoneInfo.color
-            ),
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .testTag("result_see_steps_btn")
+    }
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    OutlinedButton(
+        onClick = {
+            shareScoreCard(context, score, zoneInfo.category, zoneInfo.label, zoneInfo.color.toArgb())
+        },
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = Color.White
+        ),
+        border = borderStrokeShare(),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .testTag("result_share_score_btn")
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
+            Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
             Text(
-                text = "See My Next Steps",
+                text = "Share My Score Card",
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
         }
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        OutlinedButton(
-            onClick = {
-                shareScoreCard(context, score, zoneInfo.category, zoneInfo.label, zoneInfo.color.toArgb())
-            },
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = Color.White
-            ),
-            border = borderStrokeShare(),
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-                .testTag("result_share_score_btn")
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(imageVector = Icons.Default.Share, contentDescription = null, modifier = Modifier.size(18.dp))
-                Text(
-                    text = "Share My Score Card",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
-                )
-            }
-        }
-        
-
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
