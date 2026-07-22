@@ -1,6 +1,10 @@
 package com.example.ui.screens.restorativevalidation
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,16 +29,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,15 +55,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 
 @Composable
 fun RestorativeValidationRoute(
@@ -60,11 +76,25 @@ fun RestorativeValidationRoute(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val shareLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
+    val documentLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri ->
+        viewModel.onIntent(RestorativeIntent.DocumentDestinationSelected(uri?.toString()))
+    }
     RestorativeValidationScreen(
         state = state,
         onStart = viewModel::startJourney,
         onIntent = viewModel::onIntent,
         onExit = onExit,
+        launchShare = { json ->
+            val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/json"
+                putExtra(Intent.EXTRA_TEXT, json)
+            }
+            shareLauncher.launch(Intent.createChooser(sendIntent, "Share FloraFlow test record"))
+        },
+        launchCreateDocument = documentLauncher::launch,
         modifier = modifier,
     )
 }
@@ -75,6 +105,8 @@ internal fun RestorativeValidationScreen(
     onStart: () -> Unit,
     onIntent: (RestorativeIntent) -> Unit,
     onExit: () -> Unit = {},
+    launchShare: (String) -> Unit = {},
+    launchCreateDocument: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var showCloseDialog by rememberSaveable { mutableStateOf(false) }
@@ -86,6 +118,29 @@ internal fun RestorativeValidationScreen(
     }
     LaunchedEffect(state.exitRequested) {
         if (state.exitRequested) onExit()
+    }
+    LaunchedEffect(state.researchExport.status, state.researchExport.preparedJson) {
+        when (state.researchExport.status) {
+            ResearchExportStatus.READY_TO_SHARE -> {
+                val json = state.researchExport.preparedJson ?: return@LaunchedEffect
+                try {
+                    launchShare(json)
+                    onIntent(RestorativeIntent.ShareLaunchSucceeded)
+                } catch (_: ActivityNotFoundException) {
+                    onIntent(RestorativeIntent.ShareLaunchFailed("SHARE_TARGET_UNAVAILABLE"))
+                } catch (_: SecurityException) {
+                    onIntent(RestorativeIntent.ShareLaunchFailed("SHARE_LAUNCH_DENIED"))
+                }
+            }
+            ResearchExportStatus.AWAITING_DOCUMENT -> try {
+                launchCreateDocument(state.researchExport.suggestedFileName)
+            } catch (_: ActivityNotFoundException) {
+                onIntent(RestorativeIntent.DocumentLaunchFailed("DOCUMENT_PICKER_UNAVAILABLE"))
+            } catch (_: SecurityException) {
+                onIntent(RestorativeIntent.DocumentLaunchFailed("DOCUMENT_PICKER_DENIED"))
+            }
+            else -> Unit
+        }
     }
 
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -171,6 +226,9 @@ internal fun RestorativeValidationScreen(
                 }
             },
         )
+    }
+    if (state.researchExport.disclosureVisible) {
+        ResearchExportDisclosure(state.researchExport, onIntent)
     }
 }
 
@@ -423,6 +481,200 @@ private fun SavedStage(state: RestorativeUiState, onIntent: (RestorativeIntent) 
         modifier = Modifier.fillMaxWidth().height(52.dp),
     ) { Text(if (state.placementGuidanceExpanded) "Placement guidance open" else "View placement guidance", fontSize = 16.sp) }
     if (state.placementGuidanceExpanded) SavedPlacementGuidance(state)
+    ResearchExportStatusPanel(state.researchExport, onIntent)
+    var showResearchMenu by rememberSaveable { mutableStateOf(false) }
+    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
+        IconButton(
+            onClick = { showResearchMenu = true },
+            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
+        ) {
+            Icon(Icons.Default.MoreVert, contentDescription = "More options")
+        }
+        DropdownMenu(expanded = showResearchMenu, onDismissRequest = { showResearchMenu = false }) {
+            DropdownMenuItem(
+                text = { Text("Export test record", fontSize = 16.sp) },
+                onClick = {
+                    showResearchMenu = false
+                    onIntent(RestorativeIntent.OpenExportDisclosure)
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ResearchExportStatusPanel(
+    export: ResearchExportState,
+    onIntent: (RestorativeIntent) -> Unit,
+) {
+    when (export.status) {
+        ResearchExportStatus.PREPARING,
+        ResearchExportStatus.WRITING_DOCUMENT -> Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            CircularProgressIndicator(Modifier.width(24.dp).height(24.dp), strokeWidth = 2.dp)
+            Text(
+                if (export.status == ResearchExportStatus.PREPARING) "Preparing test record" else "Saving test record",
+                fontSize = 16.sp,
+            )
+        }
+
+        ResearchExportStatus.SHARE_OPTIONS_OPENED -> ResearchStatusMessage(
+            title = "Share options opened",
+            detail = "Confirm the destination outside FloraFlow before clearing this phone.",
+            onDismiss = { onIntent(RestorativeIntent.DismissExportStatus) },
+        )
+
+        ResearchExportStatus.DOCUMENT_SAVED -> ResearchStatusMessage(
+            title = "Test record saved",
+            detail = export.destinationDisplay ?: "The selected document was written.",
+            onDismiss = { onIntent(RestorativeIntent.DismissExportStatus) },
+        )
+
+        ResearchExportStatus.PICKER_CANCELLED -> ResearchStatusMessage(
+            title = "No file was created",
+            detail = "Both local records remain on this phone.",
+            primaryLabel = "Choose destination",
+            onPrimary = { onIntent(RestorativeIntent.RetryExport) },
+            onDismiss = { onIntent(RestorativeIntent.DismissExportStatus) },
+        )
+
+        ResearchExportStatus.FAILED -> ResearchStatusMessage(
+            title = "Test record was not saved",
+            detail = "Local code: ${export.stableCode}. Both local records remain on this phone.",
+            primaryLabel = if (export.retryAllowed) "Try again" else null,
+            onPrimary = { onIntent(RestorativeIntent.RetryExport) },
+            onDismiss = { onIntent(RestorativeIntent.DismissExportStatus) },
+        )
+
+        else -> Unit
+    }
+}
+
+@Composable
+private fun ResearchStatusMessage(
+    title: String,
+    detail: String,
+    primaryLabel: String? = null,
+    onPrimary: () -> Unit = {},
+    onDismiss: () -> Unit,
+) {
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(title, fontSize = 19.sp, fontWeight = FontWeight.SemiBold)
+            Text(detail, fontSize = 16.sp, lineHeight = 23.sp)
+            primaryLabel?.let {
+                Button(onClick = onPrimary, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+                    Text(it, fontSize = 16.sp)
+                }
+            }
+            TextButton(onClick = onDismiss, modifier = Modifier.height(48.dp)) {
+                Text("Cancel", fontSize = 16.sp)
+            }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun ResearchExportDisclosure(
+    export: ResearchExportState,
+    onIntent: (RestorativeIntent) -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    ModalBottomSheet(
+        onDismissRequest = { onIntent(RestorativeIntent.CancelExportDisclosure) },
+        sheetState = sheetState,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text("RESEARCH TOOL", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+            Text(
+                "Export test record",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.semantics { heading() },
+            )
+            Text(
+                "Choose a system destination only after the participant agrees.",
+                fontSize = 16.sp,
+                lineHeight = 23.sp,
+            )
+            ExportDisclosureGroup(
+                title = "Included",
+                items = listOf(
+                    "Journey choices and selected plant slugs",
+                    "Optional next step",
+                    "Local experiment events and return classification",
+                    "Schema and experiment identifiers",
+                    "Timestamps and integrity hash",
+                ),
+            )
+            ExportDisclosureGroup(
+                title = "Not included",
+                items = listOf(
+                    "Participant name or email",
+                    "Journal, health text, photos, or location",
+                    "Device identifiers or Firebase data",
+                    "Production garden data, stack traces, or unrelated preferences",
+                ),
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .sizeIn(minHeight = 48.dp)
+                    .toggleable(
+                        value = export.consentConfirmed,
+                        role = Role.Checkbox,
+                        onValueChange = { onIntent(RestorativeIntent.SetExportConsent(it)) },
+                    ),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Checkbox(
+                    checked = export.consentConfirmed,
+                    onCheckedChange = null,
+                )
+                Text("The participant has agreed to this export.", fontSize = 16.sp, lineHeight = 22.sp)
+            }
+            if (!export.consentConfirmed) {
+                Text(
+                    "Confirm participant agreement to choose a destination.",
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Button(
+                onClick = { onIntent(RestorativeIntent.PrepareExport) },
+                enabled = export.consentConfirmed && export.status == ResearchExportStatus.IDLE,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+            ) {
+                Text(
+                    if (export.status == ResearchExportStatus.PREPARING) "Preparing test record" else "Choose destination",
+                    fontSize = 17.sp,
+                )
+            }
+            TextButton(
+                onClick = { onIntent(RestorativeIntent.CancelExportDisclosure) },
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+            ) { Text("Cancel", fontSize = 16.sp) }
+        }
+    }
+}
+
+@Composable
+private fun ExportDisclosureGroup(title: String, items: List<String>) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(title, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+        items.forEach { Text("• $it", fontSize = 16.sp, lineHeight = 22.sp) }
+    }
 }
 
 @Composable
@@ -446,6 +698,7 @@ private fun SavedPlacementGuidance(state: RestorativeUiState) {
 @Composable
 private fun TerminalEvidenceStage(error: RestorativeError.TerminalEvidenceFailure) {
     var showResearcherDetails by rememberSaveable { mutableStateOf(false) }
+    val clipboardManager = LocalClipboardManager.current
     Spacer(Modifier.height(40.dp))
     Text("FLORAFLOW TEST", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
     if (showResearcherDetails) {
@@ -458,6 +711,16 @@ private fun TerminalEvidenceStage(error: RestorativeError.TerminalEvidenceFailur
                 Text("Local code: ${error.stableCode}", fontSize = 16.sp)
             }
         }
+        OutlinedButton(
+            onClick = {
+                clipboardManager.setText(
+                    AnnotatedString(
+                        "FloraFlow test record preserved. Retry unavailable. Local code: ${error.stableCode}"
+                    )
+                )
+            },
+            modifier = Modifier.fillMaxWidth().height(52.dp),
+        ) { Text("Copy details", fontSize = 16.sp) }
         OutlinedButton(
             onClick = { showResearcherDetails = false },
             modifier = Modifier.fillMaxWidth().height(52.dp),

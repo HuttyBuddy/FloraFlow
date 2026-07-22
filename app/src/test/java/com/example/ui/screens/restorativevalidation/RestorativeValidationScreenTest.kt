@@ -1,7 +1,11 @@
 package com.example.ui.screens.restorativevalidation
 
+import android.content.ActivityNotFoundException
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.unit.Density
 import com.example.ui.theme.MyApplicationTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -98,7 +102,140 @@ class RestorativeValidationScreenTest {
         )
     }
 
+    @Test
+    fun `research disclosure names included excluded and requires consent`() {
+        val intents = mutableListOf<RestorativeIntent>()
+        val state = savedState().copy(
+            researchExport = ResearchExportState(disclosureVisible = true),
+        )
+        composeRule.setContent {
+            MyApplicationTheme { RestorativeValidationScreen(state, {}, intents::add) }
+        }
+
+        composeRule.onNodeWithText("Export test record").assertIsDisplayed()
+        composeRule.onNodeWithText("Included").assertExists()
+        composeRule.onNodeWithText("Not included").assertExists()
+        composeRule.onNodeWithText("Choose destination").assertIsNotEnabled()
+        composeRule.onNodeWithText("The participant has agreed to this export.").performScrollTo().performClick()
+
+        assertEquals(listOf(RestorativeIntent.SetExportConsent(true)), intents)
+    }
+
+    @Test
+    fun `export disclosure actions remain reachable at two hundred percent text`() {
+        val state = savedState().copy(
+            researchExport = ResearchExportState(
+                disclosureVisible = true,
+                consentConfirmed = true,
+            ),
+        )
+        composeRule.setContent {
+            CompositionLocalProvider(LocalDensity provides Density(density = 1f, fontScale = 2f)) {
+                MyApplicationTheme { RestorativeValidationScreen(state, {}, {}) }
+            }
+        }
+
+        composeRule.onNodeWithText("Choose destination").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Cancel").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun `ready export launches share once and reports only options opened`() {
+        val intents = mutableListOf<RestorativeIntent>()
+        val payloads = mutableListOf<String>()
+        val state = savedState().copy(
+            researchExport = ResearchExportState(
+                status = ResearchExportStatus.READY_TO_SHARE,
+                preparedJson = "{\"safe\":true}",
+            ),
+        )
+        composeRule.setContent {
+            MyApplicationTheme {
+                RestorativeValidationScreen(
+                    state = state,
+                    onStart = {},
+                    onIntent = intents::add,
+                    launchShare = payloads::add,
+                )
+            }
+        }
+        composeRule.waitForIdle()
+
+        assertEquals(listOf("{\"safe\":true}"), payloads)
+        assertEquals(listOf(RestorationExportScreenIntent.shareOpened), intents)
+    }
+
+    @Test
+    fun `unavailable share target requests document fallback`() {
+        val intents = mutableListOf<RestorativeIntent>()
+        val state = savedState().copy(
+            researchExport = ResearchExportState(
+                status = ResearchExportStatus.READY_TO_SHARE,
+                preparedJson = "{\"safe\":true}",
+            ),
+        )
+        composeRule.setContent {
+            MyApplicationTheme {
+                RestorativeValidationScreen(
+                    state = state,
+                    onStart = {},
+                    onIntent = intents::add,
+                    launchShare = { throw ActivityNotFoundException() },
+                )
+            }
+        }
+        composeRule.waitForIdle()
+
+        assertEquals(
+            listOf(RestorativeIntent.ShareLaunchFailed("SHARE_TARGET_UNAVAILABLE")),
+            intents,
+        )
+    }
+
+    @Test
+    fun `document fallback launches with stable json filename`() {
+        val filenames = mutableListOf<String>()
+        val state = savedState().copy(
+            researchExport = ResearchExportState(status = ResearchExportStatus.AWAITING_DOCUMENT),
+        )
+        composeRule.setContent {
+            MyApplicationTheme {
+                RestorativeValidationScreen(
+                    state = state,
+                    onStart = {},
+                    onIntent = {},
+                    launchCreateDocument = filenames::add,
+                )
+            }
+        }
+        composeRule.waitForIdle()
+
+        assertEquals(listOf("floraflow-test-record.json"), filenames)
+    }
+
+    private fun savedState(): RestorativeUiState {
+        val plan = RestorativeRecommendationEngine.createPlan(
+            light = LightChoice.BRIGHT,
+            availableSpace = AvailableSpace.TABLETOP,
+            ownedPlantSlugs = emptyList(),
+        ) as RecommendationResult.Match
+        return RestorativeUiState(
+            step = RestorativeStep.SAVED,
+            draft = RestorativeDraft(
+                experimentId = "experiment-1",
+                light = LightChoice.BRIGHT,
+                availableSpace = AvailableSpace.TABLETOP,
+                inputMode = InputMode.RECOMMEND_FROM_SCRATCH,
+            ),
+            plan = plan.plan,
+        )
+    }
+
     private object RestorationIntentAliasForTest {
         val back = RestorativeIntent.Back
+    }
+
+    private object RestorationExportScreenIntent {
+        val shareOpened = RestorativeIntent.ShareLaunchSucceeded
     }
 }

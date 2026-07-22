@@ -27,12 +27,15 @@ class RestorativeValidationViewModel internal constructor(
     private val clock: ValidationClock = ValidationClock(System::currentTimeMillis),
     private val idProvider: ValidationIdProvider = ValidationIdProvider { UUID.randomUUID().toString() },
     private val workerDispatcher: CoroutineDispatcher = Dispatchers.Default,
+    private val documentWriter: ExportDocumentWriter? = null,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(RestorativeUiState(isBusy = true))
     val uiState: StateFlow<RestorativeUiState> = _uiState.asStateFlow()
     private var journeyCreatedAtEpochMillis: Long = 0L
     private var currentRecord: RestorativeJourneyRecord? = null
     private var pendingExperimentSpaceId: String? = null
+    private var preparedExport: PreparedValidationExport? = null
+    private var pendingDocumentDestination: String? = null
 
     init {
         viewModelScope.launch { restoreJourney() }
@@ -48,6 +51,16 @@ class RestorativeValidationViewModel internal constructor(
             RestorativeIntent.DiscardDraftAndExit -> discardDraftAndExit()
             is RestorativeIntent.SelectNextStep -> selectNextStep(intent.value)
             RestorativeIntent.OpenPlacementGuidance -> openPlacementGuidance()
+            RestorativeIntent.OpenExportDisclosure -> openExportDisclosure()
+            is RestorativeIntent.SetExportConsent -> setExportConsent(intent.confirmed)
+            RestorativeIntent.CancelExportDisclosure -> cancelExportDisclosure()
+            RestorativeIntent.PrepareExport -> prepareResearchExport()
+            RestorativeIntent.ShareLaunchSucceeded -> markShareOptionsOpened()
+            is RestorativeIntent.ShareLaunchFailed -> fallBackToDocument(intent.stableCode)
+            is RestorativeIntent.DocumentDestinationSelected -> selectDocumentDestination(intent.destination)
+            is RestorativeIntent.DocumentLaunchFailed -> markExportFailure(intent.stableCode)
+            RestorativeIntent.RetryExport -> retryExport()
+            RestorativeIntent.DismissExportStatus -> dismissExportStatus()
             is RestorativeIntent.PlanReady,
             RestorativeIntent.SaveComplete -> Unit // Completion intents are owned by this ViewModel.
             else -> updateAndPersist(intent)
@@ -388,6 +401,183 @@ class RestorativeValidationViewModel internal constructor(
         "experiment_id" to record.experimentId,
     )
 
+    private fun openExportDisclosure() {
+        if (
+            _uiState.value.step != RestorativeStep.SAVED ||
+            _uiState.value.researchExport.status != ResearchExportStatus.IDLE
+        ) return
+        _uiState.value = _uiState.value.copy(
+            researchExport = ResearchExportState(disclosureVisible = true),
+        )
+    }
+
+    private fun setExportConsent(confirmed: Boolean) {
+        val export = _uiState.value.researchExport
+        if (!export.disclosureVisible || export.status != ResearchExportStatus.IDLE) return
+        _uiState.value = _uiState.value.copy(
+            researchExport = export.copy(consentConfirmed = confirmed),
+        )
+    }
+
+    private fun cancelExportDisclosure() {
+        val export = _uiState.value.researchExport
+        if (!export.disclosureVisible || export.status != ResearchExportStatus.IDLE) return
+        preparedExport = null
+        pendingDocumentDestination = null
+        _uiState.value = _uiState.value.copy(researchExport = ResearchExportState())
+    }
+
+    private fun prepareResearchExport() {
+        val state = _uiState.value
+        val export = state.researchExport
+        if (
+            state.step != RestorativeStep.SAVED ||
+            !export.disclosureVisible ||
+            !export.consentConfirmed ||
+            export.status != ResearchExportStatus.IDLE
+        ) return
+        _uiState.value = state.copy(
+            researchExport = export.copy(status = ResearchExportStatus.PREPARING, stableCode = null),
+        )
+        viewModelScope.launch {
+            val result = withContext(workerDispatcher) {
+                store.prepareExport(clock.nowEpochMillis())
+            }
+            when (result) {
+                is PrepareExportResult.Ready -> {
+                    preparedExport = result.export
+                    _uiState.value = _uiState.value.copy(
+                        researchExport = export.copy(
+                            disclosureVisible = false,
+                            status = ResearchExportStatus.READY_TO_SHARE,
+                            preparedJson = result.export.utf8Json.decodeToString(),
+                        ),
+                    )
+                }
+                is PrepareExportResult.RetryableFailure -> markExportFailure(result.stableCode)
+                is PrepareExportResult.TerminalFailure -> markExportFailure(
+                    stableCode = result.stableCode,
+                    retryAllowed = false,
+                )
+            }
+        }
+    }
+
+    private fun markShareOptionsOpened() {
+        val export = _uiState.value.researchExport
+        if (export.status != ResearchExportStatus.READY_TO_SHARE) return
+        _uiState.value = _uiState.value.copy(
+            researchExport = export.copy(
+                status = ResearchExportStatus.SHARE_OPTIONS_OPENED,
+                preparedJson = null,
+            ),
+        )
+    }
+
+    private fun fallBackToDocument(stableCode: String) {
+        val export = _uiState.value.researchExport
+        if (export.status != ResearchExportStatus.READY_TO_SHARE) return
+        _uiState.value = _uiState.value.copy(
+            researchExport = export.copy(
+                status = ResearchExportStatus.AWAITING_DOCUMENT,
+                preparedJson = null,
+                stableCode = stableCode,
+            ),
+        )
+    }
+
+    private fun selectDocumentDestination(destination: String?) {
+        val export = _uiState.value.researchExport
+        if (export.status != ResearchExportStatus.AWAITING_DOCUMENT) return
+        if (destination == null) {
+            _uiState.value = _uiState.value.copy(
+                researchExport = export.copy(
+                    status = ResearchExportStatus.PICKER_CANCELLED,
+                    stableCode = null,
+                ),
+            )
+            return
+        }
+        pendingDocumentDestination = destination
+        writePreparedDocument(destination)
+    }
+
+    private fun writePreparedDocument(destination: String) {
+        val export = _uiState.value.researchExport
+        val bytes = preparedExport?.utf8Json
+        val writer = documentWriter
+        if (bytes == null || writer == null) {
+            markExportFailure("EXPORT_PREPARED_PAYLOAD_MISSING")
+            return
+        }
+        _uiState.value = _uiState.value.copy(
+            researchExport = export.copy(status = ResearchExportStatus.WRITING_DOCUMENT, stableCode = null),
+        )
+        viewModelScope.launch {
+            when (val result = writer.write(destination, bytes)) {
+                is DocumentWriteResult.Saved -> _uiState.value = _uiState.value.copy(
+                    researchExport = _uiState.value.researchExport.copy(
+                        status = ResearchExportStatus.DOCUMENT_SAVED,
+                        destinationDisplay = result.destination.substringAfterLast('/'),
+                    ),
+                )
+                is DocumentWriteResult.Failure -> markExportFailure(result.stableCode)
+            }
+        }
+    }
+
+    private fun markExportFailure(stableCode: String, retryAllowed: Boolean = true) {
+        _uiState.value = _uiState.value.copy(
+            researchExport = _uiState.value.researchExport.copy(
+                disclosureVisible = false,
+                status = ResearchExportStatus.FAILED,
+                preparedJson = null,
+                stableCode = stableCode,
+                retryAllowed = retryAllowed,
+            ),
+        )
+    }
+
+    private fun retryExport() {
+        val export = _uiState.value.researchExport
+        if (export.status == ResearchExportStatus.PICKER_CANCELLED) {
+            _uiState.value = _uiState.value.copy(
+                researchExport = export.copy(status = ResearchExportStatus.AWAITING_DOCUMENT),
+            )
+            return
+        }
+        if (export.status != ResearchExportStatus.FAILED || !export.retryAllowed) return
+        val destination = pendingDocumentDestination
+        when {
+            destination != null && preparedExport != null -> writePreparedDocument(destination)
+            preparedExport != null -> _uiState.value = _uiState.value.copy(
+                researchExport = export.copy(
+                    status = ResearchExportStatus.AWAITING_DOCUMENT,
+                    stableCode = null,
+                ),
+            )
+            else -> {
+                _uiState.value = _uiState.value.copy(
+                    researchExport = export.copy(
+                        disclosureVisible = true,
+                        consentConfirmed = true,
+                        status = ResearchExportStatus.IDLE,
+                        stableCode = null,
+                    ),
+                )
+                prepareResearchExport()
+            }
+        }
+    }
+
+    private fun dismissExportStatus() {
+        val status = _uiState.value.researchExport.status
+        if (status in setOf(ResearchExportStatus.PREPARING, ResearchExportStatus.READY_TO_SHARE, ResearchExportStatus.WRITING_DOCUMENT)) return
+        preparedExport = null
+        pendingDocumentDestination = null
+        _uiState.value = _uiState.value.copy(researchExport = ResearchExportState())
+    }
+
     private fun failInternal(code: String) {
         _uiState.value = _uiState.value.copy(
             isBusy = false,
@@ -404,6 +594,7 @@ class RestorativeValidationViewModel internal constructor(
                 require(modelClass.isAssignableFrom(RestorativeValidationViewModel::class.java))
                 return RestorativeValidationViewModel(
                     store = RestorativeValidationStoreProvider.get(context),
+                    documentWriter = ContentResolverExportDocumentWriter(context.contentResolver),
                 ) as T
             }
         }

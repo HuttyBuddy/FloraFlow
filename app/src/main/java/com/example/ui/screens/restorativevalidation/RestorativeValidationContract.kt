@@ -61,6 +61,29 @@ enum class InputMode {
     RECOMMEND_FROM_SCRATCH,
 }
 
+enum class ResearchExportStatus {
+    IDLE,
+    PREPARING,
+    READY_TO_SHARE,
+    AWAITING_DOCUMENT,
+    SHARE_OPTIONS_OPENED,
+    WRITING_DOCUMENT,
+    DOCUMENT_SAVED,
+    PICKER_CANCELLED,
+    FAILED,
+}
+
+data class ResearchExportState(
+    val disclosureVisible: Boolean = false,
+    val consentConfirmed: Boolean = false,
+    val status: ResearchExportStatus = ResearchExportStatus.IDLE,
+    val preparedJson: String? = null,
+    val suggestedFileName: String = "floraflow-test-record.json",
+    val destinationDisplay: String? = null,
+    val stableCode: String? = null,
+    val retryAllowed: Boolean = true,
+)
+
 @JsonClass(generateAdapter = true)
 data class ValidationPlant(
     val slug: String,
@@ -151,6 +174,7 @@ data class RestorativeUiState(
     val isReturnWithinWindow: Boolean = false,
     val placementGuidanceExpanded: Boolean = false,
     val exitRequested: Boolean = false,
+    val researchExport: ResearchExportState = ResearchExportState(),
 ) {
     val canContinue: Boolean
         get() = when (step) {
@@ -198,6 +222,16 @@ sealed interface RestorativeIntent {
     data object OpenPlacementGuidance : RestorativeIntent
     data object EditSpace : RestorativeIntent
     data object EditPlants : RestorativeIntent
+    data object OpenExportDisclosure : RestorativeIntent
+    data class SetExportConsent(val confirmed: Boolean) : RestorativeIntent
+    data object CancelExportDisclosure : RestorativeIntent
+    data object PrepareExport : RestorativeIntent
+    data object ShareLaunchSucceeded : RestorativeIntent
+    data class ShareLaunchFailed(val stableCode: String) : RestorativeIntent
+    data class DocumentDestinationSelected(val destination: String?) : RestorativeIntent
+    data class DocumentLaunchFailed(val stableCode: String) : RestorativeIntent
+    data object RetryExport : RestorativeIntent
+    data object DismissExportStatus : RestorativeIntent
 }
 
 data class StarterPlan(
@@ -305,6 +339,17 @@ object RestorativeReducer {
             RestorativeIntent.EditPlants -> if (state.step == RestorativeStep.PLAN) {
                 state.copy(step = RestorativeStep.PLANTS, plan = null, error = null)
             } else state
+
+            RestorativeIntent.OpenExportDisclosure,
+            is RestorativeIntent.SetExportConsent,
+            RestorativeIntent.CancelExportDisclosure,
+            RestorativeIntent.PrepareExport,
+            RestorativeIntent.ShareLaunchSucceeded,
+            is RestorativeIntent.ShareLaunchFailed,
+            is RestorativeIntent.DocumentDestinationSelected,
+            is RestorativeIntent.DocumentLaunchFailed,
+            RestorativeIntent.RetryExport,
+            RestorativeIntent.DismissExportStatus -> state
         }
     }
 

@@ -204,11 +204,204 @@ class RestorativeValidationViewModelTest {
         })
     }
 
+    @Test
+    fun `export payload is not prepared until researcher confirms consent`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        val store = FakeStore(journey = exportableSavedRecord())
+        val writer = FakeDocumentWriter()
+        val viewModel = RestorativeValidationViewModel(
+            store = store,
+            clock = ValidationClock { 500L },
+            workerDispatcher = dispatcher,
+            documentWriter = writer,
+        )
+        advanceUntilIdle()
+
+        viewModel.onIntent(RestorativeIntent.OpenExportDisclosure)
+        viewModel.onIntent(RestorativeIntent.PrepareExport)
+        advanceUntilIdle()
+        assertEquals(0, store.prepareExportCalls)
+
+        viewModel.onIntent(RestorativeIntent.SetExportConsent(true))
+        viewModel.onIntent(RestorativeIntent.PrepareExport)
+        advanceUntilIdle()
+
+        assertEquals(1, store.prepareExportCalls)
+        assertEquals(ResearchExportStatus.READY_TO_SHARE, viewModel.uiState.value.researchExport.status)
+        assertEquals("{\"safe\":true}", viewModel.uiState.value.researchExport.preparedJson)
+    }
+
+    @Test
+    fun `cancelling disclosure creates no payload and picker cancellation writes nothing`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        val store = FakeStore(journey = exportableSavedRecord())
+        val writer = FakeDocumentWriter()
+        val viewModel = RestorativeValidationViewModel(
+            store = store,
+            clock = ValidationClock { 500L },
+            workerDispatcher = dispatcher,
+            documentWriter = writer,
+        )
+        advanceUntilIdle()
+        viewModel.onIntent(RestorativeIntent.OpenExportDisclosure)
+        viewModel.onIntent(RestorativeIntent.CancelExportDisclosure)
+        advanceUntilIdle()
+        assertEquals(0, store.prepareExportCalls)
+        assertEquals(ResearchExportStatus.IDLE, viewModel.uiState.value.researchExport.status)
+
+        viewModel.onIntent(RestorativeIntent.OpenExportDisclosure)
+        viewModel.onIntent(RestorativeIntent.SetExportConsent(true))
+        viewModel.onIntent(RestorativeIntent.PrepareExport)
+        advanceUntilIdle()
+        viewModel.onIntent(RestorativeIntent.ShareLaunchFailed("SHARE_TARGET_UNAVAILABLE"))
+        viewModel.onIntent(RestorativeIntent.DocumentDestinationSelected(null))
+
+        assertEquals(ResearchExportStatus.PICKER_CANCELLED, viewModel.uiState.value.researchExport.status)
+        assertTrue(writer.payloads.isEmpty())
+    }
+
+    @Test
+    fun `share failure falls back to selected document and writes exact prepared bytes`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        val store = FakeStore(journey = exportableSavedRecord())
+        val writer = FakeDocumentWriter()
+        val viewModel = RestorativeValidationViewModel(
+            store = store,
+            clock = ValidationClock { 500L },
+            workerDispatcher = dispatcher,
+            documentWriter = writer,
+        )
+        advanceUntilIdle()
+        val participantEventCount = store.events.size
+        viewModel.onIntent(RestorativeIntent.OpenExportDisclosure)
+        viewModel.onIntent(RestorativeIntent.SetExportConsent(true))
+        viewModel.onIntent(RestorativeIntent.PrepareExport)
+        advanceUntilIdle()
+
+        viewModel.onIntent(RestorativeIntent.ShareLaunchFailed("SHARE_TARGET_UNAVAILABLE"))
+        assertEquals(ResearchExportStatus.AWAITING_DOCUMENT, viewModel.uiState.value.researchExport.status)
+        viewModel.onIntent(
+            RestorativeIntent.DocumentDestinationSelected("content://research/floraflow-test-record.json")
+        )
+        advanceUntilIdle()
+
+        assertEquals(ResearchExportStatus.DOCUMENT_SAVED, viewModel.uiState.value.researchExport.status)
+        assertEquals("content://research/floraflow-test-record.json", writer.destinations.single())
+        assertEquals("{\"safe\":true}", writer.payloads.single().decodeToString())
+        assertEquals(participantEventCount, store.events.size)
+    }
+
+    @Test
+    fun `failed document write retries the same retained payload`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        val store = FakeStore(journey = exportableSavedRecord())
+        val writer = FakeDocumentWriter(
+            ArrayDeque(
+                listOf(
+                    DocumentWriteResult.Failure("EXPORT_WRITE_IO"),
+                    DocumentWriteResult.Saved("content://research/record.json"),
+                )
+            )
+        )
+        val viewModel = RestorativeValidationViewModel(
+            store = store,
+            clock = ValidationClock { 500L },
+            workerDispatcher = dispatcher,
+            documentWriter = writer,
+        )
+        advanceUntilIdle()
+        viewModel.onIntent(RestorativeIntent.OpenExportDisclosure)
+        viewModel.onIntent(RestorativeIntent.SetExportConsent(true))
+        viewModel.onIntent(RestorativeIntent.PrepareExport)
+        advanceUntilIdle()
+        viewModel.onIntent(RestorativeIntent.ShareLaunchFailed("SHARE_TARGET_UNAVAILABLE"))
+        viewModel.onIntent(RestorationExportTestIntent.destination)
+        advanceUntilIdle()
+        assertEquals(ResearchExportStatus.FAILED, viewModel.uiState.value.researchExport.status)
+
+        viewModel.onIntent(RestorativeIntent.RetryExport)
+        advanceUntilIdle()
+
+        assertEquals(ResearchExportStatus.DOCUMENT_SAVED, viewModel.uiState.value.researchExport.status)
+        assertEquals(2, writer.payloads.size)
+        assertTrue(writer.payloads[0].contentEquals(writer.payloads[1]))
+    }
+
+    @Test
+    fun `terminal export evidence failure preserves records without impossible retry`() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        Dispatchers.setMain(dispatcher)
+        val store = FakeStore(journey = exportableSavedRecord()).apply {
+            prepareResultOverride = PrepareExportResult.TerminalFailure("LEDGER_MALFORMED")
+        }
+        val viewModel = RestorativeValidationViewModel(
+            store = store,
+            clock = ValidationClock { 500L },
+            workerDispatcher = dispatcher,
+            documentWriter = FakeDocumentWriter(),
+        )
+        advanceUntilIdle()
+        viewModel.onIntent(RestorativeIntent.OpenExportDisclosure)
+        viewModel.onIntent(RestorativeIntent.SetExportConsent(true))
+        viewModel.onIntent(RestorativeIntent.PrepareExport)
+        advanceUntilIdle()
+
+        assertEquals(ResearchExportStatus.FAILED, viewModel.uiState.value.researchExport.status)
+        assertFalse(viewModel.uiState.value.researchExport.retryAllowed)
+        viewModel.onIntent(RestorativeIntent.RetryExport)
+        advanceUntilIdle()
+        assertEquals(1, store.prepareExportCalls)
+        assertNotNull(store.journey)
+    }
+
+    private fun exportableSavedRecord(): RestorativeJourneyRecord {
+        val plan = RestorativeRecommendationEngine.createPlan(
+            light = LightChoice.BRIGHT,
+            availableSpace = AvailableSpace.TABLETOP,
+            ownedPlantSlugs = emptyList(),
+        ) as RecommendationResult.Match
+        return RestorativeJourneyRecord(
+            experimentId = "export-experiment",
+            experimentSpaceId = "export-space",
+            status = JourneyStatus.SAVED,
+            light = LightChoice.BRIGHT,
+            availableSpace = AvailableSpace.TABLETOP,
+            inputMode = InputMode.RECOMMEND_FROM_SCRATCH,
+            plants = plan.plan.plants,
+            placements = plan.plan.placements,
+            createdAtEpochMillis = 10L,
+            savedAtEpochMillis = 20L,
+        )
+    }
+
+    private object RestorationExportTestIntent {
+        val destination = RestorativeIntent.DocumentDestinationSelected("content://research/record.json")
+    }
+
+    private class FakeDocumentWriter(
+        private val results: ArrayDeque<DocumentWriteResult> = ArrayDeque(),
+    ) : ExportDocumentWriter {
+        val destinations = mutableListOf<String>()
+        val payloads = mutableListOf<ByteArray>()
+
+        override suspend fun write(destination: String, bytes: ByteArray): DocumentWriteResult {
+            destinations += destination
+            payloads += bytes.copyOf()
+            return if (results.isEmpty()) DocumentWriteResult.Saved(destination) else results.removeFirst()
+        }
+    }
+
     private class FakeStore(
         var journey: RestorativeJourneyRecord? = null,
     ) : RestorativeValidationStore {
         val events = mutableListOf<ValidationEventRecord>()
         var readResultOverride: StoreReadResult<RestorativeJourneyRecord>? = null
+        var prepareExportCalls: Int = 0
+        var prepareResultOverride: PrepareExportResult? = null
 
         override suspend fun readJourney(): StoreReadResult<RestorativeJourneyRecord> =
             readResultOverride ?: journey?.let { StoreReadResult.Available(it) } ?: StoreReadResult.Missing
@@ -227,8 +420,22 @@ class RestorativeValidationViewModelTest {
             return StoreWriteResult.Success
         }
 
-        override suspend fun prepareExport(exportedAtEpochMillis: Long): PrepareExportResult =
-            PrepareExportResult.TerminalFailure("NOT_USED")
+        override suspend fun prepareExport(exportedAtEpochMillis: Long): PrepareExportResult {
+            prepareExportCalls += 1
+            prepareResultOverride?.let { return it }
+            val record = journey ?: return PrepareExportResult.TerminalFailure("JOURNEY_MISSING")
+            val ledger = ValidationEventLedger(experimentId = record.experimentId, events = events.toList())
+            val envelope = SanitizedExportEnvelope(
+                experimentId = record.experimentId,
+                journey = record,
+                ledger = ledger,
+                exportedAtEpochMillis = exportedAtEpochMillis,
+                canonicalPayloadSha256 = "test-hash",
+            )
+            return PrepareExportResult.Ready(
+                PreparedValidationExport(envelope, "{\"safe\":true}".encodeToByteArray())
+            )
+        }
 
         override suspend fun discardDraft(): StoreWriteResult {
             journey = null
