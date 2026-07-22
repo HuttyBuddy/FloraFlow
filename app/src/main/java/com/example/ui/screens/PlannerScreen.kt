@@ -2867,61 +2867,14 @@ private fun ChecklistItem(
         )
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onToggleExpand() }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                if (isCompleted) {
-                    Icon(
-                        imageVector = Icons.Default.CheckCircle,
-                        contentDescription = "Completed",
-                        tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(24.dp)
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .border(2.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), CircleShape)
-                    )
-                }
-
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isCompleted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 11.sp
-                    )
-                    if (statusText.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = statusText,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = if (isCompleted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
-                            fontSize = 10.sp
-                        )
-                    }
-                }
-
-                Icon(
-                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = if (isExpanded) "Collapse" else "Expand",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            ChecklistItemHeader(
+                title = title,
+                description = description,
+                statusText = statusText,
+                isCompleted = isCompleted,
+                isExpanded = isExpanded,
+                onToggleExpand = onToggleExpand
+            )
 
             AnimatedVisibility(
                 visible = isExpanded,
@@ -2937,6 +2890,92 @@ private fun ChecklistItem(
                     content()
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ChecklistItemHeader(
+    title: String,
+    description: String,
+    statusText: String,
+    isCompleted: Boolean,
+    isExpanded: Boolean,
+    onToggleExpand: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggleExpand() }
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        ChecklistItemStatusIcon(isCompleted = isCompleted)
+        ChecklistItemTextContent(
+            title = title,
+            description = description,
+            statusText = statusText,
+            isCompleted = isCompleted,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+            contentDescription = if (isExpanded) "Collapse" else "Expand",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun ChecklistItemStatusIcon(isCompleted: Boolean) {
+    if (isCompleted) {
+        Icon(
+            imageVector = Icons.Default.CheckCircle,
+            contentDescription = "Completed",
+            tint = Color(0xFF4CAF50),
+            modifier = Modifier.size(24.dp)
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .size(24.dp)
+                .border(2.dp, MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f), CircleShape)
+        )
+    }
+}
+
+@Composable
+private fun ChecklistItemTextContent(
+    title: String,
+    description: String,
+    statusText: String,
+    isCompleted: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.Bold,
+            color = if (isCompleted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 11.sp
+        )
+        if (statusText.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = statusText,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = if (isCompleted) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary,
+                fontSize = 10.sp
+            )
         }
     }
 }
