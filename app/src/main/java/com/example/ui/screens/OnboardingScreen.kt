@@ -601,17 +601,18 @@ fun CalculatingScreen(
     }
 }
 
+data class ZoneDetails(
+    val category: String,
+    val label: String,
+    val color: Color,
+    val brush: Brush
+)
+
 @Composable
 fun ResultScreen(
     score: Int,
     onSeeSteps: () -> Unit
 ) {
-    data class ZoneDetails(
-        val category: String,
-        val label: String,
-        val color: Color,
-        val brush: Brush
-    )
     val zoneInfo = remember(score) {
         when (score) {
             in 15..20 -> ZoneDetails(
