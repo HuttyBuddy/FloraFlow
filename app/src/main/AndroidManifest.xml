@@ -49,6 +49,21 @@
             android:value="260760000"
             tools:replace="android:value" />
 
+        <!-- The dedicated validation APK must reach its local route before production SDKs run. -->
+        <provider
+            android:name="com.google.firebase.provider.FirebaseInitProvider"
+            android:authorities="${applicationId}.firebaseinitprovider"
+            android:enabled="${automaticStartupEnabled}"
+            android:exported="false"
+            tools:replace="android:enabled" />
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:enabled="${automaticStartupEnabled}"
+            android:exported="false"
+            tools:replace="android:enabled" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

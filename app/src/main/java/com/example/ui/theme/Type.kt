@@ -133,3 +133,24 @@ val Typography = Typography(
         letterSpacing = 0.5.sp
     )
 )
+
+// The supervised validation APK is fully offline and has a strict first-frame budget.
+// System families preserve its editorial serif/sans hierarchy without starting the
+// downloadable-font provider before the promise or saved-corner screen is readable.
+val RestorativeValidationTypography = Typography.copy(
+    displayLarge = Typography.displayLarge.copy(fontFamily = FontFamily.Serif),
+    displayMedium = Typography.displayMedium.copy(fontFamily = FontFamily.Serif),
+    displaySmall = Typography.displaySmall.copy(fontFamily = FontFamily.Serif),
+    headlineLarge = Typography.headlineLarge.copy(fontFamily = FontFamily.Serif),
+    headlineMedium = Typography.headlineMedium.copy(fontFamily = FontFamily.Serif),
+    headlineSmall = Typography.headlineSmall.copy(fontFamily = FontFamily.Serif),
+    titleLarge = Typography.titleLarge.copy(fontFamily = FontFamily.Serif),
+    titleMedium = Typography.titleMedium.copy(fontFamily = FontFamily.Serif),
+    titleSmall = Typography.titleSmall.copy(fontFamily = FontFamily.SansSerif),
+    bodyLarge = Typography.bodyLarge.copy(fontFamily = FontFamily.SansSerif),
+    bodyMedium = Typography.bodyMedium.copy(fontFamily = FontFamily.SansSerif),
+    bodySmall = Typography.bodySmall.copy(fontFamily = FontFamily.SansSerif),
+    labelLarge = Typography.labelLarge.copy(fontFamily = FontFamily.SansSerif),
+    labelMedium = Typography.labelMedium.copy(fontFamily = FontFamily.SansSerif),
+    labelSmall = Typography.labelSmall.copy(fontFamily = FontFamily.SansSerif),
+)

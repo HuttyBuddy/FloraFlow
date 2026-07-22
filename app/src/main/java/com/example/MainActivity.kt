@@ -59,6 +59,7 @@ import com.example.ui.screens.dashboard.DashboardScreen
 import com.example.ui.screens.feedback.FeedbackDialog
 import androidx.activity.viewModels
 import com.example.ui.theme.MyApplicationTheme
+import com.example.ui.theme.RestorativeValidationTypography
 import com.example.ui.theme.extendedColors
 import com.example.ui.theme.spacing
 import com.example.ui.viewmodel.GardenViewModel
@@ -102,7 +103,7 @@ class MainActivity : ComponentActivity() {
         if (!startupMode.runsProductionStartup) {
             enableEdgeToEdge()
             setContent {
-                MyApplicationTheme {
+                MyApplicationTheme(typography = RestorativeValidationTypography) {
                     val validationViewModel: RestorativeValidationViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
                         factory = RestorativeValidationViewModel.factory(applicationContext),
                     )

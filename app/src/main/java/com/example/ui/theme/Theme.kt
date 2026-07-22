@@ -106,6 +106,7 @@ private val LightColorScheme = lightColorScheme(
 fun MyApplicationTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false, // Keep false by default to show our custom gorgeous brand colors consistently!
+    typography: androidx.compose.material3.Typography = Typography,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
@@ -147,7 +148,7 @@ fun MyApplicationTheme(
     ) {
         MaterialTheme(
             colorScheme = colorScheme,
-            typography = Typography,
+            typography = typography,
             shapes = Shapes,
             content = content
         )

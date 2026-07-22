@@ -38,6 +38,7 @@ android {
     versionName = "9.0.1.2"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    manifestPlaceholders["automaticStartupEnabled"] = "true"
     ndk {
       abiFilters.addAll(listOf("arm64-v8a"))
       debugSymbolLevel = "FULL"
@@ -74,6 +75,7 @@ android {
   buildTypes {
     release {
       buildConfigField("boolean", "RESTORATIVE_VALIDATION", "false")
+      manifestPlaceholders["automaticStartupEnabled"] = "true"
       isCrunchPngs = false
       isMinifyEnabled = true
       isShrinkResources = true
@@ -85,6 +87,7 @@ android {
     }
     debug {
       buildConfigField("boolean", "RESTORATIVE_VALIDATION", restorativeValidation.toString())
+      manifestPlaceholders["automaticStartupEnabled"] = (!restorativeValidation).toString()
       signingConfig = signingConfigs.getByName("debugConfig")
     }
   }
