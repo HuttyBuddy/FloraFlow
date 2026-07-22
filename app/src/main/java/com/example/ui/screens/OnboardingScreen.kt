@@ -299,93 +299,102 @@ fun SplashWelcomeScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Spacer(modifier = Modifier.height(48.dp))
-        
-        // centered FloraFlow logo top
-        Image(
-            painter = painterResource(id = R.drawable.ic_logo_heart),
-            contentDescription = "FloraFlow Logo",
-            modifier = Modifier
-                .size(96.dp)
-                .clip(RoundedCornerShape(24.dp))
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "FloraFlow",
-            style = MaterialTheme.typography.titleLarge.copy(
-                fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.White
-            )
-        )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        Text(
-            text = "Cultivating Calm through Mindful Gardening",
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.White.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center
-            ),
-            modifier = Modifier.padding(horizontal = 24.dp)
-        )
-        
+        SplashWelcomeLogoAndTitle()
         Spacer(modifier = Modifier.weight(1f))
-        
-        Text(
-            text = "Design a space that helps you thrive",
-            style = MaterialTheme.typography.headlineLarge.copy(
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = BiophilicSecondary, // Soft Gold/Amber accent
-                lineHeight = 40.sp,
-                textAlign = TextAlign.Center
-            )
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "Personalize an indoor or outdoor space with biophilic design, plant care, and restorative guidance.",
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontSize = 16.sp,
-                color = Color.White.copy(alpha = 0.85f),
-                textAlign = TextAlign.Center,
-                lineHeight = 24.sp
-            ),
-            modifier = Modifier.padding(horizontal = 8.dp)
-        )
-        
+        SplashWelcomeValueProposition()
         Spacer(modifier = Modifier.weight(1f))
-        
-        FloraFlowButton(
-            text = "Personalize My Space",
-            onClick = onStart,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("onboarding_start_assessment_btn")
-        )
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text(
-            text = "Explore first →",
-            style = MaterialTheme.typography.bodyMedium.copy(
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.White.copy(alpha = 0.7f)
-            ),
-            modifier = Modifier
-                .clickable { onSkip() }
-                .padding(8.dp)
-                .testTag("onboarding_skip_assessment_btn")
-        )
-        
+        SplashWelcomeActions(onStart = onStart, onSkip = onSkip)
         Spacer(modifier = Modifier.height(24.dp))
     }
+}
+
+@Composable
+private fun SplashWelcomeLogoAndTitle() {
+    // centered FloraFlow logo top
+    Image(
+        painter = painterResource(id = R.drawable.ic_logo_heart),
+        contentDescription = "FloraFlow Logo",
+        modifier = Modifier
+            .size(96.dp)
+            .clip(RoundedCornerShape(24.dp))
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Text(
+        text = "FloraFlow",
+        style = MaterialTheme.typography.titleLarge.copy(
+            fontSize = 24.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color.White
+        )
+    )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Text(
+        text = "Cultivating Calm through Mindful Gardening",
+        style = MaterialTheme.typography.bodyMedium.copy(
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.White.copy(alpha = 0.7f),
+            textAlign = TextAlign.Center
+        ),
+        modifier = Modifier.padding(horizontal = 24.dp)
+    )
+}
+
+@Composable
+private fun SplashWelcomeValueProposition() {
+    Text(
+        text = "Design a space that helps you thrive",
+        style = MaterialTheme.typography.headlineLarge.copy(
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold,
+            color = BiophilicSecondary, // Soft Gold/Amber accent
+            lineHeight = 40.sp,
+            textAlign = TextAlign.Center
+        )
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Text(
+        text = "Personalize an indoor or outdoor space with biophilic design, plant care, and restorative guidance.",
+        style = MaterialTheme.typography.bodyLarge.copy(
+            fontSize = 16.sp,
+            color = Color.White.copy(alpha = 0.85f),
+            textAlign = TextAlign.Center,
+            lineHeight = 24.sp
+        ),
+        modifier = Modifier.padding(horizontal = 8.dp)
+    )
+}
+
+@Composable
+private fun SplashWelcomeActions(onStart: () -> Unit, onSkip: () -> Unit) {
+    FloraFlowButton(
+        text = "Personalize My Space",
+        onClick = onStart,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("onboarding_start_assessment_btn")
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Text(
+        text = "Explore first →",
+        style = MaterialTheme.typography.bodyMedium.copy(
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.White.copy(alpha = 0.7f)
+        ),
+        modifier = Modifier
+            .clickable { onSkip() }
+            .padding(8.dp)
+            .testTag("onboarding_skip_assessment_btn")
+    )
 }
 
 @Composable
