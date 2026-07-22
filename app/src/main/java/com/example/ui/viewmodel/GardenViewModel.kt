@@ -1668,7 +1668,11 @@ class GardenViewModel @JvmOverloads constructor(
             if (plantsToInsert.isNotEmpty()) {
                 repository.insertPlants(plantsToInsert)
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            if (com.example.BuildConfig.DEBUG) {
+                android.util.Log.e("GardenViewModel", "Error parsing and inserting plants", e)
+            }
+        }
     }
 
     // --- Real AR Control Methods (Fixed parameters and list manipulation) ---
