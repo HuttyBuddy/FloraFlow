@@ -53,6 +53,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.IntOffset
 import com.example.ui.screens.*
 import com.example.ui.screens.restoration.RestorationJournalScreen
+import com.example.ui.screens.restorativevalidation.RestorativeValidationRoute
+import com.example.ui.screens.restorativevalidation.RestorativeValidationViewModel
 import com.example.ui.screens.dashboard.DashboardScreen
 import com.example.ui.screens.feedback.FeedbackDialog
 import androidx.activity.viewModels
@@ -67,18 +69,50 @@ import java.util.concurrent.TimeUnit
 import com.example.ui.screens.dashboard.CareSyncWorker
 import kotlinx.coroutines.delay
 
+internal enum class StartupMode {
+    PRODUCTION,
+    RESTORATIVE_VALIDATION;
+
+    val runsProductionStartup: Boolean
+        get() = this == PRODUCTION
+
+    companion object {
+        fun from(restorativeValidation: Boolean): StartupMode = if (restorativeValidation) {
+            RESTORATIVE_VALIDATION
+        } else {
+            PRODUCTION
+        }
+    }
+}
+
 class MainActivity : ComponentActivity() {
+    private val startupMode = StartupMode.from(BuildConfig.RESTORATIVE_VALIDATION)
     private val viewModel: GardenViewModel by viewModels()
 
     override fun onResume() {
         super.onResume()
+        if (!startupMode.runsProductionStartup) return
         viewModel.billingManager.queryPurchases()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
-        com.example.analytics.AnalyticsHelper.initialize(applicationContext)
         super.onCreate(savedInstanceState)
+
+        if (!startupMode.runsProductionStartup) {
+            enableEdgeToEdge()
+            setContent {
+                MyApplicationTheme {
+                    val validationViewModel: RestorativeValidationViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
+                        factory = RestorativeValidationViewModel.factory(applicationContext),
+                    )
+                    RestorativeValidationRoute(viewModel = validationViewModel)
+                }
+            }
+            return
+        }
+
+        com.example.analytics.AnalyticsHelper.initialize(applicationContext)
 
         try {
             val workRequest = PeriodicWorkRequestBuilder<CareSyncWorker>(12, TimeUnit.HOURS).build()
