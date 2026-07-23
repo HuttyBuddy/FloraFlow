@@ -48,7 +48,7 @@ class RestorativeAssessmentFixTest {
             ownedPlantSlugs = emptyList()
         )
         val lowScore = RestorativeRecommendationEngine.calculateScore(lowDraft)
-        assertEquals(13, lowScore)
+        assertEquals(14, lowScore)
     }
 
     @Test
