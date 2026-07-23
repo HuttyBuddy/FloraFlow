@@ -32,6 +32,7 @@ import com.example.R
 import com.example.ui.screens.AiStudioScreen
 import com.example.ui.screens.dashboard.components.*
 import com.example.ui.screens.settings.SettingsDialog
+import com.example.ui.theme.extendedColors
 import com.example.ui.viewmodel.GardenViewModel
 import kotlinx.coroutines.launch
 
@@ -339,6 +340,88 @@ private fun Card1RestorativeCorner(
             weather = weather,
             onWeatherClick = {}
         )
+
+        RealTimeLightMeterCard(viewModel = viewModel)
+    }
+}
+
+@Composable
+private fun RealTimeLightMeterCard(
+    viewModel: GardenViewModel
+) {
+    val currentLux by viewModel.currentLux.collectAsStateWithLifecycle()
+    val lightZone by viewModel.lightZone.collectAsStateWithLifecycle()
+
+    DisposableEffect(Unit) {
+        viewModel.startLightSensor()
+        onDispose { viewModel.stopLightSensor() }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("real_time_light_meter_card"),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.WbSunny,
+                        contentDescription = "Real-Time Light Meter",
+                        tint = MaterialTheme.extendedColors.premiumGold
+                    )
+                    Text(
+                        text = "Real-Time Daylight Sensor",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Text(
+                        text = "${currentLux.toInt()} Lux",
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            Text(
+                text = "Zone: ${lightZone.label} • ${lightZone.description}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            val progress = (currentLux / 2000f).coerceIn(0.05f, 1.0f)
+            LinearProgressIndicator(
+                progress = { progress },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp)),
+                color = MaterialTheme.extendedColors.premiumGold,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        }
     }
 }
 
@@ -465,22 +548,105 @@ private fun Card3DailyTendAndAudio(
     ) {
         AiPlantCounselTopCard(onOpenAiCounsel = onOpenAiCounsel)
 
+        PlantCareStreakCard(viewModel = viewModel)
+
         DailyHabitCard(viewModel = viewModel)
 
         MindfulBreathingCard(viewModel = viewModel)
 
-        // Botanical Eco-Acoustics Player
-        Card(
+        CustomBinauralStudioCard(viewModel = viewModel)
+    }
+}
+
+@Composable
+private fun PlantCareStreakCard(
+    viewModel: GardenViewModel
+) {
+    val streakDays by viewModel.careStreakDays.collectAsStateWithLifecycle()
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("care_streak_card"),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .testTag("botanical_soundscapes_card"),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f))
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("🔥", fontSize = 20.sp)
+                }
+
+                Column {
+                    Text(
+                        text = "$streakDays-Day Plant Care Streak",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = when {
+                            streakDays < 7 -> "Badge Unlocked: Seedling Tender 🌱"
+                            streakDays < 30 -> "Badge Unlocked: Botanical Caregiver 🌿"
+                            else -> "Badge Unlocked: Master Sanctuary Keeper 🌳"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        fontSize = 11.sp
+                    )
+                }
+            }
+
+            Button(
+                onClick = { viewModel.incrementCareStreak() },
+                shape = RoundedCornerShape(10.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+            ) {
+                Text("Log Care", fontSize = 11.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun CustomBinauralStudioCard(
+    viewModel: GardenViewModel
+) {
+    val frequencyHz by viewModel.binauralFrequencyHz.collectAsStateWithLifecycle()
+    val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("custom_binaural_studio_card"),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -488,60 +654,51 @@ private fun Card3DailyTendAndAudio(
                 ) {
                     Icon(
                         imageVector = Icons.Default.GraphicEq,
-                        contentDescription = "Botanical Eco-Acoustics",
+                        contentDescription = "Binaural Brainwave Studio",
                         tint = MaterialTheme.colorScheme.tertiary
                     )
                     Text(
-                        text = "Botanical Eco-Acoustics",
+                        text = "Custom Binaural Studio",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.tertiary
                     )
                 }
 
-                Text(
-                    text = "Listen to binaural beats & natural rainfall while spending time near your plants:",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterChip(
-                        selected = true,
-                        onClick = {},
-                        label = { Text("Alpha (8-12Hz) • Calm Focus", fontSize = 11.sp) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Forest Rain & Waves",
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    IconButton(
-                        onClick = {
-                            viewModel.sendAiChatMessage("Suggest soundscape routines to pair with my plant tending.")
-                            onOpenAiCounsel()
-                        }
+                if (!isPremium) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.PlayCircle,
-                            contentDescription = "Play soundscape",
-                            tint = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.size(36.dp)
+                        Text(
+                            text = "PRO Studio",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
             }
+
+            Text(
+                text = "Frequency: ${frequencyHz.toInt()} Hz (${if (frequencyHz <= 7f) "Theta Deep Meditation" else if (frequencyHz <= 13f) "Alpha Calm Focus" else "Gamma High Awareness"})",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Slider(
+                value = frequencyHz,
+                onValueChange = { newValue ->
+                    if (isPremium) {
+                        viewModel.setBinauralFrequency(newValue)
+                    } else {
+                        viewModel.upgradeToPremium()
+                    }
+                },
+                valueRange = 4f..40f,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

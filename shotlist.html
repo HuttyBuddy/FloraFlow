@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FloraFlow — "Breathe Out" — Director's Shotlist</title>
+<style>
+  :root {
+    --bg: #0e0e10;
+    --panel: #17171a;
+    --panel-2: #1d1d21;
+    --border: #2a2a30;
+    --text: #e8e8ea;
+    --text-dim: #9a9aa2;
+    --accent: #d4a259;
+    --done: #4ade80;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    line-height: 1.5;
+    padding: 32px 24px 80px;
+  }
+  .container { max-width: 980px; margin: 0 auto; }
+  h1 {
+    font-size: 28px; font-weight: 600; margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }
+  .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 32px; }
+  .howto {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+  details.style-prefix {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 32px;
+  }
+  details.style-prefix summary {
+    cursor: pointer; font-weight: 600;
+    color: var(--accent); user-select: none;
+  }
+  details.style-prefix pre {
+    margin: 14px 0 0; padding: 14px;
+    background: var(--panel-2);
+    border-radius: 6px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    white-space: pre-wrap;
+    color: var(--text);
+  }
+  .scene {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .scene-header {
+    display: flex; align-items: flex-start; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .scene-header input[type="checkbox"] {
+    width: 20px; height: 20px; margin-top: 2px;
+    accent-color: var(--done); cursor: pointer;
+    flex-shrink: 0;
+  }
+  .scene-num {
+    font-size: 18px; font-weight: 700;
+    color: var(--accent); min-width: 56px;
+  }
+  .scene-desc {
+    font-size: 15px; color: var(--text);
+    flex: 1;
+  }
+  .scene.done .scene-desc { text-decoration: line-through; color: var(--text-dim); }
+  .prompt-block {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+  .prompt-label {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .copy-btn {
+    background: transparent; color: var(--accent);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 4px 10px; font-size: 11px; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    font-family: inherit;
+  }
+  .copy-btn:hover { border-color: var(--accent); }
+  .copy-btn.copied { color: var(--done); border-color: var(--done); }
+  pre.prompt {
+    margin: 0; padding: 14px 16px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    white-space: pre-wrap;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>FloraFlow — “Breathe Out”</h1>
+  <div class="subtitle">60-second cinematic app promo · Restorative Corner edition · Director's Shotlist · Seedance 2.0 · 4 × 15s</div>
+
+  <div class="howto">
+    Tick scenes as you finish them — your progress saves automatically.
+    Click the Copy button on any prompt to grab the full text (Style Prefix + Characters + Scene + Cuts).
+    Story: Maya turns a dead corner of her apartment into a Restorative Plant Corner — Corner Profile assessment → plant match → daily tend → soundscape payoff.
+    UI shots match the current app: swipeable card deck, statement assessment cards, score ring, plant carousel, soundscape mini-player. No readable text is rendered in any UI shot — replace with real screen captures in edit if preferred.
+    Post note: the FloraFlow logo + tagline card (“Cultivating calm through mindful gardening.”) is added in edit over the final held wide of Scene 4 — Seedance should render no text.
+    Want changes? Tell Claude what to revise and the file updates.
+  </div>
+
+  <details class="style-prefix">
+    <summary>Global Style Prefix (applied to every prompt)</summary>
+    <pre>Style: 8K IMAX. Photorealistic — no 3D render, no game engine.
+Lighting: Natural light only — contre-jour backlight, camera on shadow side, atmospheric haze throughout. Key light from sky and windows only. No artificial lightning.
+Color: 60:30:10 — dominant / secondary / accent.
+Camera: Physical cine lens. 180° shutter motion blur.
+Skin: Pore-level realism — vellus hair, asymmetric moles, capillary flush, pore-shadow matching on-set light.
+Acting: Hollywood — micro-pauses before reactions, precise eye-line, living eyes with catch-lights, chest rise from breathing. Characters never standing, always reacting.
+Physics: Gravity and inertia respected — mass has real weight, correct contact shadows. No floating props.
+Composition: Rule of thirds + golden ratio. Every person moving from frame one.
+Continuity: Characters, props, environment identical across every cut. No identity drift.
+Technical: 24fps smooth motion. 8K detail. No jitter.
+Audio: Environmental SFX only. No music. No subtitles.</pre>
+  </details>
+
+  <div class="scene">
+    <div class="scene-header">
+      <input type="checkbox" data-scene="1">
+      <div class="scene-num">1.</div>
+      <div class="scene-desc">The grey — Maya comes home drained; the corner by the window is a dead zone of clutter and one dying plant. (0:00–0:15)</div>
+    </div>
+    <div class="prompt-block">
+      <div class="prompt-label">
+        <span>Prompt 1 · 15s</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre class="prompt">Style: 8K IMAX. Photorealistic — no 3D render, no game engine.
+Lighting: Natural light only — contre-jour backlight, camera on shadow side, atmospheric haze throughout. Key light from sky and windows only. No artificial lightning.
+Color: 60:30:10 — dominant / secondary / accent.
+Camera: Physical cine lens. 180° shutter motion blur.
+Skin: Pore-level realism — vellus hair, asymmetric moles, capillary flush, pore-shadow matching on-set light.
+Acting: Hollywood — micro-pauses before reactions, precise eye-line, living eyes with catch-lights, chest rise from breathing. Characters never standing, always reacting.
+Physics: Gravity and inertia respected — mass has real weight, correct contact shadows. No floating props.
+Composition: Rule of thirds + golden ratio. Every person moving from frame one.
+Continuity: Characters, props, environment identical across every cut. No identity drift.
+Technical: 24fps smooth motion. 8K detail. No jitter.
+Audio: Environmental SFX only. No music. No subtitles.
+
+Characters:
+MAYA — early 30s, shoulder-length dark brown hair pulled into a loose low ponytail with strands escaping at the temples, warm olive skin, faint shadows under her eyes, small silver stud earrings. Charcoal blazer over a white tee, canvas tote bag heavy on one shoulder. Tired — the specific end-of-workday tired that lives in the shoulders.
+
+Scene:
+A small sixth-floor city apartment at overcast dusk. Camera-right, a tall window looks onto a flat slate skyline; beside it sits the apartment's dead corner: a worn grey armchair angled at nothing, a laundry basket parked on its seat, a stack of unopened mail on the sill, and one dying pothos with browned trailing leaves. Muffled traffic below. Color world: 60% concrete grey, 30% cool blue dusk, 10% amber from a single streetlight outside. Maya enters through the front door camera-left; the corner is twelve feet away.
+
+CUT 1 — Wide static, 35mm, eye-level, locked off:
+Muffled traffic drone and a far-off siren. The front door opens and Maya steps in, already mid-motion — she lets the tote slide off her shoulder to the floor with real weight, a dull thud. She stops in the middle of the room, contre-jour against the grey window light, and just stands breathing for a beat, shoulders dropping half an inch on the exhale.
+
+CUT 2 — Medium from behind her shoulder, 50mm, slow drift forward:
+Maya crosses toward the window corner and stops. She lifts the laundry basket off the armchair, holds it a moment with both arms — then sets it right back down on the floor beside the chair instead of dealing with it. Her eyes make a precise drop from the skyline to the dying pothos on the sill. A micro-pause. Her jaw tightens once.
+
+CUT 3 — Close-up on Maya at the window, 85mm, static, haze softening the room behind her, shot from outside the glass:
+Her face nearly touches the glass, the dead corner blurred over her shoulder. Living eyes with window catch-lights, chest rising slowly. She exhales — a small circle of fog blooms on the glass in front of her lips and fades. One browned pothos leaf detaches at the edge of frame and drops to the sill with a dry tick. The siren washes past below and dissolves back into the traffic drone.</pre>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header">
+      <input type="checkbox" data-scene="2">
+      <div class="scene-num">2.</div>
+      <div class="scene-desc">The profile — that evening, Maya takes the Restorative Corner Profile assessment card by card, gets her score ring, and swipes into the plant-match carousel; the first small smile. (0:15–0:30)</div>
+    </div>
+    <div class="prompt-block">
+      <div class="prompt-label">
+        <span>Prompt 2 · 15s</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre class="prompt">Style: 8K IMAX. Photorealistic — no 3D render, no game engine.
+Lighting: Natural light only — contre-jour backlight, camera on shadow side, atmospheric haze throughout. Key light from sky and windows only. No artificial lightning.
+Color: 60:30:10 — dominant / secondary / accent.
+Camera: Physical cine lens. 180° shutter motion blur.
+Skin: Pore-level realism — vellus hair, asymmetric moles, capillary flush, pore-shadow matching on-set light.
+Acting: Hollywood — micro-pauses before reactions, precise eye-line, living eyes with catch-lights, chest rise from breathing. Characters never standing, always reacting.
+Physics: Gravity and inertia respected — mass has real weight, correct contact shadows. No floating props.
+Composition: Rule of thirds + golden ratio. Every person moving from frame one.
+Continuity: Characters, props, environment identical across every cut. No identity drift.
+Technical: 24fps smooth motion. 8K detail. No jitter.
+Audio: Environmental SFX only. No music. No subtitles.
+
+Characters:
+MAYA — early 30s, shoulder-length dark brown hair now loose around her face, warm olive skin, shadows under her eyes softening, small silver stud earrings. Blazer gone — soft grey knit cardigan over the same white tee, legs tucked under her in the worn grey armchair by the window. Same evening; the tiredness is still there but her posture has curled inward into something more comfortable.
+
+Scene:
+The same apartment, later that evening — the sky through the tall window has deepened to indigo, city lights pricking through. Maya sits in the armchair in the dead corner itself, the dying pothos on the sill beside her, laundry basket still on the floor. Her phone glows in her hands — the only warm source in frame, motivated as reflected sky-glow bounce, keeping the natural-light rule intact. Color world: 60% deep indigo shadow, 30% muted grey interior, 10% soft sage-green glow from the phone screen.
+
+CUT 1 — Medium single, 50mm, chair height, slow push-in from six feet:
+Maya thumbs the phone screen absently — then stops. A micro-pause, her eyebrows lift a few millimeters. She glances up from the phone, a precise eye-line sweep around her own corner — the window, the dying plant, the clutter — as if seeing it through the question she was just asked. Then back down to the screen. She taps once, deliberately.
+
+CUT 2 — Over-the-shoulder insert on the phone, 85mm macro, shallow focus, slight handheld breathing:
+A calm sage-green interface: one large rounded assessment card fills the screen, carrying a simple line icon — a small tree by a window — above three soft oval answer buttons. No readable text, just layout and icons. Her thumb taps the lowest option; the card slides away left with a gentle physicality and the next card slides in, this one with a leaf icon. She answers two more in an unhurried rhythm — tap, slide, tap, slide — and then the cards give way to a circular score ring that draws itself partway around and settles at amber, a small wilted-leaf badge at its center. Her thumb hovers over it a half-beat.
+
+CUT 3 — Close-up on Maya's face, then a quick insert, 85mm, static, phone glow from below, indigo window behind her:
+She swipes once — on the insert, the amber ring gives way to a horizontal carousel of three plant cards: a snake plant, a lavender, a peace lily, each with tiny round benefit icons beneath. Her thumb taps a plus mark on the lavender card and it settles into place with a soft bounce. Back on her face: a precise eye-line lift, up and over the top of the phone toward the dark cluttered corner around her. Hold: the first small smile of the film, one corner of her mouth, arriving late like she didn't authorize it. Distant traffic hum, the faint tick of a radiator.</pre>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header">
+      <input type="checkbox" data-scene="3">
+      <div class="scene-num">3.</div>
+      <div class="scene-desc">Building the corner — weekend morning, Maya clears the clutter and builds her Restorative Plant Corner with her own hands; the first tend ritual. (0:30–0:45)</div>
+    </div>
+    <div class="prompt-block">
+      <div class="prompt-label">
+        <span>Prompt 3 · 15s</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre class="prompt">Style: 8K IMAX. Photorealistic — no 3D render, no game engine.
+Lighting: Natural light only — contre-jour backlight, camera on shadow side, atmospheric haze throughout. Key light from sky and windows only. No artificial lightning.
+Color: 60:30:10 — dominant / secondary / accent.
+Camera: Physical cine lens. 180° shutter motion blur.
+Skin: Pore-level realism — vellus hair, asymmetric moles, capillary flush, pore-shadow matching on-set light.
+Acting: Hollywood — micro-pauses before reactions, precise eye-line, living eyes with catch-lights, chest rise from breathing. Characters never standing, always reacting.
+Physics: Gravity and inertia respected — mass has real weight, correct contact shadows. No floating props.
+Composition: Rule of thirds + golden ratio. Every person moving from frame one.
+Continuity: Characters, props, environment identical across every cut. No identity drift.
+Technical: 24fps smooth motion. 8K detail. No jitter.
+Audio: Environmental SFX only. No music. No subtitles.
+
+Characters:
+MAYA — early 30s, shoulder-length dark brown hair loosely tied back with a strand falling across her cheek, warm olive skin now with morning color in it, small silver stud earrings. Faded denim shirt with sleeves rolled past the elbows, a smudge of potting soil on her right forearm. Awake in a way she wasn't in the earlier scenes — moving with purpose, unhurried.
+
+Scene:
+The same window corner, bright weekend morning, low sun raking through the tall window contre-jour with visible atmospheric haze. The laundry basket and mail are gone. On the floor: a cardboard tray of new plants — a snake plant, a lavender in terracotta, a white-bloomed peace lily — plus a small bonsai juniper, a wooden stool, a brass mister, and her phone propped against a stack of books, its screen showing a sage-green card with a short column of icon checklist rows, no readable text. The old pothos, trimmed of its dead leaves, waits on the sill. City soft and out of focus beyond the glass. Color world: 60% warm wood and denim, 30% fresh green, 10% terracotta and brass glint. Maya kneels at the center of the corner facing the window, camera positioned in the room on her shadow side.
+
+CUT 1 — Medium from the room, 35mm, slow lateral dolly left-to-right:
+Maya slides the armchair a foot to the left, angling it toward the window with real effort — its feet drag audibly on the wood floor. She places the wooden stool beside it, sets the bonsai juniper on top, and steadies the pot with both hands for a half-beat, the way you'd seat something alive. The camera drift lets the corner begin to compose itself around the chair.
+
+CUT 2 — Macro insert, 100mm, static, backlit haze:
+Two hands lower the lavender's root ball into the terracotta pot and press dark soil around its base — real weight, soil compacting under the heels of her palms, individual grains falling. She firms it twice. Then the brass mister enters frame and a fine backlit cloud of water settles over the peace lily's white bloom, droplets catching the sun. A precise glance up to the propped phone — she reaches over and taps one checklist row; on screen a small ring flicks from hollow to filled. Sparrows and light wind in the audio.
+
+CUT 3 — Low-angle close on her hands and face together, 50mm, static, sun flaring softly through the haze behind her:
+Maya lifts the lavender pot to her face with both hands, closes her eyes, and inhales slowly through her nose — a long, deliberate breath, her shoulders rising and settling. A micro-pause with her eyes still closed. Then she opens them, sets the lavender on the sill beside the recovering pothos, and brushes her thumb once across a bloom, gently, the way you'd touch something you're proud of. The exhale that follows is different — slower, satisfied.</pre>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header">
+      <input type="checkbox" data-scene="4">
+      <div class="scene-num">4.</div>
+      <div class="scene-desc">Breathe out — golden hour in the finished Restorative Corner; headphones on, soundscape mini-player glowing, the film's payoff exhale. Final wide holds clean for the FloraFlow logo card in post. (0:45–1:00)</div>
+    </div>
+    <div class="prompt-block">
+      <div class="prompt-label">
+        <span>Prompt 4 · 15s</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre class="prompt">Style: 8K IMAX. Photorealistic — no 3D render, no game engine.
+Lighting: Natural light only — contre-jour backlight, camera on shadow side, atmospheric haze throughout. Key light from sky and windows only. No artificial lightning.
+Color: 60:30:10 — dominant / secondary / accent.
+Camera: Physical cine lens. 180° shutter motion blur.
+Skin: Pore-level realism — vellus hair, asymmetric moles, capillary flush, pore-shadow matching on-set light.
+Acting: Hollywood — micro-pauses before reactions, precise eye-line, living eyes with catch-lights, chest rise from breathing. Characters never standing, always reacting.
+Physics: Gravity and inertia respected — mass has real weight, correct contact shadows. No floating props.
+Composition: Rule of thirds + golden ratio. Every person moving from frame one.
+Continuity: Characters, props, environment identical across every cut. No identity drift.
+Technical: 24fps smooth motion. 8K detail. No jitter.
+Audio: Environmental SFX only. No music. No subtitles.
+
+Characters:
+MAYA — early 30s, shoulder-length dark brown hair down and clean, warm olive skin with golden-hour glow, small silver stud earrings, the under-eye shadows from Scene 1 gone. Sage-green linen shirt, sleeves loose, barefoot, legs curled into the armchair. Over-ear headphones in warm cream. Completely at rest — the film's whole arc lands in her stillness.
+
+Scene:
+The same window corner, days later, golden hour. It is transformed: the armchair faces the window with a soft wool throw over one arm; the bonsai juniper sits on the wooden stool beside it; the sill holds the lavender in bloom, the white peace lily, and the revived pothos now trailing green; the snake plant stands on the floor catching a blade of sun. Maya sits curled in the chair, headphones on, phone resting face-up on the chair arm glowing softly sage-green with a simple circular soundscape mini-player — a slowly pulsing ring with a small wave icon, no readable text. Low sun directly behind the plants, contre-jour, every leaf edge rimmed in gold, haze thick and warm. The city beyond is softened to silhouette. Color world: 60% warm gold, 30% deep living green, 10% sage-green screen glow and lavender purple.
+
+CUT 1 — Close-up on Maya, 85mm, static, rim-lit profile:
+Eyes already closed. The headphones seal her in. Her chest rises — a long, deliberate inhale — holds a beat — and releases the slowest exhale of the film, her shoulders visibly lowering. A strand of hair lifts across her cheek in the draft from the cracked-open window; she lets it stay. On the chair arm, the mini-player's ring pulses once, slow as breathing.
+
+CUT 2 — Slow pull-back through the foliage, 35mm, dolly out from her chair into the room, lavender stems and pothos leaves crossing the lens in soft focus:
+Maya stays perfectly still in her chair as the corner grows around the frame — leaves and blooms sliding past the lens edges, backlit haze blooming gold between them. Her thumb taps the phone once on the chair arm without her opening her eyes, an easy practiced motion, and the pulsing ring shifts to a slower rhythm. Rustling leaves and a soft patter of distant rain-sound bleeding faintly from the headphones carry the soundtrack.
+
+CUT 3 — Final wide of the corner from across the room, 35mm, locked off, very slow 12-second hold:
+The full composition: the once-dead corner is now a small glowing sanctuary — Maya at rest in the armchair on the left third, the layered green and lavender rising along the window center-right, dust motes drifting in the gold haze, the sun sinking behind the skyline. Nothing else happens. She breathes. A leaf trembles in the draft. The frame holds steady and uncluttered — upper-right quadrant kept clean sky and haze, reserved for the logo card in post. Fade of city sound beneath wind and leaves.</pre>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Persist checkbox state in localStorage
+  document.querySelectorAll('.scene input[type="checkbox"]').forEach(cb => {
+    const key = 'shotlist-scene-' + cb.dataset.scene + '-done';
+    if (localStorage.getItem(key) === '1') {
+      cb.checked = true;
+      cb.closest('.scene').classList.add('done');
+    }
+    cb.addEventListener('change', () => {
+      localStorage.setItem(key, cb.checked ? '1' : '0');
+      cb.closest('.scene').classList.toggle('done', cb.checked);
+    });
+  });
+
+  // Copy buttons
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pre = btn.closest('.prompt-block').querySelector('pre.prompt');
+      navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.classList.add('copied');
+        const original = btn.textContent;
+        btn.textContent = 'Copied';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.textContent = original;
+        }, 1500);
+      });
+    });
+  });
+</script>
+</body>
+</html>

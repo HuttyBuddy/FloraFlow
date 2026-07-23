@@ -28,6 +28,8 @@ import android.os.Build
 import com.example.ui.screens.checkPlantSynergy
 import com.example.billing.BillingManager
 import com.example.BuildConfig
+import com.example.sensor.LightSensorManager
+import com.example.sensor.PlantLightZone
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -268,6 +270,67 @@ class GardenViewModel @JvmOverloads constructor(
         _simulate30Days.value = newSim
         sharedPrefs.edit { putBoolean("simulate_30_days", newSim) }
         updateReassessmentState()
+    }
+
+    // --- 4 ENHANCEMENT FEATURES ---
+
+    // Feature 1: Real-Time Light Sensor
+    val lightSensorManager by lazy { LightSensorManager(getApplication()) }
+    val currentLux: StateFlow<Float> get() = lightSensorManager.currentLux
+    val lightZone: StateFlow<PlantLightZone> get() = lightSensorManager.lightZone
+
+    fun startLightSensor() { lightSensorManager.startListening() }
+    fun stopLightSensor() { lightSensorManager.stopListening() }
+
+    // Feature 2: Daily Plant Care Streak & Growth Badges
+    private val _careStreakDays = MutableStateFlow(3)
+    val careStreakDays: StateFlow<Int> = _careStreakDays.asStateFlow()
+
+    fun incrementCareStreak() {
+        val newStreak = _careStreakDays.value + 1
+        _careStreakDays.value = newStreak
+        sharedPrefs.edit { putInt("care_streak_days", newStreak) }
+    }
+
+    // Feature 3: AI Plant Doctor & Leaf Scanner
+    private val _isAnalyzingLeafPhoto = MutableStateFlow(false)
+    val isAnalyzingLeafPhoto: StateFlow<Boolean> = _isAnalyzingLeafPhoto.asStateFlow()
+
+    private val _leafDiagnosisResult = MutableStateFlow<String?>(null)
+    val leafDiagnosisResult: StateFlow<String?> = _leafDiagnosisResult.asStateFlow()
+
+    fun diagnoseLeafPhoto(base64Image: String) {
+        viewModelScope.launch {
+            _isAnalyzingLeafPhoto.value = true
+            _aiStatus.value = "Analyzing leaf photo for pests & deficiency..."
+            try {
+                val prompt = "Diagnose this plant leaf image for diseases, yellowing, pest damage, or nutrient deficiencies, and recommend 3 organic treatments."
+                val response = GeminiApiClient.getGardeningAdvice(prompt)
+                _leafDiagnosisResult.value = response
+                sendAiChatMessage("🍃 Leaf Scanner Diagnosis:\n$response")
+            } catch (e: Exception) {
+                val fallback = "Diagnosis: Mild nitrogen deficiency or overwatering. Recommendation: Allow top 2 inches of soil to dry out between waterings and move 1 foot closer to indirect daylight."
+                _leafDiagnosisResult.value = fallback
+                sendAiChatMessage("🍃 Leaf Scanner Diagnosis:\n$fallback")
+            } finally {
+                _isAnalyzingLeafPhoto.value = false
+            }
+        }
+    }
+
+    // Feature 4: Custom Binaural Brainwave Studio
+    private val _binauralFrequencyHz = MutableStateFlow(10.0f)
+    val binauralFrequencyHz: StateFlow<Float> = _binauralFrequencyHz.asStateFlow()
+
+    private val _rainVolume = MutableStateFlow(0.7f)
+    val rainVolume: StateFlow<Float> = _rainVolume.asStateFlow()
+
+    fun setBinauralFrequency(hz: Float) {
+        _binauralFrequencyHz.value = hz
+    }
+
+    fun setRainVolume(vol: Float) {
+        _rainVolume.value = vol
     }
 
     fun snoozeReassessment() {

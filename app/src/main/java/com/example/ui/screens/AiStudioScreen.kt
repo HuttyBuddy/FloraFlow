@@ -1217,7 +1217,8 @@ fun BotanistProfileHeader(
     aiStatus: String,
     hasHistory: Boolean,
     onClearChat: () -> Unit,
-    onOpenLab: () -> Unit
+    onOpenLab: () -> Unit,
+    onLeafScanClick: () -> Unit = {}
 ) {
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseAlpha by infiniteTransition.animateFloat(
@@ -1315,6 +1316,21 @@ fun BotanistProfileHeader(
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(
+                    onClick = onLeafScanClick,
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CameraAlt,
+                        contentDescription = "Leaf Doctor Scanner",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+
                 IconButton(
                     onClick = onOpenLab,
                     colors = IconButtonDefaults.iconButtonColors(
