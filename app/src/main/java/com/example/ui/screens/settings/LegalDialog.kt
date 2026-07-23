@@ -30,7 +30,7 @@ fun LegalDialog(
 ) {
     if (!showPrivacy && !showTerms) return
 
-    AlertDialog(
+    BasicAlertDialog(
         onDismissRequest = onDismiss,
         modifier = modifier
             .fillMaxWidth()

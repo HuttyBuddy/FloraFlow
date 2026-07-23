@@ -251,11 +251,11 @@ fun WalkthroughOverlay(
 
                             val title = when (currentStep) {
                                 WalkthroughStep.WELCOME -> "Welcome to FloraFlow!"
-                                WalkthroughStep.DASHBOARD_GARDEN -> "Active Garden Control"
-                                WalkthroughStep.DASHBOARD_STATS -> "Mindfulness Tracker"
-                                WalkthroughStep.PLANNER_TAB -> "My Plot Grid"
-                                WalkthroughStep.AI_ADVISOR_TAB -> "Garden Counsel"
-                                WalkthroughStep.AR_LENS_TAB -> "Restoration Journal"
+                                WalkthroughStep.DASHBOARD_GARDEN -> "Card 1: Restorative Corner"
+                                WalkthroughStep.DASHBOARD_STATS -> "Card 2: Plant Companion Match"
+                                WalkthroughStep.PLANNER_TAB -> "Card 3: Daily Tend & Audio"
+                                WalkthroughStep.AI_ADVISOR_TAB -> "AI Plant Counsel"
+                                WalkthroughStep.AR_LENS_TAB -> "You're All Set!"
                             }
 
                             Text(
@@ -267,12 +267,12 @@ fun WalkthroughOverlay(
                             )
 
                             val description = when (currentStep) {
-                                WalkthroughStep.WELCOME -> "Let's take a quick interactive tour to get familiar with your new therapeutic garden helper."
-                                WalkthroughStep.DASHBOARD_GARDEN -> "This is your Garden Hub. Tap 'Plant a New Seed' to create indoor spaces or switch active layouts via 'Visit a Garden'."
-                                WalkthroughStep.DASHBOARD_STATS -> "The Botanical Rhythm wheel links your daily gardening habits (watering, pruning, outdoors time) with your wellness log."
-                                WalkthroughStep.PLANNER_TAB -> "Switch to My Plot to drag-and-drop crops on a companion planting grid with spacing safety alerts."
-                                WalkthroughStep.AI_ADVISOR_TAB -> "Consult Dr. Julian Greenleaf, your live Garden Counsel, for plant stress diagnostics, soil pH balance, and mindfulness support."
-                                WalkthroughStep.AR_LENS_TAB -> "Enter the Restoration Journal to listen to calming binaural waves and check off daily mindfulness tasks mapped to your plant layout."
+                                WalkthroughStep.WELCOME -> "Let's take a quick interactive tour of your 3-card plant sanctuary."
+                                WalkthroughStep.DASHBOARD_GARDEN -> "Card 1 displays your Restorative Corner Neural Load score, room daylight level, and retake prompt."
+                                WalkthroughStep.DASHBOARD_STATS -> "Card 2 recommends living companion plants matched to your corner's natural light."
+                                WalkthroughStep.PLANNER_TAB -> "Card 3 lets you check off 1-tap daily plant care habits and listen to eco-acoustic soundscapes."
+                                WalkthroughStep.AI_ADVISOR_TAB -> "Tap 'Chat with AI Plant Counsel' at the top of any card to consult Dr. Julian on plant placement & care."
+                                WalkthroughStep.AR_LENS_TAB -> "Enjoy your calm, restorative plant sanctuary!"
                             }
 
                             Text(
@@ -300,26 +300,21 @@ fun WalkthroughOverlay(
                                     onClick = {
                                         when (currentStep) {
                                             WalkthroughStep.WELCOME -> {
-                                                onTabChange(0) // Go to Dashboard
                                                 viewModel.nextWalkthroughStep()
                                             }
                                             WalkthroughStep.DASHBOARD_GARDEN -> {
                                                 viewModel.nextWalkthroughStep()
                                             }
                                             WalkthroughStep.DASHBOARD_STATS -> {
-                                                onTabChange(1) // Auto-switch to 2D Planner
                                                 viewModel.nextWalkthroughStep()
                                             }
                                             WalkthroughStep.PLANNER_TAB -> {
-                                                onTabChange(3) // Auto-switch to AI Advisor
                                                 viewModel.nextWalkthroughStep()
                                             }
                                             WalkthroughStep.AI_ADVISOR_TAB -> {
-                                                onTabChange(4) // Transition to Restoration Journal
                                                 viewModel.nextWalkthroughStep()
                                             }
                                             WalkthroughStep.AR_LENS_TAB -> {
-                                                onTabChange(0) // Return to Dashboard
                                                 viewModel.nextWalkthroughStep()
                                             }
                                         }

@@ -178,8 +178,8 @@ fun SettingsDialog(
                     )
 
                     SettingsActionRow(
-                        title = "Retake Biophilic Assessment",
-                        subtitle = "Recalculate your Neural Load score & tips",
+                        title = "Retake Restorative Corner Assessment",
+                        subtitle = "Recalculate your Neural Load score & space guidance",
                         icon = Icons.Default.Eco,
                         iconTint = MaterialTheme.colorScheme.primary,
                         onClick = {

@@ -49,44 +49,44 @@ data class FAQItem(
 val faqs = listOf(
     FAQItem(
         id = 1,
-        question = "How do I design a garden in My Plot?",
-        answer = "Go to the 'My Plot' tab. Select a plant species from the 'Seed Tray' (Indoor or Outdoor) or tap an empty grid cell to choose a recommended species for your climate. Tap any sector on the 5x5 blueprint to sow your seeds. You can use the Eraser tool to clear cells or 'Auto-Sow' to quickly fill your space.",
-        category = "My Plot"
+        question = "How do I design my restorative plant corner?",
+        answer = "Swipe through the 3 cards on the main Sanctuary screen. Card 1 displays your Neural Load score and natural light setup. Card 2 recommends companion living plants matched to your space, and Card 3 provides daily care habit check-ins and binaural soundscapes.",
+        category = "Restorative Corner"
     ),
     FAQItem(
         id = 2,
-        question = "What is the Garden Counsel and how can it help?",
-        answer = "The Garden Counsel is powered by the latest Gemini 3.5 Flash model and acts as your personal master gardener. It is a premium feature with 3 free trial queries. Tap the 'Counsel' tab to start a chat and ask about planting calendars, pest control, companion planting, or lighting requirements for specific species.",
-        category = "Garden Counsel"
+        question = "What is the AI Plant Counsel and how can it help?",
+        answer = "The AI Plant Counsel is powered by Gemini and acts as your personal plant & space advisor. Tap 'Chat with AI Plant Counsel' at the top of any card to ask Dr. Julian about plant placement, natural light requirements, pest control, or companion synergy.",
+        category = "AI Counsel"
     ),
     FAQItem(
         id = 3,
-        question = "How do I use the Restoration Journal?",
-        answer = "The Restoration Journal calculates a Neural Restoration Index (NRI) representing stress relief based on your garden's biophilic design. Open the 'Restoration' tab to adjust soundscape volumes, choose a binaural beat frequency (Alpha, Theta, or Delta), and check off mindful sensory tasks linked to your plants. Free users get a trial of 3 play/log sessions before upgrading to PRO.",
-        category = "Restoration"
+        question = "How do I use Botanical Eco-Acoustics & Soundscapes?",
+        answer = "Go to Card 3 (Daily Tend & Soundscapes) to listen to binaural beats (Alpha, Theta, or Delta frequencies) paired with natural forest rainfall while spending time near your living plants.",
+        category = "Soundscapes"
     ),
     FAQItem(
         id = 4,
         question = "Is a premium subscription required?",
-        answer = "FloraFlow is free for basic layout planning and greenhouse inventory. It includes a trial of premium features (3 free Garden Counsel queries and 3 free Restoration play/log sessions). FloraFlow PRO unlocks unlimited Garden Counsel consultations, full Eco-Acoustic Restoration Journal tracking with brainwave frequencies, and custom biophilic design index metrics.",
+        answer = "FloraFlow is free for basic plant placement and daily habit tracking. It includes a trial of premium features (3 free AI Plant Counsel consultations and 3 free soundscape sessions). FloraFlow PRO unlocks unlimited AI consultations, full Eco-Acoustic soundscapes, and custom Neural Load metrics.",
         category = "Premium"
     ),
     FAQItem(
         id = 5,
-        question = "How do I water my plants and log schedules?",
-        answer = "In the 'Greenhouse' tab, select a plant in your garden and tap 'Log Watering'. You can see the water level meter update in real time. The greenhouse will show alerts when the plant is dry based on its specific watering interval.",
-        category = "Getting Started"
+        question = "How do I log daily plant care routines?",
+        answer = "On Card 3, check off your daily 1-tap plant tending habit (misting, watering, inhaling natural scent) to cultivate a calming daily routine.",
+        category = "Daily Tend"
     ),
     FAQItem(
         id = 6,
-        question = "Can I export or share my designs?",
-        answer = "Yes! In My Plot, you can tap the export icon to save a high-resolution screenshot of your layout directly to your device gallery or share it with friends.",
-        category = "My Plot"
+        question = "How do I retake the Restorative Corner Assessment?",
+        answer = "Tap the Settings gear icon in the top right corner of the screen and select 'Retake Restorative Corner Assessment'. You can also tap 'Retake' directly on Card 1.",
+        category = "Assessment"
     ),
     FAQItem(
         id = 7,
         question = "How do I change the app theme?",
-        answer = "Tap the 'More options' icon (vertical dots) in the top right corner of the Dashboard or main screens, select 'Settings', and then choose between 'System' (follows device preferences), 'Light', or 'Dark' mode. Settings are persisted automatically.",
+        answer = "Tap the Settings gear icon in the top right corner of the screen, then choose between 'System' (follows device preferences), 'Light', or 'Dark' mode. Settings are saved automatically.",
         category = "Getting Started"
     )
 )
@@ -171,7 +171,7 @@ fun FaqTabContent() {
     var selectedCategory by remember { mutableStateOf("All") }
     var expandedFaqId by remember { mutableStateOf<Int?>(null) }
 
-    val categories = listOf("All", "Getting Started", "My Plot", "Restoration", "Garden Counsel", "Premium")
+    val categories = listOf("All", "Restorative Corner", "AI Counsel", "Soundscapes", "Daily Tend", "Premium")
 
     val filteredFaqs = remember(searchQuery, selectedCategory) {
         faqs.filter { faq ->
