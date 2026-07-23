@@ -546,7 +546,8 @@ fun LibraryScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(smartSuggestions) { suggestion ->
+                        // ⚡ Bolt Optimization: Use `key` to prevent unnecessary recompositions of unchanged items
+                        items(smartSuggestions, key = { it.query }) { suggestion ->
                             val isChosen = searchQuery == suggestion.query
                             FilterChip(
                                 selected = isChosen,
