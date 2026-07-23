@@ -348,7 +348,7 @@ fun SplashWelcomeScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "Personalize an indoor or outdoor space with biophilic design, plant care, and restorative guidance.",
+            text = "Design your personal indoor meditation corner shaped around your light, room space, and living plants.",
             style = MaterialTheme.typography.bodyLarge.copy(
                 fontSize = 16.sp,
                 color = Color.White.copy(alpha = 0.85f),
@@ -361,7 +361,7 @@ fun SplashWelcomeScreen(
         Spacer(modifier = Modifier.weight(1f))
         
         FloraFlowButton(
-            text = "Personalize My Space",
+            text = "Design Restorative Corner",
             onClick = onStart,
             modifier = Modifier
                 .fillMaxWidth()

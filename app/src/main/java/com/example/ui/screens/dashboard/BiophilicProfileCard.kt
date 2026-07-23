@@ -41,19 +41,19 @@ fun BiophilicProfileCard(
     val zoneInfo = when (score) {
         in 15..20 -> BiophilicZoneInfo(
             "Green Zone",
-            "Environment supports nervous system calm and natural focus.",
+            "Restorative corner supports nervous system calm and natural focus.",
             Color(0xFF2E7D32),
             Color(0xFFE8F5E9)
         )
         in 8..14 -> BiophilicZoneInfo(
             "Yellow Zone",
-            "A few elements are missing, quietly draining focus/energy.",
+            "A few elements are missing from your restorative corner, quietly draining focus.",
             Color(0xFFF57F17),
             Color(0xFFFFFDE7)
         )
         else -> BiophilicZoneInfo(
             "Red Zone",
-            "Lack of biophilic elements may increase sensory stress.",
+            "Restorative corner needs lighting and plant additions to lower stress.",
             Color(0xFFC62828),
             Color(0xFFFFEBEE)
         )
@@ -90,12 +90,12 @@ fun BiophilicProfileCard(
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Icon(
                         imageVector = Icons.Default.SelfImprovement,
-                        contentDescription = "Biophilic Sanctuary Profile",
+                        contentDescription = "Restorative Corner Profile",
                         tint = zoneColor,
                         modifier = Modifier.size(24.dp)
                     )
                     Text(
-                        text = "Biophilic Sanctuary Profile",
+                        text = "Restorative Corner Profile",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -301,9 +301,9 @@ fun BiophilicProfileCard(
                         .weight(1f)
                         .testTag("biophilic_retake_assessment_btn")
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Retake Assessment", modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.Refresh, contentDescription = "Retake Restorative Assessment", modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Retake", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("Retake Assessment", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 Button(

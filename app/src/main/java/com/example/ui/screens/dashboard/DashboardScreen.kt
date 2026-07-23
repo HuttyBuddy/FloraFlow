@@ -109,14 +109,14 @@ fun DashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Personalize your indoor or outdoor space with a 2-minute biophilic assessment.",
+                    text = "Personalize your indoor meditation corner with a 2-minute restorative assessment.",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
                     color = bannerText,
                     textAlign = TextAlign.Center
                 )
                 Button(
-                    onClick = { viewModel.resetAssessment() },
+                    onClick = { viewModel.startRestorativeCornerAssessment() },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = buttonBg,
                         contentColor = buttonText
@@ -124,7 +124,7 @@ fun DashboardScreen(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "Personalize My Space",
+                        text = "Design Restorative Corner",
                         fontWeight = FontWeight.Bold,
                         fontSize = 12.sp
                     )

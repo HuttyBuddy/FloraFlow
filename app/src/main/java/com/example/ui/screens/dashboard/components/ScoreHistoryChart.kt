@@ -47,7 +47,7 @@ fun ScoreHistoryChart(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Take your first assessment to start tracking your progress.",
+                text = "Take your first restorative corner assessment to start tracking your progress.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary,
                 textAlign = TextAlign.Center,
