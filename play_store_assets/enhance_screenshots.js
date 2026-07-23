@@ -18,43 +18,33 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
 }
 
-// Screenshot titles mapping
+// Screenshot titles mapping for Gate 3 A/B Experiment
 const screenshotMetadata = {
-  // Planner screen
-  'Screenshot_20260530_091016.png': {
-    title: 'DESIGN YOUR GARDEN',
-    subtitle: 'Interactive 2D grids & companion checks'
+  // Card 1: Corner & Score
+  'Screenshot_20260710_080429.png': {
+    outputName: 'Screenshot_1_enhanced.png',
+    title: 'Turn one indoor corner into a place for calm.',
+    subtitle: 'RESTORATIVE CORNER DESIGN'
   },
-  // AR screen
-  'Screenshot_20260530_090634.png': {
-    title: 'SPATIAL HOLOGRAMS',
-    subtitle: 'Project mature plants in real space'
+  // Card 2: Plant Placement & Light Match
+  'Screenshot_20260710_083712.png': {
+    outputName: 'Screenshot_2_enhanced.png',
+    title: 'Get placement guidance shaped around your light and available room.',
+    subtitle: 'LIVING PLANT MATCH'
   },
-  // Library screen
-  'Screenshot_20260530_104459.png': {
-    title: 'BOTANICAL KNOWLEDGE',
-    subtitle: 'Explore pH soil levels and seasonal care'
-  },
-  // Dashboard screen
-  'Screenshot_20260529_215510.png': {
-    title: 'GROWTH & WELL-BEING',
-    subtitle: 'Track gardening sessions vs mood rating'
-  },
-  // Onboarding screens
-  'Screenshot_20260529_152706.png': {
-    title: 'WELCOME TO FLORAFLOW',
-    subtitle: 'Cultivating Calm through Mindful Gardening'
-  },
-  'Screenshot_20260529_220719.png': {
-    title: 'AI ADVISOR CHAT',
-    subtitle: 'Consult Dr. Greenleaf on soil moisture'
+  // Card 3: Daily Tend & Audio
+  'Screenshot_20260710_102135.png': {
+    outputName: 'Screenshot_3_enhanced.png',
+    title: 'Save one doable change. Return to your corner.',
+    subtitle: 'DAILY TEND & SOUNDSCAPES'
   }
 };
 
 // Default metadata for unmapped screenshots
 const defaultMetadata = {
-  title: 'FLORAFLOW DESIGNER',
-  subtitle: 'Cultivating Calm through Mindful Gardening'
+  outputName: null,
+  title: 'Turn one indoor corner into a place for calm.',
+  subtitle: 'FLORAFLOW SANCTUARY'
 };
 
 // Scan the directory for raw screenshots
@@ -64,10 +54,10 @@ const screenshots = files.filter(f => f.startsWith('Screenshot_') && f.endsWith(
 console.log(`Found ${screenshots.length} raw screenshots. Beginning enhancement process...`);
 
 screenshots.forEach((file) => {
-  const inputPath = path.join(__dirname, file);
-  const outputPath = path.join(outputDir, file);
-
   const meta = screenshotMetadata[file] || defaultMetadata;
+  const outFileName = meta.outputName || file;
+  const inputPath = path.join(__dirname, file);
+  const outputPath = path.join(outputDir, outFileName);
   const escapedTitle = meta.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const escapedSubtitle = meta.subtitle.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
