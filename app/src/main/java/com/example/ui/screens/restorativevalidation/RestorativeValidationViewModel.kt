@@ -69,6 +69,23 @@ class RestorativeValidationViewModel internal constructor(
 
     fun startJourney() = onIntent(RestorativeIntent.Start(idProvider.nextId()))
 
+    fun resetAndStartNewAssessment() {
+        val newExperimentId = idProvider.nextId()
+        journeyCreatedAtEpochMillis = clock.nowEpochMillis()
+        val newState = RestorativeUiState(
+            step = RestorativeStep.PROMISE,
+            draft = RestorativeDraft(experimentId = newExperimentId),
+            plan = null,
+            isBusy = false,
+            error = null,
+            exitRequested = false
+        )
+        _uiState.value = newState
+        viewModelScope.launch {
+            persistDraft(newState)
+        }
+    }
+
     private suspend fun restoreJourney() {
         _uiState.value = when (val result = store.readJourney()) {
             StoreReadResult.Missing -> RestorativeUiState()

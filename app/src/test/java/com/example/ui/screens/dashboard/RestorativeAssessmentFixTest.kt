@@ -81,4 +81,16 @@ class RestorativeAssessmentFixTest {
         viewModel.saveAssessmentResult(18, listOf("Natural Daylight"))
         assertEquals(18, viewModel.assessmentScore.value)
     }
+
+    @Test
+    fun resetAndStartNewAssessment_resetsStateForRetake() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val valViewModel = RestorativeValidationViewModel.factory(application).create(RestorativeValidationViewModel::class.java)
+        
+        valViewModel.resetAndStartNewAssessment()
+        val state = valViewModel.uiState.value
+        
+        assertFalse(state.exitRequested)
+        assertEquals(RestorativeStep.PROMISE, state.step)
+    }
 }
