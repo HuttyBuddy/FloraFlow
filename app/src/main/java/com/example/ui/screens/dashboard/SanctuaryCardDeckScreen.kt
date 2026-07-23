@@ -112,28 +112,6 @@ fun SanctuaryCardDeckScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { showAiCounselSheet = true },
-                icon = {
-                    Icon(
-                        imageVector = Icons.Default.SmartToy,
-                        contentDescription = "AI Plant Counsel",
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                },
-                text = {
-                    Text(
-                        text = "AI Plant Counsel",
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.testTag("ai_counsel_fab")
-            )
         }
     ) { innerPadding ->
         Column(
@@ -187,15 +165,18 @@ fun SanctuaryCardDeckScreen(
                         step1Completed = step1Completed,
                         step2Completed = step2Completed,
                         step3Completed = step3Completed,
-                        weather = weather
+                        weather = weather,
+                        onOpenAiCounsel = { showAiCounselSheet = true }
                     )
                     1 -> Card2PlantMatch(
                         viewModel = viewModel,
                         activeLayout = activeLayout,
-                        activePlants = activePlants
+                        activePlants = activePlants,
+                        onOpenAiCounsel = { showAiCounselSheet = true }
                     )
                     2 -> Card3DailyTendAndAudio(
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        onOpenAiCounsel = { showAiCounselSheet = true }
                     )
                 }
             }
@@ -234,6 +215,66 @@ fun SanctuaryCardDeckScreen(
 }
 
 @Composable
+private fun AiPlantCounselTopCard(
+    onOpenAiCounsel: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onOpenAiCounsel() }
+            .testTag("ai_counsel_fab")
+            .testTag("ai_counsel_top_btn"),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.AutoAwesome,
+                    contentDescription = "Ask AI Plant Counsel",
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Chat with AI Plant Counsel",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Text(
+                    text = "Ask Dr. Julian about light matching, plant placement & care",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                    fontSize = 11.sp
+                )
+            }
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = "Open AI Plant Counsel",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+
+@Composable
 private fun Card1RestorativeCorner(
     viewModel: GardenViewModel,
     assessmentScore: Int?,
@@ -243,7 +284,8 @@ private fun Card1RestorativeCorner(
     step1Completed: Boolean,
     step2Completed: Boolean,
     step3Completed: Boolean,
-    weather: com.example.data.repository.WeatherInfo
+    weather: com.example.data.repository.WeatherInfo,
+    onOpenAiCounsel: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -252,6 +294,8 @@ private fun Card1RestorativeCorner(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        AiPlantCounselTopCard(onOpenAiCounsel = onOpenAiCounsel)
+
         if (needsReassessment) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -302,7 +346,8 @@ private fun Card1RestorativeCorner(
 private fun Card2PlantMatch(
     viewModel: GardenViewModel,
     activeLayout: com.example.data.model.GardenLayout?,
-    activePlants: List<com.example.data.model.Plant>
+    activePlants: List<com.example.data.model.Plant>,
+    onOpenAiCounsel: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -311,6 +356,8 @@ private fun Card2PlantMatch(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        AiPlantCounselTopCard(onOpenAiCounsel = onOpenAiCounsel)
+
         CompanionSynergyCard(activeLayout = activeLayout)
 
         // Plant Recommendations Section
@@ -389,6 +436,7 @@ private fun Card2PlantMatch(
                             Button(
                                 onClick = {
                                     viewModel.sendAiChatMessage("Tell me how to place $name in my restorative corner.")
+                                    onOpenAiCounsel()
                                 },
                                 shape = RoundedCornerShape(10.dp),
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
@@ -405,7 +453,8 @@ private fun Card2PlantMatch(
 
 @Composable
 private fun Card3DailyTendAndAudio(
-    viewModel: GardenViewModel
+    viewModel: GardenViewModel,
+    onOpenAiCounsel: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -414,6 +463,8 @@ private fun Card3DailyTendAndAudio(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        AiPlantCounselTopCard(onOpenAiCounsel = onOpenAiCounsel)
+
         DailyHabitCard(viewModel = viewModel)
 
         MindfulBreathingCard(viewModel = viewModel)
@@ -479,6 +530,7 @@ private fun Card3DailyTendAndAudio(
                     IconButton(
                         onClick = {
                             viewModel.sendAiChatMessage("Suggest soundscape routines to pair with my plant tending.")
+                            onOpenAiCounsel()
                         }
                     ) {
                         Icon(
