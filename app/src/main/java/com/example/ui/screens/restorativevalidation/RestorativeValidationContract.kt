@@ -329,7 +329,7 @@ object RestorativeReducer {
             } else state
 
             RestorativeIntent.OpenPlacementGuidance -> if (state.step == RestorativeStep.SAVED) {
-                state.copy(placementGuidanceExpanded = true)
+                state.copy(placementGuidanceExpanded = !state.placementGuidanceExpanded)
             } else state
 
             RestorativeIntent.EditSpace -> if (state.step == RestorativeStep.PLAN) {
@@ -526,6 +526,28 @@ object RestorativeRecommendationEngine {
             PlacementRecord(number = index + 1, plantSlug = plant.slug, role = plant.placementRole)
         }
         return RecommendationResult.Match(StarterPlan(selections, placements))
+    }
+
+    fun calculateScore(draft: RestorativeDraft): Int {
+        var score = 5 // Base Score
+
+        score += when (draft.light) {
+            LightChoice.BRIGHT -> 5
+            LightChoice.MEDIUM -> 4
+            LightChoice.LOW -> 3
+            else -> 2
+        }
+
+        score += when (draft.availableSpace) {
+            AvailableSpace.OPEN_CORNER -> 5
+            AvailableSpace.SMALL_CORNER -> 4
+            AvailableSpace.TABLETOP -> 3
+            else -> 2
+        }
+
+        score += if (draft.ownedPlantSlugs.size >= 2) 5 else if (draft.ownedPlantSlugs.isNotEmpty()) 4 else 3
+
+        return score.coerceIn(1, 20)
     }
 }
 

@@ -45,22 +45,24 @@ class GardenWidgetProvider : AppWidgetProvider() {
             val city = weatherPrefs.getString("cached_city", "Garden") ?: "Garden"
             val weatherStr = "Weather: ${getWeatherEmoji(condition)} $city (${temp.toInt()}°F • $condition)"
 
+            val appPrefs = context.getSharedPreferences("floraflow_prefs", Context.MODE_PRIVATE)
+            val savedScore = appPrefs.getInt("assessment_score", -1)
             val latestAssessment = assessments.firstOrNull()
-            val neuralStr = if (latestAssessment != null) {
-                val score = latestAssessment.score
-                val zone = when (score) {
+            val effectiveScore = latestAssessment?.score ?: if (savedScore != -1) savedScore else null
+
+            val neuralStr = if (effectiveScore != null && effectiveScore > 0) {
+                val zone = when (effectiveScore) {
                     in 15..20 -> "Green Zone"
                     in 8..14 -> "Yellow Zone"
                     else -> "Red Zone"
                 }
-                "Neural Load: $score/20 ($zone)"
+                "Neural Load: $effectiveScore/20 ($zone)"
             } else {
                 "Neural Load: Not Taken"
             }
 
-            val appPrefs = context.getSharedPreferences("floraflow_prefs", Context.MODE_PRIVATE)
             val isAssessmentSkipped = appPrefs.getBoolean("assessment_skipped", false)
-            val finalNeuralStr = if (isAssessmentSkipped) "Neural Load: Skipped" else neuralStr
+            val finalNeuralStr = if (isAssessmentSkipped && effectiveScore == null) "Neural Load: Skipped" else neuralStr
 
             val step1 = appPrefs.getBoolean("step_1_completed", false)
             val step2 = appPrefs.getBoolean("step_2_completed", false)

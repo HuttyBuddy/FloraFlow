@@ -37,25 +37,33 @@ fun BiophilicProfileCard(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // Zone Determination
-    val zoneInfo = when (score) {
-        in 15..20 -> BiophilicZoneInfo(
+    val surfaceBg = MaterialTheme.colorScheme.background
+    val defaultBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+
+    val zoneInfo = when {
+        score >= 15 -> BiophilicZoneInfo(
             "Green Zone",
             "Restorative corner supports nervous system calm and natural focus.",
             Color(0xFF2E7D32),
             Color(0xFFE8F5E9)
         )
-        in 8..14 -> BiophilicZoneInfo(
+        score in 8..14 -> BiophilicZoneInfo(
             "Yellow Zone",
             "A few elements are missing from your restorative corner, quietly draining focus.",
             Color(0xFFF57F17),
             Color(0xFFFFFDE7)
         )
-        else -> BiophilicZoneInfo(
+        score in 1..7 -> BiophilicZoneInfo(
             "Red Zone",
             "Restorative corner needs lighting and plant additions to lower stress.",
             Color(0xFFC62828),
             Color(0xFFFFEBEE)
+        )
+        else -> BiophilicZoneInfo(
+            "Not Assessed",
+            "Take the 2-minute Restorative Corner Assessment to discover your score.",
+            MaterialTheme.colorScheme.primary,
+            surfaceBg
         )
     }
     val zoneName = zoneInfo.zoneName
@@ -63,18 +71,24 @@ fun BiophilicProfileCard(
     val zoneColor = zoneInfo.zoneColor
     val zoneBg = zoneInfo.zoneBg
 
+    val cardBorder = if (score > 0) {
+        BorderStroke(
+            1.5.dp,
+            Brush.horizontalGradient(
+                listOf(zoneColor.copy(alpha = 0.8f), MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f))
+            )
+        )
+    } else {
+        BorderStroke(1.dp, defaultBorderColor)
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
             .testTag("biophilic_profile_card"),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(
-            1.5.dp,
-            Brush.horizontalGradient(
-                listOf(zoneColor.copy(alpha = 0.8f), MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f))
-            )
-        )
+        border = cardBorder
     ) {
         Column(
             modifier = Modifier
@@ -108,7 +122,7 @@ fun BiophilicProfileCard(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = "$score/20",
+                        text = if (score > 0) "$score/20" else "Not Assessed",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = zoneColor

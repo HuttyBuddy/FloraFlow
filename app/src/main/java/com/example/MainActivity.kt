@@ -131,6 +131,12 @@ class MainActivity : ComponentActivity() {
                     RestorativeValidationRoute(
                         viewModel = validationViewModel,
                         onExit = {
+                            val draft = validationViewModel.uiState.value.draft
+                            if (draft.light != null || draft.availableSpace != null) {
+                                val score = com.example.ui.screens.restorativevalidation.RestorativeRecommendationEngine.calculateScore(draft)
+                                val categories = listOf("Natural Daylight", "Acoustic Masking")
+                                viewModel.saveAssessmentResult(score, categories)
+                            }
                             initialValidationActive = false
                             viewModel.dismissRestorativeCornerAssessment()
                         },

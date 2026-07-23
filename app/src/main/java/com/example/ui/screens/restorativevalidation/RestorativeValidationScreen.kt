@@ -532,7 +532,7 @@ private fun SavedStage(state: RestorativeUiState, onIntent: (RestorativeIntent) 
         onClick = { onIntent(RestorativeIntent.OpenPlacementGuidance) },
         modifier = Modifier.fillMaxWidth().height(52.dp),
     ) { Text(if (state.placementGuidanceExpanded) "Placement guidance open" else "View placement guidance", fontSize = 16.sp) }
-    if (state.placementGuidanceExpanded) SavedPlacementGuidance(state)
+    if (state.placementGuidanceExpanded) SavedPlacementGuidance(state = state, onClose = { onIntent(RestorativeIntent.OpenPlacementGuidance) })
     ResearchExportStatusPanel(state.researchExport, onIntent)
     var showResearchMenu by rememberSaveable { mutableStateOf(false) }
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
@@ -730,18 +730,35 @@ private fun ExportDisclosureGroup(title: String, items: List<String>) {
 }
 
 @Composable
-private fun SavedPlacementGuidance(state: RestorativeUiState) {
+private fun SavedPlacementGuidance(
+    state: RestorativeUiState,
+    onClose: () -> Unit
+) {
     val plan = state.plan ?: return
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Text("My meditation corner", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("My meditation corner placement guidance", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                IconButton(onClick = onClose, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.Close, contentDescription = "Close placement guidance")
+                }
+            }
             plan.placements.forEach { placement ->
-                val plant = plan.plants.first { it.slug == placement.plantSlug }
-                Text(
-                    "${placement.number}. ${plant.canonicalName} — ${placement.role.plainLanguage()}",
-                    fontSize = 16.sp,
-                    lineHeight = 23.sp,
-                )
+                val plant = plan.plants.firstOrNull { it.slug == placement.plantSlug }
+                if (plant != null) {
+                    Text(
+                        "${placement.number}. ${plant.canonicalName} — ${placement.role.plainLanguage()}",
+                        fontSize = 16.sp,
+                        lineHeight = 23.sp,
+                    )
+                }
             }
         }
     }
