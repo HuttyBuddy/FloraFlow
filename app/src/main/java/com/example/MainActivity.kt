@@ -181,6 +181,14 @@ class MainActivity : ComponentActivity() {
                 // showBillingDialog, but must exist during onboarding too since
                 // the post-assessment paywall can trigger it before the main
                 // Scaffold (and its previous BillingDialog instance) exists.
+                val showPaywallDialog by viewModel.showPaywallDialog.collectAsState()
+
+                com.example.ui.screens.paywall.PaywallDialog(
+                    visible = showPaywallDialog,
+                    onDismiss = { viewModel.dismissPaywall() },
+                    onSubscribe = { isAnnual -> viewModel.subscribePro(isAnnual) }
+                )
+
                 BillingDialog(viewModel = viewModel)
 
                 if (!isOnboardingCompleted) {

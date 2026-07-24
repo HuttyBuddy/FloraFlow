@@ -106,9 +106,29 @@ class GardenViewModel @JvmOverloads constructor(
         _currentSeason.value = season
     }
 
-    // Premium subscription state for Devil's Advocate paywall demo
+    // Premium subscription state for FloraFlow PRO paywall
     private val _isPremium = MutableStateFlow(false)
     val isPremium: StateFlow<Boolean> = _isPremium.asStateFlow()
+
+    private val _showPaywallDialog = MutableStateFlow(false)
+    val showPaywallDialog: StateFlow<Boolean> = _showPaywallDialog.asStateFlow()
+
+    fun triggerPaywall() {
+        _showPaywallDialog.value = true
+    }
+
+    fun dismissPaywall() {
+        _showPaywallDialog.value = false
+    }
+
+    fun subscribePro(isAnnual: Boolean) {
+        _isPremium.value = true
+        _showPaywallDialog.value = false
+        sharedPrefs.edit {
+            putBoolean("is_premium", true)
+            putBoolean("pro_annual", isAnnual)
+        }
+    }
 
     // Restorative Corner Assessment State (Unified Assessment Flow)
     private val _showRestorativeValidationFlow = MutableStateFlow(false)

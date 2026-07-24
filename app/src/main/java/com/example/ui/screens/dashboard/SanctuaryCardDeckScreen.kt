@@ -686,7 +686,8 @@ private fun CustomBinauralStudioCard(
                 if (!isPremium) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.clickable { viewModel.triggerPaywall() }
                     ) {
                         Text(
                             text = "PRO Studio",
@@ -711,7 +712,7 @@ private fun CustomBinauralStudioCard(
                     if (isPremium) {
                         viewModel.setBinauralFrequency(newValue)
                     } else {
-                        viewModel.upgradeToPremium()
+                        viewModel.triggerPaywall()
                     }
                 },
                 valueRange = 4f..40f,
