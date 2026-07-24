@@ -167,7 +167,12 @@ fun SanctuaryCardDeckScreen(
                         step2Completed = step2Completed,
                         step3Completed = step3Completed,
                         weather = weather,
-                        onOpenAiCounsel = { showAiCounselSheet = true }
+                        onOpenAiCounsel = { showAiCounselSheet = true },
+                        onNavigateToPage = { targetPage ->
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(targetPage.coerceIn(0, 2))
+                            }
+                        }
                     )
                     1 -> Card2PlantMatch(
                         viewModel = viewModel,
@@ -286,7 +291,8 @@ private fun Card1RestorativeCorner(
     step2Completed: Boolean,
     step3Completed: Boolean,
     weather: com.example.data.repository.WeatherInfo,
-    onOpenAiCounsel: () -> Unit
+    onOpenAiCounsel: () -> Unit,
+    onNavigateToPage: (Int) -> Unit = {}
 ) {
     Column(
         modifier = Modifier
@@ -332,8 +338,8 @@ private fun Card1RestorativeCorner(
             step2Completed = step2Completed,
             step3Completed = step3Completed,
             onStepToggle = { idx -> viewModel.toggleStepCompleted(idx) },
-            onNavigate = { page -> },
-            onSearchDatabase = { query -> }
+            onNavigate = onNavigateToPage,
+            onSearchDatabase = { query -> viewModel.setLibrarySearchQuery(query) }
         )
 
         WeatherSyncCard(

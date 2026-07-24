@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FloraFlow — Hear Your Garden First — Director's Shotlist</title>
+<style>
+  :root {
+    --bg: #0e0e10;
+    --panel: #17171a;
+    --panel-2: #1d1d21;
+    --border: #2a2a30;
+    --text: #e8e8ea;
+    --text-dim: #9a9aa2;
+    --accent: #d4a259;
+    --done: #4ade80;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    line-height: 1.5;
+    padding: 32px 24px 80px;
+  }
+  .container { max-width: 980px; margin: 0 auto; }
+  h1 {
+    font-size: 28px; font-weight: 600; margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }
+  .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 32px; }
+  .howto {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+  }
+  details.style-prefix {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 32px;
+  }
+  details.style-prefix summary {
+    cursor: pointer; font-weight: 600;
+    color: var(--accent); user-select: none;
+  }
+  details.style-prefix pre {
+    margin: 14px 0 0; padding: 14px;
+    background: var(--panel-2);
+    border-radius: 6px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    white-space: pre-wrap;
+    color: var(--text);
+  }
+  .scene {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+    margin-bottom: 18px;
+  }
+  .scene-header {
+    display: flex; align-items: flex-start; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .scene-header input[type="checkbox"] {
+    width: 20px; height: 20px; margin-top: 2px;
+    accent-color: var(--done); cursor: pointer;
+    flex-shrink: 0;
+  }
+  .scene-num {
+    font-size: 18px; font-weight: 700;
+    color: var(--accent); min-width: 56px;
+  }
+  .scene-desc {
+    font-size: 15px; color: var(--text);
+    flex: 1;
+  }
+  .scene.done .scene-desc { text-decoration: line-through; color: var(--text-dim); }
+  .prompt-block {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+  .prompt-label {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .copy-btn {
+    background: transparent; color: var(--accent);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 4px 10px; font-size: 11px; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    font-family: inherit;
+  }
+  .copy-btn:hover { border-color: var(--accent); }
+  .copy-btn.copied { color: var(--done); border-color: var(--done); }
+  pre.prompt {
+    margin: 0; padding: 14px 16px;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 12.5px;
+    white-space: pre-wrap;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>FloraFlow — Hear Your Garden First</h1>
+  <div class="subtitle">Director's Shotlist · Seedance 2.0 · 60-second commercial · Soundscape hook</div>
+
+  <div class="howto">
+    Tick scenes as you finish them — your progress saves automatically.
+    Click the Copy button on any prompt to grab the full text (Style Prefix + Characters + Scene + Cuts).
+    Want changes? Tell Claude what to revise and the file updates.
+  </div>
+
+  <details class="style-prefix">
+    <summary>Global Style Prefix (applied to every prompt)</summary>
+    <pre>Style: 8K IMAX. Photorealistic — no 3D render, no game engine.
+Lighting: Natural light only — contre-jour backlight, camera on shadow side, atmospheric haze throughout. Key light from sky and windows only. No artificial lightning.
+Color: 60:30:10 — dominant / secondary / accent.
+Camera: Physical cine lens. 180° shutter motion blur.
+Skin: Pore-level realism — vellus hair, asymmetric moles, capillary flush, pore-shadow matching on-set light.
+Acting: Hollywood — micro-pauses before reactions, precise eye-line, living eyes with catch-lights, chest rise from breathing. Characters never standing, always reacting.
+Physics: Gravity and inertia respected — mass has real weight, correct contact shadows. No floating props.
+Composition: Rule of thirds + golden ratio. Every person moving from frame one.
+Continuity: Characters, props, environment identical across every cut. No identity drift.
+Technical: 24fps smooth motion. 8K detail. No jitter.
+Audio: Environmental SFX only. No music. No subtitles.</pre>
+  </details>
+
+  <div class="scene">
+    <div class="scene-header">
+      <input type="checkbox" data-scene="ss1">
+      <div class="scene-num">1.</div>
+      <div class="scene-desc">The noise — Leo battles the city home to a bare concrete balcony; headphones go on, thumb hovers over FloraFlow. (0:00–0:15)</div>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-label">
+        <span>Prompt 1 · 15s</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre class="prompt">Style: 8K IMAX. Photorealistic — no 3D render, no game engine.
+Lighting: Natural light only — contre-jour backlight, camera on shadow side, atmospheric haze throughout. Key light from sky and windows only. No artificial lightning.
+Color: 60:30:10 — dominant / secondary / accent.
+Camera: Physical cine lens. 180° shutter motion blur.
+Skin: Pore-level realism — vellus hair, asymmetric moles, capillary flush, pore-shadow matching on-set light.
+Acting: Hollywood — micro-pauses before reactions, precise eye-line, living eyes with catch-lights, chest rise from breathing. Characters never standing, always reacting.
+Physics: Gravity and inertia respected — mass has real weight, correct contact shadows. No floating props.
+Composition: Rule of thirds + golden ratio. Every person moving from frame one.
+Continuity: Characters, props, environment identical across every cut. No identity drift.
+Technical: 24fps smooth motion. 8K detail. No jitter.
+Audio: Environmental SFX only. No music. No subtitles.
+
+Characters:
+LEO — early 30s, South Asian, short black hair flattened from a long day, dark stubble, tired brown eyes with faint under-eye shadows, grey commuter jacket over a charcoal t-shirt, black over-ear headphones around his neck, worn canvas messenger bag across his chest, small mole on left cheekbone.
+
+Scene:
+Late-afternoon rush hour in a dense city, then a narrow sixth-floor concrete apartment balcony. The balcony holds one white plastic chair, a bare railing, and a single cracked planter with brittle dead stems. The low sun sits behind the skyline, contre-jour, haze thick over the street below. Dominant color: concrete grey. Secondary: dusty amber sunlight. Accent: none yet — the frame is deliberately starved of green.
+
+CUT 1 — Handheld 24mm, chest height, following Leo from behind through a crowded sidewalk:
+Leo weaves through commuters, shoulder-checked once by a passing stranger — he absorbs it, doesn't react, eyes down. A bus hisses past camera-left, a jackhammer stutters somewhere off-screen right, a siren doppler-fades. The low sun flares through the haze between buildings, silhouetting the crowd. His grip tightens on the messenger bag strap. City roar is dense, layered, oppressive.
+
+CUT 2 — Wide static 35mm, eye-level, from the balcony's far corner:
+Leo slides the balcony door open and steps out, the city din dropping only slightly. He drops the messenger bag by the door, lowers himself into the plastic chair with real weight — it flexes under him. His eyes land on the dead planter for a beat, then drift out over the skyline. Traffic hum and a distant car horn rise from six floors below. He exhales through his nose, shoulders still up around his ears.
+
+CUT 3 — Close on Leo, 85mm, static, contre-jour rim light from the low sun behind him:
+Leo pulls the headphones up over his ears — the city roar collapses into a dull muffled throb. He raises his phone: the FloraFlow app opens to a softly glowing plan of a balcony garden — his balcony, imagined green. His thumb hovers over a play button labeled with a small waveform. A micro-pause. His eyes flick up once to the dead planter, then back to the screen. Hold on the hovering thumb.</pre>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header">
+      <input type="checkbox" data-scene="ss2">
+      <div class="scene-num">2.</div>
+      <div class="scene-desc">The wow — he presses play; binaural wind chimes bloom over the city and his whole body lets go. The hook of the film. (0:15–0:30)</div>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-label">
+        <span>Prompt 2 · 15s</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre class="prompt">Style: 8K IMAX. Photorealistic — no 3D render, no game engine.
+Lighting: Natural light only — contre-jour backlight, camera on shadow side, atmospheric haze throughout. Key light from sky and windows only. No artificial lightning.
+Color: 60:30:10 — dominant / secondary / accent.
+Camera: Physical cine lens. 180° shutter motion blur.
+Skin: Pore-level realism — vellus hair, asymmetric moles, capillary flush, pore-shadow matching on-set light.
+Acting: Hollywood — micro-pauses before reactions, precise eye-line, living eyes with catch-lights, chest rise from breathing. Characters never standing, always reacting.
+Physics: Gravity and inertia respected — mass has real weight, correct contact shadows. No floating props.
+Composition: Rule of thirds + golden ratio. Every person moving from frame one.
+Continuity: Characters, props, environment identical across every cut. No identity drift.
+Technical: 24fps smooth motion. 8K detail. No jitter.
+Audio: Environmental SFX only. No music. No subtitles.
+
+Characters:
+LEO — early 30s, South Asian, short black hair flattened from a long day, dark stubble, tired brown eyes with faint under-eye shadows, grey commuter jacket over a charcoal t-shirt, black over-ear headphones now on his ears, small mole on left cheekbone. Seated in the white plastic chair on his balcony, phone in his right hand, exactly as the previous scene left him.
+
+Scene:
+The same sixth-floor concrete balcony, moments later. Low contre-jour sun behind the skyline, haze glowing amber. Leo seated in the plastic chair, the cracked planter with dead stems at frame edge. This scene is carried by sound: the moment he presses play, layered wind chimes and a soft low binaural undertone bloom through his headphones — diegetic, intimate, close — while the muffled city bed sinks away beneath them.
+
+CUT 1 — Macro on the phone screen, 100mm, shallow focus, slow drift:
+The FloraFlow plan of his balcony rendered lush and green on screen; a soundscape player slides up over it, a waveform breathing gently. His thumb lands on play. The waveform swells. Instantly: glassy wind chimes ring out in layered tones over a warm low hum, close and three-dimensional, as the dull city throb recedes to almost nothing.
+
+CUT 2 — Slow dolly-in on Leo's face, 85mm, from collarbone to a tight close-up, camera on the shadow side, rim-lit by the sinking sun:
+The chimes hang and shimmer. Leo's jaw unclenches first. Then his shoulders drop a full inch — visible, physical release. His eyes close. A long chest-deep breath in through the nose, held a beat, released. The capillary flush of tension fades from his forehead. A faint breeze moves the stray hairs at his temple in time with the chime decay.
+
+CUT 3 — Rack focus from Leo's closed eyes to the dead planter behind him, 85mm, static:
+On a soft chime swell, focus slides off Leo to the cracked planter — its brittle stems now caught in warm golden rim light, haze drifting behind it. Leo, soft in the foreground, opens his eyes and slowly turns his head toward it, looking at it as if for the first time. The chimes continue underneath, patient and unhurried. Hold.</pre>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header">
+      <input type="checkbox" data-scene="ss3">
+      <div class="scene-num">3.</div>
+      <div class="scene-desc">Building it — weekend morning; Leo plants the garden he heard, phone propped with the FloraFlow plan as his guide. (0:30–0:45)</div>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-label">
+        <span>Prompt 3 · 15s</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre class="prompt">Style: 8K IMAX. Photorealistic — no 3D render, no game engine.
+Lighting: Natural light only — contre-jour backlight, camera on shadow side, atmospheric haze throughout. Key light from sky and windows only. No artificial lightning.
+Color: 60:30:10 — dominant / secondary / accent.
+Camera: Physical cine lens. 180° shutter motion blur.
+Skin: Pore-level realism — vellus hair, asymmetric moles, capillary flush, pore-shadow matching on-set light.
+Acting: Hollywood — micro-pauses before reactions, precise eye-line, living eyes with catch-lights, chest rise from breathing. Characters never standing, always reacting.
+Physics: Gravity and inertia respected — mass has real weight, correct contact shadows. No floating props.
+Composition: Rule of thirds + golden ratio. Every person moving from frame one.
+Continuity: Characters, props, environment identical across every cut. No identity drift.
+Technical: 24fps smooth motion. 8K detail. No jitter.
+Audio: Environmental SFX only. No music. No subtitles.
+
+Characters:
+LEO — early 30s, South Asian, short black hair now loose and unstyled, dark stubble, rested brighter eyes, olive-green t-shirt with a faint soil smudge at the hem, worn jeans rolled at the ankle, bare forearms dusted with dry potting soil, small mole on left cheekbone. No headphones — this scene lives in real open-air sound.
+
+Scene:
+The same balcony, Saturday mid-morning. Soft high sun through thin haze, light spilling from the open sky — brighter and kinder than the weekday scenes. The floor is staged with work: two bags of potting soil, a cluster of terracotta pots, seedlings in nursery trays (lavender, jasmine, trailing ivy, a small fern), a metal watering can, and a small brass wind chime still in its box. His phone is propped against the balcony wall, screen showing the FloraFlow garden plan. Dominant color: warm terracotta and concrete. Secondary: fresh green. Accent: brass.
+
+CUT 1 — Overhead top-down 35mm, slow drift across the balcony floor:
+Leo kneels among the pots, sliding the cracked old planter aside and setting a new terracotta pot in its place. He glances at the propped phone — the plan shows lavender marked in that exact corner — then back to the pot, aligning it with a small satisfied nod. Sparrows chatter somewhere above; the city hum below is present but softer, distant.
+
+CUT 2 — Close on hands, 50mm, eye-level with the pot rim, static:
+His hands lower the lavender root ball into the pot and press fresh soil around it — soil grains sticking to his knuckles, real weight in every press. He reaches up and hooks the small brass wind chime onto a railing bracket; it swings once from the motion and rings a single bright note — the first real chime of the film, answering the digital ones from Scene 2. A breath of wind carries it.
+
+CUT 3 — Wide 35mm from the balcony door, eye-level, static:
+The balcony half-transformed: potted lavender and jasmine along the railing, ivy beginning its trail, the fern in the corner. Leo sits back on his heels, wipes his forehead with the back of his wrist leaving a faint soil streak, and lets out a short breath that is almost a laugh. He reaches over and taps the phone screen — checking the plan — then looks up at what he's built. Water drips softly from the freshly watered pots onto concrete.</pre>
+    </div>
+  </div>
+
+  <div class="scene">
+    <div class="scene-header">
+      <input type="checkbox" data-scene="ss4">
+      <div class="scene-num">4.</div>
+      <div class="scene-desc">The breath out — dusk in the finished garden; real chimes and the app's soundscape blend into one. Final wide holds clean for the FloraFlow logo card in post. (0:45–1:00)</div>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-label">
+        <span>Prompt 4 · 15s</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+      <pre class="prompt">Style: 8K IMAX. Photorealistic — no 3D render, no game engine.
+Lighting: Natural light only — contre-jour backlight, camera on shadow side, atmospheric haze throughout. Key light from sky and windows only. No artificial lightning.
+Color: 60:30:10 — dominant / secondary / accent.
+Camera: Physical cine lens. 180° shutter motion blur.
+Skin: Pore-level realism — vellus hair, asymmetric moles, capillary flush, pore-shadow matching on-set light.
+Acting: Hollywood — micro-pauses before reactions, precise eye-line, living eyes with catch-lights, chest rise from breathing. Characters never standing, always reacting.
+Physics: Gravity and inertia respected — mass has real weight, correct contact shadows. No floating props.
+Composition: Rule of thirds + golden ratio. Every person moving from frame one.
+Continuity: Characters, props, environment identical across every cut. No identity drift.
+Technical: 24fps smooth motion. 8K detail. No jitter.
+Audio: Environmental SFX only. No music. No subtitles.
+
+Characters:
+LEO — early 30s, South Asian, short black hair loose, dark stubble, calm rested eyes, olive-green t-shirt with the faint soil smudge at the hem, worn jeans, a fading soil streak on his forehead from the day's work, small mole on left cheekbone. Black over-ear headphones on, phone resting face-up on his knee.
+
+Scene:
+The same balcony at golden hour, now fully alive: lavender and jasmine along the railing, ivy trailing between them, the fern filling the corner, the brass wind chime on its bracket catching the last sun. Leo sits in the white plastic chair — same chair, different man. The sun is nearly down behind the skyline, deep contre-jour, haze glowing rose-gold. His phone screen shows the FloraFlow soundscape mini-player, waveform breathing softly. Dominant color: dusk rose-gold. Secondary: deep green. Accent: brass. Sound design: the real brass chime rings in the evening breeze, and the app's layered chimes and low binaural undertone answer it through the headphones — real and designed blending into one continuous shimmer, the city reduced to a distant soft wash far below.
+
+CUT 1 — Slow lateral dolly, 35mm, gliding right-to-left past the railing plants in the foreground:
+Jasmine and lavender pass soft through frame, backlit and rimmed in rose-gold, the brass chime swinging gently and ringing as camera passes it. The move lands on Leo in the chair, headphones on, eyes open toward the skyline, one hand loose on the armrest, breeze moving the plants around him.
+
+CUT 2 — Close on Leo, 85mm, static, camera on the shadow side, sunset catch-lights in his eyes:
+The real chime rings; a half-second later the app's chimes answer in his headphones. The corner of his mouth lifts — barely. His chest rises in one long, slow breath and falls in an unhurried exhale — the breath out the whole film has been building toward. His eyes close on the exhale. The fern frond beside his shoulder nods in the breeze.
+
+CUT 3 — Final wide, 35mm, static locked-off from the far corner of the balcony, slow 5-second hold:
+The full garden in frame, Leo small and still at its center, skyline dimming behind him, chime swaying, plants breathing in the wind, haze glowing. No new action — the frame simply lives: leaves moving, light fading one degree warmer, the blended chimes ringing softly. Composition holds clean negative space in the upper third for the FloraFlow logo card in post.</pre>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Persist checkbox state in localStorage
+  document.querySelectorAll('.scene input[type="checkbox"]').forEach(cb => {
+    const key = 'shotlist-scene-' + cb.dataset.scene + '-done';
+    if (localStorage.getItem(key) === '1') {
+      cb.checked = true;
+      cb.closest('.scene').classList.add('done');
+    }
+    cb.addEventListener('change', () => {
+      localStorage.setItem(key, cb.checked ? '1' : '0');
+      cb.closest('.scene').classList.toggle('done', cb.checked);
+    });
+  });
+
+  // Copy buttons
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pre = btn.closest('.prompt-block').querySelector('pre.prompt');
+      navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.classList.add('copied');
+        const original = btn.textContent;
+        btn.textContent = 'Copied';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.textContent = original;
+        }, 1500);
+      });
+    });
+  });
+</script>
+</body>
+</html>
