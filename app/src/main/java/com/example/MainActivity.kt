@@ -111,7 +111,9 @@ class MainActivity : ComponentActivity() {
                 workRequest
             )
         } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Failed to schedule CareSyncWorker: ${e.message}")
+            if (com.example.BuildConfig.DEBUG) {
+                android.util.Log.e("MainActivity", "Failed to schedule CareSyncWorker: ${e.message}")
+            }
         }
 
         var initialValidationActive by mutableStateOf(!startupMode.runsProductionStartup)

@@ -89,7 +89,9 @@ class CareScheduler(
 
         if (newTasks.isNotEmpty()) {
             gardenRepository.insertCareTasks(newTasks)
-            Log.d("CareScheduler", "Generated ${newTasks.size} new care tasks.")
+            if (com.example.BuildConfig.DEBUG) {
+                Log.d("CareScheduler", "Generated ${newTasks.size} new care tasks.")
+            }
         }
 
         val pendingTasks = gardenRepository.pendingCareTasks.first()
