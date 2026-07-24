@@ -259,16 +259,23 @@ fun BiophilicProfileCard(
                     
                     val destinationPage = if (stepInfo.targetPage != 0) stepInfo.targetPage else if (index == 0) 1 else 2
 
-                    IconButton(
-                        onClick = { onNavigate(destinationPage) },
-                        modifier = Modifier.size(36.dp).testTag("step_shortcut_btn_${index + 1}")
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .clickable { onNavigate(destinationPage) }
+                            .testTag("step_shortcut_btn_${index + 1}")
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Go to corresponding recommendation card",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowForward,
+                                contentDescription = "Go to corresponding recommendation card",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -301,9 +308,10 @@ fun BiophilicProfileCard(
             ) {
                 OutlinedButton(
                     onClick = onRetakeClick,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
                         .weight(1f)
+                        .height(44.dp)
                         .testTag("biophilic_retake_assessment_btn")
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = "Retake Restorative Assessment", modifier = Modifier.size(16.dp))
@@ -313,8 +321,10 @@ fun BiophilicProfileCard(
 
                 Button(
                     onClick = { onNavigate(2) }, // Navigate to Card 3 (Daily Tend & Audio)
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.weight(1f)
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(44.dp)
                 ) {
                     Icon(Icons.Default.Share, contentDescription = "Share to Community", modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))

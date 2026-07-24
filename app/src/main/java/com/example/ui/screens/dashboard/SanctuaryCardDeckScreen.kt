@@ -700,11 +700,36 @@ private fun CustomBinauralStudioCard(
                 }
             }
 
-            Text(
-                text = "Frequency: ${frequencyHz.toInt()} Hz (${if (frequencyHz <= 7f) "Theta Deep Meditation" else if (frequencyHz <= 13f) "Alpha Calm Focus" else "Gamma High Awareness"})",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // Interactive Preset Chips
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                BinauralPresetChip(
+                    label = "Alpha 10Hz",
+                    selected = frequencyHz == 10f,
+                    onClick = {
+                        if (isPremium) viewModel.setBinauralFrequency(10f) else viewModel.triggerPaywall()
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                BinauralPresetChip(
+                    label = "Theta 6Hz",
+                    selected = frequencyHz == 6f,
+                    onClick = {
+                        if (isPremium) viewModel.setBinauralFrequency(6f) else viewModel.triggerPaywall()
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+                BinauralPresetChip(
+                    label = "Gamma 40Hz",
+                    selected = frequencyHz == 40f,
+                    onClick = {
+                        if (isPremium) viewModel.setBinauralFrequency(40f) else viewModel.triggerPaywall()
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
             Slider(
                 value = frequencyHz,
@@ -719,5 +744,33 @@ private fun CustomBinauralStudioCard(
                 modifier = Modifier.fillMaxWidth()
             )
         }
+    }
+}
+
+@Composable
+private fun BinauralPresetChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val containerBg = if (selected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)
+    val contentColor = if (selected) MaterialTheme.colorScheme.onTertiary else MaterialTheme.colorScheme.onTertiaryContainer
+
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = containerBg,
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .clickable { onClick() }
+    ) {
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
+            color = contentColor,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(vertical = 6.dp, horizontal = 4.dp)
+        )
     }
 }
