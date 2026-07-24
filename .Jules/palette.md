@@ -14,3 +14,7 @@
 ## 2026-07-20 - Add explicit contentDescription for Icons
 **Learning:** Icon controls without contentDescription are confusing for screen reader users.
 **Action:** Always provide a clear explicit 'contentDescription' string for informative Icons instead of setting it to null.
+
+## 2026-08-10 - Add Confirmation Dialog for Destructive Actions
+**Learning:** Users can accidentally click delete icons, causing irreversible loss of user data (like garden layouts). This creates a highly frustrating user experience.
+**Action:** Always add a confirmation dialog (like AlertDialog) before executing destructive, irreversible actions to ensure intentionality.
