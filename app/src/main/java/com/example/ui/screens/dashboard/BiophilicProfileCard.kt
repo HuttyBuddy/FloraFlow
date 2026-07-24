@@ -217,16 +217,24 @@ fun BiophilicProfileCard(
                 color = MaterialTheme.colorScheme.primary
             )
 
-            val defaultCategories = listOf("NATURAL LIGHT", "LIVING PLANTS", "ACOUSTIC CALM")
-            val distinctCategories = (lowestCategories + defaultCategories).map { it.trim().uppercase() }.distinct().take(3)
+            val candidateCategories = lowestCategories + listOf("NATURAL LIGHT", "LIVING PLANTS", "ACOUSTIC CALM", "NATURAL MATERIALS", "AIR & VENTILATION")
+            val distinctSteps = mutableListOf<BiophilicStepInfo>()
+            val seenTitles = mutableSetOf<String>()
 
-            distinctCategories.forEachIndexed { index, category ->
+            for (cat in candidateCategories) {
+                val info = getBiophilicStepInfo(cat)
+                if (seenTitles.add(info.title)) {
+                    distinctSteps.add(info)
+                    if (distinctSteps.size >= 3) break
+                }
+            }
+
+            distinctSteps.forEachIndexed { index, stepInfo ->
                 val isChecked = when (index) {
                     0 -> step1Completed
                     1 -> step2Completed
                     else -> step3Completed
                 }
-                val stepTitle = getBiophilicCategoryTip(category).first
 
                 Row(
                     modifier = Modifier
@@ -242,21 +250,17 @@ fun BiophilicProfileCard(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stepTitle,
+                        text = stepInfo.title,
                         style = MaterialTheme.typography.bodyMedium,
                         textDecoration = if (isChecked) androidx.compose.ui.text.style.TextDecoration.LineThrough else null,
                         color = if (isChecked) MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f)
                     )
                     
-                    val targetPage = when {
-                        category.contains("LIGHT") || category.contains("DAYLIGHT") || index == 0 -> 0
-                        category.contains("PLANT") || category.contains("GREEN") || index == 1 -> 1
-                        else -> 2
-                    }
+                    val destinationPage = if (stepInfo.targetPage != 0) stepInfo.targetPage else if (index == 0) 1 else 2
 
                     IconButton(
-                        onClick = { onNavigate(targetPage) },
+                        onClick = { onNavigate(destinationPage) },
                         modifier = Modifier.size(36.dp).testTag("step_shortcut_btn_${index + 1}")
                     ) {
                         Icon(
@@ -328,16 +332,27 @@ private data class BiophilicZoneInfo(
     val zoneBg: Color
 )
 
-private fun getBiophilicCategoryTip(category: String): Pair<String, String> {
+private data class BiophilicStepInfo(
+    val title: String,
+    val detail: String,
+    val targetPage: Int
+)
+
+private fun getBiophilicStepInfo(category: String): BiophilicStepInfo {
     val upper = category.uppercase()
     return when {
-        upper.contains("LIGHT") || upper.contains("DAYLIGHT") -> Pair("Maximize natural daylight", "Set your desk/sitting area within 5 feet of natural light to regulate sleep cycles and cortisol.")
-        upper.contains("PLANT") || upper.contains("GREEN") -> Pair("Add companion living plants", "Sow at least 2-3 distinct plants (e.g., ivy, bonsai) in your space to lower sympathetic nervous system arousal.")
-        upper.contains("ACOUSTIC") || upper.contains("SOUND") || upper.contains("WATER") || upper.contains("MASKING") -> Pair("Introduce sound masking", "Place a tabletop moving water feature or play soothing botanical rain sounds to mask distracting background hums.")
-        upper.contains("MATERIAL") || upper.contains("TEXTURE") -> Pair("Introduce natural textures", "Integrate materials like wood, cork, or a clay plant pot into your setup to stabilize stress baselines.")
-        upper.contains("AIR") || upper.contains("VENTILATION") -> Pair("Enhance room ventilation", "Get 10 minutes of fresh air twice daily, or place a quiet oscillating fan near plants to simulate natural breeze.")
-        upper.contains("SENSORY") || upper.contains("SCENT") -> Pair("Stimulate sensory triggers", "Introduce highly aromatic herbs (lavender, pine, mint) near your workspace. Inhale their scent during breaks.")
-        upper.contains("SEASON") -> Pair("Align with natural cycles", "Adjust light durations to match current seasons. Keep a seasonal plant blooming nearby.")
-        else -> Pair("Enhance natural presence", "Add organic shapes, living greenery, and natural daylight zones to complete your biophilic shelter.")
+        upper.contains("LIGHT") || upper.contains("DAYLIGHT") -> BiophilicStepInfo("Maximize natural daylight", "Set your desk/sitting area within 5 feet of natural light to regulate sleep cycles and cortisol.", 1)
+        upper.contains("PLANT") || upper.contains("GREEN") -> BiophilicStepInfo("Add companion living plants", "Sow at least 2-3 distinct plants (e.g., ivy, bonsai) in your space to lower sympathetic nervous system arousal.", 1)
+        upper.contains("ACOUSTIC") || upper.contains("SOUND") || upper.contains("WATER") || upper.contains("MASKING") -> BiophilicStepInfo("Introduce sound masking", "Place a tabletop moving water feature or play soothing botanical rain sounds to mask distracting background hums.", 2)
+        upper.contains("MATERIAL") || upper.contains("TEXTURE") -> BiophilicStepInfo("Introduce natural textures", "Integrate materials like wood, cork, or a clay plant pot into your setup to stabilize stress baselines.", 1)
+        upper.contains("AIR") || upper.contains("VENTILATION") -> BiophilicStepInfo("Enhance room ventilation", "Get 10 minutes of fresh air twice daily, or place a quiet oscillating fan near plants to simulate natural breeze.", 2)
+        upper.contains("SENSORY") || upper.contains("SCENT") -> BiophilicStepInfo("Stimulate sensory triggers", "Introduce highly aromatic herbs (lavender, pine, mint) near your workspace. Inhale their scent during breaks.", 2)
+        upper.contains("SEASON") -> BiophilicStepInfo("Align with natural cycles", "Adjust light durations to match current seasons. Keep a seasonal plant blooming nearby.", 1)
+        else -> BiophilicStepInfo("Enhance natural presence", "Add organic shapes, living greenery, and natural daylight zones to complete your biophilic shelter.", 1)
     }
+}
+
+private fun getBiophilicCategoryTip(category: String): Pair<String, String> {
+    val info = getBiophilicStepInfo(category)
+    return Pair(info.title, info.detail)
 }
