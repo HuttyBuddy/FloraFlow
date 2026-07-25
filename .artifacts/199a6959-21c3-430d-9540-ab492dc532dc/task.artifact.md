@@ -1,4 +1,4 @@
-- [x] Redesign `PaywallTierCard` to support a banner and compact layout
-- [x] Update `PaywallDialog` to use separate cards for Annual and Monthly tiers
-- [x] Add "Best Value" banner to the Annual tier
-- [x] Verify selection logic and visual updates on device
+- [x] Create reusable `ZipCodeDialog.kt`
+- [x] Refactor `DashboardScreen.kt` to use `ZipCodeDialog`
+- [x] Update `SanctuaryCardDeckScreen.kt` to enable location changes
+- [ ] Verify functionality on the emulator

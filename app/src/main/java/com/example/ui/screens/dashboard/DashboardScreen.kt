@@ -926,67 +926,14 @@ fun DashboardScreen(
 
     // --- DIALOG: Change Zip Code ---
     if (showZipDialog) {
-        Dialog(onDismissRequest = { showZipDialog = false }) {
-            Surface(
-                shape = RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.background,
-                modifier = Modifier
-                    .padding(16.dp)
-                    .testTag("change_zip_dialog")
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(20.dp)
-                        .fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        text = "Update Location Zip Code",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    var zipInput by remember { mutableStateOf(viewModel.getWeatherLocationZip()) }
-
-                    OutlinedTextField(
-                        value = zipInput,
-                        onValueChange = { zipInput = it },
-                        label = { Text("Zip Code") },
-                        modifier = Modifier.fillMaxWidth().testTag("zip_code_input"),
-                        placeholder = { Text("e.g. 90210") },
-                        shape = RoundedCornerShape(12.dp),
-                        singleLine = true
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextButton(onClick = { showZipDialog = false }) {
-                            Text("Cancel")
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Button(
-                            onClick = {
-                                if (zipInput.isNotBlank()) {
-                                    viewModel.updateWeatherLocation(zipInput.trim())
-                                    showZipDialog = false
-                                }
-                            },
-                            enabled = zipInput.isNotBlank(),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier.testTag("submit_zip_code")
-                        ) {
-                            Text("Update")
-                        }
-                    }
-                }
+        ZipCodeDialog(
+            initialZip = viewModel.getWeatherLocationZip(),
+            onDismiss = { showZipDialog = false },
+            onUpdate = { newZip ->
+                viewModel.updateWeatherLocation(newZip)
+                showZipDialog = false
             }
-        }
+        )
     }
 
     // --- Celebration Dialogs ---

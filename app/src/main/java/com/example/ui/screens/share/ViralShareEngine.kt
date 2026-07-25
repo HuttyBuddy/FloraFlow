@@ -67,7 +67,7 @@ object ViralShareEngine {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             letterSpacing = 0.15f
         }
-        canvas.drawText("FLORAFLOW AI • SANCTUARY VIBE CHECK", 90f, 160f, brandPaint)
+        canvas.drawText("FLORAFLOW: INDOOR SANCTUARIES • VIBE CHECK", 90f, 160f, brandPaint)
 
         // 4. Main Glassmorphism Card Container
         val cardPaint = Paint().apply {
@@ -208,7 +208,7 @@ object ViralShareEngine {
             typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             textAlign = Paint.Align.CENTER
         }
-        canvas.drawText("Made with FloraFlow AI 🌿 • Calculate yours at floraflow.app", width / 2f, height - 120f, footerPaint)
+        canvas.drawText("FloraFlow: Indoor Sanctuaries 🌿 • Breathe life into your space", width / 2f, height - 120f, footerPaint)
 
         return bitmap
     }
@@ -234,7 +234,7 @@ object ViralShareEngine {
                 putExtra(Intent.EXTRA_STREAM, contentUri)
                 putExtra(
                     Intent.EXTRA_TEXT,
-                    "My plant sanctuary score is ${data.score}%! Check your room's biophilic vibe with FloraFlow AI 🌿✨"
+                    "My indoor plant sanctuary score is ${data.score}%! Discover your Plant Parent Archetype with FloraFlow: Indoor Sanctuaries 🌿✨"
                 )
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }

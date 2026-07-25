@@ -47,6 +47,7 @@ fun SanctuaryCardDeckScreen(
     val coroutineScope = rememberCoroutineScope()
     var showAiCounselSheet by remember { mutableStateOf(false) }
     var showSettingsDialog by remember { mutableStateOf(false) }
+    var showZipDialog by remember { mutableStateOf(false) }
 
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
     val activePlants by viewModel.activePlants.collectAsStateWithLifecycle()
@@ -169,6 +170,7 @@ fun SanctuaryCardDeckScreen(
                         step3Completed = step3Completed,
                         weather = weather,
                         onOpenAiCounsel = { showAiCounselSheet = true },
+                        onEditLocation = { showZipDialog = true },
                         onNavigateToPage = { targetPage ->
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(targetPage.coerceIn(0, 2))
@@ -217,6 +219,18 @@ fun SanctuaryCardDeckScreen(
             onFeedbackClick = { showSettingsDialog = false },
             onHelpClick = { showSettingsDialog = false },
             viewModel = viewModel
+        )
+    }
+
+    // Zip Code Dialog
+    if (showZipDialog) {
+        ZipCodeDialog(
+            initialZip = viewModel.getWeatherLocationZip(),
+            onDismiss = { showZipDialog = false },
+            onUpdate = { newZip ->
+                viewModel.updateWeatherLocation(newZip)
+                showZipDialog = false
+            }
         )
     }
 }
@@ -293,6 +307,7 @@ private fun Card1RestorativeCorner(
     step3Completed: Boolean,
     weather: com.example.data.repository.WeatherInfo,
     onOpenAiCounsel: () -> Unit,
+    onEditLocation: () -> Unit,
     onNavigateToPage: (Int) -> Unit = {}
 ) {
     Column(
@@ -346,7 +361,7 @@ private fun Card1RestorativeCorner(
 
         WeatherSyncCard(
             weather = weather,
-            onWeatherClick = {}
+            onWeatherClick = onEditLocation
         )
 
         RealTimeLightMeterCard(viewModel = viewModel)
