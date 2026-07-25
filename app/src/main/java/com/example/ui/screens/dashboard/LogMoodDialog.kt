@@ -58,7 +58,7 @@ fun LogMoodDialog(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
-                    text = "Record Outdoor Session",
+                    text = "Record Indoor Sanctuary Session",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -68,7 +68,7 @@ fun LogMoodDialog(
 
                 // Select Mood
                 Text(
-                    "How do you feel after gardening?", 
+                    "How do you feel after tending your indoor plants?", 
                     fontWeight = FontWeight.Bold, 
                     style = MaterialTheme.typography.bodyMedium
                 )

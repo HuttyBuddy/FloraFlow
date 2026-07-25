@@ -2,6 +2,18 @@
 
 All notable changes to the FloraFlow project will be documented in this file.
 
+## [10.0.0.0] - 2026-07-25
+
+### Added
+- **15-Second Ambient Reels Exporter**: Native hardware-accelerated `MediaCodec` (H.264) + `MediaMuxer` 1080x1920 30fps MP4 video generator merging soundwave animations, room scores, and binaural audio for TikTok & Instagram Reels.
+- **Plant Parent Personality Archetype System**: 5 shareable personality archetypes (*Jungle Maximalist*, *Cactus Survivor*, *Serial Overwaterer*, *Cyberpunk Botanist*, *Sanctuary Master*) calculated from biophilic assessment scores and care habits.
+- **Co-Care Duet Home Screen AppWidget**: Native Android `AppWidgetProvider` displaying shared blooming plant nodes, care streaks, and partner activity.
+- **AI Room Vibe Check Screen**: Camera-assisted indoor room diagnostic tool evaluating window daylight, foliage density, and air flow balance.
+
+### Changed
+- **100% Indoor Houseplant Refactor**: Completely refactored the app database, climate templates, planner tray, weather advice cards, and AI advisor system prompts to focus strictly on **Indoor Houseplants & Indoor Biophilic Sanctuaries**, removing all legacy outdoor crop/farming references.
+- **Habit Tracking Loop**: Updated the 3rd daily botanical habit arc on the Circular Rhythm wheel from *"Outdoors"* to **"Leaf Misting"** (`mistCompleted`).
+
 ## [9.0.1.3] - 2026-07-22
 
 ### Changed

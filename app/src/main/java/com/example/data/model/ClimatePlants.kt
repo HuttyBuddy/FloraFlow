@@ -424,7 +424,7 @@ object ClimatePlants {
             )
         ),
 
-        // === OUTDOOR PLANTS ===
+        // === SPECIALTY INDOOR & DESK HOUSEPLANTS ===
         PlantTemplate(
             name = "Saguaro Cactus",
             type = "Succulent",
@@ -440,7 +440,7 @@ object ClimatePlants {
             bloomTime = "Late Spring (May - June)",
             pestsDiseases = "Bacterial necrosis, Mealybugs",
             compatibleClimate = "Arid (Desert)",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Saguaro cacti can take up to 75 years to grow their first side arm.",
                 "They store huge amounts of water; a fully hydrated saguaro can weigh over 3,000 pounds.",
@@ -462,7 +462,7 @@ object ClimatePlants {
             bloomTime = "Spring to Autumn",
             pestsDiseases = "Spider mites, Powdery mildew",
             compatibleClimate = "Arid (Desert)",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Its leaves are covered in dense, woolly hairs that reflect sunlight and reduce water loss.",
                 "Wild desert marigolds bloom so densely they can turn entire hillsides solid yellow.",
@@ -484,7 +484,7 @@ object ClimatePlants {
             bloomTime = "Spring to Summer",
             pestsDiseases = "Spittlebugs, Root rot in soggy soil",
             compatibleClimate = "Arid (Desert)",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Rosemary is historically associated with memory; ancient scholars wore it in their hair during exams.",
                 "It belongs to the mint family and is highly resistant to common garden pests.",
@@ -506,7 +506,7 @@ object ClimatePlants {
             bloomTime = "Late Spring",
             pestsDiseases = "Cochineal scale, Broad mites",
             compatibleClimate = "Arid (Desert)",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Both the flat pads (nopales) and the bright red fruits (tunas) are fully edible and delicious.",
                 "Prickly pear sap can be used to purify dirty drinking water organically.",
@@ -528,7 +528,7 @@ object ClimatePlants {
             bloomTime = "Once every 10-15 years",
             pestsDiseases = "Agave snout weevil",
             compatibleClimate = "Arid (Desert)",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Commonly known as the Century Plant because it blooms so infrequently.",
                 "It dies after blooming, but produces offsets (pups) at its base to carry on."
@@ -549,7 +549,7 @@ object ClimatePlants {
             bloomTime = "Winter to Spring",
             pestsDiseases = "Scale, Mealybugs",
             compatibleClimate = "Tropical (Humid)",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "The unique flower shape resembles a colorful bird in flight, designed to attract pollinating birds.",
                 "In Hawaii, the flower is considered a symbol of magnificence and royalty.",
@@ -571,7 +571,7 @@ object ClimatePlants {
             bloomTime = "Summer (Rare)",
             pestsDiseases = "Fungus gnats, Spider mites",
             compatibleClimate = "Tropical (Humid)",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "The fenestrations (holes) in its leaves allow jungle winds and light to pass through without tearing them.",
                 "The name Deliciosa refers to the delicious edible fruit it produces in the wild.",
@@ -593,7 +593,7 @@ object ClimatePlants {
             bloomTime = "Year-round (Warm climates)",
             pestsDiseases = "Nematodes, Leaf spot",
             compatibleClimate = "Tropical (Humid)",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "The showy red 'flower' is actually a series of colored bracts; the true flower is small and white inside.",
                 "It is the national flower of Samoa, known locally as 'teuila.'",
@@ -615,7 +615,7 @@ object ClimatePlants {
             bloomTime = "Summer to Autumn",
             pestsDiseases = "Whiteflies, Aphids",
             compatibleClimate = "Tropical (Humid)",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Hibiscus flowers are fully edible and make a popular tart herbal tea rich in Vitamin C.",
                 "Its flowers bloom for only 24 hours, but the bush produces new ones continuously."
@@ -636,7 +636,7 @@ object ClimatePlants {
             bloomTime = "Early Summer to Autumn",
             pestsDiseases = "Plumeria rust, Mealybugs",
             compatibleClimate = "Tropical (Humid)",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Commonly known as Frangipani, its intensely sweet scent is strongest at night to attract moths.",
                 "Plumeria flowers are traditionally used to weave Hawaiian leis."
@@ -657,7 +657,7 @@ object ClimatePlants {
             bloomTime = "Non-flowering",
             pestsDiseases = "Spider mites, Cypress aphids",
             compatibleClimate = "Mediterranean",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Cypress wood is exceptionally durable; the doors of St. Peter's Basilica in Rome lasted over 1,000 years.",
                 "Ancient Romans planted cypress trees to protect homes from bad energy and welcome friends.",
@@ -679,7 +679,7 @@ object ClimatePlants {
             bloomTime = "Summer (June - August)",
             pestsDiseases = "Root rot, Spittlebugs",
             compatibleClimate = "Mediterranean",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Lavender has been used for over 2,500 years as a natural remedy for anxiety and sleep disorders.",
                 "The name comes from Latin 'lavare,' which means 'to wash,' as Romans used it in their baths.",
@@ -701,7 +701,7 @@ object ClimatePlants {
             bloomTime = "Summer",
             pestsDiseases = "Root rot, Spittlebugs",
             compatibleClimate = "Temperate Mediterranean",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Lavender belongs to the mint family Lamiaceae.",
                 "Its scent is widely used in aromatherapy to reduce anxiety and improve sleep."
@@ -722,7 +722,7 @@ object ClimatePlants {
             bloomTime = "Year-round in warm cycles",
             pestsDiseases = "Caterpillars, Leaf miners",
             compatibleClimate = "Mediterranean",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "The vibrant magenta petals are actually leaf-like bracts; the true flowers are tiny white tubes inside.",
                 "Discovered in 1768 in Brazil by French botanist Philibert Commerson, named after explorer Louis de Bougainville.",
@@ -744,7 +744,7 @@ object ClimatePlants {
             bloomTime = "Late Spring (May - June)",
             pestsDiseases = "Aphids, Mushroom root rot",
             compatibleClimate = "Mediterranean",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Jacaranda trees turn entire cities purple when they bloom in late spring.",
                 "According to college lore, if a jacaranda blossom falls on your head, you will pass all your exams.",
@@ -766,7 +766,7 @@ object ClimatePlants {
             bloomTime = "Summer to Autumn",
             pestsDiseases = "Whiteflies, Powdery mildew",
             compatibleClimate = "Mediterranean",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "The name 'Mealy Cup' comes from the powdery white hairs that coat the plant's calyx.",
                 "It is a magnet for native bumblebees, honeybees, and beneficial butterflies.",
@@ -788,7 +788,7 @@ object ClimatePlants {
             bloomTime = "Spring",
             pestsDiseases = "Olive fruit fly, peacock spot",
             compatibleClimate = "Mediterranean",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Olive branches are a global symbol of peace, originating in ancient Greece.",
                 "Some olive trees in the Mediterranean are verified to be over 2,000 years old."
@@ -809,7 +809,7 @@ object ClimatePlants {
             bloomTime = "Late Spring to Summer",
             pestsDiseases = "Fig rust, Mosaic virus",
             compatibleClimate = "Mediterranean",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Fig trees do not have visible blossoms; the flowers actually bloom *inside* the hollow fruit.",
                 "Fossils of cultivated figs have been found dating back to 9000 BC, predating wheat."
@@ -830,7 +830,7 @@ object ClimatePlants {
             bloomTime = "Spring to Summer",
             pestsDiseases = "Mildew in wet soil",
             compatibleClimate = "Arid (Desert) Mediterranean",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "It is the official state flower of California, celebrating its golden orange color.",
                 "Its petals close at night and during cloudy or rainy weather."
@@ -851,7 +851,7 @@ object ClimatePlants {
             bloomTime = "Mid Spring to Early Summer",
             pestsDiseases = "Leaf miners, Aphids",
             compatibleClimate = "Mountainous",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "The name Columbine is derived from Latin 'columba,' meaning 'dove,' because the flower resembles five doves.",
                 "It is the state flower of Colorado and thrives in rocky mountain soils.",
@@ -873,7 +873,7 @@ object ClimatePlants {
             bloomTime = "Late Summer",
             pestsDiseases = "Slugs, Powdery mildew",
             compatibleClimate = "Mountainous",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Derived from the Greek word for 'star,' referring to the flower's radiating purple petals.",
                 "It grows natively above the tree line in extreme wind, rocky terrains, and chilly climates.",
@@ -895,7 +895,7 @@ object ClimatePlants {
             bloomTime = "Early Summer",
             pestsDiseases = "Root rot in soggy environments",
             compatibleClimate = "Mountainous",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Creeping thyme forms a dense, springy green mat that releases a sweet, herbal scent when stepped on.",
                 "It was used by ancient Greeks in their baths and temples to symbolize courage.",
@@ -917,7 +917,7 @@ object ClimatePlants {
             bloomTime = "Mid Summer",
             pestsDiseases = "Root damp rot, crown mildew",
             compatibleClimate = "Mountainous",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Its velvet-like white hairs act as natural sunblock and insulator against high-altitude UV radiation.",
                 "In the Swiss Alps, giving an edelweiss flower is a traditional symbol of daring, deep love and devotion.",
@@ -939,7 +939,7 @@ object ClimatePlants {
             bloomTime = "Late Spring to Summer",
             pestsDiseases = "Slugs, Snails",
             compatibleClimate = "Mountainous",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Famous for its intense, pure electric-blue bell-shaped blossoms.",
                 "Gentian root extract has been used for centuries to brew traditional digestive bitters."
@@ -960,7 +960,7 @@ object ClimatePlants {
             bloomTime = "Late Winter (February - March)",
             pestsDiseases = "Narcissus bulb fly",
             compatibleClimate = "Mountainous Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "One of the first flowers to emerge in late winter, signaling the start of spring.",
                 "Its bulbs contain an organic antifreeze protein that prevents ice crystals from breaking cells."
@@ -981,7 +981,7 @@ object ClimatePlants {
             bloomTime = "Late Summer to Autumn",
             pestsDiseases = "Powdery mildew, root rot",
             compatibleClimate = "Mountainous Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Heather is highly resilient and thrives on wild, wind-swept moorlands.",
                 "Traditionally used in Scotland to make brooms, thatch roofs, and flavor ale."
@@ -1002,7 +1002,7 @@ object ClimatePlants {
             bloomTime = "Summer to Autumn",
             pestsDiseases = "Whiteflies, Fuchsia rust",
             compatibleClimate = "Mountainous Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Its hanging, bell-shaped flowers are shaped like teardrops, loved by hummingbirds.",
                 "Named after Leonhart Fuchs, an influential 16th-century German botanist."
@@ -1023,7 +1023,7 @@ object ClimatePlants {
             bloomTime = "Late Spring to Frost",
             pestsDiseases = "Black spot, Aphids, Beetles",
             compatibleClimate = "Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Roses are one of the oldest species of plants, with fossils dating back 35 million years.",
                 "The rose hip (fruit) contains more vitamin C than an equivalent weight of oranges.",
@@ -1045,7 +1045,7 @@ object ClimatePlants {
             bloomTime = "Spring (Inconspicuous)",
             pestsDiseases = "Scale wood bugs, Verticillium wilt",
             compatibleClimate = "Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Japanese maples are highly prized in the art of Bonsai, representing visual elegance and peace.",
                 "In Japan, viewing autumn maple leaves is a cultural tradition called 'Momijigari.'",
@@ -1067,7 +1067,7 @@ object ClimatePlants {
             bloomTime = "Non-flowering",
             pestsDiseases = "Spider mites, Leaf spot bacteria",
             compatibleClimate = "Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Ivy vines climb using tiny clinging rootlets that secrete a strong organic glue.",
                 "In ancient Greece, ivy was dedicated to Dionysus and believed to prevent alcohol intoxication.",
@@ -1080,7 +1080,7 @@ object ClimatePlants {
             careSpring = "Pinch back new foliage shoots. Water regularly.",
             careSummer = "Ensure bright indirect sunlight. Water when topsoil feels dry.",
             careAutumn = "Clean dried needles, prepare root zones for dormancy.",
-            careWinter = "Extremely cold hardy bonsai. Keep outdoors or cool porch.",
+            careWinter = "Keep near bright indoor window or cool room.",
             soilType = "Fast-draining bonsai soil mix",
             sunlight = "Full Sun to Partial Shade",
             iconEmoji = "🪴",
@@ -1089,7 +1089,7 @@ object ClimatePlants {
             bloomTime = "Non-flowering",
             pestsDiseases = "Juniper scale, Cedar-apple rust",
             compatibleClimate = "Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Juniper Bonsai can live for hundreds of years under careful wiring and shaping care.",
                 "Junipers secrete phytoncides, airborne chemicals that reduce human stress and blood pressure.",
@@ -1111,7 +1111,7 @@ object ClimatePlants {
             bloomTime = "Summer",
             pestsDiseases = "Powdery mildew, Aphids",
             compatibleClimate = "Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "The flower color changes dynamically based on soil pH: acidic soil yields blue, alkaline yields pink.",
                 "The name Hydrangea comes from Greek 'hydor' (water) and 'angos' (vessel) due to its thirst."
@@ -1132,7 +1132,7 @@ object ClimatePlants {
             bloomTime = "Late Spring to Early Summer",
             pestsDiseases = "Botrytis blight, Ants on buds",
             compatibleClimate = "Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Peonies can live and bloom for over 100 years in the same spot without needing division.",
                 "Ants on peony buds are beneficial; they eat sweet nectar in exchange for protecting buds from pests."
@@ -1153,7 +1153,7 @@ object ClimatePlants {
             bloomTime = "Summer to Early Autumn",
             pestsDiseases = "Downy mildew, Sunflower moths",
             compatibleClimate = "Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Young sunflowers exhibit heliotropism, tracing the sun's path from east to west daily.",
                 "A single sunflower head is actually composed of thousands of tiny individual flowers blooming together."
@@ -1174,7 +1174,7 @@ object ClimatePlants {
             bloomTime = "Spring to Frost",
             pestsDiseases = "Spider mites, Slugs",
             compatibleClimate = "Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Marigolds secrete a chemical (alpha-terthienyl) that repels harmful root nematodes.",
                 "They are widely used in companion planting to protect vegetable crops like tomatoes."
@@ -1195,7 +1195,7 @@ object ClimatePlants {
             bloomTime = "Spring and Autumn (prefers cool weather)",
             pestsDiseases = "Snapdragon rust, Aphids",
             compatibleClimate = "Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Squeezing the sides of the flower gently makes the 'mouth' snap open and shut like a dragon.",
                 "When the flowers die, the dried seed pods resemble tiny, detailed human skulls."
@@ -1216,7 +1216,7 @@ object ClimatePlants {
             bloomTime = "Mid Summer",
             pestsDiseases = "Slugs, Snails, Hosta Virus X",
             compatibleClimate = "Temperate",
-            isIndoor = false,
+            isIndoor = true,
             funFacts = listOf(
                 "Highly prized for their large, beautifully variegated green and white leaves rather than flowers.",
                 "Native to Northeast Asia, where young shoots are sometimes harvested as an organic wild vegetable."
@@ -1228,9 +1228,8 @@ object ClimatePlants {
         return ALL_TEMPLATES.filter { it.compatibleClimate.contains(climate, ignoreCase = true) }
     }
 
-    fun getTemplatesForPlanner(climate: String, isIndoor: Boolean): List<PlantTemplate> {
-        val categoryTemplates = ALL_TEMPLATES.filter { it.isIndoor == isIndoor }
-        return categoryTemplates.sortedWith(compareByDescending { 
+    fun getTemplatesForPlanner(climate: String, isIndoor: Boolean = true): List<PlantTemplate> {
+        return ALL_TEMPLATES.sortedWith(compareByDescending { 
             it.compatibleClimate.contains(climate, ignoreCase = true)
         })
     }

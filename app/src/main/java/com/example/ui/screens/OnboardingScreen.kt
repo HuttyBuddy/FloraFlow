@@ -326,7 +326,7 @@ fun SplashWelcomeScreen(
         Spacer(modifier = Modifier.height(8.dp))
         
         Text(
-            text = "Cultivating Calm through Mindful Gardening",
+            text = "Breathe life into every corner of your indoor space",
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,

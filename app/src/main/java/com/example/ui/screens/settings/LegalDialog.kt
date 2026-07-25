@@ -152,7 +152,7 @@ fun TermsOfServiceContent() {
     )
 
     SectionHeader("1. Acceptance of Terms")
-    ParagraphText("By downloading or using FloraFlow: Cultivating Calm through Mindful Gardening, you agree to be bound by these Terms of Service. If you do not agree, please do not use the application.")
+    ParagraphText("By downloading or using FloraFlow: Indoor Sanctuaries, you agree to be bound by these Terms of Service. If you do not agree, please do not use the application.")
 
     SectionHeader("2. Use License")
     ParagraphText("We grant you a personal, non-transferable, non-exclusive license to use the app for personal, non-commercial gardening, landscaping, and mindfulness tracking. You must not decompile, reverse engineer, or redistribute app binaries.")

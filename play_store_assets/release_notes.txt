@@ -1,8 +1,7 @@
-What's new in FloraFlow 9.0.1.2:
+What's new in FloraFlow: Indoor Sanctuaries (v10.0.0.0):
 
-- Faster, more accurate AI garden advice from our upgraded Gemini-powered garden assistant
-- Fixed a startup crash affecting some users updating from earlier versions
-- Improved security for the connection between the app and our AI advisor
-- General stability fixes ahead of our production launch
-
-Thanks for growing with us — as always, we'd love your feedback.
+🌿 100% Indoor Houseplant Focus: Transformed plant database, daylight filters, and AI prompts for indoor houseplant styling & indoor sanctuary care.
+🎭 Plant Parent Personality Archetypes: Discover your archetype (Jungle Maximalist, Cactus Survivor, Serial Overwaterer, Cyberpunk Botanist, Sanctuary Master)!
+🎬 15-Second Ambient Reels Exporter: Generate high-definition 1080x1920 MP4 soundscape video reels for TikTok & Instagram.
+🪴 Co-Care Duet AppWidget: Share a blooming home screen plant widget with your partner or roommate.
+📸 AI Room Vibe Check: Evaluate indoor window daylight, room foliage density, and air flow balance with camera-assisted diagnostics.

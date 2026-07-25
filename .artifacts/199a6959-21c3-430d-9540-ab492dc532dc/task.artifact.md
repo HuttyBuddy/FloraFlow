@@ -1,0 +1,4 @@
+- [x] Redesign `PaywallTierCard` to support a banner and compact layout
+- [x] Update `PaywallDialog` to use separate cards for Annual and Monthly tiers
+- [x] Add "Best Value" banner to the Annual tier
+- [x] Verify selection logic and visual updates on device

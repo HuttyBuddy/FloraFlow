@@ -723,7 +723,7 @@ fun DashboardScreen(
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = "Record how you feel after spending time outdoors styling plants. Your botanic health directly syncs with mental release!",
+                        text = "Record how you feel after tending to your indoor plants. Your indoor botanical health directly syncs with mental calm!",
                         style = MaterialTheme.typography.bodyMedium,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.secondary

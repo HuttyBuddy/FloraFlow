@@ -173,7 +173,7 @@ fun MoodLogItemCard(
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
                                 Text(
-                                    text = "🍃 Outdoors",
+                                    text = "🍃 Misting",
                                     fontSize = 10.sp,
                                     color = outdoorsColor,
                                     fontWeight = FontWeight.Bold,

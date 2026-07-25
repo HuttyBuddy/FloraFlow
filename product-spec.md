@@ -1,76 +1,51 @@
 # FloraFlow Product Specification
 
 ## Project Status
-**Current Phase:** Enhanced & Improved. The application has undergone significant architectural upgrades, UX refinements, and feature enhancements, moving beyond initial concept to a polished, production-ready experience.
+**Current Phase:** Production-Ready & Feature-Complete. The application is strictly tailored for **Indoor Houseplants & Indoor Biophilic Sanctuaries**, featuring native H.264 ambient Reels video generation, Plant Parent Personality Archetypes, Co-Care Duet AppWidgets, and camera-assisted AI Room Vibe Checks.
 
 ## Overview
-FloraFlow is an advanced mobile application for the Android ecosystem that revolutionizes residential and urban landscape planning. By merging immersive eco-acoustic binaural soundscapes and a Neural Restoration Journal with an AI assistant grounded in biophilic design neuroscience, FloraFlow transforms garden planning from static blueprints into an immersive, emotionally grounding creative experience.
+FloraFlow is an advanced mobile application for the Android ecosystem that revolutionizes indoor biophilic sanctuary design and houseplant care. By merging immersive eco-acoustic binaural soundscapes, hardware-accelerated 15-second Reels video generation, Plant Parent Personality Archetypes, and a shared Co-Care Duet AppWidget with an AI assistant grounded in biophilic design neuroscience, FloraFlow transforms indoor room styling from static blueprints into an immersive, emotionally grounding creative experience.
 
 ## Core Value Proposition
-FloraFlow makes professional-grade landscape design accessible to everyday home gardeners. Users don't need design training or horticultural expertise — FloraFlow's AI assistant and eco-acoustic tools guide them through envisioning, planning, and emotionally connecting with a garden they build themselves.
+FloraFlow makes professional biophilic indoor space design accessible to everyday houseplant lovers. Users answer a short Neural Load assessment and FloraFlow helps them envision, plan, and bring a restorative indoor plant sanctuary to life.
 
 ## Platform
 - **Primary platform:** Android (mobile)
-- **Target devices:** Android smartphones and tablets supporting background audio services
+- **Target devices:** Android smartphones and tablets running Android 7.0+ (API 24+) supporting background audio services and hardware video encoding
 
 ## Core Features
 
-### 1. Eco-Acoustics & Neural Restoration Journal
-Users track their daily stress-relief progress through a dynamic Neural Restoration Index (NRI) computed from their garden layouts. The premium Restoration Journal includes:
-- **Procedural Binaural Beats:** Synthesized Alpha, Theta, and Delta waves to facilitate deep focus, creative visualization, or sleep.
-- **Layered Nature Soundscapes:** Real-time volume controls for looping raw ambient tracks like wind chimes and rustling leaves.
-- **Mindfulness Tasks:** Daily grounding exercises dynamically generated based on the plants in the user's active garden plan.
+### 1. 100% Indoor Biophilic Profile & Plant Parent Archetype System
+- Scores user space across 10 biophilic categories (Nature Views, Living Plants, Window Light, Acoustic Calm, Natural Materials, Air & Ventilation, Organic Forms, Water Features, Sensory Richness, Seasonal Awareness).
+- Calculates 5 Plant Parent Personality Archetypes: *Jungle Maximalist*, *Cactus Survivor*, *Serial Overwaterer*, *Cyberpunk Botanist*, *Sanctuary Master*.
 
-### 2. AI Garden Planning Assistant
-An intelligent conversational assistant that guides users through the planning process. Rooted in biophilic design principles, the AI:
-- Asks about the user's goals, aesthetic preferences, and lifestyle
-- Recommends plants based on climate zone, soil type, sun/shade, and maintenance tolerance
-- Suggests layouts that maximize both visual appeal and ecological benefit
-- Explains *why* certain combinations work — educating as it recommends
+### 2. 15-Second Ambient Reels Video Exporter
+- On-device hardware-accelerated `MediaCodec` + `MediaMuxer` 1080x1920 30fps MP4 video generator.
+- Merges pulsing frequency soundwave visualizers with binaural soundscapes for instant sharing to TikTok & Instagram Reels.
 
-### 3. Biophilic Design Intelligence
-FloraFlow's recommendations are informed by biophilic design neuroscience — the study of how natural environments affect human wellbeing. The app:
-- Prioritizes plant selections and arrangements that reduce stress and increase cognitive restoration
-- Surfaces the emotional and psychological benefits of design choices to users
-- Encourages sensory variety: texture, color, scent, sound, and seasonal change
-- Links garden layout choices directly to the NRI score, closing the loop between planning and restoration
+### 3. Co-Care Duet Home Screen AppWidget & Shared Hub
+- Jetpack Glance / AppWidgetProvider home screen widget showing shared blooming plant nodes, care streaks, and partner activity.
 
-### 4. Interactive Garden Planning Canvas
-Users can plan gardens in a 2D/3D interactive canvas:
-- Drag-and-drop plant placement
-- View seasonal transitions — see what the garden looks like in spring vs. autumn
-- Save, iterate, and share plans
+### 4. AI Room Vibe Check Screen
+- Camera-assisted diagnostic tool evaluating window daylight intensity, indoor room foliage density, and air circulation balance.
 
-### 5. Plant Library
-A comprehensive, searchable database of plants suited to residential and urban gardens, including:
-- Care requirements (water, sun, soil, pruning)
-- Growth habits and mature dimensions
-- Companion planting compatibility
-- Native/pollinator-friendly tags
+### 5. Eco-Acoustics & Neural Restoration Journal
+- Computes Neural Restoration Index (NRI) from indoor biophilic arrangements.
+- Procedural binaural beats (Alpha 10Hz, Theta 6Hz, Gamma 40Hz) with layered ambient nature audio.
+
+### 6. Interactive Indoor Sanctuary Planner
+- 5x5 indoor grid canvas with light filters (*All Indoor*, *Bright Light*, *Low Light*) and custom indoor potting substrates.
+
+### 7. Indoor Houseplant Library
+- Catalog of 100% indoor houseplants (*Monstera*, *Pothos*, *Snake Plant*, *Peace Lily*, *ZZ Plant*, *Fiddle Leaf Fig*, *Calathea*, *Rubber Tree*, *Anthurium*, *Parlor Palm*, *Bonsai Ficus*).
 
 ## What FloraFlow Is Not
-- Not a general-purpose plant identification tool (that's a secondary use case, not the core)
+- Not an outdoor crop farming or agricultural tool (100% strictly indoor houseplants and biophilic sanctuaries)
 - Not a professional landscape architecture platform
-- Not a social/community gardening app (no public feed or UGC focus)
-- Not a plant delivery or e-commerce service (though integrations are possible roadmap items)
-- Not a generic meditation or sleep app — the soundscapes are rooted in the user's actual garden plan, not generic ambient audio
-
-## Key Differentiators
-
-| Feature | FloraFlow | Typical garden apps |
-|---|---|---|
-| Restoration Journal | Dynamic NRI & Binaural audio | Basic checklists |
-| AI recommendations | Biophilic design–grounded | Generic plant databases |
-| Emotional framing | Wellbeing-first | Utility-first |
-| Platform depth | Immersive planning experience | Basic care reminders |
+- Not a general social media feed app (shares via native Android share intents)
+- Not a generic meditation app (audio and video generation are tied to the user's indoor sanctuary score)
 
 ## Technical Notes
-- Requires a device supporting background audio services and notifications
-- Post-Notification permission required for system media controller interaction
-- Plant recommendations use USDA Hardiness Zones and Köppen climate classification
-- AI assistant uses on-device + cloud hybrid processing
-
-- Requires a device supporting background audio services and notifications
-- Post-Notification permission required for system media controller interaction
-- Plant recommendations use USDA Hardiness Zones and Köppen climate classification
-- AI assistant uses on-device + cloud hybrid processing
+- Requires device supporting background audio services, notifications, and hardware H.264 video encoding (`MediaCodec`)
+- AI queries routed via Gemini API proxy service
+- Real Play Billing integrated via Google Play Billing Library 9.0.0

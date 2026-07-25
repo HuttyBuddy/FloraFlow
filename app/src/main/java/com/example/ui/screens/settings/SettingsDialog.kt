@@ -278,10 +278,11 @@ fun SettingsDialog(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "FloraFlow: Cultivating Calm through Mindful Gardening",
+                        text = "FloraFlow: Indoor Sanctuaries — Breathe life into every corner of your indoor space",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                     Text(
                         text = "v9.0.1.2 | HuttyBuddy",

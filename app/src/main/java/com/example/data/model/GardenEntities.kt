@@ -47,8 +47,10 @@ data class MoodLog(
     val growthIndex: Int = 0, // average growth progress of the garden plants during the session
     val waterCompleted: Boolean = false,
     val pruneCompleted: Boolean = false,
-    val outdoorsCompleted: Boolean = false
-)
+    val outdoorsCompleted: Boolean = false // Legacy DB column representing Indoor Leaf Misting
+) {
+    val mistCompleted: Boolean get() = outdoorsCompleted
+}
 
 @Entity(tableName = "care_tasks", indices = [Index(value = ["plantId"]), Index(value = ["dueDate"])])
 data class CareTask(

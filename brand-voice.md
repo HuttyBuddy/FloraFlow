@@ -1,8 +1,10 @@
-# FloraFlow Brand Voice
+# FloraFlow: Indoor Sanctuaries Brand Voice
+
+> *Breathe life into every corner of your indoor space.*
 
 ## Tone & Style
 
-FloraFlow speaks like a knowledgeable friend who loves gardening — warm, encouraging, and accessible without being condescending. We celebrate the joy of growing things and meet users where they are, whether they're planting their first herb pot or redesigning a full backyard landscape.
+FloraFlow speaks like a knowledgeable friend who loves indoor plants and biophilic styling — warm, encouraging, and accessible without being condescending. We celebrate the joy of indoor houseplants and meet users where they are, whether they're styling their first Monstera node or curating a full room sanctuary.
 
 **Core tone attributes:**
 - **Warm** — We're enthusiastic about plants and want users to feel that energy. Gardening is joyful; our language should be too.

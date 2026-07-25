@@ -41,31 +41,31 @@ fun WeatherSyncCard(
         )
         "snow" -> WeatherThemeInfo(
             "❄️",
-            "Freezing snow! Cover outdoor crops and move container pots indoors to shield roots.",
+            "Freezing weather! Move indoor container pots 2ft back from cold glass window sills.",
             Color(0xFF00ACC1),
             Brush.verticalGradient(listOf(Color(0xFFE0F7FA), Color(0xFFB2EBF2)))
         )
         "clear" -> WeatherThemeInfo(
             "☀️",
-            "Sunny day with high evaporation. Consider watering early in the morning before sun peaks.",
+            "Sunny day with high indoor daylight. Check soil moisture before sun peaks.",
             Color(0xFFFDD835),
             Brush.verticalGradient(listOf(Color(0xFFFFFDE7), Color(0xFFFFF9C4)))
         )
         "clouds" -> WeatherThemeInfo(
             "☁️",
-            "Overcast skies slow down soil evaporation. Always check soil moisture before watering.",
+            "Overcast skies slow down indoor soil evaporation. Always check topsoil moisture before watering.",
             Color(0xFF757575),
             Brush.verticalGradient(listOf(Color(0xFFF5F5F5), Color(0xFFE0E0E0)))
         )
         "heatwave" -> WeatherThemeInfo(
             "🥵",
-            "Extreme heatwave active! Move sensitive plants to shade, water deeply, and apply mulch.",
+            "Extreme heatwave active! Move sensitive indoor houseplants away from hot window glass and increase misting.",
             Color(0xFFE53935),
             Brush.verticalGradient(listOf(Color(0xFFFFEBEE), Color(0xFFFFCDD2)))
         )
         "frost" -> WeatherThemeInfo(
             "🥶",
-            "Frost warning! Cover sensitive outdoor plant foliage to prevent cell freezing.",
+            "Frost warning outside! Keep indoor houseplants shielded from cold night window drafts.",
             Color(0xFF3949AB),
             Brush.verticalGradient(listOf(Color(0xFFE8EAF6), Color(0xFFC5CAE9)))
         )

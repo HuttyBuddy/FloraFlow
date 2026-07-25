@@ -322,8 +322,8 @@ fun CircularBotanicalRhythm(
                 onClick = { onToggleHabit("prune") }
             )
             HabitLegendCard(
-                icon = Icons.Default.SelfImprovement,
-                title = "Outdoors",
+                icon = Icons.Default.WaterDrop,
+                title = "Leaf Misting",
                 isChecked = isOutdoors,
                 activeColor = outdoorsColor,
                 modifier = Modifier.weight(1f),

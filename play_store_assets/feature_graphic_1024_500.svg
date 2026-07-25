@@ -87,11 +87,11 @@
     
     <!-- Subtitle (Tracking spaced-out uppercase sans-serif) -->
     <text y="35" font-family="'Montserrat', 'Space Grotesk', 'Helvetica Neue', sans-serif" 
-          font-size="18" font-weight="900" fill="#ACCFC6" letter-spacing="4">CULTIVATING CALM THROUGH MINDFUL GARDENING</text>
+          font-size="18" font-weight="900" fill="#ACCFC6" letter-spacing="4">INDOOR SANCTUARIES</text>
 
     <!-- Core Tagline Bullet -->
     <text y="75" font-family="'Space Grotesk', 'Inter', 'Segoe UI', sans-serif" 
-          font-size="14" font-style="italic" fill="#E5E2D9" letter-spacing="1.5" opacity="0.8">Design companion layouts, simulate climate, and track mental wellness</text>
+          font-size="14" font-style="italic" fill="#E5E2D9" letter-spacing="1.5" opacity="0.8">Breathe life into every corner of your indoor space</text>
   </g>
 
   <!-- 6. HIGH-CONTRAST ABSTRACT PREVIEW MOCKUP RING MOCKING CLIMATE METERS -->

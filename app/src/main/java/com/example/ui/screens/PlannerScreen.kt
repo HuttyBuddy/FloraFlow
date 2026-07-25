@@ -811,7 +811,7 @@ fun PlannerScreen(
                         )
                     }
                     SingleChoiceSegmentedButtonRow {
-                        listOf("Indoor", "Outdoor").forEachIndexed { index, label ->
+                        listOf("All Indoor", "Bright Light").forEachIndexed { index, label ->
                             SegmentedButton(
                                 selected = selectedTrayTab == index,
                                 onClick = {
