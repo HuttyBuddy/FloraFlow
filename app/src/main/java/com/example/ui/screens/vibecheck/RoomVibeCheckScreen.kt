@@ -29,6 +29,45 @@ import com.example.ui.screens.share.ShareCardData
 import com.example.ui.screens.share.ShareCardOverlay
 import kotlinx.coroutines.delay
 
+private val PRESETS = listOf("My Work Desk", "Living Room Corner", "Bedroom Nightstand", "Balcony Garden")
+
+private val VIBE_TAGS = mapOf(
+    "My Work Desk" to "Cyberpunk Sanctuary (Low Oxygen Zone)",
+    "Living Room Corner" to "Lush Botanical Haven",
+    "Bedroom Nightstand" to "Mindful Rest Oasis",
+    "Balcony Garden" to "Sun-Drenched Jungle"
+)
+
+private val SCORES = mapOf(
+    "My Work Desk" to 64,
+    "Living Room Corner" to 88,
+    "Bedroom Nightstand" to 76,
+    "Balcony Garden" to 92
+)
+
+private fun getUpgradesForPreset(preset: String): List<String> = when (preset) {
+    "My Work Desk" -> listOf(
+        "Add Snake Plant for night CO2 reduction",
+        "Introduce 10Hz Alpha binaural ambient stream",
+        "Move monitor 3 inches away from direct foliage glow"
+    )
+    "Living Room Corner" -> listOf(
+        "Group Monstera & Peace Lily for humidity synergy",
+        "Schedule weekly misting during warm hours",
+        "Incorporate indirect 4000K daylight LED"
+    )
+    "Bedroom Nightstand" -> listOf(
+        "Add Lavender/Peace Lily for natural air purification",
+        "Enable Theta 6Hz soundscape before sleep",
+        "Maintain 40-60% relative room humidity"
+    )
+    else -> listOf(
+        "Rotate pots weekly for uniform sun absorption",
+        "Use fast-draining loamy substrate",
+        "Monitor natural lux levels during midday peak"
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoomVibeCheckScreen(
@@ -40,47 +79,10 @@ fun RoomVibeCheckScreen(
     var analysisDone by remember { mutableStateOf(false) }
     var showShareOverlay by remember { mutableStateOf(false) }
 
-    val presets = listOf("My Work Desk", "Living Room Corner", "Bedroom Nightstand", "Balcony Garden")
+    val currentScore = SCORES[selectedPreset] ?: 75
+    val currentVibeTag = VIBE_TAGS[selectedPreset] ?: "Custom Room Sanctuary"
 
-    val vibeTags = mapOf(
-        "My Work Desk" to "Cyberpunk Sanctuary (Low Oxygen Zone)",
-        "Living Room Corner" to "Lush Botanical Haven",
-        "Bedroom Nightstand" to "Mindful Rest Oasis",
-        "Balcony Garden" to "Sun-Drenched Jungle"
-    )
-
-    val scores = mapOf(
-        "My Work Desk" to 64,
-        "Living Room Corner" to 88,
-        "Bedroom Nightstand" to 76,
-        "Balcony Garden" to 92
-    )
-
-    val currentScore = scores[selectedPreset] ?: 75
-    val currentVibeTag = vibeTags[selectedPreset] ?: "Custom Room Sanctuary"
-
-    val currentUpgrades = when (selectedPreset) {
-        "My Work Desk" -> listOf(
-            "Add Snake Plant for night CO2 reduction",
-            "Introduce 10Hz Alpha binaural ambient stream",
-            "Move monitor 3 inches away from direct foliage glow"
-        )
-        "Living Room Corner" -> listOf(
-            "Group Monstera & Peace Lily for humidity synergy",
-            "Schedule weekly misting during warm hours",
-            "Incorporate indirect 4000K daylight LED"
-        )
-        "Bedroom Nightstand" -> listOf(
-            "Add Lavender/Peace Lily for natural air purification",
-            "Enable Theta 6Hz soundscape before sleep",
-            "Maintain 40-60% relative room humidity"
-        )
-        else -> listOf(
-            "Rotate pots weekly for uniform sun absorption",
-            "Use fast-draining loamy substrate",
-            "Monitor natural lux levels during midday peak"
-        )
-    }
+    val currentUpgrades = getUpgradesForPreset(selectedPreset)
 
     if (showShareOverlay) {
         ShareCardOverlay(
@@ -172,7 +174,7 @@ fun RoomVibeCheckScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                presets.take(2).forEach { preset ->
+                PRESETS.take(2).forEach { preset ->
                     val isSelected = selectedPreset == preset
                     FilterChip(
                         selected = isSelected,
@@ -195,7 +197,7 @@ fun RoomVibeCheckScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                presets.drop(2).forEach { preset ->
+                PRESETS.drop(2).forEach { preset ->
                     val isSelected = selectedPreset == preset
                     FilterChip(
                         selected = isSelected,
