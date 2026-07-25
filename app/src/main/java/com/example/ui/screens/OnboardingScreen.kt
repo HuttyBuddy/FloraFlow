@@ -424,47 +424,86 @@ fun QuestionFlowScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
     ) {
-        // Top Bar: Back navigation & 10-segmented progress bar
+        QuestionTopBar(
+            totalQuestions = questions.size,
+            currentIndex = currentIndex,
+            onBack = onBack
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        QuestionHeader(
+            currentIndex = currentIndex,
+            totalQuestions = questions.size,
+            category = currentQuestion.category,
+            text = currentQuestion.text,
+            modifier = Modifier.weight(1f)
+        )
+
+        QuestionOptions(
+            options = currentQuestion.options,
+            currentIndex = currentIndex,
+            onAnswer = onAnswer
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun QuestionTopBar(
+    totalQuestions: Int,
+    currentIndex: Int,
+    onBack: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onBack) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Segments progress bar
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .weight(1f)
+                .height(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = MaterialTheme.colorScheme.primary
+            for (i in 0 until totalQuestions) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(CircleShape)
+                        .background(
+                            if (i <= currentIndex) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.outlineVariant
+                        )
                 )
             }
-            
-            Spacer(modifier = Modifier.width(8.dp))
-            
-            // 10 segments progress bar
-            Row(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(6.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                for (i in 0 until questions.size) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(CircleShape)
-                            .background(
-                                if (i <= currentIndex) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.outlineVariant
-                            )
-                    )
-                }
-            }
         }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
+    }
+}
+
+@Composable
+private fun QuestionHeader(
+    currentIndex: Int,
+    totalQuestions: Int,
+    category: String,
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
         Text(
-            text = "Question ${currentIndex + 1} of 10",
+            text = "Question ${currentIndex + 1} of $totalQuestions",
             style = MaterialTheme.typography.labelLarge.copy(
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.secondary,
@@ -481,7 +520,7 @@ fun QuestionFlowScreen(
                 .padding(horizontal = 12.dp, vertical = 6.dp)
         ) {
             Text(
-                text = currentQuestion.category,
+                text = category,
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -494,57 +533,60 @@ fun QuestionFlowScreen(
         
         // Question Text
         Text(
-            text = currentQuestion.text,
+            text = text,
             style = MaterialTheme.typography.headlineMedium.copy(
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground,
                 lineHeight = 32.sp
-            ),
-            modifier = Modifier.weight(1f)
+            )
         )
-        
-        // Options full-width touch targets
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            currentQuestion.options.forEachIndexed { score, text ->
-                FloraFlowCard(
+    }
+}
+
+@Composable
+private fun QuestionOptions(
+    options: List<String>,
+    currentIndex: Int,
+    onAnswer: (Int) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        options.forEachIndexed { score, text ->
+            FloraFlowCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onAnswer(score) }
+                    .testTag("question_${currentIndex}_option_$score"),
+                containerColor = MaterialTheme.colorScheme.surface,
+                elevation = 2.dp,
+                border = borderStroke()
+            ) {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onAnswer(score) }
-                        .testTag("question_${currentIndex}_option_$score"),
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    elevation = 2.dp,
-                    border = borderStroke()
+                        .padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = text,
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
-                        Icon(
-                            imageVector = Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary
-                        )
-                    }
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary
+                    )
                 }
             }
         }
-        
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
