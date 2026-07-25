@@ -236,7 +236,11 @@ fun shareCelebrationCard(
             val scaledLogo = android.graphics.Bitmap.createScaledBitmap(logoSrc, 120, 120, true)
             canvas.drawBitmap(scaledLogo, size / 2f - 60f, 580f, null)
         }
-    } catch (_: Exception) {}
+    } catch (e: Exception) {
+        if (com.example.BuildConfig.DEBUG) {
+            android.util.Log.e("CelebrationDialog", "Error drawing logo", e)
+        }
+    }
     
     val watermarkTitlePaint = android.graphics.Paint().apply {
         color = 0xFF1F483E.toInt()
