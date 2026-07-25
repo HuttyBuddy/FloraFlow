@@ -2342,6 +2342,20 @@ fun shareGardenSnapshot(
     val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
     val canvas = android.graphics.Canvas(bitmap)
     
+    drawSnapshotBackground(canvas, size)
+    drawSnapshotHeader(canvas, layout, soilTheme)
+
+    val gridStartX = 150f
+    val gridStartY = 280f
+    val gridWidth = 700f
+    val cellSize = gridWidth / 5f
+
+    drawSnapshotGrid(canvas, gridStartX, gridStartY, gridWidth, cellSize, gridItems)
+    drawSnapshotFooter(context, canvas, size, gridItems)
+    saveAndShareSnapshot(context, bitmap)
+}
+
+private fun drawSnapshotBackground(canvas: android.graphics.Canvas, size: Int) {
     val bgPaint = android.graphics.Paint().apply {
         color = 0xFFFCF9F1.toInt()
         style = android.graphics.Paint.Style.FILL
@@ -2361,7 +2375,9 @@ fun shareGardenSnapshot(
         strokeWidth = 4f
     }
     canvas.drawRect(32f, 32f, size.toFloat() - 32f, size.toFloat() - 32f, thinBorderPaint)
+}
 
+private fun drawSnapshotHeader(canvas: android.graphics.Canvas, layout: GardenLayout, soilTheme: SoilTheme) {
     val titlePaint = android.graphics.Paint().apply {
         color = 0xFF1F483E.toInt()
         textSize = 48f
@@ -2385,12 +2401,9 @@ fun shareGardenSnapshot(
     }
     canvas.drawText("Theme: ${layout.style} | Climate: ${layout.climate}", 60f, 190f, subtitlePaint)
     canvas.drawText("Substrate: ${soilTheme.name}", 60f, 225f, subtitlePaint)
+}
 
-    val gridStartX = 150f
-    val gridStartY = 280f
-    val gridWidth = 700f
-    val cellSize = gridWidth / 5f
-    
+private fun drawSnapshotGrid(canvas: android.graphics.Canvas, gridStartX: Float, gridStartY: Float, gridWidth: Float, cellSize: Float, gridItems: List<GridPlantItem>) {
     val gridBgPaint = android.graphics.Paint().apply {
         color = 0xFFE2E6D5.toInt()
         style = android.graphics.Paint.Style.FILL
@@ -2436,7 +2449,9 @@ fun shareGardenSnapshot(
         val displayName = if (item.plantName.length > 8) item.plantName.take(7) + ".." else item.plantName
         canvas.drawText(displayName, cellCenterX, cellCenterY + cellSize / 2f - 12f, cellLabelPaint)
     }
-    
+}
+
+private fun drawSnapshotFooter(context: android.content.Context, canvas: android.graphics.Canvas, size: Int, gridItems: List<GridPlantItem>) {
     try {
         val logoSrc = android.graphics.BitmapFactory.decodeResource(context.resources, com.example.R.drawable.ic_logo_heart)
         if (logoSrc != null) {
@@ -2471,7 +2486,9 @@ fun shareGardenSnapshot(
     }
     canvas.drawText("Tended Plants: $totalPlants", 60f, size - 110f, statsPaint)
     canvas.drawText("Active Synergies: $synergyCount ✨", 60f, size - 70f, statsPaint)
-    
+}
+
+private fun saveAndShareSnapshot(context: android.content.Context, bitmap: android.graphics.Bitmap) {
     try {
         val cachePath = java.io.File(context.cacheDir, "shared_gardens")
         cachePath.mkdirs()
