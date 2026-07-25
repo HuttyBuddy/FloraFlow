@@ -33,6 +33,7 @@ fun BiophilicProfileCard(
     onStepToggle: (Int) -> Unit = {},
     onNavigate: (Int) -> Unit = {},
     onSearchDatabase: (String) -> Unit = {},
+    onOpenVibeCheck: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -130,18 +131,51 @@ fun BiophilicProfileCard(
                 }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = "$zoneName — Active State",
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = zoneColor
-                )
-                Text(
-                    text = zoneDesc,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            val archetype = com.example.data.model.PlantParentArchetype.calculateArchetype(score, lowestCategories)
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "$zoneName — Active State",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = zoneColor
+                    )
+                    Text(
+                        text = zoneDesc,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(android.graphics.Color.parseColor(archetype.badgeColorHex)).copy(alpha = 0.15f),
+                    border = BorderStroke(1.dp, Color(android.graphics.Color.parseColor(archetype.badgeColorHex)).copy(alpha = 0.4f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = archetype.icon, fontSize = 14.sp)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = archetype.title,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(android.graphics.Color.parseColor(archetype.badgeColorHex))
+                        )
+                    }
+                }
             }
 
             if (lowestCategories.isNotEmpty()) {
@@ -316,19 +350,19 @@ fun BiophilicProfileCard(
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = "Retake Restorative Assessment", modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Retake Assessment", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("Retake", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 Button(
-                    onClick = { onNavigate(2) }, // Navigate to Card 3 (Daily Tend & Audio)
+                    onClick = onOpenVibeCheck,
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
-                        .weight(1f)
+                        .weight(1.2f)
                         .height(44.dp)
                 ) {
-                    Icon(Icons.Default.Share, contentDescription = "Share to Community", modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.AutoAwesome, contentDescription = "AI Room Vibe Check", modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Share Score", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("Vibe Check", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

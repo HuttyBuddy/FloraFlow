@@ -142,6 +142,30 @@ class GardenViewModel @JvmOverloads constructor(
         _showRestorativeValidationFlow.value = false
     }
 
+    // AI Room Vibe Check Screen Navigation (Viral Feature)
+    private val _showRoomVibeCheckScreen = MutableStateFlow(false)
+    val showRoomVibeCheckScreen: StateFlow<Boolean> = _showRoomVibeCheckScreen.asStateFlow()
+
+    fun openRoomVibeCheck() {
+        _showRoomVibeCheckScreen.value = true
+    }
+
+    fun closeRoomVibeCheck() {
+        _showRoomVibeCheckScreen.value = false
+    }
+
+    // 15-Second Ambient Reels Exporter Navigation
+    private val _showReelsExporterOverlay = MutableStateFlow(false)
+    val showReelsExporterOverlay: StateFlow<Boolean> = _showReelsExporterOverlay.asStateFlow()
+
+    fun openReelsExporter() {
+        _showReelsExporterOverlay.value = true
+    }
+
+    fun closeReelsExporter() {
+        _showReelsExporterOverlay.value = false
+    }
+
     private val _restorationTrialCount = MutableStateFlow(0)
     val restorationTrialCount: StateFlow<Int> = _restorationTrialCount.asStateFlow()
 

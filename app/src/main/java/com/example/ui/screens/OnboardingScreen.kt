@@ -211,6 +211,9 @@ fun OnboardingScreen(
                             viewModel.startRestorativeCornerAssessment()
                             viewModel.completeOnboarding()
                         },
+                        onOpenVibeCheck = {
+                            viewModel.openRoomVibeCheck()
+                        },
                         onSkip = { viewModel.skipAssessment() }
                     )
                 }
@@ -287,6 +290,7 @@ fun OnboardingScreen(
 @Composable
 fun SplashWelcomeScreen(
     onStart: () -> Unit,
+    onOpenVibeCheck: () -> Unit,
     onSkip: () -> Unit
 ) {
     Column(
@@ -367,6 +371,24 @@ fun SplashWelcomeScreen(
                 .fillMaxWidth()
                 .testTag("onboarding_start_assessment_btn")
         )
+        
+        Spacer(modifier = Modifier.height(10.dp))
+
+        OutlinedButton(
+            onClick = onOpenVibeCheck,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(14.dp),
+            border = ButtonDefaults.outlinedButtonBorder.copy(
+                brush = androidx.compose.ui.graphics.SolidColor(Color(0xFF7FE3B5))
+            ),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF7FE3B5))
+        ) {
+            Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("✨ AI Room Vibe Check (Instant)", fontWeight = FontWeight.Bold)
+        }
         
         Spacer(modifier = Modifier.height(16.dp))
         

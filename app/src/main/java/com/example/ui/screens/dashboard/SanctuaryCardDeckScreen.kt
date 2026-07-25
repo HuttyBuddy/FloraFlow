@@ -340,7 +340,8 @@ private fun Card1RestorativeCorner(
             step3Completed = step3Completed,
             onStepToggle = { idx -> viewModel.toggleStepCompleted(idx) },
             onNavigate = onNavigateToPage,
-            onSearchDatabase = { query -> viewModel.setLibrarySearchQuery(query) }
+            onSearchDatabase = { query -> viewModel.setLibrarySearchQuery(query) },
+            onOpenVibeCheck = { viewModel.openRoomVibeCheck() }
         )
 
         WeatherSyncCard(

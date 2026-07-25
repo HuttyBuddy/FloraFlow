@@ -11,6 +11,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -138,6 +139,30 @@ fun SettingsDialog(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    val isPremium by viewModel.isPremium.collectAsState()
+
+                    SettingsActionRow(
+                        title = if (isPremium) "FloraFlow PRO Active ✨" else "Upgrade to FloraFlow PRO",
+                        subtitle = if (isPremium) "Your PRO features & AI recommendations are unlocked" else "Unlock 10Hz binaural soundscapes & deep AI room transforms",
+                        icon = Icons.Default.WorkspacePremium,
+                        iconTint = MaterialTheme.extendedColors.premiumGold,
+                        onClick = {
+                            onDismiss()
+                            viewModel.triggerPaywall()
+                        }
+                    )
+
+                    SettingsActionRow(
+                        title = "AI Room Vibe Check & Story Card",
+                        subtitle = "Scan your space & export 9:16 story cards to TikTok / Instagram",
+                        icon = Icons.Default.AutoAwesome,
+                        iconTint = MaterialTheme.colorScheme.primary,
+                        onClick = {
+                            onDismiss()
+                            viewModel.openRoomVibeCheck()
+                        }
+                    )
+
                     SettingsActionRow(
                         title = "Rate Your App",
                         subtitle = "Help us grow with a store review",
@@ -170,7 +195,7 @@ fun SettingsDialog(
                     SettingsActionRow(
                         title = "Replay App Tour",
                         subtitle = "Launch the walkthrough overlay again",
-                        icon = Icons.Default.AutoAwesome,
+                        icon = Icons.Default.Explore,
                         onClick = {
                             onDismiss()
                             viewModel.startWalkthrough()
@@ -219,7 +244,7 @@ fun SettingsDialog(
                     SettingsActionRow(
                         title = "Help & FAQs",
                         subtitle = "Browse tutorials and troubleshooting guides",
-                        icon = Icons.Default.Help,
+                        icon = Icons.AutoMirrored.Filled.Help,
                         onClick = {
                             onDismiss()
                             onHelpClick()

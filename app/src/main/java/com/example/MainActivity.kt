@@ -191,7 +191,32 @@ class MainActivity : ComponentActivity() {
 
                 BillingDialog(viewModel = viewModel)
 
-                if (!isOnboardingCompleted) {
+                val showReelsExporterOverlay by viewModel.showReelsExporterOverlay.collectAsState()
+                val assessmentScore by viewModel.assessmentScore.collectAsState()
+                val lowestCategories by viewModel.lowestCategories.collectAsState()
+                val binauralHz by viewModel.binauralFrequencyHz.collectAsState()
+
+                if (showReelsExporterOverlay) {
+                    val archetype = com.example.data.model.PlantParentArchetype.calculateArchetype(
+                        score = assessmentScore ?: 14,
+                        lowestCategories = lowestCategories
+                    )
+                    com.example.ui.screens.share.ReelsExporterOverlay(
+                        score = assessmentScore ?: 88,
+                        archetype = archetype,
+                        frequencyHz = binauralHz,
+                        onDismiss = { viewModel.closeReelsExporter() }
+                    )
+                }
+
+                val showRoomVibeCheckScreen by viewModel.showRoomVibeCheckScreen.collectAsState()
+
+                if (showRoomVibeCheckScreen) {
+                    com.example.ui.screens.vibecheck.RoomVibeCheckScreen(
+                        onBack = { viewModel.closeRoomVibeCheck() },
+                        onTriggerPaywall = { viewModel.triggerPaywall() }
+                    )
+                } else if (!isOnboardingCompleted) {
                     OnboardingScreen(viewModel = viewModel)
                 } else {
                     SanctuaryCardDeckScreen(
