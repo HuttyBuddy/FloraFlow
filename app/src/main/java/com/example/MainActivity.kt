@@ -13,6 +13,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.SmartToy
@@ -219,10 +220,47 @@ class MainActivity : ComponentActivity() {
                 } else if (!isOnboardingCompleted) {
                     OnboardingScreen(viewModel = viewModel)
                 } else {
-                    SanctuaryCardDeckScreen(
-                        viewModel = viewModel,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    Scaffold(
+                        bottomBar = {
+                            NavigationBar(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                tonalElevation = 0.dp,
+                                modifier = Modifier.height(80.dp)
+                            ) {
+                                val tabs = listOf(
+                                    Triple("Dashboard", Icons.Default.Dashboard, 0),
+                                    Triple("Library", Icons.AutoMirrored.Filled.MenuBook, 1),
+                                    Triple("My Plot", Icons.Default.Spa, 2),
+                                    Triple("Counsel", Icons.Default.SmartToy, 3),
+                                    Triple("Restoration", Icons.Default.SelfImprovement, 4)
+                                )
+                                tabs.forEach { (label, icon, index) ->
+                                    NavigationBarItem(
+                                        selected = currentTab == index,
+                                        onClick = { viewModel.setCurrentTab(index) },
+                                        icon = { Icon(icon, contentDescription = label) },
+                                        label = { Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold) },
+                                        colors = NavigationBarItemDefaults.colors(
+                                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                                            unselectedIconColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f),
+                                            indicatorColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    ) { innerPadding ->
+                        Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+                            when (currentTab) {
+                                0 -> SanctuaryCardDeckScreen(viewModel = viewModel, modifier = Modifier.fillMaxSize())
+                                1 -> LibraryScreen(viewModel = viewModel, switchToChatTab = { viewModel.setCurrentTab(3) }, modifier = Modifier.fillMaxSize())
+                                2 -> PlannerScreen(viewModel = viewModel, switchToChatTab = { viewModel.setCurrentTab(3) }, modifier = Modifier.fillMaxSize())
+                                3 -> AiStudioScreen(viewModel = viewModel, modifier = Modifier.fillMaxSize())
+                                4 -> RestorationJournalScreen(viewModel = viewModel, modifier = Modifier.fillMaxSize())
+                                else -> SanctuaryCardDeckScreen(viewModel = viewModel, modifier = Modifier.fillMaxSize())
+                            }
+                        }
+                    }
                 }
             }
         }

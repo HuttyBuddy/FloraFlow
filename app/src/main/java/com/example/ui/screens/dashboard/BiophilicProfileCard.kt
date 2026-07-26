@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -99,7 +100,11 @@ fun BiophilicProfileCard(
             border = cardBorder
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                BotanicalCornerAccents(showTopRight = true, showBottomLeft = true)
+                BotanicalCornerAccents(
+                    modifier = Modifier.matchParentSize(),
+                    showTopRight = true,
+                    showBottomLeft = true
+                )
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -313,7 +318,7 @@ fun BiophilicProfileCard(
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
-                                imageVector = Icons.Default.ArrowForward,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                 contentDescription = "Go to corresponding recommendation card",
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(16.dp)

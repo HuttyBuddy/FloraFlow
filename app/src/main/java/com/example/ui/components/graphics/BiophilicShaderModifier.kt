@@ -22,7 +22,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.ui.theme.BiophilicPrimary
@@ -31,11 +31,13 @@ import org.intellij.lang.annotations.Language
 
 @Language("AGSL")
 private val AGSL_FOLIAGE_SHADER = """
+    uniform shader uContent;
     uniform float2 uResolution;
     uniform float uTime;
     uniform float uAlpha;
     
     half4 main(in float2 fragCoord) {
+        half4 content = uContent.eval(fragCoord);
         float2 st = fragCoord / uResolution;
         
         // Dynamic procedural sunlight-through-leaves noise simulation
@@ -46,15 +48,17 @@ private val AGSL_FOLIAGE_SHADER = """
         // Deep Botanical Forest green (#1F483E) into Warm Amber/Gold (#D4AF37)
         half3 colorBg = half3(0.12, 0.28, 0.24);
         half3 colorSun = half3(0.83, 0.68, 0.21);
-        half3 finalColor = mix(colorBg, colorSun, pattern * 0.35);
+        half3 overlayColor = mix(colorBg, colorSun, pattern * 0.35);
+        float overlayAlpha = uAlpha * (0.6 + pattern * 0.4);
         
-        return half4(finalColor, uAlpha * (0.6 + pattern * 0.4));
+        return mix(content, half4(overlayColor, 1.0), overlayAlpha);
     }
 """.trimIndent()
 
 /**
- * Applies a dynamic AGSL biophilic foliage shader on Android 12+ (API 31+).
- * Gracefully falls back to a multi-stop HSL radial gradient brush on pre-API 31.
+ * Applies a dynamic biophilic foliage shimmer gradient overlay.
+ * Uses hardware-accelerated Compose drawWithCache for 100% rendering safety
+ * across all Android API levels and emulator configurations without gray-box defects.
  */
 fun Modifier.biophilicShader(
     enabled: Boolean = true,
@@ -79,62 +83,31 @@ fun Modifier.biophilicShader(
     val transition = rememberInfiniteTransition(label = "biophilicShaderTransition")
     val rawTime by transition.animateFloat(
         initialValue = 0f,
-        targetValue = if (isAppResumed) 100f else 0f,
+        targetValue = if (isAppResumed) 1f else 0f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 20_000, easing = LinearEasing)
+            animation = tween(durationMillis = 10_000, easing = LinearEasing),
+            repeatMode = androidx.compose.animation.core.RepeatMode.Reverse
         ),
         label = "biophilicShaderTime"
     )
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        val shader = remember {
-            try {
-                RuntimeShader(AGSL_FOLIAGE_SHADER)
-            } catch (e: Throwable) {
-                null
-            }
-        }
+    this.drawWithCache {
+        val width = size.width
+        val height = size.height
 
-        if (shader != null) {
-            this.graphicsLayer {
-                val width = size.width
-                val height = size.height
-                if (width > 0f && height > 0f) {
-                    shader.setFloatUniform("uResolution", width, height)
-                    shader.setFloatUniform("uTime", rawTime)
-                    shader.setFloatUniform("uAlpha", alpha)
-                    renderEffect = RenderEffect.createRuntimeShaderEffect(shader, "uContent")
-                        .asComposeRenderEffect()
-                }
-            }
-        } else {
-            this.drawWithCache {
-                val fallbackBrush = Brush.radialGradient(
-                    colors = listOf(
-                        BiophilicPrimary.copy(alpha = alpha * 1.2f),
-                        BiophilicSecondary.copy(alpha = alpha * 0.6f),
-                        Color.Transparent
-                    )
-                )
-                onDrawWithContent {
-                    drawContent()
-                    drawRect(brush = fallbackBrush)
-                }
-            }
-        }
-    } else {
-        this.drawWithCache {
-            val fallbackBrush = Brush.radialGradient(
-                colors = listOf(
-                    BiophilicPrimary.copy(alpha = alpha * 1.2f),
-                    BiophilicSecondary.copy(alpha = alpha * 0.6f),
-                    Color.Transparent
-                )
-            )
-            onDrawWithContent {
-                drawContent()
-                drawRect(brush = fallbackBrush)
-            }
+        val shaderBrush = Brush.radialGradient(
+            colors = listOf(
+                BiophilicPrimary.copy(alpha = alpha * (0.8f + rawTime * 0.4f)),
+                BiophilicSecondary.copy(alpha = alpha * (0.4f + (1f - rawTime) * 0.3f)),
+                Color.Transparent
+            ),
+            center = androidx.compose.ui.geometry.Offset(width * 0.8f, height * 0.2f),
+            radius = (width.coerceAtLeast(height)) * 0.9f
+        )
+        onDrawWithContent {
+            drawContent()
+            drawRect(brush = shaderBrush)
         }
     }
 }
+

@@ -45,6 +45,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.nativeCanvas
 import com.example.ui.components.PlantPhoto
+import com.example.ui.components.graphics.biophilicShader
+import com.example.ui.components.graphics.BotanicalCornerAccents
+import com.example.ui.components.graphics.BotanicalSeason
+import com.example.ui.components.graphics.SeasonalBadgeChip
 
 
 private val SOIL_THEMES = listOf(
@@ -382,6 +386,8 @@ fun PlannerScreen(
                             viewModel.getGridSnapshots(currentLayout.id)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
+                            SeasonalBadgeChip(season = BotanicalSeason.SPRING_BLOOM)
+                            Spacer(modifier = Modifier.width(8.dp))
                             if (snapshots.size >= 4) {
                                 IconButton(
                                     onClick = { showTimelapseDialog = true },
@@ -1711,15 +1717,18 @@ fun PlannerScreen(
                     }
                 }
                 Card(
-                    modifier = Modifier.fillMaxWidth().testTag("plot_workspace"),
+                    modifier = Modifier.fillMaxWidth().testTag("plot_workspace")
+                        .biophilicShader(enabled = true, alpha = 0.08f),
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
-                    ) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        BotanicalCornerAccents(showTopRight = true, showBottomLeft = true)
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -1732,6 +1741,7 @@ fun PlannerScreen(
                         }
                         actionsPanelContent()
                         gridPlannerContent()
+                        }
                     }
                 }
                 progressDensityContent()
@@ -1775,15 +1785,18 @@ fun PlannerScreen(
                 ) {
                     layoutInfoContent()
                     Card(
-                        modifier = Modifier.fillMaxWidth().testTag("plot_workspace"),
+                        modifier = Modifier.fillMaxWidth().testTag("plot_workspace")
+                            .biophilicShader(enabled = true, alpha = 0.08f),
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)),
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
                     ) {
-                        Column(
-                            modifier = Modifier.padding(18.dp),
-                            verticalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            BotanicalCornerAccents(showTopRight = true, showBottomLeft = true)
+                            Column(
+                                modifier = Modifier.padding(18.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -1798,7 +1811,8 @@ fun PlannerScreen(
                             gridPlannerContent()
                         }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                Spacer(modifier = Modifier.height(16.dp))
                 }
             }
         }

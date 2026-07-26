@@ -42,6 +42,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 import androidx.compose.ui.draw.blur
+import com.example.ui.components.graphics.BotanicalSeason
+import com.example.ui.components.graphics.SeasonalBadgeChip
 import com.example.data.model.parseGridString
 import com.example.data.model.GridPlantItem
 import com.example.ui.screens.checkPlantSynergy
@@ -191,21 +193,26 @@ fun RestorationJournalScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Screen title
-            Text(
-                text = "Restoration Journal",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFFA8E6CF),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Text(
-                text = "Eco-Acoustics & Sensory Mindfulness",
-                fontSize = 13.sp,
-                color = Color(0xFF81C784).copy(alpha = 0.7f),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Restoration Journal",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFFA8E6CF)
+                    )
+                    Text(
+                        text = "Eco-Acoustics & Sensory Mindfulness",
+                        fontSize = 13.sp,
+                        color = Color(0xFF81C784).copy(alpha = 0.7f)
+                    )
+                }
+                SeasonalBadgeChip(season = BotanicalSeason.SPRING_BLOOM)
+            }
 
             if (!isPremium) {
                 Spacer(modifier = Modifier.height(8.dp))

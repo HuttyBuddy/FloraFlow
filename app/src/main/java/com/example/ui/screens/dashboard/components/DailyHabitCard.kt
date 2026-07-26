@@ -92,7 +92,11 @@ fun DailyHabitCard(
             elevation = 4.dp
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                BotanicalCornerAccents(showTopRight = true, showBottomLeft = false)
+                BotanicalCornerAccents(
+                    modifier = Modifier.matchParentSize(),
+                    showTopRight = true,
+                    showBottomLeft = false
+                )
                 Column(
                     modifier = Modifier.padding(MaterialTheme.spacing.medium),
                     verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.mediumSmall)

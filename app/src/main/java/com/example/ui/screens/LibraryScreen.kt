@@ -46,6 +46,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.example.ui.components.PlantImages
 import com.example.ui.components.PlantPhoto
+import com.example.ui.components.graphics.biophilicShader
+import com.example.ui.components.graphics.BotanicalCornerAccents
+import com.example.ui.components.graphics.BotanicalSeason
+import com.example.ui.components.graphics.SeasonalBadgeChip
 
 // ⚡ Bolt Performance Optimization:
 // Extracted static lists to top-level constants. By moving these outside of the
@@ -224,23 +228,27 @@ fun LibraryScreen(
 
     val climateRecommendationsContent = @Composable {
         Card(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
+                .biophilicShader(enabled = true, alpha = 0.08f),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Climate Recommendations",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Compatible plant templates for your $climateName climate. Tap a recommendation to plant it in your active garden layout.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onBackground
-                )
+            Box(modifier = Modifier.fillMaxWidth()) {
+                BotanicalCornerAccents(showTopRight = true, showBottomLeft = false)
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Climate Recommendations",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Compatible plant templates for your $climateName climate. Tap a recommendation to plant it in your active garden layout.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
             }
         }
     }
@@ -409,11 +417,18 @@ fun LibraryScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                "Botanical Encyclopedia",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Botanical Encyclopedia",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                SeasonalBadgeChip(season = BotanicalSeason.SPRING_BLOOM)
+            }
             Text(
                 "Explore specific mature dimensions, watering schedules, bloom cycles, and ideal soil categories.",
                 style = MaterialTheme.typography.bodySmall,
