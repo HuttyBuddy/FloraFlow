@@ -22,6 +22,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import com.example.ui.components.graphics.BotanicalCornerAccents
+import com.example.ui.components.graphics.BotanicalSeason
+import com.example.ui.components.graphics.SeasonalBadgeChip
+import com.example.ui.components.graphics.biophilicShader
+
 @Composable
 fun BiophilicProfileCard(
     score: Int,
@@ -76,27 +81,31 @@ fun BiophilicProfileCard(
         BorderStroke(
             1.5.dp,
             Brush.horizontalGradient(
-                listOf(zoneColor.copy(alpha = 0.8f), MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f))
+                colors = listOf(zoneColor.copy(alpha = 0.8f), MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f))
             )
         )
     } else {
         BorderStroke(1.dp, defaultBorderColor)
     }
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("biophilic_profile_card"),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = cardBorder
-    ) {
-        Column(
+    Box(modifier = modifier.fillMaxWidth()) {
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .biophilicShader(enabled = true, alpha = 0.10f)
+                .testTag("biophilic_profile_card"),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)),
+            border = cardBorder
         ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                BotanicalCornerAccents(showTopRight = true, showBottomLeft = true)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -367,6 +376,8 @@ fun BiophilicProfileCard(
             }
         }
     }
+}
+}
 }
 
 private data class BiophilicZoneInfo(

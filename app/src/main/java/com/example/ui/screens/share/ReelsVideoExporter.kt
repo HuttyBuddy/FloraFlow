@@ -23,6 +23,14 @@ import kotlin.math.sin
 
 object ReelsVideoExporter {
 
+    data class Particle(
+        var x: Float,
+        var y: Float,
+        var radius: Float,
+        var speedY: Float,
+        var alpha: Int
+    )
+
     fun generate15SecondReelVideo(
         context: Context,
         score: Int = 88,
@@ -32,12 +40,12 @@ object ReelsVideoExporter {
         onComplete: (File) -> Unit = {},
         onError: (Exception) -> Unit = {}
     ) {
-        val width = 720
-        val height = 1280
+        val width = 1080
+        val height = 1920
         val fps = 30
         val durationSec = 15
         val totalFrames = fps * durationSec
-        val bitRate = 4_000_000 // 4 Mbps for crisp mobile playback
+        val bitRate = 6_000_000 // 6 Mbps HD bit rate for crisp TikTok / Reels upload
 
         val outputFile = File(context.cacheDir, "floraflow_ambient_reel.mp4")
         if (outputFile.exists()) outputFile.delete()
@@ -61,104 +69,156 @@ object ReelsVideoExporter {
 
             val bufferInfo = MediaCodec.BufferInfo()
 
-            // Paint objects
+            // Initialize Floating Bio-Energy Particles
+            val random = java.util.Random(42)
+            val particles = List(35) {
+                Particle(
+                    x = random.nextFloat() * width,
+                    y = random.nextFloat() * height,
+                    radius = 8f + random.nextFloat() * 16f,
+                    speedY = 1.5f + random.nextFloat() * 3.5f,
+                    alpha = 60 + random.nextInt(120)
+                )
+            }
+
+            // Paint objects setup
             val bgPaint = Paint().apply {
                 shader = LinearGradient(
                     0f, 0f, 0f, height.toFloat(),
-                    intArrayOf(Color.parseColor("#061A12"), Color.parseColor("#0B2B1D"), Color.parseColor("#030D08")),
+                    intArrayOf(
+                        Color.parseColor("#04140D"),
+                        Color.parseColor("#092B1C"),
+                        Color.parseColor("#020B07")
+                    ),
                     floatArrayOf(0f, 0.5f, 1f),
                     Shader.TileMode.CLAMP
                 )
             }
+            val particlePaint = Paint().apply {
+                isAntiAlias = true
+                color = Color.parseColor("#7FE3B5")
+            }
             val titlePaint = Paint().apply {
                 isAntiAlias = true
                 color = Color.parseColor("#7FE3B5")
-                textSize = 30f
+                textSize = 38f
                 typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                letterSpacing = 0.12f
+                letterSpacing = 0.15f
             }
             val scorePaint = Paint().apply {
                 isAntiAlias = true
                 color = Color.WHITE
-                textSize = 80f
+                textSize = 120f
                 typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 textAlign = Paint.Align.CENTER
             }
             val labelPaint = Paint().apply {
                 isAntiAlias = true
                 color = Color.parseColor("#9AE6C4")
-                textSize = 24f
+                textSize = 32f
                 typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 textAlign = Paint.Align.CENTER
+                letterSpacing = 0.1f
             }
-            val wavePaint = Paint().apply {
+            val waveArcPaint = Paint().apply {
                 isAntiAlias = true
                 color = Color.parseColor("#7FE3B5")
                 style = Paint.Style.STROKE
-                strokeWidth = 6f
+                strokeWidth = 10f
             }
             val footerPaint = Paint().apply {
                 isAntiAlias = true
                 color = Color.parseColor("#7FE3B5")
-                textSize = 24f
+                textSize = 34f
                 typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 textAlign = Paint.Align.CENTER
             }
 
             for (i in 0 until totalFrames) {
                 val canvas = surface.lockCanvas(null)
-                
-                // 1. Draw Background
+
+                // 1. Draw Deep Emerald Background Gradient
                 canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), bgPaint)
 
-                // 2. Draw Header
-                canvas.drawText("FLORAFLOW • 15s AMBIENT REEL 🌿", 50f, 100f, titlePaint)
+                // 2. Draw Floating Oxygen & Bio-Energy Particles
+                particles.forEach { p ->
+                    p.y -= p.speedY
+                    if (p.y < -30f) {
+                        p.y = height.toFloat() + 30f
+                        p.x = random.nextFloat() * width
+                    }
+                    particlePaint.alpha = p.alpha
+                    canvas.drawCircle(p.x, p.y, p.radius, particlePaint)
+                }
 
-                // 3. Draw Pulsing Wave Audio Circle
-                val progress = i.toFloat() / totalFrames
-                val pulseRadius = 160f + (sin(i * 0.25) * 20).toFloat()
+                // 3. Header Branding
+                canvas.drawText("FLORAFLOW • 15s AMBIENT REEL 🌿", 80f, 150f, titlePaint)
+
+                // 4. Pulsing Wave Audio Aura Circles
+                val pulseRadius = 240f + (sin(i * 0.2) * 28).toFloat()
+                val circleY = 620f
+
+                waveArcPaint.alpha = (190 + (sin(i * 0.15) * 50)).toInt()
+                canvas.drawCircle(width / 2f, circleY, pulseRadius, waveArcPaint)
                 
-                wavePaint.alpha = (180 + (sin(i * 0.2) * 50)).toInt()
-                canvas.drawCircle(width / 2f, 420f, pulseRadius, wavePaint)
-                canvas.drawCircle(width / 2f, 420f, pulseRadius + 30f, wavePaint.apply { alpha = 80 })
+                waveArcPaint.alpha = (90 + (sin(i * 0.25) * 40)).toInt()
+                canvas.drawCircle(width / 2f, circleY, pulseRadius + 45f, waveArcPaint)
 
-                // 4. Score Display
-                canvas.drawText("$score%", width / 2f, 445f, scorePaint)
-                canvas.drawText("BIOPHILIC VITALITY SCORE", width / 2f, 620f, labelPaint)
+                // 5. Biophilic Vitality Score Display inside Pulsing Aura
+                canvas.drawText("$score%", width / 2f, circleY + 40f, scorePaint)
+                canvas.drawText("BIOPHILIC VITALITY SCORE", width / 2f, circleY + 300f, labelPaint)
 
-                // 5. Archetype Pill
+                // 6. Plant Parent Archetype Pill Container
                 val tagBgPaint = Paint().apply {
                     isAntiAlias = true
                     color = Color.parseColor("#267FE3B5")
                 }
-                val tagRect = RectF(90f, 680f, width - 90f, 760f)
-                canvas.drawRoundRect(tagRect, 40f, 40f, tagBgPaint)
+                val tagRect = RectF(120f, 1060f, width - 120f, 1180f)
+                canvas.drawRoundRect(tagRect, 60f, 60f, tagBgPaint)
 
                 val tagTextPaint = Paint().apply {
                     isAntiAlias = true
                     color = Color.parseColor("#E0F7ED")
-                    textSize = 30f
+                    textSize = 42f
                     typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                     textAlign = Paint.Align.CENTER
                 }
-                canvas.drawText("${archetype.icon} ${archetype.title}", width / 2f, 732f, tagTextPaint)
+                canvas.drawText("${archetype.icon} ${archetype.title}", width / 2f, 1135f, tagTextPaint)
 
-                // 6. Soundscape Wave Info
+                // 7. Active Soundscape Frequency Badge
                 val freqTextPaint = Paint().apply {
                     isAntiAlias = true
                     color = Color.parseColor("#7FE3B5")
-                    textSize = 28f
+                    textSize = 38f
                     typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                     textAlign = Paint.Align.CENTER
                 }
-                canvas.drawText("🎵 Active Soundscape: ${frequencyHz}Hz Binaural Flow", width / 2f, 850f, freqTextPaint)
+                canvas.drawText("🎵 Active Soundscape: ${frequencyHz}Hz Binaural Flow", width / 2f, 1310f, freqTextPaint)
 
-                // 7. Footer
-                canvas.drawText("Made with FloraFlow AI • floraflow.app", width / 2f, height - 80f, footerPaint)
+                // 8. Animated Sine Wave Audio Waveform
+                val waveLinePaint = Paint().apply {
+                    isAntiAlias = true
+                    color = Color.parseColor("#52E09B")
+                    style = Paint.Style.STROKE
+                    strokeWidth = 6f
+                }
+                val waveCenterY = 1480f
+                var prevX = 140f
+                var prevY = waveCenterY
+                for (x in 140..940 step 15) {
+                    val angle = (x * 0.03f) + (i * 0.2f)
+                    val y = waveCenterY + (sin(angle) * 35f).toFloat()
+                    canvas.drawLine(prevX, prevY, x.toFloat(), y, waveLinePaint)
+                    prevX = x.toFloat()
+                    prevY = y
+                }
+
+                // 9. Footer Watermark
+                canvas.drawText("Made with FloraFlow AI • floraflow.app 🌿", width / 2f, height - 120f, footerPaint)
 
                 surface.unlockCanvasAndPost(canvas)
 
-                // Drain Encoder Output
+                // Drain Encoder Output Buffers
                 var encoderStatus = encoder.dequeueOutputBuffer(bufferInfo, 10000)
                 while (encoderStatus >= 0) {
                     val encodedData = encoder.getOutputBuffer(encoderStatus)
@@ -180,7 +240,7 @@ object ReelsVideoExporter {
                     encoderStatus = encoder.dequeueOutputBuffer(bufferInfo, 0)
                 }
 
-                onProgress(progress)
+                onProgress(i.toFloat() / totalFrames)
             }
 
             encoder.signalEndOfInputStream()

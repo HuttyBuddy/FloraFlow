@@ -26,6 +26,9 @@ import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+import com.example.ui.components.graphics.BotanicalCornerAccents
+import com.example.ui.components.graphics.biophilicShader
+
 @Composable
 fun DailyHabitCard(
     viewModel: GardenViewModel,
@@ -71,24 +74,29 @@ fun DailyHabitCard(
         calculateStreak(moodLogs)
     }
 
-    FloraFlowCard(
-        modifier = modifier.fillMaxWidth(),
-        containerColor = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(
-            1.5.dp,
-            Brush.horizontalGradient(
-                listOf(
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)
+    Box(modifier = modifier.fillMaxWidth()) {
+        FloraFlowCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .biophilicShader(enabled = true, alpha = 0.08f),
+            containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+            border = BorderStroke(
+                1.5.dp,
+                Brush.horizontalGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                        MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)
+                    )
                 )
-            )
-        ),
-        elevation = 4.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(MaterialTheme.spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.mediumSmall)
+            ),
+            elevation = 4.dp
         ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                BotanicalCornerAccents(showTopRight = true, showBottomLeft = false)
+                Column(
+                    modifier = Modifier.padding(MaterialTheme.spacing.medium),
+                    verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.mediumSmall)
+                ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.small),
@@ -359,4 +367,6 @@ fun DailyHabitCard(
             }
         }
     }
+}
+}
 }

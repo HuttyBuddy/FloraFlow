@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.repository.WeatherInfo
 
+import com.example.ui.components.graphics.BotanicalCornerAccents
+import com.example.ui.components.graphics.biophilicShader
+
 @Composable
 fun WeatherSyncCard(
     weather: WeatherInfo,
@@ -93,21 +96,25 @@ fun WeatherSyncCard(
         label = "AlphaPulse"
     )
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onWeatherClick() }
-            .testTag("weather_sync_card"),
-        shape = RoundedCornerShape(20.dp),
-        border = BorderStroke(1.5.dp, themeColor.copy(alpha = animatedAlpha))
-    ) {
-        Column(
+    Box(modifier = modifier.fillMaxWidth()) {
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(bgGradient)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .biophilicShader(enabled = true, alpha = 0.06f)
+                .clickable { onWeatherClick() }
+                .testTag("weather_sync_card"),
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.5.dp, themeColor.copy(alpha = animatedAlpha))
         ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
+                BotanicalCornerAccents(showTopRight = true, showBottomLeft = false)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(bgGradient)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -226,6 +233,8 @@ fun WeatherSyncCard(
             }
         }
     }
+}
+}
 }
 
 private data class WeatherThemeInfo(

@@ -22,7 +22,7 @@ data class PlantTemplate(
 object ClimatePlants {
     val CLIMATES = listOf("Temperate", "Arid (Desert)", "Tropical (Humid)", "Mediterranean", "Mountainous")
     
-    val STYLES = listOf("Indoor Area", "Cottage Garden", "English Classic", "Modern Patio", "Botanical Sanctuary")
+    val STYLES = listOf("Indoor Living Room", "Work Desk Sanctuary", "Bedroom Oasis", "Sunlit Window Nook", "Biophilic Botanical Studio")
 
     fun mapZipToClimate(zip: String): String {
         if (zip.isBlank()) return "Temperate"

@@ -73,7 +73,7 @@ class RestorativeAssessmentFixTest {
             }
         }
 
-        composeTestRule.onNodeWithText("Not Assessed").assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("Not Assessed").onFirst().assertIsDisplayed()
     }
 
     @Test

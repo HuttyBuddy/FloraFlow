@@ -65,4 +65,11 @@ class EnhancementFeaturesTest {
         viewModel.setBinauralFrequency(12f)
         assertEquals(12f, viewModel.binauralFrequencyHz.value, 0.01f)
     }
+
+    @Test
+    fun botanicalSeason_enumValidation() {
+        val season = com.example.ui.components.graphics.BotanicalSeason.SPRING_BLOOM
+        assertEquals("Spring Dew", season.label)
+        assertNotNull(season.icon)
+    }
 }

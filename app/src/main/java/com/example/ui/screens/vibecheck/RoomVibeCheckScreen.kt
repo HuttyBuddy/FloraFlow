@@ -27,6 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ui.screens.share.ShareCardData
 import com.example.ui.screens.share.ShareCardOverlay
+import com.example.ui.components.graphics.BotanicalCornerAccents
+import com.example.ui.components.graphics.BotanicalSeason
+import com.example.ui.components.graphics.SeasonalBadgeChip
+import com.example.ui.components.graphics.biophilicShader
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -98,19 +102,26 @@ fun RoomVibeCheckScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            tint = Color(0xFF7FE3B5),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            "AI Room Vibe Check",
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFE0F7ED)
-                        )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = Color(0xFF7FE3B5),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                "AI Room Vibe Check",
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFE0F7ED)
+                            )
+                        }
+                        SeasonalBadgeChip(season = BotanicalSeason.SPRING_BLOOM)
                     }
                 },
                 navigationIcon = {
@@ -139,24 +150,29 @@ fun RoomVibeCheckScreen(
         ) {
             // Intro Banner
             Card(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .biophilicShader(enabled = true, alpha = 0.12f),
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF0F3022)),
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF337FE3B5))
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Text(
-                        text = "Instant Biophilic Space Scan",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF7FE3B5)
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(
-                        text = "Select or scan your room setup below to calculate your Sanctuary Vitality Score & export your custom story card.",
-                        fontSize = 14.sp,
-                        color = Color(0xFFC3EBD9)
-                    )
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    BotanicalCornerAccents(showTopRight = true, showBottomLeft = true)
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        Text(
+                            text = "Instant Biophilic Space Scan",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF7FE3B5)
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "Select or scan your room setup below to calculate your Sanctuary Vitality Score & export your custom story card.",
+                            fontSize = 14.sp,
+                            color = Color(0xFFC3EBD9)
+                        )
+                    }
                 }
             }
 

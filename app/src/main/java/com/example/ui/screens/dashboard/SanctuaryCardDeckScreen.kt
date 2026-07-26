@@ -37,6 +37,9 @@ import com.example.ui.theme.extendedColors
 import com.example.ui.viewmodel.GardenViewModel
 import kotlinx.coroutines.launch
 
+import com.example.ui.components.graphics.BotanicalSeason
+import com.example.ui.components.graphics.SeasonalBadgeChip
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SanctuaryCardDeckScreen(
@@ -72,33 +75,40 @@ fun SanctuaryCardDeckScreen(
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        androidx.compose.foundation.Image(
-                            painter = painterResource(id = R.drawable.ic_logo_heart),
-                            contentDescription = "FloraFlow Logo",
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                        )
-                        Column {
-                            Text(
-                                text = "FloraFlow Sanctuary",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = MaterialTheme.colorScheme.primary
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            androidx.compose.foundation.Image(
+                                painter = painterResource(id = R.drawable.ic_logo_heart),
+                                contentDescription = "FloraFlow Logo",
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp))
                             )
-                            Text(
-                                text = when (pagerState.currentPage) {
-                                    0 -> "Card 1: Restorative Corner"
-                                    1 -> "Card 2: Plant Companion Match"
-                                    else -> "Card 3: Daily Tend & Soundscapes"
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary,
-                                fontSize = 11.sp
-                            )
+                            Column {
+                                Text(
+                                    text = "FloraFlow Sanctuary",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = when (pagerState.currentPage) {
+                                        0 -> "Card 1: Restorative Corner"
+                                        1 -> "Card 2: Plant Companion Match"
+                                        else -> "Card 3: Daily Tend & Soundscapes"
+                                    },
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.secondary,
+                                    fontSize = 11.sp
+                                )
+                            }
                         }
+                        SeasonalBadgeChip(season = BotanicalSeason.SPRING_BLOOM)
                     }
                 },
                 actions = {
