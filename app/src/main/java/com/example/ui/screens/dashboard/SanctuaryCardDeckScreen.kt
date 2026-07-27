@@ -1,6 +1,7 @@
 package com.example.ui.screens.dashboard
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,8 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.foundation.Canvas
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -113,6 +117,26 @@ fun SanctuaryCardDeckScreen(
                     }
                 },
                 actions = {
+                    IconButton(
+                        onClick = { viewModel.openReelsExporter() },
+                        modifier = Modifier.testTag("deck_reels_exporter_btn")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Videocam,
+                            contentDescription = "Export 15s Ambient Reel",
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                    IconButton(
+                        onClick = { viewModel.openRoomVibeCheck() },
+                        modifier = Modifier.testTag("deck_vibe_check_btn")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = "AI Room Vibe Check",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     IconButton(
                         onClick = { showSettingsDialog = true },
                         modifier = Modifier.testTag("deck_settings_btn")
@@ -250,6 +274,7 @@ fun SanctuaryCardDeckScreen(
 @Composable
 private fun AiPlantCounselTopCard(
     onOpenAiCounsel: () -> Unit,
+    viewModel: GardenViewModel? = null,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -262,47 +287,89 @@ private fun AiPlantCounselTopCard(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f))
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = "Ask AI Plant Counsel",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Chat with AI Plant Counsel",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Text(
+                        text = "Ask Dr. Julian about light matching, plant placement & care",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                        fontSize = 11.sp
+                    )
+                }
                 Icon(
-                    imageVector = Icons.Default.AutoAwesome,
-                    contentDescription = "Ask AI Plant Counsel",
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.size(22.dp)
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = "Open AI Plant Counsel",
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Chat with AI Plant Counsel",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+
+            // Interactive Quick Prompt Chips
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                val prompts = listOf(
+                    "Low Light Plants" to "Which houseplants thrive in low light corners?",
+                    "Fix Yellow Leaves" to "How do I fix yellow leaves on my indoor plants?",
+                    "Acoustic Masking" to "What are the best acoustic masking plants for stress?"
                 )
-                Text(
-                    text = "Ask Dr. Julian about light matching, plant placement & care",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                    fontSize = 11.sp
-                )
+                prompts.forEach { (label, query) ->
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                viewModel?.sendAiChatMessage(query)
+                                onOpenAiCounsel()
+                            }
+                    ) {
+                        Text(
+                            text = label,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(vertical = 5.dp, horizontal = 4.dp)
+                        )
+                    }
+                }
             }
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "Open AI Plant Counsel",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
         }
     }
 }
@@ -329,7 +396,10 @@ private fun Card1RestorativeCorner(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        AiPlantCounselTopCard(onOpenAiCounsel = onOpenAiCounsel)
+        AiPlantCounselTopCard(
+            onOpenAiCounsel = onOpenAiCounsel,
+            viewModel = viewModel
+        )
 
         if (needsReassessment) {
             Card(
@@ -368,7 +438,8 @@ private fun Card1RestorativeCorner(
             onStepToggle = { idx -> viewModel.toggleStepCompleted(idx) },
             onNavigate = onNavigateToPage,
             onSearchDatabase = { query -> viewModel.setLibrarySearchQuery(query) },
-            onOpenVibeCheck = { viewModel.openRoomVibeCheck() }
+            onOpenVibeCheck = { viewModel.openRoomVibeCheck() },
+            onOpenReelsExporter = { viewModel.openReelsExporter() }
         )
 
         WeatherSyncCard(
@@ -474,7 +545,10 @@ private fun Card2PlantMatch(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        AiPlantCounselTopCard(onOpenAiCounsel = onOpenAiCounsel)
+        AiPlantCounselTopCard(
+            onOpenAiCounsel = onOpenAiCounsel,
+            viewModel = viewModel
+        )
 
         CompanionSynergyCard(activeLayout = activeLayout)
 
@@ -581,7 +655,10 @@ private fun Card3DailyTendAndAudio(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        AiPlantCounselTopCard(onOpenAiCounsel = onOpenAiCounsel)
+        AiPlantCounselTopCard(
+            onOpenAiCounsel = onOpenAiCounsel,
+            viewModel = viewModel
+        )
 
         PlantCareStreakCard(viewModel = viewModel)
 
@@ -728,6 +805,65 @@ private fun CustomBinauralStudioCard(
                 }
             }
 
+            // Live Animated Soundwave Spectrum Canvas Visualizer
+            val transition = rememberInfiniteTransition(label = "binauralWaveTransition")
+            val wavePhase by transition.animateFloat(
+                initialValue = 0f,
+                targetValue = (2 * Math.PI).toFloat(),
+                animationSpec = infiniteRepeatable(
+                    animation = tween(durationMillis = (10000f / frequencyHz.coerceAtLeast(1f)).toInt(), easing = androidx.compose.animation.core.LinearEasing)
+                ),
+                label = "wavePhase"
+            )
+            val tertiaryColor = MaterialTheme.colorScheme.tertiary
+            val primaryColor = MaterialTheme.colorScheme.primary
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    val w = size.width
+                    val h = size.height
+                    val centerY = h / 2f
+                    val points = 60
+                    val step = w / points
+
+                    val path = Path()
+                    path.moveTo(0f, centerY)
+
+                    for (i in 0..points) {
+                        val x = i * step
+                        val normX = i.toFloat() / points
+                        val envelope = kotlin.math.sin(normX * Math.PI).toFloat()
+                        val freqFactor = frequencyHz / 10f
+                        val wave = kotlin.math.sin((x * 0.04f * freqFactor) + wavePhase).toFloat()
+                        val y = centerY + wave * (h * 0.35f) * envelope
+                        if (i == 0) path.moveTo(x, y) else path.lineTo(x, y)
+                    }
+
+                    drawPath(
+                        path = path,
+                        brush = Brush.horizontalGradient(listOf(tertiaryColor, primaryColor)),
+                        style = Stroke(width = 2.5.dp.toPx())
+                    )
+                }
+
+                Text(
+                    text = "${frequencyHz.toInt()} Hz Visualizer",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = tertiaryColor.copy(alpha = 0.85f),
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 4.dp, end = 8.dp)
+                )
+            }
+
             // Interactive Preset Chips
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -771,6 +907,19 @@ private fun CustomBinauralStudioCard(
                 valueRange = 4f..40f,
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Button(
+                onClick = { viewModel.openReelsExporter() },
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(42.dp)
+            ) {
+                Icon(Icons.Default.Videocam, contentDescription = "Export Soundscape Reel", modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Export 15s Soundscape Reel 🎥", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }

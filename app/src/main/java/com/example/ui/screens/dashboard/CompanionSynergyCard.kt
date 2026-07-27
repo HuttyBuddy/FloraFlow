@@ -136,11 +136,74 @@ fun CompanionSynergyCard(
             }
 
             if (gridItems.isEmpty()) {
-                Text(
-                    text = "No plants placed in this layout grid yet. Visit the Garden Planner tab to add companion plants like Lavender and Rose to unlock companion synergies!",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "No plants placed in this layout grid yet. Test popular symbiotic pairs below or visit the Garden Planner tab:",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    var selectedTestPair by remember { mutableStateOf<Pair<String, String>?>(null) }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val pairs = listOf(
+                            "Lavender + Rosemary" to Pair("Lavender", "Rosemary"),
+                            "Peace Lily + Snake Plant" to Pair("Peace Lily", "Snake Plant")
+                        )
+                        pairs.forEach { (label, p) ->
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = if (selectedTestPair == p) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { selectedTestPair = p }
+                            ) {
+                                Text(
+                                    text = label,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 6.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    selectedTestPair?.let { (p1, p2) ->
+                        val isSynergy = checkPlantSynergy(p1, p2)
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(containerColor = if (isSynergy) Color(0xFFE8F5E9) else Color(0xFFFFF3E0))
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(if (isSynergy) "🌿" else "☀️", fontSize = 16.sp)
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = if (isSynergy) "Symbiotic Pair: $p1 & $p2" else "Neutral Pairing: $p1 & $p2",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp,
+                                        color = if (isSynergy) Color(0xFF2E7D32) else Color(0xFFE65100)
+                                    )
+                                    Text(
+                                        text = if (isSynergy) "Pairing enhances bio-fragrance and provides a +15% biophilic vitality bonus!" else "Compatible companion pairing with balanced daylight requirements.",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             } else {
                 Text(
                     text = "Placed Vegetation: ${gridItems.size} items in '${activeLayout.name}'. We analyze adjacent cells to ensure optimal biophilic coexistence.",

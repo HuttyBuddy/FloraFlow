@@ -40,6 +40,7 @@ fun BiophilicProfileCard(
     onNavigate: (Int) -> Unit = {},
     onSearchDatabase: (String) -> Unit = {},
     onOpenVibeCheck: () -> Unit = {},
+    onOpenReelsExporter: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -364,19 +365,32 @@ fun BiophilicProfileCard(
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = "Retake Restorative Assessment", modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Retake", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("Retake", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
 
                 Button(
                     onClick = onOpenVibeCheck,
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier
-                        .weight(1.2f)
+                        .weight(1.1f)
                         .height(44.dp)
                 ) {
                     Icon(Icons.Default.AutoAwesome, contentDescription = "AI Room Vibe Check", modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Vibe Check", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text("Vibe Check", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Button(
+                    onClick = onOpenReelsExporter,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                    modifier = Modifier
+                        .weight(1.2f)
+                        .height(44.dp)
+                ) {
+                    Icon(Icons.Default.Videocam, contentDescription = "Export 15s Ambient Reel", modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Reel 🎥", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
