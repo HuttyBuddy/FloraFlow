@@ -29,17 +29,30 @@ class SanctuaryCardDeckScreenTest {
     }
 
     @Test
-    fun sanctuaryCardDeck_displaysCoreScreenAndPager() {
+    fun sanctuaryDashboard_displaysCoreScreenAsOneScroll() {
         composeTestRule.setContent {
             MyApplicationTheme {
                 SanctuaryCardDeckScreen(viewModel = viewModel)
             }
         }
 
-        // Verify screen and card pager are displayed
+        // The three-page swipe deck was replaced by a single vertical scroll, so the
+        // whole dashboard is reachable without discovering a horizontal gesture.
         composeTestRule.onNodeWithTag("sanctuary_card_deck_screen").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("sanctuary_card_pager").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("ai_counsel_fab").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("sanctuary_dashboard_scroll").assertExists()
+        composeTestRule.onNodeWithTag("sanctuary_card_pager").assertDoesNotExist()
+    }
+
+    /** The profile card is the dashboard's anchor and must render without a swipe. */
+    @Test
+    fun sanctuaryDashboard_showsCareStreakWithoutSwiping() {
+        composeTestRule.setContent {
+            MyApplicationTheme {
+                SanctuaryCardDeckScreen(viewModel = viewModel)
+            }
+        }
+
+        composeTestRule.onNodeWithTag("care_streak_card").assertExists()
     }
 
     @Test

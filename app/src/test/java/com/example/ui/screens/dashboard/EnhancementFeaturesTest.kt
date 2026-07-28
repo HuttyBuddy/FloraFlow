@@ -55,7 +55,7 @@ class EnhancementFeaturesTest {
             }
         }
 
-        // Card 1 Real-time light meter exists in deck
+        // The light meter renders directly on the dashboard scroll (no swipe deck).
         composeTestRule.onNodeWithTag("real_time_light_meter_card").assertExists()
         
         // Verify streak & binaural state modifications

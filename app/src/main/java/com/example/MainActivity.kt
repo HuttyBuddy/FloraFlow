@@ -245,24 +245,36 @@ class MainActivity : ComponentActivity() {
                 } else {
                     Scaffold(
                         bottomBar = {
+                            // No fixed height: NavigationBar sizes itself and adds the
+                            // system gesture inset. Pinning it to 80.dp left no room for
+                            // that inset, so the labels were clipped by the screen edge.
                             NavigationBar(
                                 containerColor = MaterialTheme.colorScheme.surface,
-                                tonalElevation = 0.dp,
-                                modifier = Modifier.height(80.dp)
+                                tonalElevation = 0.dp
                             ) {
+                                // Short labels: five items share the width, and
+                                // "Dashboard"/"Restoration" could not fit their slot.
                                 val tabs = listOf(
-                                    Triple("Dashboard", Icons.Default.Dashboard, 0),
-                                    Triple("Library", Icons.AutoMirrored.Filled.MenuBook, 1),
-                                    Triple("My Plot", Icons.Default.Spa, 2),
+                                    Triple("Home", Icons.Default.Dashboard, 0),
+                                    Triple("Plants", Icons.AutoMirrored.Filled.MenuBook, 1),
+                                    Triple("Plot", Icons.Default.Spa, 2),
                                     Triple("Counsel", Icons.Default.SmartToy, 3),
-                                    Triple("Restoration", Icons.Default.SelfImprovement, 4)
+                                    Triple("Restore", Icons.Default.SelfImprovement, 4)
                                 )
                                 tabs.forEach { (label, icon, index) ->
                                     NavigationBarItem(
                                         selected = currentTab == index,
                                         onClick = { viewModel.setCurrentTab(index) },
                                         icon = { Icon(icon, contentDescription = label) },
-                                        label = { Text(label, fontSize = 10.sp, fontWeight = FontWeight.Bold) },
+                                        label = {
+                                            Text(
+                                                text = label,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
+                                        },
                                         colors = NavigationBarItemDefaults.colors(
                                             selectedIconColor = MaterialTheme.colorScheme.primary,
                                             unselectedIconColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f),
