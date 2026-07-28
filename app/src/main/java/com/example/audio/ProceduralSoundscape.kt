@@ -27,6 +27,8 @@ object Soundscape {
     const val SCENE_BREEZE = 0
     const val SCENE_RAIN = 1
     const val SCENE_OCEAN = 2
+    const val SCENE_PINE = 3
+    const val SCENE_BAMBOO = 4
 
     const val CROSSFADE_SECONDS = 2.5f
 
@@ -39,17 +41,23 @@ object Soundscape {
     fun createGenerator(sceneId: Int): AmbientGenerator = when (sceneId) {
         SCENE_BREEZE -> BreezeGenerator()
         SCENE_OCEAN -> OceanGenerator()
+        SCENE_PINE -> PineCanopyGenerator()
+        SCENE_BAMBOO -> BambooStreamGenerator()
         else -> RainGenerator()
     }
 
     fun sceneLabel(sceneId: Int): String = when (sceneId) {
         SCENE_BREEZE -> "Forest Breeze & Chimes"
         SCENE_OCEAN -> "Ocean Waves"
+        SCENE_PINE -> "Pine Mountain Canopy 🌲"
+        SCENE_BAMBOO -> "Bamboo Wind & Stream 🎋"
         else -> "Gentle Rainfall"
     }
 
     /** Maps a preset track name to its scene, or null when the track uses custom frequencies. */
     fun sceneForTrack(name: String): Int? = when {
+        name.contains("Pine") || name.contains("Gamma") -> SCENE_PINE
+        name.contains("Bamboo") -> SCENE_BAMBOO
         name.contains("Alpha") -> SCENE_BREEZE
         name.contains("Theta") -> SCENE_RAIN
         name.contains("Delta") -> SCENE_OCEAN
@@ -323,6 +331,119 @@ class OceanGenerator(seed: Int = System.nanoTime().toInt()) : AmbientGenerator()
 }
 
 /**
+ * Pine Mountain Canopy (Gamma Peak Focus): high canopy mountain wind with rustling pine needles.
+ */
+class PineCanopyGenerator(seed: Int = System.nanoTime().toInt()) : AmbientGenerator() {
+    private val rnd = Random(seed)
+    private val pinkL = PinkNoise(rnd.nextInt())
+    private val pinkR = PinkNoise(rnd.nextInt())
+    private var hpL = 0f
+    private var hpR = 0f
+    private var lpL = 0f
+    private var lpR = 0f
+    private var lfo = rnd.nextDouble() * Soundscape.TWO_PI
+
+    override fun render(bus: FloatArray, frames: Int, voice: SceneVoice) {
+        for (i in 0 until frames) {
+            lfo += Soundscape.TWO_PI * 0.02 / Soundscape.SAMPLE_RATE
+            val gust = 0.65f + 0.35f * sin(lfo).toFloat()
+
+            var wL = pinkL.next()
+            var wR = pinkR.next()
+            hpL += 0.05f * (wL - hpL); wL -= hpL
+            hpR += 0.05f * (wR - hpR); wR -= hpR
+            lpL += 0.18f * (wL - lpL)
+            lpR += 0.18f * (wR - lpR)
+
+            val l = lpL * PINE_GAIN * gust
+            val r = lpR * PINE_GAIN * gust
+
+            voice.gain += (voice.gainTarget - voice.gain).coerceIn(-voice.gainStep, voice.gainStep)
+            bus[2 * i] += l * voice.gain
+            bus[2 * i + 1] += r * voice.gain
+        }
+    }
+
+    companion object {
+        private const val PINE_GAIN = 0.6f
+    }
+}
+
+/**
+ * Bamboo Wind & Stream (Alpha Calm): gentle flowing stream with periodic hollow wood taps.
+ */
+class BambooStreamGenerator(seed: Int = System.nanoTime().toInt()) : AmbientGenerator() {
+    private val rnd = Random(seed)
+    private var brownL = 0f
+    private var brownR = 0f
+    private var lpL = 0f
+    private var lpR = 0f
+    private val taps = Array(4) { BambooTapVoice() }
+    private var samplesToNextTap = (Soundscape.SAMPLE_RATE * 1.8).toInt()
+
+    override fun render(bus: FloatArray, frames: Int, voice: SceneVoice) {
+        for (i in 0 until frames) {
+            brownL = (brownL + 0.015f * (rnd.nextFloat() * 2f - 1f)) * 0.995f
+            brownR = (brownR + 0.015f * (rnd.nextFloat() * 2f - 1f)) * 0.995f
+            lpL += 0.25f * (brownL - lpL)
+            lpR += 0.25f * (brownR - lpR)
+
+            var l = lpL * STREAM_GAIN
+            var r = lpR * STREAM_GAIN
+
+            if (--samplesToNextTap <= 0) {
+                taps.firstOrNull { !it.active }?.trigger(rnd)
+                samplesToNextTap = ((1.5 + rnd.nextDouble() * 4.0) * Soundscape.SAMPLE_RATE).toInt()
+            }
+            for (tap in taps) {
+                if (!tap.active) continue
+                val s = tap.nextSample()
+                l += s * tap.panL
+                r += s * tap.panR
+            }
+
+            voice.gain += (voice.gainTarget - voice.gain).coerceIn(-voice.gainStep, voice.gainStep)
+            bus[2 * i] += l * voice.gain
+            bus[2 * i + 1] += r * voice.gain
+        }
+    }
+
+    companion object {
+        private const val STREAM_GAIN = 0.7f
+    }
+}
+
+private class BambooTapVoice {
+    var active = false
+    var panL = 0.7f
+    var panR = 0.7f
+    private var phase = 0.0
+    private var increment = 0.0
+    private var amp = 0f
+    private var decay = 0f
+
+    fun trigger(rnd: Random) {
+        val freq = 320.0 + rnd.nextDouble() * 280.0
+        phase = 0.0
+        increment = Soundscape.TWO_PI * freq / Soundscape.SAMPLE_RATE
+        amp = 0.08f + rnd.nextFloat() * 0.06f
+        decay = exp(-1f / (0.08f * Soundscape.SAMPLE_RATE))
+        val pan = rnd.nextFloat()
+        panL = sqrt(1f - pan)
+        panR = sqrt(pan)
+        active = true
+    }
+
+    fun nextSample(): Float {
+        val s = sin(phase).toFloat() * amp
+        phase += increment
+        amp *= decay
+        if (amp < 1e-4f) active = false
+        return s
+    }
+}
+
+/**
  * Renders the soundscape offline — as fast as the CPU allows — into 16-bit stereo PCM.
  *
  * Used by the Reels exporter so the exported MP4 carries the user's actual binaural
@@ -334,7 +455,7 @@ object OfflineSoundscapeRenderer {
     private const val BLOCK_FRAMES = 2048
 
     /**
-     * @param sceneId one of [Soundscape.SCENE_BREEZE] / [Soundscape.SCENE_RAIN] / [Soundscape.SCENE_OCEAN]
+     * @param sceneId one of [Soundscape.SCENE_BREEZE] / [Soundscape.SCENE_RAIN] / [Soundscape.SCENE_OCEAN] / [Soundscape.SCENE_PINE] / [Soundscape.SCENE_BAMBOO]
      * @param baseFreqHz binaural carrier frequency for the left ear
      * @param beatFreqHz the beat frequency — the right ear runs at [baseFreqHz] + this
      * @param durationSeconds length of the rendered buffer
@@ -361,6 +482,8 @@ object OfflineSoundscapeRenderer {
                 it.strikeChimeNow()
             }
             Soundscape.SCENE_OCEAN -> OceanGenerator(seed)
+            Soundscape.SCENE_PINE -> PineCanopyGenerator(seed)
+            Soundscape.SCENE_BAMBOO -> BambooStreamGenerator(seed)
             else -> RainGenerator(seed)
         }
         // Start at full level — there is no crossfade to perform in an offline render.

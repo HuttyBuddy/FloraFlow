@@ -25,7 +25,7 @@ data class Plant(
     val careSpring: String = "Water once a week, expose to partial shade.",
     val careSummer: String = "Water daily, monitor for intense afternoon sun.",
     val careAutumn: String = "Lessen watering, compost soil.",
-    val careWinter: String = "Prune dead stems, protect from frost.",
+    val careWinter: String = "Prune spent leaves, shield from cold window drafts.",
     val soilType: String = "Sandy loam, well-draining",
     val sunlight: String = "Full sun to partial shade",
     val growthProgress: Int = 20, // 0 - 100

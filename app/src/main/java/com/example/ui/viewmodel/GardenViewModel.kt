@@ -1192,7 +1192,7 @@ class GardenViewModel @JvmOverloads constructor(
                             careSpring = "Cut back old gray woody parts to encourage green growth.",
                             careSummer = "Water minimal. Enjoys full direct hot sun.",
                             careAutumn = "Prune flowers post-bloom to prevent legginess.",
-                            careWinter = "Enjoys dry root bed. Extremely frost hardy.",
+                            careWinter = "Enjoys well-draining indoor soil. Keep warm in winter.",
                             soilType = "Sandy, highly well-draining grit",
                             sunlight = "Full Sun",
                             growthProgress = 60,
@@ -1787,7 +1787,7 @@ class GardenViewModel @JvmOverloads constructor(
 
     private fun buildLayoutSuggestionPrompt(layout: GardenLayout): String {
         return "Suggest a brand new layout idea. " +
-                "For a garden with the style '${layout.style}' and climate of '${layout.climate}', name 3 highly compatible, beautifully flowering plants or useful crops. " +
+                "For an indoor room sanctuary with the style '${layout.style}' and light conditions of '${layout.climate}', name 3 highly compatible, lush indoor houseplants or flowering houseplants. " +
                 "Format your answer as simple lines containing: PlantName | PlantType | IdealSoil | SunExposure. " +
                 "Follow this list with a clear, concise decorating suggestion."
     }

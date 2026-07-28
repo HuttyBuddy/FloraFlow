@@ -74,7 +74,7 @@ fun WeatherSyncCard(
         )
         else -> WeatherThemeInfo(
             "⛅",
-            "Mild climate conditions. Ideal day for companion pruning or sowed plant rearrangement.",
+            "Mild climate conditions. Ideal day for companion pruning or indoor plant rearrangement.",
             Color(0xFF43A047),
             Brush.verticalGradient(listOf(Color(0xFFE8F5E9), Color(0xFFC8E6C9)))
         )

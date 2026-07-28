@@ -2,6 +2,9 @@ package com.example.ui.screens.restoration
 
 import android.os.Build
 import android.widget.Toast
+import com.example.ui.screens.restoration.components.BiophilicCanvas
+import com.example.ui.screens.restoration.components.MindfulCareRoutinesSection
+import com.example.ui.screens.restoration.components.MentalWellnessDigestSection
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -168,7 +171,9 @@ fun RestorationJournalScreen(
     val tracks = listOf(
         SoundscapeTrackInfo("Alpha Focus", "Forest Breeze 🍃", 200f, 10f, "A living forest breeze with hand-struck wind chimes, under Alpha waves (10Hz) for alert, relaxed focus. Generated live — it never loops or repeats."),
         SoundscapeTrackInfo("Theta Meditate", "Gentle Rain 🌧️", 200f, 6f, "Soft rainfall with droplets scattered around you, under Theta waves (6Hz) for deep visualization and mental stillness. Generated live — it never loops or repeats."),
-        SoundscapeTrackInfo("Delta Sleep", "Ocean Waves 🌊", 150f, 2.5f, "Slow ocean swells breaking in the distance, under Delta waves (2.5Hz) for physical healing and deep sleep. Generated live — it never loops or repeats.")
+        SoundscapeTrackInfo("Delta Sleep", "Ocean Waves 🌊", 150f, 2.5f, "Slow ocean swells breaking in the distance, under Delta waves (2.5Hz) for physical healing and deep sleep. Generated live — it never loops or repeats."),
+        SoundscapeTrackInfo("Gamma Focus", "Pine Mountain Canopy 🌲", 250f, 40f, "High canopy mountain wind with rustling pine needles, under Gamma waves (40Hz) for peak mental clarity. Generated live — it never loops or repeats."),
+        SoundscapeTrackInfo("Alpha Calm", "Bamboo Wind & Stream 🎋", 180f, 8.5f, "A gentle flowing mountain stream with hollow bamboo taps, under Alpha waves (8.5Hz) for calm grounding. Generated live — it never loops or repeats.")
     )
 
     // Base background gradient
@@ -248,27 +253,68 @@ fun RestorationJournalScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            var activeSectionTab by remember { mutableIntStateOf(0) }
 
-            // NRI Index Gauge or Onboarding state
-            if (activeLayout == null || activePlants.isEmpty()) {
-                // Empty state card
-                EmptyStateCard()
-            } else {
-                // NRI Progress gauge card
-                NriGaugeCard(
-                    nriScore = nriScore,
-                    diversityScore = diversityScore,
-                    synergyScore = synergyScore,
-                    careMultiplier = careMultiplier,
-                    penaltyScore = penaltyScore,
-                    plantCount = activePlants.size
-                )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp)
+                    .background(Color(0xFF0F261D).copy(alpha = 0.8f), RoundedCornerShape(14.dp))
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                val sectionTabs = listOf("Soundscapes 🍃", "Mindful Care 🧘", "Wellness Digest 📊")
+                sectionTabs.forEachIndexed { index, label ->
+                    val isSelected = activeSectionTab == index
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(if (isSelected) Color(0xFF81C784).copy(alpha = 0.3f) else Color.Transparent)
+                            .clickable { activeSectionTab = index }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = label,
+                            fontSize = 12.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) Color(0xFFA8E6CF) else Color.White.copy(alpha = 0.6f)
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Box(modifier = Modifier.fillMaxWidth()) {
+            if (activeSectionTab == 1) {
+                MindfulCareRoutinesSection(
+                    onCompleteRoutine = { title, duration, startMood, endMood ->
+                        Toast.makeText(context, "Completed: $title (+15 NRI)", Toast.LENGTH_LONG).show()
+                    },
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            } else if (activeSectionTab == 2) {
+                MentalWellnessDigestSection(modifier = Modifier.padding(vertical = 8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                if (activeLayout == null || activePlants.isEmpty()) {
+                    EmptyStateCard()
+                } else {
+                    NriGaugeCard(
+                        nriScore = nriScore,
+                        diversityScore = diversityScore,
+                        synergyScore = synergyScore,
+                        careMultiplier = careMultiplier,
+                        penaltyScore = penaltyScore,
+                        plantCount = activePlants.size
+                    )
+                }
+            } else {
+                BiophilicCanvas(
+                    isPlaying = isPlaying,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
                 Column {
                     // Soundscape Player Controller
                     Card(
@@ -786,6 +832,8 @@ fun RestorationJournalScreen(
                     }
                 }
             }
+        }
+    }
 
             Spacer(modifier = Modifier.height(16.dp))
 

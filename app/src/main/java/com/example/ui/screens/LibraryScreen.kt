@@ -1737,7 +1737,7 @@ fun AddCustomPlantDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Plant / Crop Name") },
+                    label = { Text("Houseplant / Species Name") },
                     placeholder = { Text("Golden Pothos") },
                     modifier = Modifier
                         .fillMaxWidth()

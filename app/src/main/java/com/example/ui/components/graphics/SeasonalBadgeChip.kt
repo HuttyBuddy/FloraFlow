@@ -33,7 +33,7 @@ import com.example.ui.theme.PremiumGold
 enum class BotanicalSeason(val label: String, val icon: ImageVector) {
     SPRING_BLOOM("Spring Dew", Icons.Default.Eco),
     SUMMER_SOLSTICE("Summer Canopy", Icons.Default.WbSunny),
-    AUTUMN_HARVEST("Autumn Solstice", Icons.Default.EnergySavingsLeaf),
+    AUTUMN_HARVEST("Autumn Equinox", Icons.Default.EnergySavingsLeaf),
     WINTER_REST("Winter Dormancy", Icons.Default.AcUnit)
 }
 

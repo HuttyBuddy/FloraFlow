@@ -150,7 +150,7 @@ fun BiophilicProfileCard(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = if (score > 0) "$score/20" else "Not assessed",
+                        text = if (score > 0) "$score/20" else "Not Assessed",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = zoneColor,

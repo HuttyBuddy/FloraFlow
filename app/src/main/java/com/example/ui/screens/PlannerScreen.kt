@@ -252,7 +252,7 @@ fun PlannerScreen(
 
     var selectedSeedTemplate by remember { mutableStateOf<PlantTemplate?>(null) }
     var isUprootModeActive by remember { mutableStateOf(false) }
-    var selectedTrayTab by remember { mutableStateOf(0) } // 0 = Indoor, 1 = Outdoor
+    var selectedTrayTab by remember { mutableStateOf(0) } // 0 = All Indoor, 1 = Bright Light, 2 = Low Light
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val isWideScreen = configuration.screenWidthDp >= 720
@@ -817,7 +817,7 @@ fun PlannerScreen(
                         )
                     }
                     SingleChoiceSegmentedButtonRow {
-                        listOf("All Indoor", "Bright Light").forEachIndexed { index, label ->
+                        listOf("All Indoor", "Bright Light", "Low Light").forEachIndexed { index, label ->
                             SegmentedButton(
                                 selected = selectedTrayTab == index,
                                 onClick = {
@@ -825,7 +825,7 @@ fun PlannerScreen(
                                     selectedSeedTemplate = null
                                     isUprootModeActive = false
                                 },
-                                shape = SegmentedButtonDefaults.itemShape(index = index, count = 2),
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = 3),
                                 icon = {}
                             ) { Text(label, fontSize = 11.sp) }
                         }
@@ -855,8 +855,14 @@ fun PlannerScreen(
                     }
                     val templates = ClimatePlants.getTemplatesForPlanner(
                         activeLayout?.climate ?: "",
-                        isIndoor = selectedTrayTab == 0
-                    )
+                        isIndoor = true
+                    ).let { list ->
+                        when (selectedTrayTab) {
+                            1 -> list.filter { it.sunlight.contains("Bright", ignoreCase = true) || it.sunlight.contains("Direct", ignoreCase = true) }
+                            2 -> list.filter { it.sunlight.contains("Low", ignoreCase = true) || it.sunlight.contains("Shade", ignoreCase = true) || it.sunlight.contains("Indirect", ignoreCase = true) }
+                            else -> list
+                        }
+                    }
                     items(templates, key = { it.name }) { template ->
                         val isSelected = selectedSeedTemplate?.name == template.name
                         FilterChip(

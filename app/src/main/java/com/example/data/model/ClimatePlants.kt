@@ -431,7 +431,7 @@ object ClimatePlants {
             careSpring = "Water once a month. No pruning needed.",
             careSummer = "Water every 3 weeks. Full direct sun.",
             careAutumn = "Withhold watering as temperature drops.",
-            careWinter = "Keep completely dry to prevent frost root rot.",
+            careWinter = "Keep dry indoors and away from cold window glass.",
             soilType = "Perlite and sand mix",
             sunlight = "Full Direct Sun",
             iconEmoji = "🌵",
@@ -453,7 +453,7 @@ object ClimatePlants {
             careSpring = "Sow seeds in shallow soil. Water lightly to sprout.",
             careSummer = "Moderate drought tolerance. Water weekly.",
             careAutumn = "Cut back old blooms to encourage new sprout cycles.",
-            careWinter = "Leave dry. Survives mild frost beautifully.",
+            careWinter = "Keep soil dry. Protect from cold indoor window drafts.",
             soilType = "Dry sandy soils",
             sunlight = "Full Direct Sun",
             iconEmoji = "🌼",
@@ -487,7 +487,7 @@ object ClimatePlants {
             isIndoor = true,
             funFacts = listOf(
                 "Rosemary is historically associated with memory; ancient scholars wore it in their hair during exams.",
-                "It belongs to the mint family and is highly resistant to common garden pests.",
+                "It belongs to the mint family and is highly resistant to common indoor houseplant pests.",
                 "The name rosemary comes from Latin 'ros marinus,' meaning 'dew of the sea.'"
             )
         ),
@@ -497,7 +497,7 @@ object ClimatePlants {
             careSpring = "Minimal water. Plant in sunny bed.",
             careSummer = "Water deeply but infrequently (monthly).",
             careAutumn = "Stop fertilizer, let soil stay loose and dry.",
-            careWinter = "Completely dormant. Extremely hardy to frost.",
+            careWinter = "Completely dormant. Keep in bright, dry room during winter.",
             soilType = "Sandy, extremely gravelly soil",
             sunlight = "Full Sun",
             iconEmoji = "🌵",
@@ -519,7 +519,7 @@ object ClimatePlants {
             careSpring = "Minimal water. Ensure gravel is loose.",
             careSummer = "Water monthly. Thrives in burning desert heat.",
             careAutumn = "Cease fertilizing. Mulch base slightly.",
-            careWinter = "Do not water. High frost tolerance.",
+            careWinter = "Do not water. Keep in sunny indoor spot away from chill.",
             soilType = "Rocky, sandy alkaline soil",
             sunlight = "Full Direct Sun",
             iconEmoji = "🪴",
@@ -627,7 +627,7 @@ object ClimatePlants {
             careSpring = "Water weekly. Apply bloom-booster fertilizer.",
             careSummer = "Water deeply twice weekly. Loves hot sun.",
             careAutumn = "Stop fertilizing, reduce water as leaves shed.",
-            careWinter = "Let go dormant; keep dry in frost-free storage.",
+            careWinter = "Let go dormant; keep dry in a warm indoor room.",
             soilType = "Very sandy, porous soil",
             sunlight = "Full Sun",
             iconEmoji = "🌸",
@@ -713,7 +713,7 @@ object ClimatePlants {
             careSpring = "Fertilize to trigger bright pink bracts.",
             careSummer = "Water weekly. Train vines on fence or trellis.",
             careAutumn = "Trim trailing ends lightly.",
-            careWinter = "Protect from frost. Reduce watering.",
+            careWinter = "Protect from cold window drafts. Reduce watering.",
             soilType = "Well-drained acidic soil",
             sunlight = "Full Hot Sun",
             iconEmoji = "🌸",
@@ -770,7 +770,7 @@ object ClimatePlants {
             funFacts = listOf(
                 "The name 'Mealy Cup' comes from the powdery white hairs that coat the plant's calyx.",
                 "It is a magnet for native bumblebees, honeybees, and beneficial butterflies.",
-                "Its aromatic leaves act as a natural deer and rabbit repellent in Mediterranean gardens."
+                "Its aromatic leaves release soothing essential oils in sunny indoor windows."
             )
         ),
         PlantTemplate(
@@ -798,7 +798,7 @@ object ClimatePlants {
             name = "Sweet Fig Tree",
             type = "Tree",
             careSpring = "Mulch root base. Prune leggy winter stems.",
-            careSummer = "Water deeply twice weekly. Harvest ripe figs.",
+            careSummer = "Water deeply twice weekly when topsoil dries.",
             careAutumn = "Prune woody branch tips. Protect roots.",
             careWinter = "Goes dormant, drops leaves. Can withstand freezes.",
             soilType = "Rich loamy soil",
@@ -885,7 +885,7 @@ object ClimatePlants {
             type = "Herb",
             careSpring = "Shear lightly to start fresh growth.",
             careSummer = "Very low water. Loves poor mountain soils.",
-            careAutumn = "Do not fertilize. Prepare for frost.",
+            careAutumn = "Do not fertilize. Move to bright indoor location.",
             careWinter = "High cold resistance under snow cover.",
             soilType = "Sandy, rocky soil",
             sunlight = "Full Sun",
@@ -930,7 +930,7 @@ object ClimatePlants {
             careSpring = "Keep soil cool and damp. Protect roots.",
             careSummer = "Water weekly. Prefers cooler afternoon shade.",
             careAutumn = "Cut down dead flower stalks. Mulch.",
-            careWinter = "Extremely frost hardy, likes snow cover.",
+            careWinter = "Requires cool room temperatures; shield from heat vents.",
             soilType = "Sandy, humus-rich acidic soil",
             sunlight = "Morning Sun / Afternoon Shade",
             iconEmoji = "💙",
@@ -951,7 +951,7 @@ object ClimatePlants {
             careSpring = "Enjoy early blooms! Keep soil moist.",
             careSummer = "Bulbs go dormant in summer. Keep soil cool.",
             careAutumn = "Plant bulbs in groups. Apply mulch.",
-            careWinter = "Blooms right through snow and frost.",
+            careWinter = "Blooms early in cool bright indoor sunrooms.",
             soilType = "Moist, humus-rich woodland soil",
             sunlight = "Dappled Shade",
             iconEmoji = "🤍",
@@ -1020,7 +1020,7 @@ object ClimatePlants {
             iconEmoji = "🌹",
             matureSize = "3 - 5 feet tall & wide",
             wateringNeeds = "High (Deep watering)",
-            bloomTime = "Late Spring to Frost",
+            bloomTime = "Late Spring to Autumn",
             pestsDiseases = "Black spot, Aphids, Beetles",
             compatibleClimate = "Temperate",
             isIndoor = true,
@@ -1122,7 +1122,7 @@ object ClimatePlants {
             type = "Flower",
             careSpring = "Support tall stems with rings. Water weekly.",
             careSummer = "Water deeply. Deadhead spent blooms.",
-            careAutumn = "Cut stems down to ground level post-frost.",
+            careAutumn = "Prune spent stems down as foliage yellowing occurs.",
             careWinter = "Extremely cold hardy bulb, needs winter chill to bloom.",
             soilType = "Rich, deep, moist well-draining soil",
             sunlight = "Full Sun",
@@ -1143,7 +1143,7 @@ object ClimatePlants {
             type = "Flower",
             careSpring = "Sow seeds deeply in full sun. Water weekly.",
             careSummer = "Water deeply twice weekly during bloom. Staking may be needed.",
-            careAutumn = "Harvest seeds when flower head droops and turns yellow.",
+            careAutumn = "Prune spent flower heads as needed.",
             careWinter = "Annual plant, dies after seed cycle. Save seeds for spring.",
             soilType = "Deep, loose, fertile soil",
             sunlight = "Full Direct Sun",
@@ -1162,7 +1162,7 @@ object ClimatePlants {
         PlantTemplate(
             name = "Marigold",
             type = "Flower",
-            careSpring = "Sow seeds after last frost. Water lightly to sprout.",
+            careSpring = "Sow seeds in indoor starter pots. Water lightly to sprout.",
             careSummer = "Water weekly. Deadhead old blooms regularly.",
             careAutumn = "Collect dried seed heads for spring sowing.",
             careWinter = "Annual plant, dies off. Mulch bed to enrich soil.",
@@ -1171,13 +1171,13 @@ object ClimatePlants {
             iconEmoji = "🌼",
             matureSize = "1 - 2 feet tall",
             wateringNeeds = "Moderate",
-            bloomTime = "Spring to Frost",
+            bloomTime = "Spring to Autumn",
             pestsDiseases = "Spider mites, Slugs",
             compatibleClimate = "Temperate",
             isIndoor = true,
             funFacts = listOf(
                 "Marigolds secrete a chemical (alpha-terthienyl) that repels harmful root nematodes.",
-                "They are widely used in companion planting to protect vegetable crops like tomatoes."
+                "They are widely used in indoor companion arrangements to naturally protect nearby houseplants."
             )
         ),
         PlantTemplate(
@@ -1219,7 +1219,7 @@ object ClimatePlants {
             isIndoor = true,
             funFacts = listOf(
                 "Highly prized for their large, beautifully variegated green and white leaves rather than flowers.",
-                "Native to Northeast Asia, where young shoots are sometimes harvested as an organic wild vegetable."
+                "Native to Northeast Asia, where it thrives as a resilient indoor foliage plant."
             )
         )
     )
