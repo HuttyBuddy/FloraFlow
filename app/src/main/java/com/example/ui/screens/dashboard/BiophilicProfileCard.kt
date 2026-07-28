@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -117,20 +118,31 @@ fun BiophilicProfileCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // The title takes the leftover width so the badge is measured at its
+                // natural size first. Without the weight the badge got whatever was left
+                // and wrapped to "Not / Assess / ed".
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f)
+                ) {
                     Icon(
                         imageVector = Icons.Default.SelfImprovement,
-                        contentDescription = "Restorative Corner Profile",
+                        contentDescription = null,
                         tint = zoneColor,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                     Text(
-                        text = "Restorative Corner Profile",
+                        text = "Corner Profile",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
+
+                Spacer(modifier = Modifier.width(8.dp))
 
                 Box(
                     modifier = Modifier
@@ -138,10 +150,12 @@ fun BiophilicProfileCard(
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        text = if (score > 0) "$score/20" else "Not Assessed",
+                        text = if (score > 0) "$score/20" else "Not assessed",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = zoneColor
+                        color = zoneColor,
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }
@@ -355,42 +369,60 @@ fun BiophilicProfileCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // Text only, equal widths, no inner icons. The icons plus their spacers
+                // ate most of each button, leaving the labels truncated to "Re", "Vib"
+                // and "Real". The icon's meaning is carried by contentDescription.
                 OutlinedButton(
                     onClick = onRetakeClick,
                     shape = RoundedCornerShape(14.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp),
                     modifier = Modifier
                         .weight(1f)
                         .height(44.dp)
                         .testTag("biophilic_retake_assessment_btn")
                 ) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Retake Restorative Assessment", modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Retake", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Retake",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false
+                    )
                 }
 
                 Button(
                     onClick = onOpenVibeCheck,
                     shape = RoundedCornerShape(14.dp),
+                    contentPadding = PaddingValues(horizontal = 6.dp),
                     modifier = Modifier
-                        .weight(1.1f)
+                        .weight(1f)
                         .height(44.dp)
                 ) {
-                    Icon(Icons.Default.AutoAwesome, contentDescription = "AI Room Vibe Check", modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Vibe Check", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Vibe check",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false
+                    )
                 }
 
                 Button(
                     onClick = onOpenReelsExporter,
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+                    contentPadding = PaddingValues(horizontal = 6.dp),
                     modifier = Modifier
-                        .weight(1.2f)
+                        .weight(1f)
                         .height(44.dp)
                 ) {
-                    Icon(Icons.Default.Videocam, contentDescription = "Export 15s Ambient Reel", modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("Reel 🎥", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Reel",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false
+                    )
                 }
             }
         }

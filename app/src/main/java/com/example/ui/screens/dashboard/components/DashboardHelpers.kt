@@ -14,25 +14,43 @@ fun isToday(timestamp: Long): Boolean {
     return localDate == todayDate
 }
 
-fun calculateStreak(logs: List<MoodLog>): Int {
-    if (logs.isEmpty()) return 0
+/**
+ * The care streak, derived entirely from what the user actually did.
+ *
+ * A day counts as tended if they logged a mood or ritual **or** completed a plant care
+ * task that day. Both count because both are real care — watering a plant should keep a
+ * streak alive just as much as a breathing ritual does.
+ *
+ * There is deliberately no "log care" button anywhere: a tap-to-increment counter can be
+ * tapped ten times in a minute and measures nothing.
+ *
+ * @param careTaskCompletions completion timestamps of finished care tasks
+ */
+fun calculateStreak(
+    logs: List<MoodLog>,
+    careTaskCompletions: List<Long> = emptyList()
+): Int = calculateStreakFromTimestamps(logs.map { it.timestamp } + careTaskCompletions)
+
+/** Counts consecutive days back from today (or yesterday, so a streak survives until midnight). */
+fun calculateStreakFromTimestamps(timestamps: List<Long>): Int {
+    if (timestamps.isEmpty()) return 0
     val localZone = java.time.ZoneId.systemDefault()
     val today = java.time.LocalDate.now(localZone)
-    
-    val dates = logs.map { 
-        java.time.Instant.ofEpochMilli(it.timestamp).atZone(localZone).toLocalDate() 
+
+    val dates = timestamps.map {
+        java.time.Instant.ofEpochMilli(it).atZone(localZone).toLocalDate()
     }.distinct().sortedDescending()
-    
+
     if (dates.isEmpty()) return 0
-    
+
     val firstDate = dates.first()
     if (firstDate != today && firstDate != today.minusDays(1)) {
         return 0
     }
-    
+
     var streak = 1
     for (i in 0 until dates.size - 1) {
-        if (dates[i].minusDays(1) == dates[i+1]) {
+        if (dates[i].minusDays(1) == dates[i + 1]) {
             streak++
         } else {
             break

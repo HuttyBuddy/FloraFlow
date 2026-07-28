@@ -69,9 +69,13 @@ fun DailyHabitCard(
     val totalCompletedRing = completedTasksToday + completedRitualsCount
     val totalAllRing = totalTasksToday + totalRitualsCount
 
-    // Calculate streak
-    val streakCount = remember(moodLogs) {
-        calculateStreak(moodLogs)
+    // Tracked automatically from real activity: any completed care task or logged
+    // ritual keeps the day's streak alive. Nothing here is manually incremented.
+    val careTaskCompletions = remember(allTasks) {
+        allTasks.mapNotNull { it.completedDate }
+    }
+    val streakCount = remember(moodLogs, careTaskCompletions) {
+        calculateStreak(moodLogs, careTaskCompletions)
     }
 
     Box(modifier = modifier.fillMaxWidth()) {
@@ -128,12 +132,18 @@ fun DailyHabitCard(
                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    Text("🔥", fontSize = 14.sp)
+                    Text(if (streakCount > 0) "🔥" else "🌱", fontSize = 14.sp)
                     Text(
-                        text = "$streakCount Day Streak",
+                        text = when (streakCount) {
+                            0 -> "Start today"
+                            1 -> "1 day"
+                            else -> "$streakCount days"
+                        },
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        softWrap = false
                     )
                 }
             }

@@ -326,15 +326,10 @@ class GardenViewModel @JvmOverloads constructor(
     fun startLightSensor() { lightSensorManager.startListening() }
     fun stopLightSensor() { lightSensorManager.stopListening() }
 
-    // Feature 2: Daily Plant Care Streak & Growth Badges
-    private val _careStreakDays = MutableStateFlow(3)
-    val careStreakDays: StateFlow<Int> = _careStreakDays.asStateFlow()
-
-    fun incrementCareStreak() {
-        val newStreak = _careStreakDays.value + 1
-        _careStreakDays.value = newStreak
-        sharedPrefs.edit { putInt("care_streak_days", newStreak) }
-    }
+    // The care streak is no longer stored here. It was seeded to a hardcoded 3, ignored
+    // the value it persisted, and only moved when the user tapped a "Log care" button —
+    // which could be tapped repeatedly and measured nothing. The dashboard now derives
+    // the streak from completed care tasks and logged rituals via calculateStreak().
 
     // Feature 3: AI Plant Doctor & Leaf Scanner
     private val _isAnalyzingLeafPhoto = MutableStateFlow(false)

@@ -36,10 +36,8 @@ class EnhancementFeaturesTest {
         // Feature 1: Light Sensor default
         assertNotNull(viewModel.lightSensorManager)
 
-        // Feature 2: Care Streak default
-        assertEquals(3, viewModel.careStreakDays.value)
-        viewModel.incrementCareStreak()
-        assertEquals(4, viewModel.careStreakDays.value)
+        // The care streak is no longer ViewModel state that can be incremented by tapping;
+        // it is derived from real activity — see CareStreakTest.
 
         // Feature 4: Binaural Frequency default
         assertEquals(10.0f, viewModel.binauralFrequencyHz.value, 0.01f)
@@ -57,10 +55,6 @@ class EnhancementFeaturesTest {
 
         // The light meter renders directly on the dashboard scroll (no swipe deck).
         composeTestRule.onNodeWithTag("real_time_light_meter_card").assertExists()
-        
-        // Verify streak & binaural state modifications
-        viewModel.incrementCareStreak()
-        assertEquals(4, viewModel.careStreakDays.value)
 
         viewModel.setBinauralFrequency(12f)
         assertEquals(12f, viewModel.binauralFrequencyHz.value, 0.01f)

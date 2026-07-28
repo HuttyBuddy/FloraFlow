@@ -45,14 +45,30 @@ class SanctuaryCardDeckScreenTest {
 
     /** The profile card is the dashboard's anchor and must render without a swipe. */
     @Test
-    fun sanctuaryDashboard_showsCareStreakWithoutSwiping() {
+    fun sanctuaryDashboard_showsProfileCardWithoutSwiping() {
         composeTestRule.setContent {
             MyApplicationTheme {
                 SanctuaryCardDeckScreen(viewModel = viewModel)
             }
         }
 
-        composeTestRule.onNodeWithTag("care_streak_card").assertExists()
+        composeTestRule.onNodeWithTag("biophilic_profile_card").assertExists()
+    }
+
+    /**
+     * The dashboard no longer carries its own AI entry point, weather, companion or
+     * manual streak widgets — Counsel is a tab of its own, and the streak is derived.
+     */
+    @Test
+    fun sanctuaryDashboard_doesNotDuplicateOtherTabs() {
+        composeTestRule.setContent {
+            MyApplicationTheme {
+                SanctuaryCardDeckScreen(viewModel = viewModel)
+            }
+        }
+
+        composeTestRule.onNodeWithTag("ai_counsel_fab").assertDoesNotExist()
+        composeTestRule.onNodeWithTag("care_streak_card").assertDoesNotExist()
     }
 
     @Test
@@ -68,16 +84,4 @@ class SanctuaryCardDeckScreenTest {
         composeTestRule.onNodeWithTag("settings_dialog").assertIsDisplayed()
     }
 
-    @Test
-    fun sanctuaryCardDeck_launchesAiCounselBottomSheet() {
-        composeTestRule.setContent {
-            MyApplicationTheme {
-                SanctuaryCardDeckScreen(viewModel = viewModel)
-            }
-        }
-
-        // Click AI Counsel FAB
-        composeTestRule.onNodeWithTag("ai_counsel_fab").performClick()
-        composeTestRule.onNodeWithTag("ai_counsel_bottom_sheet").assertIsDisplayed()
-    }
 }

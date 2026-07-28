@@ -17,7 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material.icons.filled.Videocam
@@ -258,7 +258,9 @@ class MainActivity : ComponentActivity() {
                                     Triple("Home", Icons.Default.Dashboard, 0),
                                     Triple("Plants", Icons.AutoMirrored.Filled.MenuBook, 1),
                                     Triple("Plot", Icons.Default.Spa, 2),
-                                    Triple("Counsel", Icons.Default.SmartToy, 3),
+                                    // A robot head read as generic chatbot, not as a plant
+                                    // advisor in a calm biophilic app.
+                                    Triple("Counsel", Icons.Default.Eco, 3),
                                     Triple("Restore", Icons.Default.SelfImprovement, 4)
                                 )
                                 tabs.forEach { (label, icon, index) ->
