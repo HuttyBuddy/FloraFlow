@@ -257,7 +257,7 @@ class MainActivity : ComponentActivity() {
                                 val tabs = listOf(
                                     Triple("Home", Icons.Default.Dashboard, 0),
                                     Triple("Plants", Icons.AutoMirrored.Filled.MenuBook, 1),
-                                    Triple("Plot", Icons.Default.Spa, 2),
+                                    Triple("Design", Icons.Default.Spa, 2),
                                     // A robot head read as generic chatbot, not as a plant
                                     // advisor in a calm biophilic app.
                                     Triple("Counsel", Icons.Default.Eco, 3),

@@ -56,11 +56,12 @@ import com.example.ui.components.graphics.SeasonalBadgeChip
 // composable function, we avoid allocating new list objects on every recomposition
 // of the LibraryScreen. This reduces GC pressure and improves rendering performance,
 // particularly when filtering or scrolling causes frequent UI updates.
-private val FILTER_TYPES = listOf("All", "Flower", "Shrub", "Succulent", "Herb", "Tree", "Fern")
-private val FILTER_CLIMATES = listOf("All", "Temperate", "Arid", "Tropical", "Mediterranean", "Mountainous")
+private val FILTER_TYPES = listOf("All", "Succulent", "Flower", "Shrub", "Herb", "Tree", "Fern")
+private val FILTER_LIGHTS = listOf("All", "Low Light", "Medium Indirect", "Bright Indirect", "Direct Window Sun")
+private val FILTER_ROOMS = listOf("All", "Living Room", "Work Desk Sanctuary", "Bedroom Oasis", "Sunlit Window Nook", "High Humidity Bathroom")
+private val FILTER_BENEFITS = listOf("All", "Air Purifying", "Pet Safe")
 private val FILTER_WATER = listOf("All", "Low", "Moderate", "High")
-private val FILTER_BLOOMS = listOf("All", "Spring", "Summer", "Autumn", "Winter", "Year-round")
-private val ADD_CUSTOM_PLANT_TYPES = listOf("Flower", "Shrub", "Succulent", "Herb", "Fern", "Tree")
+private val ADD_CUSTOM_PLANT_TYPES = listOf("Succulent", "Flower", "Shrub", "Herb", "Fern", "Tree")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,14 +99,14 @@ fun LibraryScreen(
     var showAddPlantDialog by remember { mutableStateOf(false) }
     var plantToDelete by remember { mutableStateOf<Int?>(null) }
     var expandedPlantId by remember { mutableStateOf<Int?>(null) }
-    var selectedTabState by remember { mutableIntStateOf(0) } // 0 = My Garden, 1 = Species Encyclopedia
+    var selectedTabState by remember { mutableIntStateOf(0) } // 0 = My Indoor Sanctuary, 1 = Indoor Species Encyclopedia
 
     val climateName = activeLayout?.climate ?: "Temperate"
     val companionTemplates = remember(climateName) {
         ClimatePlants.getTemplatesForClimate(climateName)
     }
 
-    // Encyclopedia Search & Filter States
+    // Indoor Encyclopedia Search & Filter States
     val currentWeather by viewModel.currentWeather.collectAsStateWithLifecycle()
     var zipInput by remember(currentWeather) { mutableStateOf(viewModel.getWeatherLocationZip()) }
     val searchQuery by viewModel.librarySearchQuery.collectAsStateWithLifecycle()
@@ -113,12 +114,13 @@ fun LibraryScreen(
     val dynamicPlaceholder by viewModel.dynamicSearchPlaceholder.collectAsStateWithLifecycle()
     var selectedSuggestionExplanation by remember { mutableStateOf("") }
     var selectedTypeFilter by remember { mutableStateOf("All") }
-    var selectedClimateFilter by remember { mutableStateOf("All") }
+    var selectedLightFilter by remember { mutableStateOf("All") }
+    var selectedRoomFilter by remember { mutableStateOf("All") }
+    var selectedBenefitFilter by remember { mutableStateOf("All") }
     var selectedWaterFilter by remember { mutableStateOf("All") }
-    var selectedBloomFilter by remember { mutableStateOf("All") }
     var expandedSpeciesName by remember { mutableStateOf<String?>(null) }
 
-    val filteredTemplates = remember(searchQuery, selectedTypeFilter, selectedClimateFilter, selectedWaterFilter, selectedBloomFilter, zipInput) {
+    val filteredTemplates = remember(searchQuery, selectedTypeFilter, selectedLightFilter, selectedRoomFilter, selectedBenefitFilter, selectedWaterFilter, zipInput) {
         val zipClimate = ClimatePlants.mapZipToClimate(zipInput)
         val zipClimateShort = when {
             zipClimate.contains("Tropical") -> "Tropical"
@@ -126,16 +128,24 @@ fun LibraryScreen(
             else -> zipClimate
         }
         ClimatePlants.ALL_TEMPLATES.filter { tpl ->
+            val matchesIndoor = tpl.isIndoor
             val matchesSearch = tpl.name.contains(searchQuery, ignoreCase = true) ||
-                    tpl.type.contains(searchQuery, ignoreCase = true)
+                    tpl.type.contains(searchQuery, ignoreCase = true) ||
+                    tpl.lightLevel.contains(searchQuery, ignoreCase = true) ||
+                    tpl.indoorRoom.contains(searchQuery, ignoreCase = true)
             
             val matchesType = selectedTypeFilter == "All" || tpl.type.lowercase() == selectedTypeFilter.lowercase()
-            val matchesZipClimate = zipInput.isBlank() || tpl.compatibleClimate.contains(zipClimateShort, ignoreCase = true)
-            val matchesClimate = selectedClimateFilter == "All" || tpl.compatibleClimate.contains(selectedClimateFilter, ignoreCase = true)
+            val matchesLight = selectedLightFilter == "All" || tpl.lightLevel.contains(selectedLightFilter, ignoreCase = true)
+            val matchesRoom = selectedRoomFilter == "All" || tpl.indoorRoom.contains(selectedRoomFilter, ignoreCase = true)
+            val matchesBenefit = when (selectedBenefitFilter) {
+                "Air Purifying" -> tpl.airPurifying
+                "Pet Safe" -> tpl.petSafe
+                else -> true
+            }
             val matchesWater = selectedWaterFilter == "All" || tpl.wateringNeeds.contains(selectedWaterFilter, ignoreCase = true)
-            val matchesBloom = selectedBloomFilter == "All" || tpl.bloomTime.contains(selectedBloomFilter, ignoreCase = true)
+            val matchesZipClimate = zipInput.isBlank() || tpl.compatibleClimate.contains(zipClimateShort, ignoreCase = true)
             
-            matchesSearch && matchesType && matchesZipClimate && matchesClimate && matchesWater && matchesBloom
+            matchesIndoor && matchesSearch && matchesType && matchesLight && matchesRoom && matchesBenefit && matchesWater && matchesZipClimate
         }
     }
 
@@ -181,7 +191,7 @@ fun LibraryScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        "My Garden Care", 
+                        "My Indoor Sanctuary", 
                         color = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
@@ -215,7 +225,7 @@ fun LibraryScreen(
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        "Species Encyclopedia", 
+                        "Indoor Species Encyclopedia", 
                         color = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
                         fontWeight = FontWeight.Bold,
                         fontSize = 11.sp,
@@ -237,14 +247,14 @@ fun LibraryScreen(
                 BotanicalCornerAccents(showTopRight = true, showBottomLeft = false)
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Climate Recommendations",
+                        text = "Indoor Climate Recommendations",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Compatible plant templates for your $climateName climate. Tap a recommendation to plant it in your active garden layout.",
+                        text = "Compatible houseplant varieties for your $climateName indoor microclimate. Tap a recommendation to plant it in your active indoor sanctuary.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onBackground
                     )
@@ -298,12 +308,12 @@ fun LibraryScreen(
         ) {
             Column {
                 Text(
-                    text = "Plants in This Space",
+                    text = "Plants in Your Indoor Sanctuary",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "Seasonal care, health, and growth",
+                    text = "Indoor care schedules, room lighting, and plant vitality",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -335,13 +345,13 @@ fun LibraryScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "Choose a Garden First",
+                        "Choose an Indoor Sanctuary First",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        "Select or create a new garden project in the Dashboard to list and manage your plants.",
+                        "Select or create a new indoor layout in the Dashboard to list and manage your houseplants.",
                         style = MaterialTheme.typography.bodySmall,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.secondary
@@ -359,7 +369,7 @@ fun LibraryScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "Your Greenhouse is Empty",
+                        "Your Indoor Sanctuary is Empty",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
@@ -620,9 +630,10 @@ fun LibraryScreen(
                     onClick = {
                         viewModel.setLibrarySearchQuery("")
                         selectedTypeFilter = "All"
-                        selectedClimateFilter = "All"
+                        selectedLightFilter = "All"
+                        selectedRoomFilter = "All"
+                        selectedBenefitFilter = "All"
                         selectedWaterFilter = "All"
-                        selectedBloomFilter = "All"
                         zipInput = ""
                         viewModel.updateWeatherLocation("")
                     },
@@ -652,7 +663,7 @@ fun LibraryScreen(
         ) {
             // Category Type Filter
             Column {
-                Text("Plant Group Type:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text("Houseplant Group:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(4.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     items(FILTER_TYPES, key = { it }) { t ->
@@ -666,23 +677,55 @@ fun LibraryScreen(
                 }
             }
 
-            // Climate Compatibility Filter
+            // Indoor Light Filter
             Column {
-                Text("Climate Compatibility:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Text("Indoor Light Requirement:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(4.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    items(FILTER_CLIMATES, key = { it }) { c ->
+                    items(FILTER_LIGHTS, key = { it }) { l ->
                         FilterChip(
-                            selected = selectedClimateFilter == c,
-                            onClick = { selectedClimateFilter = c },
-                            label = { Text(c, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
+                            selected = selectedLightFilter == l,
+                            onClick = { selectedLightFilter = l },
+                            label = { Text(l, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
                             shape = RoundedCornerShape(8.dp)
                         )
                     }
                 }
             }
 
-            // Watering Profile Filter
+            // Recommended Room Placement Filter
+            Column {
+                Text("Indoor Room Placement:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(4.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    items(FILTER_ROOMS, key = { it }) { r ->
+                        FilterChip(
+                            selected = selectedRoomFilter == r,
+                            onClick = { selectedRoomFilter = r },
+                            label = { Text(r, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    }
+                }
+            }
+            
+            // Special Benefits Filter
+            Column {
+                Text("Indoor Benefits:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(4.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    items(FILTER_BENEFITS, key = { it }) { b ->
+                        FilterChip(
+                            selected = selectedBenefitFilter == b,
+                            onClick = { selectedBenefitFilter = b },
+                            label = { Text(b, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    }
+                }
+            }
+
+            // Watering Intensity Filter
             Column {
                 Text("Watering Intensity:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(4.dp))
@@ -698,31 +741,17 @@ fun LibraryScreen(
                 }
             }
             
-            // Bloom Time Filter
-            Column {
-                Text("Bloom Season:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                Spacer(modifier = Modifier.height(4.dp))
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    items(FILTER_BLOOMS, key = { it }) { b ->
-                        FilterChip(
-                            selected = selectedBloomFilter == b,
-                            onClick = { selectedBloomFilter = b },
-                            label = { Text(b, fontSize = 11.sp, fontWeight = FontWeight.Medium) },
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                    }
-                }
-            }
-            
             // Clear filters helper
-            if (selectedTypeFilter != "All" || selectedClimateFilter != "All" || selectedWaterFilter != "All" || selectedBloomFilter != "All" || searchQuery.isNotEmpty()) {
+            // Clear filters helper
+            if (selectedTypeFilter != "All" || selectedLightFilter != "All" || selectedRoomFilter != "All" || selectedBenefitFilter != "All" || selectedWaterFilter != "All" || searchQuery.isNotEmpty()) {
                 TextButton(
                     onClick = {
                         viewModel.setLibrarySearchQuery("")
                         selectedTypeFilter = "All"
-                        selectedClimateFilter = "All"
+                        selectedLightFilter = "All"
+                        selectedRoomFilter = "All"
+                        selectedBenefitFilter = "All"
                         selectedWaterFilter = "All"
-                        selectedBloomFilter = "All"
                     },
                     modifier = Modifier.align(Alignment.End)
                 ) {
@@ -741,13 +770,13 @@ fun LibraryScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "${filteredTemplates.size} species catalogued",
+                text = "${filteredTemplates.size} indoor species catalogued",
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.primary
             )
             
-            if (searchQuery.isNotEmpty() || selectedTypeFilter != "All" || selectedClimateFilter != "All" || selectedWaterFilter != "All" || selectedBloomFilter != "All") {
+            if (searchQuery.isNotEmpty() || selectedTypeFilter != "All" || selectedLightFilter != "All" || selectedRoomFilter != "All" || selectedBenefitFilter != "All" || selectedWaterFilter != "All") {
                 SuggestionChip(
                     onClick = {},
                     label = { Text("Filtered", fontSize = 9.sp) },
@@ -794,9 +823,10 @@ fun LibraryScreen(
                         onClick = {
                             viewModel.setLibrarySearchQuery("")
                             selectedTypeFilter = "All"
-                            selectedClimateFilter = "All"
+                            selectedLightFilter = "All"
+                            selectedRoomFilter = "All"
+                            selectedBenefitFilter = "All"
                             selectedWaterFilter = "All"
-                            selectedBloomFilter = "All"
                             zipInput = ""
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -1454,7 +1484,7 @@ fun SpeciesEncyclopediaCard(
 
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
                             text = template.type,
@@ -1466,10 +1496,78 @@ fun SpeciesEncyclopediaCard(
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                         )
                         Text(
-                            text = "Climate: ${template.compatibleClimate}",
+                            text = template.lightLevel,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.SemiBold
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f),
+                            modifier = Modifier.padding(vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "🏠 ${template.indoorRoom}",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+
+                        if (template.petSafe) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFE8F5E9),
+                                modifier = Modifier.padding(vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "🐾 Pet Safe",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF2E7D32),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        } else {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFFFEBEE),
+                                modifier = Modifier.padding(vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "⚠️ Pet Caution",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFC62828),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        if (template.airPurifying) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFE0F7FA),
+                                modifier = Modifier.padding(vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = "🍃 Air Purifier",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF00838F),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -1523,7 +1621,7 @@ fun SpeciesEncyclopediaCard(
                         }
                     }
 
-                    // Care parameters overview table
+                    // Indoor Care parameters overview table
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1537,14 +1635,29 @@ fun SpeciesEncyclopediaCard(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Ideal Sun Exposure: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                                Text(template.sunlight, style = MaterialTheme.typography.bodySmall)
+                                Text("Indoor Light Level: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Text(template.lightLevel, style = MaterialTheme.typography.bodySmall)
                             }
                             SunExposureIcons(template.sunlight)
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Text("Substrate / Soil: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text("Recommended Room Spot: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(template.indoorRoom, style = MaterialTheme.typography.bodySmall)
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("Pet Safety: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(if (template.petSafe) "Non-Toxic / Pet Friendly" else "Toxic to Pets if Ingested", style = MaterialTheme.typography.bodySmall)
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("Air Purification: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text(if (template.airPurifying) "Active VOC Filter" else "Standard Respiration", style = MaterialTheme.typography.bodySmall)
+                        }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Text("Potting Substrate: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                             Text(template.soilType, style = MaterialTheme.typography.bodySmall)
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
@@ -1554,30 +1667,25 @@ fun SpeciesEncyclopediaCard(
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text("Water Index level: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Text("Watering Schedule: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                                 Text(template.wateringNeeds, style = MaterialTheme.typography.bodySmall)
                             }
                             WaterNeedsIcons(template.wateringNeeds)
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Text("Mature Dimensions: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text("Mature Indoor Height: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                             Text(template.matureSize, style = MaterialTheme.typography.bodySmall)
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            Text("Bloom Timeframe: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                            Text(template.bloomTime, style = MaterialTheme.typography.bodySmall)
-                        }
-                        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.05f))
-                        Row(modifier = Modifier.fillMaxWidth()) {
-                            Text("Pests & Pathologies: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            Text("Pests & Diseases: ", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                             Text(template.pestsDiseases, style = MaterialTheme.typography.bodySmall)
                         }
                     }
 
                     // Season care guidelines
-                    Text("Seasonal Guideline Summary:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
+                    Text("Seasonal Indoor Care:", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelSmall)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -1635,7 +1743,7 @@ fun SpeciesEncyclopediaCard(
                                 Icon(Icons.Default.Celebration, contentDescription = "Planted success icon", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    "Planted & Growing in Greenhouse Layout!",
+                                    "Growing in Your Indoor Sanctuary!",
                                     color = MaterialTheme.colorScheme.primary,
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
@@ -1656,7 +1764,7 @@ fun SpeciesEncyclopediaCard(
                             Icon(Icons.Default.LocalFlorist, contentDescription = "Cultivate icons", modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                if (activeLayoutAvailable) "Sow in My Active Garden" else "Choose primary layout in Dashboard first",
+                                if (activeLayoutAvailable) "Sow in My Indoor Sanctuary" else "Choose primary layout in Dashboard first",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp
                             )
@@ -1726,7 +1834,7 @@ fun AddCustomPlantDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text(
-                    text = "Plant Custom Vegetation",
+                    text = "Add Custom Indoor Houseplant",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
@@ -1804,7 +1912,7 @@ fun GreenhouseStatsSection(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                text = "Greenhouse Climate & Vitality Monitor",
+                text = "Indoor Sanctuary Vitality & Climate Monitor",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary

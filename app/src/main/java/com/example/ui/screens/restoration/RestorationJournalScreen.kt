@@ -915,7 +915,7 @@ fun EmptyStateCard() {
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Your custom stress-relief index depends on your plants. Go to 'My Plot' to place some greenery and calculate your first score.",
+                text = "Your custom stress-relief index depends on your plants. Go to the 'Design' tab to place some greenery and calculate your first score.",
                 fontSize = 13.sp,
                 color = Color.White.copy(alpha = 0.6f),
                 textAlign = TextAlign.Center,

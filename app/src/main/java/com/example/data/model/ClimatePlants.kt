@@ -16,13 +16,21 @@ data class PlantTemplate(
     val pestsDiseases: String,
     val compatibleClimate: String,
     val funFacts: List<String> = emptyList(),
-    val isIndoor: Boolean = false
+    val isIndoor: Boolean = true,
+    val indoorRoom: String = "Living Room",
+    val lightLevel: String = "Medium Indirect",
+    val petSafe: Boolean = true,
+    val airPurifying: Boolean = true
 )
 
 object ClimatePlants {
     val CLIMATES = listOf("Temperate", "Arid (Desert)", "Tropical (Humid)", "Mediterranean", "Mountainous")
     
     val STYLES = listOf("Indoor Living Room", "Work Desk Sanctuary", "Bedroom Oasis", "Sunlit Window Nook", "Biophilic Botanical Studio")
+    
+    val INDOOR_ROOMS = listOf("All", "Living Room", "Work Desk Sanctuary", "Bedroom Oasis", "Sunlit Window Nook", "High Humidity Bathroom")
+    val INDOOR_LIGHTS = listOf("All", "Low Light", "Medium Indirect", "Bright Indirect", "Direct Window Sun")
+    val INDOOR_BENEFITS = listOf("All", "Air Purifying", "Pet Safe")
 
     fun mapZipToClimate(zip: String): String {
         if (zip.isBlank()) return "Temperate"
@@ -1225,11 +1233,11 @@ object ClimatePlants {
     )
     
     fun getTemplatesForClimate(climate: String): List<PlantTemplate> {
-        return ALL_TEMPLATES.filter { it.compatibleClimate.contains(climate, ignoreCase = true) }
+        return ALL_TEMPLATES.filter { it.isIndoor && it.compatibleClimate.contains(climate, ignoreCase = true) }
     }
 
     fun getTemplatesForPlanner(climate: String, isIndoor: Boolean = true): List<PlantTemplate> {
-        return ALL_TEMPLATES.sortedWith(compareByDescending { 
+        return ALL_TEMPLATES.filter { it.isIndoor }.sortedWith(compareByDescending { 
             it.compatibleClimate.contains(climate, ignoreCase = true)
         })
     }
