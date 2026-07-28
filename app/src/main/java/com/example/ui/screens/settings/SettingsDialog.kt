@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.analytics.ShareAnalytics
+import com.example.ui.screens.share.ShareLinks
 import com.example.ui.theme.extendedColors
 import com.example.ui.viewmodel.GardenViewModel
 import com.example.ui.viewmodel.ThemeMode
@@ -228,16 +230,29 @@ fun SettingsDialog(
 
                     SettingsActionRow(
                         title = "Invite a Garden Buddy",
-                        subtitle = "Share FloraFlow and unlock 5 exotic species",
+                        // Previous copy promised "5 exotic species" that nothing in the app
+                        // grants. Co-Care is the real thing an invite unlocks.
+                        subtitle = "Share your invite link and tend plants together",
                         icon = Icons.Default.Share,
                         iconTint = MaterialTheme.colorScheme.tertiary,
                         onClick = {
+                            // A real per-install code, so this invite is attributable — the
+                            // link used to hard-code "?by=buddy" for every single user.
+                            val inviteUrl = ShareLinks.shareUrl(ShareLinks.shareCode(context))
                             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
-                                putExtra(Intent.EXTRA_SUBJECT, "Plant a Seed on FloraFlow")
-                                putExtra(Intent.EXTRA_TEXT, "Your friend planted a seed for you on FloraFlow! 🌸 Use this link to download the app and unlock a gift of 5 exotic species to cultivate calm: https://floraflow.app/referral?by=buddy")
+                                putExtra(Intent.EXTRA_SUBJECT, "Tend a plant with me on FloraFlow")
+                                putExtra(
+                                    Intent.EXTRA_TEXT,
+                                    "I'm growing an indoor sanctuary on FloraFlow 🌿 Join me and " +
+                                        "we can share a Co-Care plant and keep each other's streak alive: $inviteUrl"
+                                )
                             }
                             context.startActivity(Intent.createChooser(shareIntent, "Invite a Garden Buddy"))
+                            ShareAnalytics.logShareInitiated(
+                                surface = ShareAnalytics.Surface.SETTINGS_INVITE,
+                                asset = ShareAnalytics.Asset.INVITE_LINK
+                            )
                         }
                     )
 

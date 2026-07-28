@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.analytics.ShareAnalytics
 import com.example.data.model.PlantParentArchetype
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,7 +37,14 @@ fun ReelsExporterOverlay(
     var isExporting by remember { mutableStateOf(false) }
     var exportProgress by remember { mutableFloatStateOf(0f) }
     var generatedFile by remember { mutableStateOf<File?>(null) }
+    var exportedWithAudio by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val shareCode = remember { ShareLinks.shareCode(context) }
+
+    LaunchedEffect(Unit) {
+        ShareAnalytics.logShareSurfaceViewed(ShareAnalytics.Surface.REELS_EXPORTER)
+    }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -91,7 +99,7 @@ fun ReelsExporterOverlay(
 
                 // Subtitle
                 Text(
-                    text = "Generate a 1080x1920 15-second ambient MP4 video merging your soundscape frequency (${frequencyHz}Hz) & ${archetype.title} badge for TikTok / Reels.",
+                    text = "Generate a 1080x1920 15-second MP4 with your ${frequencyHz.toInt()}Hz binaural soundscape on the audio track and your ${archetype.title} badge — built for TikTok & Instagram Reels.",
                     fontSize = 14.sp,
                     color = Color(0xFFC3EBD9)
                 )
@@ -125,7 +133,12 @@ fun ReelsExporterOverlay(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "✅ 15s Ambient Reel Ready! Tap below to share to TikTok or Instagram Reels.",
+                            text = if (exportedWithAudio) {
+                                "✅ Your 15s Reel is ready — with sound. Tap below to share to TikTok or Instagram Reels."
+                            } else {
+                                // Be straight with the user rather than let them post a silent clip unknowingly.
+                                "✅ Your 15s Reel is ready, but this device couldn't encode the soundscape — the video is silent. Add music in the app you post to."
+                            },
                             color = Color(0xFF7FE3B5),
                             fontWeight = FontWeight.Bold,
                             fontSize = 14.sp,
@@ -135,7 +148,18 @@ fun ReelsExporterOverlay(
 
                     Button(
                         onClick = {
-                            ReelsVideoExporter.shareReelVideo(context, generatedFile!!)
+                            ReelsVideoExporter.shareReelVideo(
+                                context = context,
+                                videoFile = generatedFile!!,
+                                shareText = "${archetype.icon} ${archetype.title} — my ${frequencyHz.toInt()}Hz " +
+                                    "sanctuary soundscape. Headphones on 🌿 ${ShareLinks.shareUrl(shareCode)}"
+                            )
+                            ShareAnalytics.logShareInitiated(
+                                surface = ShareAnalytics.Surface.REELS_EXPORTER,
+                                asset = ShareAnalytics.Asset.REEL_VIDEO,
+                                archetype = archetype.name,
+                                score = score
+                            )
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -156,20 +180,32 @@ fun ReelsExporterOverlay(
                     Button(
                         onClick = {
                             isExporting = true
+                            errorMessage = null
                             scope.launch(Dispatchers.Default) {
+                                val startedAt = System.currentTimeMillis()
                                 ReelsVideoExporter.generate15SecondReelVideo(
                                     context = context,
                                     score = score,
                                     archetype = archetype,
                                     frequencyHz = frequencyHz,
+                                    shareCode = shareCode,
                                     onProgress = { p -> exportProgress = p },
-                                    onComplete = { file ->
+                                    onComplete = { file, hasAudio ->
                                         generatedFile = file
+                                        exportedWithAudio = hasAudio
                                         isExporting = false
+                                        ShareAnalytics.logReelGenerated(
+                                            archetype = archetype.name,
+                                            durationMs = System.currentTimeMillis() - startedAt,
+                                            hasAudio = hasAudio
+                                        )
                                     },
                                     onError = { err ->
                                         errorMessage = err.message
                                         isExporting = false
+                                        ShareAnalytics.logReelGenerationFailed(
+                                            err.javaClass.simpleName
+                                        )
                                     }
                                 )
                             }

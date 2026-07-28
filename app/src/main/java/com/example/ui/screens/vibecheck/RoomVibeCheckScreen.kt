@@ -25,8 +25,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import com.example.analytics.ShareAnalytics
+import com.example.data.model.PlantParentArchetype
 import com.example.ui.screens.share.ShareCardData
 import com.example.ui.screens.share.ShareCardOverlay
+import com.example.ui.screens.share.ShareLinks
 import com.example.ui.components.graphics.BotanicalCornerAccents
 import com.example.ui.components.graphics.BotanicalSeason
 import com.example.ui.components.graphics.SeasonalBadgeChip
@@ -60,8 +64,18 @@ fun RoomVibeCheckScreen(
         "Balcony Garden" to 92
     )
 
+    // The weakest biophilic categories per preset — these drive both the upgrade list and
+    // which Plant Parent Archetype the share card shows.
+    val lowestCategories = mapOf(
+        "My Work Desk" to listOf("NATURAL LIGHT", "AIR & VENTILATION"),
+        "Living Room Corner" to listOf("LIVING PLANTS", "WATER FEATURES"),
+        "Bedroom Nightstand" to listOf("ACOUSTIC CALM", "LIVING PLANTS"),
+        "Balcony Garden" to listOf("SENSORY RICHNESS", "NATURAL MATERIALS")
+    )
+
     val currentScore = scores[selectedPreset] ?: 75
     val currentVibeTag = vibeTags[selectedPreset] ?: "Custom Room Sanctuary"
+    val currentLowestCategories = lowestCategories[selectedPreset] ?: listOf("LIVING PLANTS")
 
     val currentUpgrades = when (selectedPreset) {
         "My Work Desk" -> listOf(
@@ -87,13 +101,21 @@ fun RoomVibeCheckScreen(
     }
 
     if (showShareOverlay) {
+        val context = LocalContext.current
         ShareCardOverlay(
             data = ShareCardData(
+                // The card leads with the archetype, so derive it from this room's result
+                // rather than shipping the data class default.
+                archetype = PlantParentArchetype.calculateArchetype(
+                    score = currentScore * 20 / 100,
+                    lowestCategories = currentLowestCategories
+                ),
                 vibeTag = currentVibeTag,
                 score = currentScore,
-                scoreDelta = 100 - currentScore,
-                topUpgrades = currentUpgrades
+                topUpgrades = currentUpgrades,
+                shareCode = ShareLinks.shareCode(context)
             ),
+            surface = ShareAnalytics.Surface.VIBE_CHECK,
             onDismiss = { showShareOverlay = false }
         )
     }

@@ -22,17 +22,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.analytics.ShareAnalytics
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ShareCardOverlay(
     data: ShareCardData,
+    surface: String,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
     var generatedBitmap by remember { mutableStateOf<Bitmap?>(null) }
 
     LaunchedEffect(data) {
-        generatedBitmap = ViralShareEngine.generate9by16StoryBitmap(context, data)
+        // Rendering a 1080x1920 bitmap on the main thread drops frames on mid-range devices.
+        generatedBitmap = withContext(Dispatchers.Default) {
+            ViralShareEngine.generate9by16StoryBitmap(context, data)
+        }
+    }
+
+    LaunchedEffect(surface) {
+        ShareAnalytics.logShareSurfaceViewed(surface)
     }
 
     Dialog(
@@ -63,7 +74,7 @@ fun ShareCardOverlay(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "✨ Your Viral Vibe Card",
+                        text = "✨ Your Archetype Card",
                         color = Color(0xFF7FE3B5),
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
@@ -92,7 +103,7 @@ fun ShareCardOverlay(
                 // Action Buttons
                 Button(
                     onClick = {
-                        ViralShareEngine.shareCard(context, data)
+                        ViralShareEngine.shareCard(context, data, surface)
                     },
                     modifier = Modifier
                         .fillMaxWidth()

@@ -20,14 +20,16 @@ FloraFlow makes professional biophilic indoor space design accessible to everyda
 - Calculates 5 Plant Parent Personality Archetypes: *Jungle Maximalist*, *Cactus Survivor*, *Serial Overwaterer*, *Cyberpunk Botanist*, *Sanctuary Master*.
 
 ### 2. 15-Second Ambient Reels Video Exporter
-- On-device hardware-accelerated `MediaCodec` + `MediaMuxer` 1080x1920 30fps MP4 video generator.
-- Merges pulsing frequency soundwave visualizers with binaural soundscapes for instant sharing to TikTok & Instagram Reels.
+- On-device hardware-accelerated `MediaCodec` + `MediaMuxer` 1080x1920 30fps MP4 video generator; frames reach the encoder through an OpenGL ES input surface.
+- Muxes an AAC track rendered offline from the shared generative soundscape engine, so the exported clip carries the user's real binaural frequency and ambient scene.
+- Merges pulsing frequency soundwave visualizers with the archetype badge for instant sharing to TikTok & Instagram Reels.
 
 ### 3. Co-Care Duet Home Screen AppWidget & Shared Hub
 - Jetpack Glance / AppWidgetProvider home screen widget showing shared blooming plant nodes, care streaks, and partner activity.
 
 ### 4. AI Room Vibe Check Screen
-- Camera-assisted diagnostic tool evaluating window daylight intensity, indoor room foliage density, and air circulation balance.
+- Preset-based diagnostic screen covering window daylight intensity, indoor room foliage density, and air circulation balance, with a shareable story card.
+- Scores derive from the chosen room preset. Photo-based analysis is not implemented; product and marketing copy must not describe this screen as camera-driven until it is.
 
 ### 5. Eco-Acoustics & Neural Restoration Journal
 - Computes Neural Restoration Index (NRI) from indoor biophilic arrangements.

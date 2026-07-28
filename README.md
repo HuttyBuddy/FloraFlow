@@ -25,14 +25,16 @@ FloraFlow makes professional biophilic indoor styling accessible to everyday pla
 
 ### 2. 🎬 15-Second Ambient Reels Video Exporter
 *   **Hardware-Accelerated Video Encoding:** Uses native Android `MediaCodec` (H.264) + `MediaMuxer` to generate a 1080x1920 30fps MP4 video clip in ~1.5 seconds.
-*   **Social-Ready Templates:** Merges pulsing soundwave visualizer graphics, biophilic scores, and binaural audio tracks into an `.mp4` clip built for TikTok, Instagram Reels, and Snapchat sound templates.
+*   **Real Audio Track:** The clip carries an AAC track rendered from the same generative engine the Restoration Journal plays — the user's binaural beat frequency over its paired ambient scene — so a shared Reel sounds like the session they actually heard.
+*   **Social-Ready Templates:** Merges pulsing soundwave visualizer graphics, the Plant Parent Archetype badge, and biophilic scores into an `.mp4` clip built for TikTok, Instagram Reels, and Snapchat sound templates.
 
 ### 3. 🪴 Co-Care Duet Home Screen AppWidget & Shared Hub
 *   **Native AppWidget:** An Android home screen widget powered by `AppWidgetProvider` displaying the shared blooming plant node, care streak counter, and partner status.
 *   **Real-Time Co-Care Hub:** Synchronizes plant care routines between partners or roommates, allowing plants to bloom in real time upon watering or mindfulness sessions.
 
 ### 4. 📸 AI Room Vibe Check Screen
-*   **Biophilic Environment Diagnostics:** Camera-assisted diagnostic screen assessing indoor window light levels, room greenery density, and air flow balance.
+*   **Biophilic Environment Diagnostics:** Pick one of four room presets (Work Desk, Living Room Corner, Bedroom Nightstand, Balcony Garden) to get an indicative Vitality Score plus targeted upgrades for window light, greenery density, and air flow, and export the result as a story card.
+*   **Not yet camera-driven:** Scores are currently derived from the selected preset, not from a photo. Analysing the user's own room image is planned, and this screen's copy should not claim it before then.
 
 ### 5. Daily Mindfulness & Indoor Botanical Rhythm Dashboard
 *   **Mood Logging:** Record emotional states (Peaceful, Energized, Refreshed, Stressed, Overwhelmed, Happy) to track how tending indoor plants correlates with mental wellness.

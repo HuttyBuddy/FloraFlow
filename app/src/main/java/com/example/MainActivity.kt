@@ -1,5 +1,6 @@
 package com.example
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -98,11 +99,31 @@ class MainActivity : ComponentActivity() {
         viewModel.billingManager.queryPurchases()
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        // An invite link opened while the app is already running still counts.
+        handleInviteIntent(intent)
+    }
+
+    /** Records the inviter's code from an incoming invite link, logging it once. */
+    private fun handleInviteIntent(intent: Intent?) {
+        val code = com.example.ui.screens.share.ShareLinks.handleIncomingIntent(this, intent)
+        if (code != null) {
+            com.example.analytics.ShareAnalytics.logInviteAccepted("deep_link")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
 
         com.example.analytics.AnalyticsHelper.initialize(applicationContext)
+
+        // Attribute this install to whoever shared the link that brought the user here.
+        // Deep link covers "app already installed"; the Play install referrer covers the
+        // more common viral path of link -> Play Store -> install -> first launch.
+        handleInviteIntent(intent)
+        com.example.ui.screens.share.InstallAttribution.checkInstallReferrer(applicationContext)
 
         try {
             val workRequest = PeriodicWorkRequestBuilder<CareSyncWorker>(12, TimeUnit.HOURS).build()
@@ -203,7 +224,9 @@ class MainActivity : ComponentActivity() {
                         lowestCategories = lowestCategories
                     )
                     com.example.ui.screens.share.ReelsExporterOverlay(
-                        score = assessmentScore ?: 88,
+                        // The assessment scores out of 20; the reel renders "N%", so a raw
+                        // 14 was previously shown as "14%".
+                        score = assessmentScore?.let { (it.coerceIn(0, 20) * 100) / 20 } ?: 88,
                         archetype = archetype,
                         frequencyHz = binauralHz,
                         onDismiss = { viewModel.closeReelsExporter() }

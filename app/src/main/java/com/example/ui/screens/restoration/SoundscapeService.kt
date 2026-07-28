@@ -11,17 +11,20 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import com.example.audio.AmbientGenerator
+import com.example.audio.SceneVoice
+import com.example.audio.Soundscape
 import kotlinx.coroutines.*
-import kotlin.math.PI
-import kotlin.math.exp
 import kotlin.math.max
-import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.tanh
-import kotlin.random.Random
 
 /**
- * Generative eco-acoustic engine.
+ * Real-time playback of the generative eco-acoustic engine.
+ *
+ * The DSP itself lives in [Soundscape] so the Reels exporter can render the identical
+ * sound offline — a shared clip carries the same soundscape the user heard. This service
+ * owns only playback concerns: the AudioTrack, fades, crossfades and the notification.
  *
  * Instead of looping a single audio file, every layer is synthesized in real time
  * and mixed on a single audio render loop:
@@ -332,276 +335,12 @@ class SoundscapeService : Service() {
         }
     }
 
-    private fun sceneForTrack(name: String): Int? = when {
-        name.contains("Alpha") -> SCENE_BREEZE
-        name.contains("Theta") -> SCENE_RAIN
-        name.contains("Delta") -> SCENE_OCEAN
-        else -> null // Custom frequencies keep the current scene
-    }
+    private fun sceneForTrack(name: String): Int? = Soundscape.sceneForTrack(name)
 
-    private fun createGenerator(sceneId: Int): AmbientGenerator = when (sceneId) {
-        SCENE_BREEZE -> BreezeGenerator()
-        SCENE_OCEAN -> OceanGenerator()
-        else -> RainGenerator()
-    }
+    private fun createGenerator(sceneId: Int): AmbientGenerator = Soundscape.createGenerator(sceneId)
 
-    private fun sceneLabel(sceneId: Int): String = when (sceneId) {
-        SCENE_BREEZE -> "Forest Breeze & Chimes"
-        SCENE_OCEAN -> "Ocean Waves"
-        else -> "Gentle Rainfall"
-    }
+    private fun sceneLabel(sceneId: Int): String = Soundscape.sceneLabel(sceneId)
 
-    // ------------------------------------------------------------------
-    // Generative ambient scenes
-    // ------------------------------------------------------------------
-
-    private class SceneVoice(val sceneId: Int, val generator: AmbientGenerator) {
-        var gain = 0f
-        var gainTarget = 1f
-        val gainStep = 1f / (CROSSFADE_SECONDS * SAMPLE_RATE)
-        fun isFinished() = gainTarget == 0f && gain <= 0f
-    }
-
-    private abstract class AmbientGenerator {
-        abstract fun render(bus: FloatArray, frames: Int, voice: SceneVoice)
-    }
-
-    /** Paul Kellet economy pink-noise filter — the basis of natural wind and rain beds. */
-    private class PinkNoise(seed: Int) {
-        private val rnd = Random(seed)
-        private var b0 = 0f
-        private var b1 = 0f
-        private var b2 = 0f
-        fun next(): Float {
-            val w = rnd.nextFloat() * 2f - 1f
-            b0 = 0.99765f * b0 + w * 0.0990460f
-            b1 = 0.96300f * b1 + w * 0.2965164f
-            b2 = 0.57000f * b2 + w * 1.0526913f
-            return (b0 + b1 + b2 + w * 0.1848f) * 0.2f
-        }
-    }
-
-    /**
-     * Forest Breeze & Chimes (Alpha Focus): dark pink-noise wind swelling on two slow
-     * detuned cycles, with synthesized pentatonic wind chimes struck at random intervals.
-     */
-    private class BreezeGenerator : AmbientGenerator() {
-        private val rnd = Random(System.nanoTime().toInt())
-        private val pinkL = PinkNoise(rnd.nextInt())
-        private val pinkR = PinkNoise(rnd.nextInt())
-        private var lpL = 0f
-        private var lpR = 0f
-        private var lfoA = rnd.nextDouble() * TWO_PI
-        private var lfoB = rnd.nextDouble() * TWO_PI
-
-        private val chimes = Array(6) { ChimeVoice() }
-        private var samplesToNextChime = (SAMPLE_RATE * 2.5).toInt()
-
-        // A-major pentatonic — always consonant regardless of strike order.
-        private val notes = doubleArrayOf(523.25, 587.33, 659.25, 783.99, 880.0, 1046.5)
-
-        override fun render(bus: FloatArray, frames: Int, voice: SceneVoice) {
-            for (i in 0 until frames) {
-                lfoA += TWO_PI * 0.045 / SAMPLE_RATE
-                lfoB += TWO_PI * 0.011 / SAMPLE_RATE
-                val env = (0.45f + 0.28f * sin(lfoA).toFloat() + 0.22f * sin(lfoB).toFloat())
-                    .coerceIn(0.08f, 1f)
-
-                lpL += 0.10f * (pinkL.next() - lpL)
-                lpR += 0.10f * (pinkR.next() - lpR)
-                var l = lpL * env * WIND_GAIN
-                var r = lpR * env * WIND_GAIN
-
-                if (--samplesToNextChime <= 0) {
-                    chimes.firstOrNull { !it.active }?.trigger(
-                        notes[rnd.nextInt(notes.size)], rnd
-                    )
-                    samplesToNextChime = ((3.0 + rnd.nextDouble() * 7.0) * SAMPLE_RATE).toInt()
-                }
-                for (chime in chimes) {
-                    if (!chime.active) continue
-                    val s = chime.nextSample()
-                    l += s * chime.panL
-                    r += s * chime.panR
-                }
-
-                voice.gain += (voice.gainTarget - voice.gain).coerceIn(-voice.gainStep, voice.gainStep)
-                bus[2 * i] += l * voice.gain
-                bus[2 * i + 1] += r * voice.gain
-            }
-        }
-
-        companion object {
-            private const val WIND_GAIN = 0.55f
-        }
-    }
-
-    /** A struck chime tine: three inharmonic partials with independent exponential decay. */
-    private class ChimeVoice {
-        var active = false
-        var panL = 0.7f
-        var panR = 0.7f
-        private val ratios = doubleArrayOf(1.0, 2.76, 5.40)
-        private val phases = DoubleArray(3)
-        private val increments = DoubleArray(3)
-        private val amps = FloatArray(3)
-        private val decays = FloatArray(3)
-
-        fun trigger(freq: Double, rnd: Random) {
-            val startAmps = floatArrayOf(0.10f, 0.05f, 0.018f)
-            val taus = floatArrayOf(3.8f, 1.4f, 0.5f)
-            for (p in 0..2) {
-                phases[p] = 0.0
-                increments[p] = TWO_PI * freq * ratios[p] / SAMPLE_RATE
-                amps[p] = startAmps[p]
-                decays[p] = exp(-1f / (taus[p] * SAMPLE_RATE))
-            }
-            // Constant-power random pan so each strike hangs somewhere in the stereo field.
-            val pan = rnd.nextFloat()
-            panL = kotlin.math.sqrt(1f - pan)
-            panR = kotlin.math.sqrt(pan)
-            active = true
-        }
-
-        fun nextSample(): Float {
-            var s = 0f
-            for (p in 0..2) {
-                s += sin(phases[p]).toFloat() * amps[p]
-                phases[p] += increments[p]
-                amps[p] *= decays[p]
-            }
-            if (amps[0] < 1e-4f) active = false
-            return s
-        }
-    }
-
-    /**
-     * Gentle Rainfall (Theta Meditate): band-limited noise bed with a slowly breathing
-     * intensity, plus quiet high droplet plinks scattered across the stereo field.
-     */
-    private class RainGenerator : AmbientGenerator() {
-        private val rnd = Random(System.nanoTime().toInt())
-        private var hpL = 0f
-        private var hpR = 0f
-        private var lpL = 0f
-        private var lpR = 0f
-        private var lfo = rnd.nextDouble() * TWO_PI
-
-        private val drops = Array(8) { DropletVoice() }
-        private var samplesToNextDrop = SAMPLE_RATE / 2
-
-        override fun render(bus: FloatArray, frames: Int, voice: SceneVoice) {
-            for (i in 0 until frames) {
-                lfo += TWO_PI * 0.03 / SAMPLE_RATE
-                val intensity = 0.85f + 0.15f * sin(lfo).toFloat()
-
-                var wL = rnd.nextFloat() * 2f - 1f
-                var wR = rnd.nextFloat() * 2f - 1f
-                // High-pass out the rumble, then low-pass to the soft hiss band of real rain.
-                hpL += 0.008f * (wL - hpL); wL -= hpL
-                hpR += 0.008f * (wR - hpR); wR -= hpR
-                lpL += 0.22f * (wL - lpL)
-                lpR += 0.22f * (wR - lpR)
-                var l = lpL * RAIN_GAIN * intensity
-                var r = lpR * RAIN_GAIN * intensity
-
-                if (--samplesToNextDrop <= 0) {
-                    drops.firstOrNull { !it.active }?.trigger(rnd)
-                    samplesToNextDrop = ((0.25 + rnd.nextDouble() * 1.1) * SAMPLE_RATE).toInt()
-                }
-                for (drop in drops) {
-                    if (!drop.active) continue
-                    val s = drop.nextSample()
-                    l += s * drop.panL
-                    r += s * drop.panR
-                }
-
-                voice.gain += (voice.gainTarget - voice.gain).coerceIn(-voice.gainStep, voice.gainStep)
-                bus[2 * i] += l * voice.gain
-                bus[2 * i + 1] += r * voice.gain
-            }
-        }
-
-        companion object {
-            private const val RAIN_GAIN = 0.5f
-        }
-    }
-
-    /** A single raindrop hitting a leaf: a short, fast-decaying high sine ping. */
-    private class DropletVoice {
-        var active = false
-        var panL = 0.7f
-        var panR = 0.7f
-        private var phase = 0.0
-        private var increment = 0.0
-        private var amp = 0f
-        private var decay = 0f
-
-        fun trigger(rnd: Random) {
-            val freq = 1600.0 + rnd.nextDouble() * 1900.0
-            phase = 0.0
-            increment = TWO_PI * freq / SAMPLE_RATE
-            amp = 0.03f + rnd.nextFloat() * 0.03f
-            decay = exp(-1f / (0.045f * SAMPLE_RATE))
-            val pan = rnd.nextFloat()
-            panL = kotlin.math.sqrt(1f - pan)
-            panR = kotlin.math.sqrt(pan)
-            active = true
-        }
-
-        fun nextSample(): Float {
-            val s = sin(phase).toFloat() * amp
-            phase += increment
-            amp *= decay
-            if (amp < 1e-4f) active = false
-            return s
-        }
-    }
-
-    /**
-     * Ocean Waves (Delta Sleep): deep brown-noise swells on two overlapping wave periods,
-     * with a bright "wash" of foam that only appears as each wave crests.
-     */
-    private class OceanGenerator : AmbientGenerator() {
-        private val rnd = Random(System.nanoTime().toInt())
-        private var brownL = 0f
-        private var brownR = 0f
-        private var lpL = 0f
-        private var lpR = 0f
-        private var washLp = 0f
-        private var wave1 = rnd.nextDouble() * TWO_PI
-        private var wave2 = rnd.nextDouble() * TWO_PI
-
-        override fun render(bus: FloatArray, frames: Int, voice: SceneVoice) {
-            for (i in 0 until frames) {
-                wave1 += TWO_PI / (12.0 * SAMPLE_RATE)
-                wave2 += TWO_PI / (19.0 * SAMPLE_RATE)
-                val s1 = max(0.0, sin(wave1)).pow(2.0).toFloat()
-                val s2 = max(0.0, sin(wave2)).pow(2.0).toFloat()
-                val swell = 0.22f + 0.78f * (s1 * 0.6f + s2 * 0.4f)
-
-                brownL = (brownL + 0.02f * (rnd.nextFloat() * 2f - 1f)) * 0.998f
-                brownR = (brownR + 0.02f * (rnd.nextFloat() * 2f - 1f)) * 0.998f
-                lpL += 0.15f * (brownL - lpL)
-                lpR += 0.15f * (brownR - lpR)
-
-                // Foam wash: bright noise that rises with the square of the swell (crest only).
-                washLp += 0.3f * ((rnd.nextFloat() * 2f - 1f) - washLp)
-                val wash = washLp * swell * swell * 0.10f
-
-                val l = lpL * OCEAN_GAIN * swell + wash
-                val r = lpR * OCEAN_GAIN * swell + wash
-
-                voice.gain += (voice.gainTarget - voice.gain).coerceIn(-voice.gainStep, voice.gainStep)
-                bus[2 * i] += l * voice.gain
-                bus[2 * i + 1] += r * voice.gain
-            }
-        }
-
-        companion object {
-            private const val OCEAN_GAIN = 1.1f
-        }
-    }
 
     // ------------------------------------------------------------------
     // Notification
@@ -683,23 +422,21 @@ class SoundscapeService : Service() {
         private const val CHANNEL_ID = "restoration_soundscapes"
         private const val NOTIFICATION_ID = 1001
 
-        private const val SAMPLE_RATE = 44100
         private const val FRAMES_PER_BUFFER = 2048
-        private const val TWO_PI = 2.0 * PI
-        private const val PHASE_WRAP = 2.0 * PI * 1024.0
 
         private const val FADE_IN_SECONDS = 1.5f
         private const val FADE_OUT_SECONDS = 0.7f
         private const val SLEEP_FADE_SECONDS = 15f
-        private const val CROSSFADE_SECONDS = 2.5f
 
-        // Binaural carrier peaks at ~24% of full scale at max slider — present but never harsh.
-        private const val BINAURAL_PEAK = 0.24f
-        private const val PARAM_SMOOTH = 0.0008f
-        private const val FREQ_SMOOTH = 0.00005f
+        // Playback-side aliases for the shared engine's DSP constants, so the live mix and
+        // the offline Reels render can never drift apart.
+        private const val SAMPLE_RATE = Soundscape.SAMPLE_RATE
+        private const val TWO_PI = Soundscape.TWO_PI
+        private const val PHASE_WRAP = Soundscape.PHASE_WRAP
+        private const val BINAURAL_PEAK = Soundscape.BINAURAL_PEAK
+        private const val PARAM_SMOOTH = Soundscape.PARAM_SMOOTH
+        private const val FREQ_SMOOTH = Soundscape.FREQ_SMOOTH
 
-        private const val SCENE_BREEZE = 0
-        private const val SCENE_RAIN = 1
-        private const val SCENE_OCEAN = 2
+        private const val SCENE_RAIN = Soundscape.SCENE_RAIN
     }
 }

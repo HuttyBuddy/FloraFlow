@@ -87,6 +87,25 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!--
+              Invite links shared from story cards, Reels and the Settings invite
+              (https://floraflow.app/j/CODE). Without this filter those links could only
+              ever open a browser, so a share could never be attributed to an install.
+
+              android:autoVerify requires assetlinks.json to be hosted at
+              https://floraflow.app/.well-known/assetlinks.json for links to open the app
+              directly; until it is published, Android falls back to the app chooser.
+            -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https" android:host="floraflow.app" />
+                <data android:scheme="http" android:host="floraflow.app" />
+            </intent-filter>
         </activity>
 
         <provider

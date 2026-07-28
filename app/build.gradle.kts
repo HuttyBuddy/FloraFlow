@@ -208,4 +208,7 @@ dependencies {
   implementation(libs.play.billing)
   implementation(libs.play.billing.ktx)
   implementation(libs.androidx.security.crypto)
+  // QR codes burned into share cards, and Play Store install attribution for those shares.
+  implementation(libs.zxing.core)
+  implementation(libs.play.install.referrer)
 }

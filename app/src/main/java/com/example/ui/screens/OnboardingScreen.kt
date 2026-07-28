@@ -25,7 +25,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -34,6 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.analytics.ShareAnalytics
+import com.example.data.model.PlantParentArchetype
+import com.example.ui.screens.share.ShareCardData
+import com.example.ui.screens.share.ShareLinks
+import com.example.ui.screens.share.ViralShareEngine
 import com.example.ui.viewmodel.GardenViewModel
 import com.example.ui.components.FloraFlowButton
 import com.example.ui.components.FloraFlowCard
@@ -248,6 +252,7 @@ fun OnboardingScreen(
                 AssessmentScreenState.RESULT -> {
                     ResultScreen(
                         score = totalScore,
+                        lowestCategories = lowestCategories,
                         onSeeSteps = {
                             // Every zone sees a paywall moment at peak
                             // assessment engagement — not just users who
@@ -625,6 +630,7 @@ fun CalculatingScreen(
 @Composable
 fun ResultScreen(
     score: Int,
+    lowestCategories: List<String> = emptyList(),
     onSeeSteps: () -> Unit
 ) {
     data class ZoneDetails(
@@ -775,7 +781,13 @@ fun ResultScreen(
         
         OutlinedButton(
             onClick = {
-                shareScoreCard(context, score, zoneInfo.category, zoneInfo.label, zoneInfo.color.toArgb())
+                shareScoreCard(
+                    context = context,
+                    score = score,
+                    zoneName = zoneInfo.category,
+                    zoneDesc = zoneInfo.label,
+                    lowestCategories = lowestCategories
+                )
             },
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = Color.White
@@ -1005,93 +1017,36 @@ fun PersonalizedPaywallScreen(
     }
 }
 
-fun shareScoreCard(context: android.content.Context, score: Int, zoneName: String, zoneDesc: String, bgColorInt: Int) {
-    val size = 512
-    val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
-    val canvas = android.graphics.Canvas(bitmap)
-    
-    // Draw background color
-    canvas.drawColor(bgColorInt)
-    
-    // Draw decorative border
-    val borderPaint = android.graphics.Paint().apply {
-        color = 0xFFFFFFFF.toInt()
-        style = android.graphics.Paint.Style.STROKE
-        strokeWidth = 10f
-        isAntiAlias = true
-    }
-    canvas.drawRect(20f, 20f, size - 20f, size - 20f, borderPaint)
-    
-    // Draw title
-    val titlePaint = android.graphics.Paint().apply {
-        color = 0xFFFFFFFF.toInt()
-        textSize = 28f
-        isFakeBoldText = true
-        textAlign = android.graphics.Paint.Align.CENTER
-        isAntiAlias = true
-    }
-    canvas.drawText("FloraFlow Neural Load", size / 2f, 100f, titlePaint)
-    
-    // Draw score number "X / 20"
-    val scorePaint = android.graphics.Paint().apply {
-        color = 0xFFFFFFFF.toInt()
-        textSize = 80f
-        isFakeBoldText = true
-        textAlign = android.graphics.Paint.Align.CENTER
-        isAntiAlias = true
-    }
-    canvas.drawText("$score / 20", size / 2f, 240f, scorePaint)
-    
-    // Draw zone name
-    val zonePaint = android.graphics.Paint().apply {
-        color = 0xFFFFD54F.toInt() // Gold highlight
-        textSize = 22f
-        isFakeBoldText = true
-        textAlign = android.graphics.Paint.Align.CENTER
-        isAntiAlias = true
-    }
-    canvas.drawText(zoneName, size / 2f, 320f, zonePaint)
+/**
+ * Shares the assessment result as the standard 1080x1920 archetype card.
+ *
+ * This used to render its own 512x512 bitmap with 14-28px text, which looked pixelated
+ * and low-effort in an Instagram Story — on the highest-traffic share surface in the app.
+ * Both share paths now go through [ViralShareEngine].
+ */
+fun shareScoreCard(
+    context: android.content.Context,
+    score: Int,
+    zoneName: String,
+    zoneDesc: String,
+    lowestCategories: List<String> = emptyList()
+) {
+    // The assessment scores out of 20; the card shows a percentage.
+    val percent = (score.coerceIn(0, 20) * 100) / 20
 
-    // Draw zone description
-    val descPaint = android.graphics.Paint().apply {
-        color = 0xDDFFFFFF.toInt()
-        textSize = 16f
-        textAlign = android.graphics.Paint.Align.CENTER
-        isAntiAlias = true
-    }
-    canvas.drawText(zoneDesc, size / 2f, 380f, descPaint)
-    
-    // Draw bottom branding
-    val footerPaint = android.graphics.Paint().apply {
-        color = 0x88FFFFFF.toInt()
-        textSize = 14f
-        textAlign = android.graphics.Paint.Align.CENTER
-        isAntiAlias = true
-    }
-    canvas.drawText("Find your restoration score with FloraFlow", size / 2f, size - 60f, footerPaint)
-    
-    try {
-        val cachePath = java.io.File(context.cacheDir, "shared_scores")
-        cachePath.mkdirs()
-        val file = java.io.File(cachePath, "onboarding_scorecard.png")
-        val stream = java.io.FileOutputStream(file)
-        bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
-        stream.close()
-        
-        val uri = androidx.core.content.FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        
-        val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-            type = "image/png"
-            putExtra(android.content.Intent.EXTRA_STREAM, uri)
-            putExtra(android.content.Intent.EXTRA_SUBJECT, "My Biophilic Assessment Score")
-            putExtra(android.content.Intent.EXTRA_TEXT, "I just assessed my room's environment using FloraFlow. My Neural Load Score is $score/20 ($zoneDesc). Optimize your environment with FloraFlow!")
-            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        
-        context.startActivity(android.content.Intent.createChooser(shareIntent, "Share Score Card"))
-    } catch (e: Exception) {
-        android.widget.Toast.makeText(context, "Failed to share scorecard: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
-    }
+    ViralShareEngine.shareCard(
+        context = context,
+        data = ShareCardData(
+            archetype = PlantParentArchetype.calculateArchetype(score, lowestCategories),
+            vibeTag = "$zoneName • $zoneDesc",
+            score = percent,
+            topUpgrades = lowestCategories.take(3).map { category ->
+                "Improve ${category.lowercase().replaceFirstChar { it.uppercase() }}"
+            },
+            shareCode = ShareLinks.shareCode(context)
+        ),
+        surface = ShareAnalytics.Surface.ONBOARDING_RESULT
+    )
 }
 
 @Composable
