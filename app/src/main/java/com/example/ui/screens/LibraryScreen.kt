@@ -103,7 +103,17 @@ fun LibraryScreen(
 
     val climateName = activeLayout?.climate ?: "Temperate"
     val companionTemplates = remember(climateName) {
-        ClimatePlants.getTemplatesForClimate(climateName)
+        ClimatePlants.ALL_TEMPLATES.filter { tpl ->
+            tpl.isIndoor &&
+            !tpl.type.contains("Tree", ignoreCase = true) &&
+            !tpl.name.contains("Olive", ignoreCase = true) &&
+            !tpl.name.contains("Sage", ignoreCase = true) &&
+            !tpl.name.contains("Flag", ignoreCase = true) &&
+            !tpl.name.contains("Maple", ignoreCase = true) &&
+            !tpl.name.contains("Oak", ignoreCase = true) &&
+            !tpl.name.contains("Pine", ignoreCase = true) &&
+            !tpl.name.contains("Bush", ignoreCase = true)
+        }
     }
 
     // Indoor Encyclopedia Search & Filter States
@@ -156,108 +166,81 @@ fun LibraryScreen(
     // LOCAL COMPOSABLES (extracted layout segments)
     // ----------------------------------------------------
     val tabBarContent = @Composable {
-        // Aesthetic Natural Pill Tab Bar
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f), RoundedCornerShape(24.dp))
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(24.dp))
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        // Redesigned Sleek Single-Line Segmented Tab Bar
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)),
+            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
         ) {
-            Box(
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(if (selectedTabState == 0) MaterialTheme.colorScheme.primary else Color.Transparent)
-                    .then(
-                        if (selectedTabState == 0) {
-                            Modifier.border(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-                        } else Modifier
-                    )
-                    .clickable { selectedTabState = 0 }
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                // Tab 0: My Sanctuary
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = if (selectedTabState == 0) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    tonalElevation = if (selectedTabState == 0) 2.dp else 0.dp,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { selectedTabState = 0 }
                 ) {
-                    Icon(
-                        Icons.Default.Spa,
-                        contentDescription = "My Garden",
-                        tint = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        "My Indoor Sanctuary", 
-                        color = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp,
-                        textAlign = TextAlign.Center
-                    )
+                    Row(
+                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Spa,
+                            contentDescription = "My Sanctuary",
+                            tint = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "My Sanctuary",
+                            color = if (selectedTabState == 0) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
                 }
-            }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(if (selectedTabState == 1) MaterialTheme.colorScheme.primary else Color.Transparent)
-                    .then(
-                        if (selectedTabState == 1) {
-                            Modifier.border(1.dp, MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-                        } else Modifier
-                    )
-                    .clickable { selectedTabState = 1 }
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.MenuBook,
-                        contentDescription = "Encyclopedia",
-                        tint = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        "Indoor Species Encyclopedia", 
-                        color = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-        }
-    }
 
-    val climateRecommendationsContent = @Composable {
-        Card(
-            modifier = Modifier.fillMaxWidth()
-                .biophilicShader(enabled = true, alpha = 0.08f),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                BotanicalCornerAccents(showTopRight = true, showBottomLeft = false)
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Indoor Climate Recommendations",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Compatible houseplant varieties for your $climateName indoor microclimate. Tap a recommendation to plant it in your active indoor sanctuary.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                // Tab 1: Species Catalog
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = if (selectedTabState == 1) MaterialTheme.colorScheme.primary else Color.Transparent,
+                    tonalElevation = if (selectedTabState == 1) 2.dp else 0.dp,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { selectedTabState = 1 }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(vertical = 10.dp, horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.MenuBook,
+                            contentDescription = "Species Catalog",
+                            tint = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Species Catalog",
+                            color = if (selectedTabState == 1) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
                 }
             }
         }
@@ -882,7 +865,6 @@ fun LibraryScreen(
         ) {
             item { tabBarContent() }
             if (selectedTabState == 0) {
-                item { climateRecommendationsContent() }
                 item { companionTemplatesContent() }
                 item { activePlantsHeaderContent() }
                 item { GreenhouseStatsSection(avgGrowth = avgGrowth, avgHydration = avgHydration, dueTasksCount = dueTasksCount) }
@@ -911,7 +893,6 @@ fun LibraryScreen(
             ) {
                 tabBarContent()
                 if (selectedTabState == 0) {
-                    climateRecommendationsContent()
                     companionTemplatesContent()
                     activePlantsHeaderContent()
                 } else {

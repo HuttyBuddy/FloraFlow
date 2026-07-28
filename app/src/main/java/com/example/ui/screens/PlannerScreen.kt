@@ -214,122 +214,149 @@ fun hasNeighborConflictOptimized(row: Int, col: Int, gridMap: Array<GridPlantIte
     return false
 }
 
-// Biophilic Indoor Element Catalog Item Definition
-data class BiophilicItem(
+// ----------------------------------------------------
+// SPATIAL ROOM STUDIO DATA MODELS & ZONE DEFINITIONS
+// ----------------------------------------------------
+
+data class RoomZoneOption(
     val id: String,
     val name: String,
-    val category: String, // "Air Purifier", "Zen Artifact", "Acoustic Accent"
     val iconEmoji: String,
     val o2Rating: Int, // 1 to 5
     val acousticRating: Int, // 1 to 5
-    val calmingScent: String, // e.g. "Clean Oxygen", "Eucalyptus", "Lavender", "Bamboo Fresh"
+    val calmingScent: String,
     val description: String
 )
 
-private val BIOPHILIC_CATALOG = listOf(
-    BiophilicItem("snake_plant", "Snake Plant", "Air Purifier", "🪴", 5, 2, "Night Oxygen Booster", "Converts CO2 to O2 overnight. Purifies formaldehyde & benzene."),
-    BiophilicItem("peace_lily", "Peace Lily", "Air Purifier", "🌸", 5, 3, "Micro-Moisture & Clean", "Filters mold spores & airborne pollutants. Boosts humidity by 5%."),
-    BiophilicItem("pothos", "Golden Pothos", "Air Purifier", "🍃", 4, 3, "Fresh Canopy", "Fast-growing vine that purifies indoor air and dampens sound."),
-    BiophilicItem("monstera", "Monstera Deliciosa", "Air Purifier", "🌿", 4, 4, "Acoustic Shield", "Broad split leaves scatter high-frequency echoes for quiet posture."),
-    BiophilicItem("boston_fern", "Boston Fern", "Air Purifier", "🌱", 4, 4, "Humidifying Cloud", "Restores essential indoor humidity for deep nasal breathwork."),
-    BiophilicItem("english_ivy", "English Ivy", "Air Purifier", "🪻", 5, 2, "Particulate Filter", "Top air-purifying vine for reducing airborne dust & particulate matter."),
-    BiophilicItem("lavender_pot", "Aromatic Lavender", "Air Purifier", "🪻", 3, 2, "Linalool Terpene", "Emits linalool aromatic molecules proven to lower heart rate."),
-    
-    BiophilicItem("zafu_cushion", "Zafu Cushion", "Zen Artifact", "🧘", 1, 5, "Ergonomic Grounding", "Buckwheat-filled floor cushion for spinal alignment during Zazen."),
-    BiophilicItem("bamboo_spout", "Bamboo Water Spout", "Zen Artifact", "🎋", 2, 4, "Hydro-Acoustic White Noise", "Continuous trickling water sound masks urban ambient noise."),
-    BiophilicItem("raked_gravel", "Raked Zen Gravel", "Zen Artifact", "🪨", 1, 4, "Tactile Focus", "Smoothed river stones and raked sand for mindfulness meditation."),
-    BiophilicItem("salt_lamp", "Himalayan Salt Lamp", "Zen Artifact", "🪔", 1, 2, "Warm Amber Glow", "Soft 2700K ionization lamp for relaxing circadian transition."),
-    BiophilicItem("singing_bowl", "Brass Singing Bowl", "Zen Artifact", "🥣", 1, 3, "432Hz Resonance", "Hand-hammered brass bowl emitting harmonic meditation frequencies."),
-    BiophilicItem("tea_set", "Cast Iron Tea Set", "Zen Artifact", "🫖", 1, 2, "Mindful Brew", "Handcrafted iron teapot for post-session restorative herbal tea."),
-    BiophilicItem("diffuser", "Aroma Diffuser", "Zen Artifact", "🕯️", 2, 2, "Ultrasound Mist", "Disperses pure cedarwood & eucalyptus essential oils."),
-    
-    BiophilicItem("moss_wall", "Moss Wall Panel", "Acoustic Accent", "🖼️", 3, 5, "Absorptive Canopy", "Preserved reindeer moss panel absorbing up to 40% of ambient echo."),
-    BiophilicItem("linen_screen", "Natural Linen Screen", "Acoustic Accent", "🪟", 1, 4, "Dappled Light Diffuser", "Softens direct sunlight into calming dappled illumination."),
-    BiophilicItem("rattan_chair", "Rattan Lounger", "Acoustic Accent", "🪑", 1, 3, "Restorative Cradle", "Ergonomic natural cane lounge chair for deep relaxation.")
-)
-
-// Intentions
-data class SanctuaryIntention(
-    val id: String,
+data class RoomZone(
+    val zoneId: String,
     val title: String,
-    val emoji: String,
     val subtitle: String,
-    val targetO2: Int,
-    val recommendedSubstrateIndex: Int,
-    val presetItems: List<Pair<Int, String>> // (Index 0..24, ItemId)
+    val iconEmoji: String,
+    val options: List<RoomZoneOption>
 )
 
-private val INTENTIONS = listOf(
-    SanctuaryIntention(
-        id = "meditation",
-        title = "Meditation Nook",
-        emoji = "🧘",
-        subtitle = "High O2, zen acoustic dampening & zafu seating for Zazen focus",
-        targetO2 = 85,
-        recommendedSubstrateIndex = 1, // Tatami Mat
-        presetItems = listOf(
-            Pair(12, "zafu_cushion"),
-            Pair(7, "snake_plant"),
-            Pair(11, "bamboo_spout"),
-            Pair(13, "salt_lamp"),
-            Pair(17, "peace_lily"),
-            Pair(2, "monstera"),
-            Pair(22, "moss_wall")
+private val ROOM_ZONES = listOf(
+    RoomZone(
+        zoneId = "canopy",
+        title = "Canopy & Wall Feature",
+        subtitle = "Vertical greenery & sound-absorbing foliage",
+        iconEmoji = "🖼️",
+        options = listOf(
+            RoomZoneOption("moss_wall", "Preserved Moss Wall", "🖼️", 3, 5, "Earthy Cedar", "Absorbs up to 40% of ambient acoustic echo."),
+            RoomZoneOption("cascading_pothos", "Cascading Pothos Vines", "🍃", 4, 4, "Fresh Canopy", "Lush trailing greenery that purifies indoor air."),
+            RoomZoneOption("monstera_canopy", "Monstera Split Canopy", "🌿", 4, 4, "Tropical Glow", "Broad architectural leaves scattering high-frequency noise."),
+            RoomZoneOption("hydro_living_wall", "Hydroponic Living Wall", "🌱", 5, 5, "Humidifying Oasis", "Integrated vertical hydro-wall boosting room humidity.")
         )
     ),
-    SanctuaryIntention(
-        id = "breathing",
-        title = "Mindful Breathing",
-        emoji = "🌬️",
-        subtitle = "Oxygen-rich canopy & humidifying ferns with rhythm lighting",
-        targetO2 = 95,
-        recommendedSubstrateIndex = 0, // Light Oak
-        presetItems = listOf(
-            Pair(12, "zafu_cushion"),
-            Pair(6, "snake_plant"),
-            Pair(8, "peace_lily"),
-            Pair(16, "boston_fern"),
-            Pair(18, "english_ivy"),
-            Pair(2, "pothos"),
-            Pair(22, "diffuser")
+    RoomZone(
+        zoneId = "foliage",
+        title = "Air Purifiers & Companions",
+        subtitle = "Toxin-filtering plants & oxygen boosters",
+        iconEmoji = "🪴",
+        options = listOf(
+            RoomZoneOption("snake_plant_trio", "Snake Plant Trio", "🪴", 5, 2, "Night Oxygen", "Produces oxygen overnight & filters formaldehyde."),
+            RoomZoneOption("peace_lily_bloom", "Peace Lily Bloom", "🌸", 5, 3, "Clean Humidity", "Filters mold spores & airborne particulates."),
+            RoomZoneOption("boston_fern_cloud", "Boston Fern Cloud", "🌱", 4, 4, "Micro-Moisture", "Restores essential room moisture for deep breathwork."),
+            RoomZoneOption("aromatic_lavender", "Aromatic Lavender Pot", "🪻", 3, 2, "Linalool Terpene", "Emits natural linalool molecules proven to ease stress.")
         )
     ),
-    SanctuaryIntention(
-        id = "relaxation",
-        title = "Deep Relaxation",
-        emoji = "🌿",
-        subtitle = "Lush foliage canopy, acoustic moss walls & soothing rain",
-        targetO2 = 88,
-        recommendedSubstrateIndex = 4, // Bamboo Fiber
-        presetItems = listOf(
-            Pair(12, "rattan_chair"),
-            Pair(7, "monstera"),
-            Pair(17, "moss_wall"),
-            Pair(11, "bamboo_spout"),
-            Pair(13, "lavender_pot"),
-            Pair(1, "pothos"),
-            Pair(23, "singing_bowl")
+    RoomZone(
+        zoneId = "seating",
+        title = "Grounding & Seating Base",
+        subtitle = "Ergonomic posture support & floor textures",
+        iconEmoji = "🧘",
+        options = listOf(
+            RoomZoneOption("zafu_tatami", "Zafu Cushion on Tatami", "🧘", 1, 5, "Zazen Ergonomics", "Buckwheat floor cushion paired with woven rush matting."),
+            RoomZoneOption("oak_bench", "Natural Light Oak Bench", "🪵", 1, 3, "Minimalist Bench", "Solid white oak bench for seated posture & tea ritual."),
+            RoomZoneOption("zen_pebbles", "Raked Zen Gravel Tray", "🪨", 1, 4, "Tactile Mindfulness", "Smoothed river stones & raked sand for grounding."),
+            RoomZoneOption("rattan_lounger", "Cane Rattan Lounger", "🪑", 1, 3, "Restorative Cradle", "Natural woven cane chair for deep body relaxation.")
         )
     ),
-    SanctuaryIntention(
-        id = "tea_nook",
-        title = "Restorative Tea",
-        emoji = "☕",
-        subtitle = "Warm natural wood, quiet tea ritual & gentle amber lighting",
-        targetO2 = 75,
-        recommendedSubstrateIndex = 0, // Light Oak
-        presetItems = listOf(
-            Pair(12, "tea_set"),
-            Pair(7, "raked_gravel"),
-            Pair(11, "salt_lamp"),
-            Pair(13, "peace_lily"),
-            Pair(17, "snake_plant"),
-            Pair(3, "linen_screen")
+    RoomZone(
+        zoneId = "sensory",
+        title = "Sensory & Hydro-Acoustics",
+        subtitle = "Mindful sound, warmth & aromatherapy anchors",
+        iconEmoji = "🎋",
+        options = listOf(
+            RoomZoneOption("bamboo_spout", "Bamboo Water Spout", "🎋", 2, 5, "Hydro White Noise", "Continuous trickling water sound masking urban noise."),
+            RoomZoneOption("singing_bowl", "Brass 432Hz Singing Bowl", "🥣", 1, 3, "Harmonic Resonance", "Hand-hammered bowl emitting 432Hz meditation tone."),
+            RoomZoneOption("salt_lamp", "Himalayan Salt Glow Lamp", "🪔", 1, 2, "2700K Amber Ionization", "Soft warm ionization lamp for circadian relaxation."),
+            RoomZoneOption("tea_set", "Cast Iron Tea Ritual", "🫖", 1, 2, "Herbal Mindfulness", "Handcrafted teapot for post-session tea ceremony."),
+            RoomZoneOption("aroma_diffuser", "Ultrasound Mist Diffuser", "🕯️", 2, 2, "Eucalyptus Mist", "Disperses pure eucalyptus & cedarwood essential mist.")
         )
     )
 )
 
-// Lighting Moods
+data class SanctuaryPreset(
+    val id: String,
+    val title: String,
+    val emoji: String,
+    val subtitle: String,
+    val substrateIndex: Int,
+    val lightingIndex: Int,
+    val selectedOptionIds: Map<String, String> // ZoneId -> OptionId
+)
+
+private val SANCTUARY_PRESETS = listOf(
+    SanctuaryPreset(
+        id = "zen_meditation",
+        title = "Zen Meditation Nook",
+        emoji = "🧘",
+        subtitle = "Quiet acoustics, zafu seating & night oxygen",
+        substrateIndex = 1, // Tatami Mat
+        lightingIndex = 0, // Dawn Gold
+        selectedOptionIds = mapOf(
+            "canopy" to "moss_wall",
+            "foliage" to "snake_plant_trio",
+            "seating" to "zafu_tatami",
+            "sensory" to "bamboo_spout"
+        )
+    ),
+    SanctuaryPreset(
+        id = "mindful_oxygen",
+        title = "Mindful Oxygen Lounge",
+        emoji = "🌬️",
+        subtitle = "High-output oxygen foliage & humidifying ferns",
+        substrateIndex = 0, // Light Oak
+        lightingIndex = 1, // Forest Dappled
+        selectedOptionIds = mapOf(
+            "canopy" to "hydro_living_wall",
+            "foliage" to "peace_lily_bloom",
+            "seating" to "oak_bench",
+            "sensory" to "aroma_diffuser"
+        )
+    ),
+    SanctuaryPreset(
+        id = "rainforest_relax",
+        title = "Rainforest Relaxation",
+        emoji = "🌿",
+        subtitle = "Lush split-leaf canopy & soothing rain water",
+        substrateIndex = 4, // Bamboo Fiber
+        lightingIndex = 2, // Sunset Amber
+        selectedOptionIds = mapOf(
+            "canopy" to "monstera_canopy",
+            "foliage" to "boston_fern_cloud",
+            "seating" to "rattan_lounger",
+            "sensory" to "singing_bowl"
+        )
+    ),
+    SanctuaryPreset(
+        id = "tea_nook",
+        title = "Restorative Tea Nook",
+        emoji = "☕",
+        subtitle = "Warm wood, quiet tea ceremony & amber glow",
+        substrateIndex = 0, // Light Oak
+        lightingIndex = 2, // Sunset Amber
+        selectedOptionIds = mapOf(
+            "canopy" to "cascading_pothos",
+            "foliage" to "aromatic_lavender",
+            "seating" to "zen_pebbles",
+            "sensory" to "tea_set"
+        )
+    )
+)
+
 data class LightingMood(
     val name: String,
     val emoji: String,
@@ -338,13 +365,12 @@ data class LightingMood(
 )
 
 private val LIGHTING_MOODS = listOf(
-    LightingMood("Dawn Gold", "🌅", Color(0xFFFFF8E7).copy(alpha = 0.15f), "Warm 4000K morning sunlight"),
-    LightingMood("Forest Dappled", "🌲", Color(0xFFE8F5E9).copy(alpha = 0.25f), "Soft emerald 520nm canopy filter"),
-    LightingMood("Sunset Amber", "🌇", Color(0xFFFFECB3).copy(alpha = 0.30f), "Relaxing 2700K dusk glow"),
-    LightingMood("Moonlit Indigo", "🌙", Color(0xFFE8EAF6).copy(alpha = 0.20f), "Cool serene night twilight")
+    LightingMood("Dawn Gold", "🌅", Color(0xFFFFF8E7).copy(alpha = 0.18f), "Warm 4000K morning light"),
+    LightingMood("Forest Dappled", "🌲", Color(0xFFE8F5E9).copy(alpha = 0.28f), "Soft emerald 520nm filter"),
+    LightingMood("Sunset Amber", "🌇", Color(0xFFFFECB3).copy(alpha = 0.32f), "Relaxing 2700K dusk glow"),
+    LightingMood("Moonlit Indigo", "🌙", Color(0xFFE8EAF6).copy(alpha = 0.22f), "Cool serene night twilight")
 )
 
-// Soundscapes
 data class AmbientSoundscape(
     val name: String,
     val emoji: String,
@@ -352,10 +378,10 @@ data class AmbientSoundscape(
 )
 
 private val SOUNDSCAPES = listOf(
-    AmbientSoundscape("Bamboo Fountain", "🎋", "White noise trickling water"),
+    AmbientSoundscape("Bamboo Fountain", "🎋", "White noise water drip"),
     AmbientSoundscape("Pine Forest Wind", "🌲", "Soft low-frequency breeze"),
     AmbientSoundscape("432Hz Singing Bowl", "🔔", "Harmonic meditation tone"),
-    AmbientSoundscape("Rainforest Rain", "🌧️", "Dappled foliage raindrops")
+    AmbientSoundscape("Rainforest Rain", "🌧️", "Dappled foliage droplets")
 )
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
@@ -367,53 +393,51 @@ fun PlannerScreen(
 ) {
     val activeLayout by viewModel.activeLayout.collectAsStateWithLifecycle()
 
-    var selectedIntention by remember { mutableStateOf(INTENTIONS[0]) }
+    var selectedPreset by remember { mutableStateOf(SANCTUARY_PRESETS[0]) }
     var selectedSubstrateIdx by remember { mutableIntStateOf(1) } // Tatami Mat
     var selectedLightingIdx by remember { mutableIntStateOf(0) } // Dawn Gold
     var selectedSoundscapeIdx by remember { mutableIntStateOf(0) }
     var isSoundPlaying by remember { mutableStateOf(false) }
 
-    var selectedCategoryTab by remember { mutableIntStateOf(0) } // 0=All, 1=Air Purifiers, 2=Zen Artifacts, 3=Accents
-    var selectedCatalogItem by remember { mutableStateOf<BiophilicItem?>(null) }
-    var isUprootModeActive by remember { mutableStateOf(false) }
-
-    var showCellConfigDialog by remember { mutableStateOf<Pair<Int, Int>?>(null) }
-    var showBreathingModal by remember { mutableStateOf(false) }
+    // Map of Zone ID to selected Option ID
+    val activeZoneSelection = remember {
+        mutableStateMapOf<String, String>().apply {
+            putAll(SANCTUARY_PRESETS[0].selectedOptionIds)
+        }
+    }
 
     val currentSoilTheme = SOIL_THEMES[selectedSubstrateIdx.coerceIn(0, SOIL_THEMES.size - 1)]
-
     val currentLayout = activeLayout
+
     val activeGridItems = remember(currentLayout?.gridString) {
         parseGridString(currentLayout?.gridString ?: "")
     }
 
-    // Helper to calculate live metrics
-    val airPurificationScore = remember(activeGridItems) {
-        val totalO2 = activeGridItems.sumOf { item ->
-            val match = BIOPHILIC_CATALOG.find { it.name.equals(item.plantName, ignoreCase = true) || it.id.equals(item.plantName, ignoreCase = true) }
-            match?.o2Rating ?: 2
+    // Active zone options
+    val activeZoneOptions = remember(activeZoneSelection.toMap()) {
+        ROOM_ZONES.mapNotNull { zone ->
+            val optId = activeZoneSelection[zone.zoneId]
+            zone.options.find { it.id == optId }
         }
-        ((totalO2.toFloat() / 35f) * 100f).coerceIn(12f, 98f).roundToInt()
     }
 
-    val acousticScore = remember(activeGridItems) {
-        val totalAcoustics = activeGridItems.sumOf { item ->
-            val match = BIOPHILIC_CATALOG.find { it.name.equals(item.plantName, ignoreCase = true) || it.id.equals(item.plantName, ignoreCase = true) }
-            match?.acousticRating ?: 2
-        }
-        ((totalAcoustics.toFloat() / 30f) * 100f).coerceIn(15f, 95f).roundToInt()
+    // Live Metrics Calculations
+    val airPurificationScore = remember(activeZoneOptions) {
+        val o2Sum = activeZoneOptions.sumOf { it.o2Rating }
+        ((o2Sum.toFloat() / 16f) * 100f).coerceIn(40f, 99f).roundToInt()
     }
 
-    val visualCalmScore = remember(activeGridItems, selectedSubstrateIdx) {
-        val count = activeGridItems.size
-        ((count * 4f + 35f) + (selectedSubstrateIdx * 3)).coerceIn(20f, 99f).roundToInt()
+    val acousticScore = remember(activeZoneOptions, selectedSubstrateIdx) {
+        val acousticSum = activeZoneOptions.sumOf { it.acousticRating }
+        ((acousticSum.toFloat() / 16f) * 90f + selectedSubstrateIdx * 2).coerceIn(45f, 98f).roundToInt()
     }
 
-    val activeTerpenes = remember(activeGridItems) {
-        val scents = activeGridItems.mapNotNull { item ->
-            BIOPHILIC_CATALOG.find { it.name.equals(item.plantName, ignoreCase = true) }?.calmingScent
-        }.distinct()
-        if (scents.isEmpty()) listOf("Clean Oxygen", "Natural Wood") else scents
+    val visualZenScore = remember(activeZoneOptions, selectedSubstrateIdx, selectedLightingIdx) {
+        (78 + activeZoneOptions.size * 4 + selectedSubstrateIdx * 2).coerceIn(60, 99)
+    }
+
+    val activeTerpenes = remember(activeZoneOptions) {
+        activeZoneOptions.map { it.calmingScent }.distinct()
     }
 
     Column(
@@ -423,7 +447,7 @@ fun PlannerScreen(
                 Brush.verticalGradient(
                     colors = listOf(
                         MaterialTheme.colorScheme.surface,
-                        currentSoilTheme.bgColors[0].copy(alpha = 0.35f),
+                        currentSoilTheme.bgColors[0].copy(alpha = 0.30f),
                         MaterialTheme.colorScheme.background
                     )
                 )
@@ -432,10 +456,10 @@ fun PlannerScreen(
             .padding(bottom = 32.dp)
             .testTag("plot_workspace")
     ) {
-        // Top Header - Biophilic Design Studio
+        // Top Header - Clean Title without duplicate Breathe button
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.90f),
             tonalElevation = 2.dp
         ) {
             Column(
@@ -462,7 +486,7 @@ fun PlannerScreen(
                                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
                             ) {
                                 Text(
-                                    text = "INDOOR",
+                                    text = "ROOM STUDIO",
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = MaterialTheme.colorScheme.primary,
@@ -471,33 +495,18 @@ fun PlannerScreen(
                             }
                         }
                         Text(
-                            text = "Design a serene indoor space for meditation, relaxation & mindful breathing",
+                            text = "Compose a serene indoor room for meditation, relaxation & mindful breathing",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                    }
-
-                    // Mindful Breathing CTA Button
-                    Button(
-                        onClick = { showBreathingModal = true },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ),
-                        shape = RoundedCornerShape(20.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
-                    ) {
-                        Icon(Icons.Default.SelfImprovement, contentDescription = "Breathwork", modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Breathe", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
-                // Intention Selector Tabs
+                // Intention Presets Carousel
                 Text(
-                    text = "SANCTUARY INTENTION",
+                    text = "SANCTUARY PRESETS",
                     fontSize = 10.sp,
                     fontWeight = FontWeight.ExtraBold,
                     color = MaterialTheme.colorScheme.primary,
@@ -509,27 +518,20 @@ fun PlannerScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    items(INTENTIONS) { intention ->
-                        val isSelected = selectedIntention.id == intention.id
+                    items(SANCTUARY_PRESETS) { preset ->
+                        val isSelected = selectedPreset.id == preset.id
                         FilterChip(
                             selected = isSelected,
                             onClick = {
-                                selectedIntention = intention
-                                selectedSubstrateIdx = intention.recommendedSubstrateIndex
-                                // Apply preset layout to grid if empty or requested
-                                viewModel.clearLayoutGrid()
-                                intention.presetItems.forEach { (idx, itemId) ->
-                                    val r = idx / 5
-                                    val c = idx % 5
-                                    val item = BIOPHILIC_CATALOG.find { it.id == itemId }
-                                    if (item != null) {
-                                        viewModel.placeGridPlant(r, c, item.name)
-                                    }
-                                }
+                                selectedPreset = preset
+                                selectedSubstrateIdx = preset.substrateIndex
+                                selectedLightingIdx = preset.lightingIndex
+                                activeZoneSelection.clear()
+                                activeZoneSelection.putAll(preset.selectedOptionIds)
                             },
                             label = {
                                 Text(
-                                    text = "${intention.emoji} ${intention.title}",
+                                    text = "${preset.emoji} ${preset.title}",
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                     fontSize = 12.sp
                                 )
@@ -537,11 +539,6 @@ fun PlannerScreen(
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                                 selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
-                            ),
-                            border = FilterChipDefaults.filterChipBorder(
-                                enabled = true,
-                                selected = isSelected,
-                                borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
                             )
                         )
                     }
@@ -551,82 +548,225 @@ fun PlannerScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Main Content Container
+        // Main Content Area
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
 
-            // Intention Banner Card
+            // SPATIAL ROOM SCENE VISUALIZER SHOWCASE CARD
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
-                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = currentSoilTheme.bgColors[0]),
+                border = BorderStroke(2.dp, currentSoilTheme.outlineColor.copy(alpha = 0.4f))
             ) {
-                Row(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .background(LIGHTING_MOODS[selectedLightingIdx].colorOverlay)
+                        .padding(20.dp)
                 ) {
-                    Text(selectedIntention.emoji, fontSize = 28.sp)
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = selectedIntention.title,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = selectedIntention.subtitle,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    TextButton(
-                        onClick = {
-                            viewModel.clearLayoutGrid()
-                            selectedIntention.presetItems.forEach { (idx, itemId) ->
-                                val r = idx / 5
-                                val c = idx % 5
-                                val item = BIOPHILIC_CATALOG.find { it.id == itemId }
-                                if (item != null) {
-                                    viewModel.placeGridPlant(r, c, item.name)
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(selectedPreset.emoji, fontSize = 22.sp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text(
+                                        text = selectedPreset.title,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.Black.copy(alpha = 0.85f)
+                                    )
+                                    Text(
+                                        text = selectedPreset.subtitle,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        fontSize = 10.sp,
+                                        color = Color.Black.copy(alpha = 0.6f)
+                                    )
+                                }
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
+                            ) {
+                                Text(
+                                    text = currentSoilTheme.name,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Visual Room Scene Rendering Showcase
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(210.dp),
+                            shape = RoundedCornerShape(18.dp),
+                            color = currentSoilTheme.bgColors[1].copy(alpha = 0.7f),
+                            border = BorderStroke(1.dp, currentSoilTheme.outlineColor.copy(alpha = 0.3f))
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    // Top Row: Canopy & Wall Layer
+                                    val canopyOpt = activeZoneOptions.find { opt -> ROOM_ZONES[0].options.any { it.id == opt.id } }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Surface(
+                                            shape = RoundedCornerShape(14.dp),
+                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                            ) {
+                                                Text(canopyOpt?.iconEmoji ?: "🖼️", fontSize = 18.sp)
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = canopyOpt?.name ?: "Wall Feature",
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onSurface
+                                                )
+                                            }
+                                        }
+
+                                        // Lighting badge
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
+                                        ) {
+                                            Text(
+                                                text = "${LIGHTING_MOODS[selectedLightingIdx].emoji} ${LIGHTING_MOODS[selectedLightingIdx].name}",
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                            )
+                                        }
+                                    }
+
+                                    // Center Row: Air Purifying Foliage Layer
+                                    val foliageOpt = activeZoneOptions.find { opt -> ROOM_ZONES[1].options.any { it.id == opt.id } }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Surface(
+                                            shape = RoundedCornerShape(16.dp),
+                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+                                            shadowElevation = 4.dp
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                                            ) {
+                                                Text(foliageOpt?.iconEmoji ?: "🪴", fontSize = 24.sp)
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Column {
+                                                    Text(
+                                                        text = foliageOpt?.name ?: "Air Purifier",
+                                                        fontSize = 12.sp,
+                                                        fontWeight = FontWeight.ExtraBold,
+                                                        color = MaterialTheme.colorScheme.onSurface
+                                                    )
+                                                    Text(
+                                                        text = foliageOpt?.calmingScent ?: "Active Oxygen",
+                                                        fontSize = 9.sp,
+                                                        color = Color(0xFF2E7D32),
+                                                        fontWeight = FontWeight.SemiBold
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    // Bottom Row: Seating & Hydro-Acoustic Anchors
+                                    val seatingOpt = activeZoneOptions.find { opt -> ROOM_ZONES[2].options.any { it.id == opt.id } }
+                                    val sensoryOpt = activeZoneOptions.find { opt -> ROOM_ZONES[3].options.any { it.id == opt.id } }
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Surface(
+                                            shape = RoundedCornerShape(14.dp),
+                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                            ) {
+                                                Text(seatingOpt?.iconEmoji ?: "🧘", fontSize = 16.sp)
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = seatingOpt?.name ?: "Seating",
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+
+                                        Surface(
+                                            shape = RoundedCornerShape(14.dp),
+                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                            ) {
+                                                Text(sensoryOpt?.iconEmoji ?: "🎋", fontSize = 16.sp)
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = sensoryOpt?.name ?: "Sensory",
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
-                    ) {
-                        Text("Apply Preset", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Substrate / Flooring Picker & Lighting Controls Bar
+            // Substrate & Atmosphere Controls
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "FLOOR SUBSTRATE & ATMOSPHERE",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.primary,
-                            letterSpacing = 1.sp
-                        )
-                        Text(
-                            text = currentSoilTheme.name,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
+                    Text(
+                        text = "FLOOR SUBSTRATE & ATMOSPHERE",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        letterSpacing = 1.sp
+                    )
 
                     Spacer(modifier = Modifier.height(8.dp))
 
@@ -652,16 +792,14 @@ fun PlannerScreen(
                                     text = theme.name,
                                     fontSize = 11.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = MaterialTheme.colorScheme.onSurface,
                                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                                 )
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    // Lighting Mood selector
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -697,287 +835,118 @@ fun PlannerScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 5x5 Indoor Biophilic Space Blueprint Canvas
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("plot_workspace"),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = currentSoilTheme.bgColors[0]),
-                border = BorderStroke(2.dp, currentSoilTheme.outlineColor.copy(alpha = 0.5f))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(LIGHTING_MOODS[selectedLightingIdx].colorOverlay)
-                        .padding(16.dp)
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = "SANCTUARY LAYOUT CANVAS",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    letterSpacing = 1.sp
-                                )
-                                Text(
-                                    text = "Tap cell to place or swap biophilic elements",
-                                    fontSize = 11.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+            // MODULAR ZONE-BASED ROOM COMPOSER (4 Core Zones)
+            Text(
+                text = "MODULAR ROOM COMPOSER",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary,
+                letterSpacing = 1.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                // Clear Grid Action
-                                IconButton(
-                                    onClick = { viewModel.clearLayoutGrid() },
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(Icons.Default.DeleteOutline, contentDescription = "Clear Space", tint = MaterialTheme.colorScheme.error)
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                ROOM_ZONES.forEach { zone ->
+                    val selectedOptId = activeZoneSelection[zone.zoneId]
+                    val selectedOpt = zone.options.find { it.id == selectedOptId }
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+                    ) {
+                        Column(modifier = Modifier.padding(14.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(zone.iconEmoji, fontSize = 20.sp)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column {
+                                        Text(
+                                            text = zone.title,
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = zone.subtitle,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
 
-                                Spacer(modifier = Modifier.width(4.dp))
-
-                                // Toggle Uproot / Remove Mode
-                                FilterChip(
-                                    selected = isUprootModeActive,
-                                    onClick = { isUprootModeActive = !isUprootModeActive },
-                                    label = { Text(if (isUprootModeActive) "Remove Mode ON" else "Remove Mode", fontSize = 10.sp) },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = MaterialTheme.colorScheme.errorContainer,
-                                        selectedLabelColor = MaterialTheme.colorScheme.onErrorContainer
-                                    )
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        // 5x5 Grid Canvas
-                        val gridMap = remember(activeGridItems) {
-                            Array(25) { idx ->
-                                val r = idx / 5
-                                val c = idx % 5
-                                activeGridItems.firstOrNull { it.x == r && it.y == c }
-                            }
-                        }
-
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(5),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(320.dp)
-                        ) {
-                            items(25) { idx ->
-                                val row = idx / 5
-                                val col = idx % 5
-                                val item = gridMap[idx]
-
-                                val isSynergy = item != null && hasNeighborSynergyOptimized(row, col, gridMap)
-
-                                Surface(
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = if (item != null) currentSoilTheme.bgColors[1].copy(alpha = 0.9f) else currentSoilTheme.slotBgColor,
-                                    border = BorderStroke(
-                                        width = if (isSynergy) 2.dp else 1.dp,
-                                        color = when {
-                                            isSynergy -> Color(0xFF4CAF50)
-                                            item != null -> currentSoilTheme.outlineColor
-                                            else -> currentSoilTheme.outlineColor.copy(alpha = 0.25f)
-                                        }
-                                    ),
-                                    modifier = Modifier
-                                        .aspectRatio(1f)
-                                        .clickable {
-                                            if (isUprootModeActive) {
-                                                viewModel.placeGridPlant(row, col, "")
-                                            } else if (selectedCatalogItem != null) {
-                                                viewModel.placeGridPlant(row, col, selectedCatalogItem!!.name)
-                                            } else {
-                                                showCellConfigDialog = Pair(row, col)
-                                            }
-                                        }
-                                ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxSize()
+                                if (selectedOpt != null) {
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.primaryContainer
                                     ) {
-                                        if (item != null) {
-                                            val matchedCatalog = BIOPHILIC_CATALOG.find { it.name.equals(item.plantName, ignoreCase = true) }
-                                            val emoji = matchedCatalog?.iconEmoji ?: getEmojiForPlantName(item.plantName)
+                                        Text(
+                                            text = selectedOpt.name,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                        )
+                                    }
+                                }
+                            }
 
-                                            Column(
-                                                horizontalAlignment = Alignment.CenterHorizontally,
-                                                verticalArrangement = Arrangement.Center,
-                                                modifier = Modifier.padding(2.dp)
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Options selector chips
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                items(zone.options) { option ->
+                                    val isSelected = selectedOptId == option.id
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                                        border = BorderStroke(
+                                            width = if (isSelected) 1.5.dp else 1.dp,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
+                                        ),
+                                        modifier = Modifier
+                                            .clickable { activeZoneSelection[zone.zoneId] = option.id }
+                                            .width(135.dp)
+                                    ) {
+                                        Column(modifier = Modifier.padding(10.dp)) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                modifier = Modifier.fillMaxWidth()
                                             ) {
-                                                Text(emoji, fontSize = 22.sp)
+                                                Text(option.iconEmoji, fontSize = 20.sp)
                                                 Text(
-                                                    text = item.plantName,
+                                                    text = "O2 +${option.o2Rating}",
                                                     fontSize = 8.sp,
                                                     fontWeight = FontWeight.Bold,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    textAlign = TextAlign.Center,
-                                                    color = Color.Black.copy(alpha = 0.8f)
+                                                    color = Color(0xFF2E7D32)
                                                 )
                                             }
-
-                                            if (isSynergy) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .align(Alignment.TopEnd)
-                                                        .padding(2.dp)
-                                                        .size(8.dp)
-                                                        .background(Color(0xFF4CAF50), CircleShape)
-                                                )
-                                            }
-                                        } else {
-                                            Icon(
-                                                Icons.Default.Add,
-                                                contentDescription = "Empty Slot",
-                                                tint = currentSoilTheme.outlineColor.copy(alpha = 0.4f),
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Indoor Biophilic Catalog Tray
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "BIOPHILIC ELEMENT PALETTE",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.primary,
-                            letterSpacing = 1.sp
-                        )
-
-                        if (selectedCatalogItem != null) {
-                            TextButton(
-                                onClick = { selectedCatalogItem = null },
-                                contentPadding = PaddingValues(0.dp)
-                            ) {
-                                Text("Clear Selection (${selectedCatalogItem!!.name})", fontSize = 10.sp, color = MaterialTheme.colorScheme.error)
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    // Category Tabs
-                    val categories = listOf("All", "Air Purifiers", "Zen Artifacts", "Accents")
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        categories.forEachIndexed { idx, cat ->
-                            val isSelected = selectedCategoryTab == idx
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.clickable { selectedCategoryTab = idx }
-                            ) {
-                                Text(
-                                    text = cat,
-                                    fontSize = 10.sp,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    val filteredCatalog = remember(selectedCategoryTab) {
-                        when (selectedCategoryTab) {
-                            1 -> BIOPHILIC_CATALOG.filter { it.category == "Air Purifier" }
-                            2 -> BIOPHILIC_CATALOG.filter { it.category == "Zen Artifact" }
-                            3 -> BIOPHILIC_CATALOG.filter { it.category == "Acoustic Accent" }
-                            else -> BIOPHILIC_CATALOG
-                        }
-                    }
-
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(filteredCatalog) { biophilicItem ->
-                            val isSelected = selectedCatalogItem?.id == biophilicItem.id
-                            Surface(
-                                shape = RoundedCornerShape(14.dp),
-                                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.35f),
-                                border = BorderStroke(
-                                    width = if (isSelected) 2.dp else 1.dp,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
-                                ),
-                                modifier = Modifier
-                                    .width(130.dp)
-                                    .clickable {
-                                        selectedCatalogItem = if (isSelected) null else biophilicItem
-                                    }
-                            ) {
-                                Column(modifier = Modifier.padding(10.dp)) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Text(biophilicItem.iconEmoji, fontSize = 24.sp)
-                                        Surface(
-                                            shape = RoundedCornerShape(6.dp),
-                                            color = MaterialTheme.colorScheme.surface
-                                        ) {
+                                            Spacer(modifier = Modifier.height(4.dp))
                                             Text(
-                                                text = "O2 +${biophilicItem.o2Rating}",
-                                                fontSize = 8.sp,
+                                                text = option.name,
+                                                fontSize = 11.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = Color(0xFF2E7D32),
-                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                            Text(
+                                                text = option.calmingScent,
+                                                fontSize = 9.sp,
+                                                color = MaterialTheme.colorScheme.secondary,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
                                             )
                                         }
                                     }
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = biophilicItem.name,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Text(
-                                        text = biophilicItem.calmingScent,
-                                        fontSize = 9.sp,
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
                                 }
                             }
                         }
@@ -987,7 +956,7 @@ fun PlannerScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Live Biophilic Serenity Metrics Card Dashboard
+            // LIVE BIOPHILIC SERENITY METRICS DASHBOARD
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
@@ -1008,7 +977,7 @@ fun PlannerScreen(
                             letterSpacing = 1.sp
                         )
                         Text(
-                            text = "Calculated in Real-Time",
+                            text = "Real-Time Spatial Output",
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1072,7 +1041,7 @@ fun PlannerScreen(
                             }
                         }
 
-                        // Metric 3: Visual Calm & Harmony
+                        // Metric 3: Visual Zen Balance
                         Surface(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(14.dp),
@@ -1085,9 +1054,9 @@ fun PlannerScreen(
                                     Text("Zen Calm", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF57F17))
                                 }
                                 Spacer(modifier = Modifier.height(6.dp))
-                                Text("$visualCalmScore%", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFFF57C00))
+                                Text("$visualZenScore%", fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFFF57C00))
                                 LinearProgressIndicator(
-                                    progress = { visualCalmScore.toFloat() / 100f },
+                                    progress = { visualZenScore.toFloat() / 100f },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(4.dp)
@@ -1101,7 +1070,7 @@ fun PlannerScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // Terpene & Aromatherapy Profile
+                    // Active Aromatherapy Profile
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
@@ -1224,212 +1193,6 @@ fun PlannerScreen(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Consult", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSecondaryContainer)
                         }
-                    }
-                }
-            }
-        }
-    }
-
-    // Modal Dialog: Cell Details / Swap Dialog
-    if (showCellConfigDialog != null) {
-        val (row, col) = showCellConfigDialog!!
-        val currentItem = activeGridItems.firstOrNull { it.x == row && it.y == col }
-
-        AlertDialog(
-            onDismissRequest = { showCellConfigDialog = null },
-            title = {
-                Text(
-                    text = "Sanctuary Slot (${row + 1}, ${col + 1})",
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Column {
-                    if (currentItem != null) {
-                        Text(
-                            text = "Currently placed: ${currentItem.plantName}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                    } else {
-                        Text("This space slot is currently empty.", style = MaterialTheme.typography.bodyMedium)
-                        Spacer(modifier = Modifier.height(8.dp))
-                    }
-
-                    Text("Choose a biophilic element to place:", style = MaterialTheme.typography.labelLarge)
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState())
-                    ) {
-                        BIOPHILIC_CATALOG.forEach { item ->
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        viewModel.placeGridPlant(row, col, item.name)
-                                        showCellConfigDialog = null
-                                    }
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(10.dp)
-                                ) {
-                                    Text(item.iconEmoji, fontSize = 20.sp)
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(item.name, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                                        Text(item.description, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showCellConfigDialog = null }) {
-                    Text("Close")
-                }
-            },
-            dismissButton = {
-                if (currentItem != null) {
-                    TextButton(
-                        onClick = {
-                            viewModel.placeGridPlant(row, col, "")
-                            showCellConfigDialog = null
-                        }
-                    ) {
-                        Text("Clear Slot", color = MaterialTheme.colorScheme.error)
-                    }
-                }
-            }
-        )
-    }
-
-    // Modal Dialog: Mindful 4-7-8 Breathing Visualizer
-    if (showBreathingModal) {
-        Dialog(onDismissRequest = { showBreathingModal = false }) {
-            Surface(
-                shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 6.dp,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                var breathPhase by remember { mutableStateOf("Inhale") }
-                var breathSeconds by remember { mutableIntStateOf(4) }
-                val infiniteTransition = rememberInfiniteTransition(label = "breath")
-                val scaleAnim by infiniteTransition.animateFloat(
-                    initialValue = 0.8f,
-                    targetValue = 1.35f,
-                    animationSpec = infiniteRepeatable(
-                        animation = tween(durationMillis = 4000, easing = LinearEasing),
-                        repeatMode = RepeatMode.Reverse
-                    ),
-                    label = "breath_scale"
-                )
-
-                LaunchedEffect(Unit) {
-                    while (true) {
-                        breathPhase = "Inhale..."
-                        for (i in 4 downTo 1) {
-                            breathSeconds = i
-                            delay(1000)
-                        }
-                        breathPhase = "Hold..."
-                        for (i in 7 downTo 1) {
-                            breathSeconds = i
-                            delay(1000)
-                        }
-                        breathPhase = "Exhale..."
-                        for (i in 8 downTo 1) {
-                            breathSeconds = i
-                            delay(1000)
-                        }
-                    }
-                }
-
-                Column(
-                    modifier = Modifier.padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("🧘", fontSize = 20.sp)
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text("Mindful Breathing", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        }
-                        IconButton(onClick = { showBreathingModal = false }) {
-                            Icon(Icons.Default.Close, contentDescription = "Close")
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Glowing Breathing Circle Animation
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.size(180.dp)
-                    ) {
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .scale(scaleAnim)
-                        ) {}
-
-                        Surface(
-                            shape = CircleShape,
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            modifier = Modifier.size(110.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = breathPhase,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                                    )
-                                    Text(
-                                        text = "$breathSeconds s",
-                                        fontWeight = FontWeight.ExtraBold,
-                                        fontSize = 20.sp,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        text = "Synchronized with your sanctuary's air-purifying foliage & ambient acoustics.",
-                        style = MaterialTheme.typography.bodySmall,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = { showBreathingModal = false },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp)
-                    ) {
-                        Text("Complete Session", fontWeight = FontWeight.Bold)
                     }
                 }
             }
