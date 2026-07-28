@@ -12,8 +12,10 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class ShareLinksTest {
 
     private lateinit var context: Context
@@ -56,8 +58,8 @@ class ShareLinksTest {
     @Test
     fun parseInviteCode_readsJoinPath() {
         assertEquals(
-            "AB12CD",
-            ShareLinks.parseInviteCode(Uri.parse("https://floraflow.app/j/AB12CD"))
+            "AB23CD",
+            ShareLinks.parseInviteCode(Uri.parse("https://floraflow.app/j/AB23CD"))
         )
     }
 
@@ -65,22 +67,22 @@ class ShareLinksTest {
     @Test
     fun parseInviteCode_readsLegacyQueryForm() {
         assertEquals(
-            "AB12CD",
-            ShareLinks.parseInviteCode(Uri.parse("https://floraflow.app/referral?by=AB12CD"))
+            "AB23CD",
+            ShareLinks.parseInviteCode(Uri.parse("https://floraflow.app/referral?by=AB23CD"))
         )
     }
 
     @Test
     fun parseInviteCode_normalisesCase() {
         assertEquals(
-            "AB12CD",
-            ShareLinks.parseInviteCode(Uri.parse("https://www.floraflow.app/j/ab12cd"))
+            "AB23CD",
+            ShareLinks.parseInviteCode(Uri.parse("https://www.floraflow.app/j/ab23cd"))
         )
     }
 
     @Test
     fun parseInviteCode_rejectsForeignHost() {
-        assertNull(ShareLinks.parseInviteCode(Uri.parse("https://evil.example/j/AB12CD")))
+        assertNull(ShareLinks.parseInviteCode(Uri.parse("https://evil.example/j/AB23CD")))
     }
 
     @Test
@@ -109,14 +111,14 @@ class ShareLinksTest {
     @Test
     fun parseReferrerCode_readsUtmContent() {
         assertEquals(
-            "AB12CD",
-            InstallAttribution.parseReferrerCode("utm_source=floraflow&utm_content=AB12CD")
+            "AB23CD",
+            InstallAttribution.parseReferrerCode("utm_source=floraflow&utm_content=AB23CD")
         )
     }
 
     @Test
     fun parseReferrerCode_readsBareCode() {
-        assertEquals("AB12CD", InstallAttribution.parseReferrerCode("AB12CD"))
+        assertEquals("AB23CD", InstallAttribution.parseReferrerCode("AB23CD"))
     }
 
     @Test

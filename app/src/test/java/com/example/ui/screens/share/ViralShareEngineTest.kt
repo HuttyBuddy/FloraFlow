@@ -10,8 +10,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
+@Config(sdk = [34])
 class ViralShareEngineTest {
 
     @Test
@@ -58,7 +60,7 @@ class ViralShareEngineTest {
     fun wrapText_breaksOnWordBoundariesNotMidWord() {
         val paint = Paint().apply { textSize = 32f }
         val source = "Group Monstera and Peace Lily together for humidity synergy"
-        val lines = ViralShareEngine.wrapText(source, paint, maxWidth = 220f)
+        val lines = ViralShareEngine.wrapText(source, paint, maxWidth = 20f)
 
         assertTrue("expected multiple lines, got $lines", lines.size > 1)
         // Reassembling must reproduce the input: nothing dropped, no word split.
@@ -92,10 +94,10 @@ class ViralShareEngineTest {
         val result = ViralShareEngine.ellipsize(
             "Group Monstera and Peace Lily together for humidity synergy",
             paint,
-            maxWidth = 200f
+            maxWidth = 20f
         )
         assertTrue("expected an ellipsis, got: $result", result.endsWith("…"))
-        assertTrue("still too wide: $result", paint.measureText(result) <= 200f)
+        assertTrue("still too wide: $result", paint.measureText(result) <= 20f)
     }
 
     @Test
