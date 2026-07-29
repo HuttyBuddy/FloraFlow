@@ -134,6 +134,10 @@ object GeminiApiClient {
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent"
         }
 
+        if (!isProxyActive && (apiKey == "DEMO_MODE" || apiKey == "OFFLINE_MODE")) {
+            return@withContext getOfflineBotanicalAdvice(prompt)
+        }
+
         val requestKey = if (isProxyActive) {
             null
         } else {
@@ -210,5 +214,32 @@ object GeminiApiClient {
                response.startsWith("Developer Error:") ||
                response.startsWith("AI features are temporarily") ||
                response.startsWith("Content was flagged for safety.")
+    }
+
+    private fun getOfflineBotanicalAdvice(prompt: String): String {
+        val lower = prompt.lowercase()
+        return when {
+            lower.contains("yellow") || lower.contains("speckled") || lower.contains("pest") || lower.contains("cure") -> {
+                "🌱 **Dr. Julian's Diagnostic Analysis:**\n\n" +
+                "Speckled, yellowing leaves on young plants typically indicate early-stage **spider mites** or **thrips** feeding on plant cell sap, or a soil nutrient lockup.\n\n" +
+                "**Organic Therapeutic Cures:**\n" +
+                "1. 🧴 **Cold-Pressed Neem Oil Spray:** Mix 1 tsp organic Neem Oil with 1/2 tsp gentle Castile soap in 1L warm water. Spray undersides of leaves weekly.\n" +
+                "2. 🧽 **Insecticidal Soap Wipe:** Gently clean foliage with mild soapy water to remove physical pest eggs.\n" +
+                "3. 🪴 **Resilient Replacements:** Consider isolating infected plants and introducing sturdy species like **Snake Plant** or **ZZ Plant** while leaves recover."
+            }
+            lower.contains("monstera") || lower.contains("light") || lower.contains("window") -> {
+                "🌿 **Lighting & Microclimate Guidance:**\n\n" +
+                "**Monstera Deliciosa** thrives best in bright, indirect daylight (about 200–400 foot-candles). Avoid harsh direct afternoon sun which can scorch fenestrated leaves.\n\n" +
+                "**Styling Tip:** Pair near a **Peace Lily** or **Pothos** for layered canopy elevation and humidity retention!"
+            }
+            lower.contains("companion") || lower.contains("match") || lower.contains("pair") -> {
+                "🌸 **Biophilic Companion Match:**\n\n" +
+                "Great choices for indoor biophilic harmony include pairing **Monstera Deliciosa** with low-tier **Pothos** trailing vines and a vertical **Fiddle Leaf Fig**. These create a multi-layer air-purifying indoor sanctuary!"
+            }
+            else -> {
+                "🪴 **Dr. Julian's Biophilic Advice:**\n\n" +
+                "Indoor plants thrive when light, airflow, and soil moisture are in rhythm. For optimal sanctuary growth, balance humidity around 50% and group complementary species like **Peace Lily**, **Snake Plant**, and **Pothos**!"
+            }
+        }
     }
 }

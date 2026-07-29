@@ -578,7 +578,10 @@ fun PlannerScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f).padding(end = 8.dp)
+                            ) {
                                 Text(selectedPreset.emoji, fontSize = 22.sp)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Column {
@@ -586,26 +589,33 @@ fun PlannerScreen(
                                         text = selectedPreset.title,
                                         style = MaterialTheme.typography.titleMedium,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.Black.copy(alpha = 0.85f)
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                     Text(
                                         text = selectedPreset.subtitle,
                                         style = MaterialTheme.typography.bodySmall,
                                         fontSize = 10.sp,
-                                        color = Color.Black.copy(alpha = 0.6f)
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                             }
 
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
-                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.90f)
                             ) {
                                 Text(
                                     text = currentSoilTheme.name,
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.primary,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
                             }
