@@ -472,15 +472,20 @@ fun PlannerScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             Text(
                                 text = "Biophilic Design Studio",
-                                style = MaterialTheme.typography.headlineSmall,
+                                style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
                                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
@@ -490,10 +495,13 @@ fun PlannerScreen(
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                                 )
                             }
                         }
+                        Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = "Compose a serene indoor room for meditation, relaxation & mindful breathing",
                             style = MaterialTheme.typography.bodySmall,
@@ -617,50 +625,64 @@ fun PlannerScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(16.dp)
+                                    .padding(14.dp)
                             ) {
                                 Column(
                                     modifier = Modifier.fillMaxSize(),
                                     verticalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    // Top Row: Canopy & Wall Layer
+                                    // Top Row: Canopy Feature (Left) & Lighting Mood (Right)
                                     val canopyOpt = activeZoneOptions.find { opt -> ROOM_ZONES[0].options.any { it.id == opt.id } }
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Surface(
+                                            modifier = Modifier.weight(1f),
                                             shape = RoundedCornerShape(14.dp),
-                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.90f)
                                         ) {
                                             Row(
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                                             ) {
-                                                Text(canopyOpt?.iconEmoji ?: "🖼️", fontSize = 18.sp)
+                                                Text(canopyOpt?.iconEmoji ?: "🖼️", fontSize = 16.sp)
                                                 Spacer(modifier = Modifier.width(6.dp))
                                                 Text(
                                                     text = canopyOpt?.name ?: "Wall Feature",
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onSurface
+                                                    color = MaterialTheme.colorScheme.onSurface,
+                                                    maxLines = 1,
+                                                    softWrap = false,
+                                                    overflow = TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
 
                                         // Lighting badge
                                         Surface(
-                                            shape = CircleShape,
-                                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
+                                            modifier = Modifier.weight(1f),
+                                            shape = RoundedCornerShape(14.dp),
+                                            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.90f)
                                         ) {
-                                            Text(
-                                                text = "${LIGHTING_MOODS[selectedLightingIdx].emoji} ${LIGHTING_MOODS[selectedLightingIdx].name}",
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                            )
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                            ) {
+                                                Text(LIGHTING_MOODS[selectedLightingIdx].emoji, fontSize = 16.sp)
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = LIGHTING_MOODS[selectedLightingIdx].name,
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                                    maxLines = 1,
+                                                    softWrap = false,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                            }
                                         }
                                     }
 
@@ -679,20 +701,26 @@ fun PlannerScreen(
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                                             ) {
-                                                Text(foliageOpt?.iconEmoji ?: "🪴", fontSize = 24.sp)
+                                                Text(foliageOpt?.iconEmoji ?: "🪴", fontSize = 22.sp)
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Column {
                                                     Text(
                                                         text = foliageOpt?.name ?: "Air Purifier",
                                                         fontSize = 12.sp,
                                                         fontWeight = FontWeight.ExtraBold,
-                                                        color = MaterialTheme.colorScheme.onSurface
+                                                        color = MaterialTheme.colorScheme.onSurface,
+                                                        maxLines = 1,
+                                                        softWrap = false,
+                                                        overflow = TextOverflow.Ellipsis
                                                     )
                                                     Text(
                                                         text = foliageOpt?.calmingScent ?: "Active Oxygen",
                                                         fontSize = 9.sp,
                                                         color = Color(0xFF2E7D32),
-                                                        fontWeight = FontWeight.SemiBold
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        maxLines = 1,
+                                                        softWrap = false,
+                                                        overflow = TextOverflow.Ellipsis
                                                     )
                                                 }
                                             }
@@ -705,12 +733,13 @@ fun PlannerScreen(
 
                                     Row(
                                         modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Surface(
+                                            modifier = Modifier.weight(1f),
                                             shape = RoundedCornerShape(14.dp),
-                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.90f)
                                         ) {
                                             Row(
                                                 verticalAlignment = Alignment.CenterVertically,
@@ -721,14 +750,18 @@ fun PlannerScreen(
                                                 Text(
                                                     text = seatingOpt?.name ?: "Seating",
                                                     fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold
+                                                    fontWeight = FontWeight.Bold,
+                                                    maxLines = 1,
+                                                    softWrap = false,
+                                                    overflow = TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
 
                                         Surface(
+                                            modifier = Modifier.weight(1f),
                                             shape = RoundedCornerShape(14.dp),
-                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.90f)
                                         ) {
                                             Row(
                                                 verticalAlignment = Alignment.CenterVertically,
@@ -739,7 +772,10 @@ fun PlannerScreen(
                                                 Text(
                                                     text = sensoryOpt?.name ?: "Sensory",
                                                     fontSize = 10.sp,
-                                                    fontWeight = FontWeight.Bold
+                                                    fontWeight = FontWeight.Bold,
+                                                    maxLines = 1,
+                                                    softWrap = false,
+                                                    overflow = TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
@@ -862,20 +898,27 @@ fun PlannerScreen(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f).padding(end = 8.dp)
+                                ) {
                                     Text(zone.iconEmoji, fontSize = 20.sp)
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Column {
                                         Text(
                                             text = zone.title,
                                             style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                         Text(
                                             text = zone.subtitle,
                                             style = MaterialTheme.typography.bodySmall,
                                             fontSize = 10.sp,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
                                     }
                                 }
@@ -890,6 +933,9 @@ fun PlannerScreen(
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                            maxLines = 1,
+                                            softWrap = false,
+                                            overflow = TextOverflow.Ellipsis,
                                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                                         )
                                     }
