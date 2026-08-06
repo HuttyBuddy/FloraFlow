@@ -59,7 +59,9 @@ suspend fun convertUriToBase64(context: android.content.Context, uri: android.ne
                 null
             }
         } catch (e: Exception) {
-            android.util.Log.e("AiStudioScreen", "Error downloading/decoding image: ${e.message}")
+            if (com.example.BuildConfig.DEBUG) {
+                android.util.Log.e("AiStudioScreen", "Error downloading/decoding image: ${e.message}")
+            }
             null
         }
     }

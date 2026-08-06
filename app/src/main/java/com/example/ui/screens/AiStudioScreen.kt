@@ -165,7 +165,9 @@ fun AiStudioScreen(
             val file = java.io.File(cachePath, "camera_capture_${System.currentTimeMillis()}.jpg")
             FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
         } catch (e: Exception) {
-            android.util.Log.e("AiStudioScreen", "Error: ${e.message}")
+            if (com.example.BuildConfig.DEBUG) {
+                android.util.Log.e("AiStudioScreen", "Error: ${e.message}")
+            }
             null
         }
     }
