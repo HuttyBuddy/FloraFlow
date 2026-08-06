@@ -163,6 +163,29 @@ fun ChooseLayoutDialog(
     onSelect: (GardenLayout) -> Unit,
     onDelete: (GardenLayout) -> Unit
 ) {
+    var layoutToDelete by remember { mutableStateOf<GardenLayout?>(null) }
+
+    if (layoutToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { layoutToDelete = null },
+            title = { Text("Delete Garden Layout") },
+            text = { Text("Are you sure you want to delete '${layoutToDelete?.name}'? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    layoutToDelete?.let { onDelete(it) }
+                    layoutToDelete = null
+                }) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { layoutToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(20.dp),
@@ -246,7 +269,7 @@ fun ChooseLayoutDialog(
                                             tint = MaterialTheme.colorScheme.primary
                                         )
                                     } else {
-                                        IconButton(onClick = { onDelete(lay) }) {
+                                        IconButton(onClick = { layoutToDelete = lay }) {
                                             Icon(
                                                 Icons.Default.DeleteOutline,
                                                 contentDescription = "Delete",
