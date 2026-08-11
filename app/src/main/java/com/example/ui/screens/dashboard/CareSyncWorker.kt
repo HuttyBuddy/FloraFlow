@@ -14,7 +14,9 @@ class CareSyncWorker(
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result {
-        Log.d("CareSyncWorker", "Executing background garden care synchronization...")
+        if (com.example.BuildConfig.DEBUG) {
+            Log.d("CareSyncWorker", "Executing background garden care synchronization...")
+        }
         try {
             val database = GardenDatabase.getDatabase(applicationContext)
             val gardenRepository = GardenRepository(database.gardenDao())
@@ -29,7 +31,9 @@ class CareSyncWorker(
 
             return Result.success()
         } catch (e: Exception) {
-            Log.e("CareSyncWorker", "Error running care scheduler sync: ${e.message}")
+            if (com.example.BuildConfig.DEBUG) {
+                Log.e("CareSyncWorker", "Error running care scheduler sync: ${e.message}")
+            }
             return Result.retry()
         }
     }
