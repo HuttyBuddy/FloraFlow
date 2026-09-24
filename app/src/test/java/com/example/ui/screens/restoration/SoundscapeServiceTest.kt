@@ -34,4 +34,32 @@ class SoundscapeServiceTest {
             assertTrue("Expected error log not found", hasError)
         }
     }
+
+    @Test
+    fun testAudioTrackWriteError() {
+        val mockTrack = Mockito.mock(AudioTrack::class.java)
+        Mockito.doNothing().`when`(mockTrack).play()
+        Mockito.`when`(
+            mockTrack.write(
+                Mockito.any(ShortArray::class.java),
+                Mockito.anyInt(),
+                Mockito.anyInt()
+            )
+        ).thenThrow(IllegalStateException("Simulated write exception"))
+
+        Mockito.mockConstruction(
+            AudioTrack.Builder::class.java,
+            Mockito.withSettings().defaultAnswer(Answers.RETURNS_SELF)
+        ) { mock, _ ->
+            Mockito.`when`(mock.build()).thenReturn(mockTrack)
+        }.use {
+            val controller = Robolectric.buildService(SoundscapeService::class.java)
+            val service = controller.create().get()
+
+            service.startSoundscape()
+
+            Mockito.verify(mockTrack, Mockito.timeout(2000).atLeastOnce()).stop()
+            Mockito.verify(mockTrack, Mockito.timeout(2000).atLeastOnce()).release()
+        }
+    }
 }
