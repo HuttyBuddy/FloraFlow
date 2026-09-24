@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -44,85 +45,38 @@ fun FloraFlowButton(
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null
 ) {
-    val content = @Composable {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center
-        ) {
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(18.dp),
-                    color = LocalContentColor.current,
-                    strokeWidth = 2.dp
-                )
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-            } else if (leadingIcon != null) {
-                Icon(
-                    imageVector = leadingIcon,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-            }
-            
-            Text(
-                text = text,
-                style = MaterialTheme.typography.labelLarge,
-                textAlign = TextAlign.Center
-            )
-            
-            if (!loading && trailingIcon != null) {
-                Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
-                Icon(
-                    imageVector = trailingIcon,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-        }
-    }
-
+    val buttonModifier = modifier.heightIn(min = 48.dp)
+    val buttonEnabled = enabled && !loading
     val shape = MaterialTheme.shapes.small
+
+    val content = @Composable {
+        FloraFlowButtonContent(
+            text = text,
+            loading = loading,
+            leadingIcon = leadingIcon,
+            trailingIcon = trailingIcon
+        )
+    }
 
     when (variant) {
         ButtonVariant.Filled,
         ButtonVariant.Destructive,
         ButtonVariant.Premium,
         ButtonVariant.Subtle -> {
-            val colors = when (variant) {
-                ButtonVariant.Destructive -> ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.extendedColors.error,
-                    contentColor = MaterialTheme.extendedColors.onError
-                )
-                ButtonVariant.Premium -> ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.extendedColors.premiumGold,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
-                )
-                ButtonVariant.Subtle -> ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                )
-                else -> ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            }
-
             Button(
                 onClick = onClick,
-                modifier = modifier.heightIn(min = 48.dp),
-                enabled = enabled && !loading,
+                modifier = buttonModifier,
+                enabled = buttonEnabled,
                 shape = shape,
-                colors = colors
-            ) {
-                content()
-            }
+                colors = buttonColorsFor(variant),
+                content = { content() }
+            )
         }
         ButtonVariant.Outlined -> {
             OutlinedButton(
                 onClick = onClick,
-                modifier = modifier.heightIn(min = 48.dp),
-                enabled = enabled && !loading,
+                modifier = buttonModifier,
+                enabled = buttonEnabled,
                 shape = shape,
                 border = androidx.compose.foundation.BorderStroke(
                     width = 1.dp,
@@ -130,23 +84,87 @@ fun FloraFlowButton(
                 ),
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                content()
-            }
+                ),
+                content = { content() }
+            )
         }
         ButtonVariant.Text -> {
             TextButton(
                 onClick = onClick,
-                modifier = modifier.heightIn(min = 48.dp),
-                enabled = enabled && !loading,
+                modifier = buttonModifier,
+                enabled = buttonEnabled,
                 shape = shape,
                 colors = ButtonDefaults.textButtonColors(
                     contentColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                content()
-            }
+                ),
+                content = { content() }
+            )
         }
+    }
+}
+
+@Composable
+private fun FloraFlowButtonContent(
+    text: String,
+    loading: Boolean,
+    leadingIcon: ImageVector?,
+    trailingIcon: ImageVector?
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+    ) {
+        if (loading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(18.dp),
+                color = LocalContentColor.current,
+                strokeWidth = 2.dp
+            )
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+        } else if (leadingIcon != null) {
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+        }
+
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            textAlign = TextAlign.Center
+        )
+
+        if (!loading && trailingIcon != null) {
+            Spacer(modifier = Modifier.width(MaterialTheme.spacing.small))
+            Icon(
+                imageVector = trailingIcon,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun buttonColorsFor(variant: ButtonVariant): ButtonColors {
+    return when (variant) {
+        ButtonVariant.Destructive -> ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.extendedColors.error,
+            contentColor = MaterialTheme.extendedColors.onError
+        )
+        ButtonVariant.Premium -> ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.extendedColors.premiumGold,
+            contentColor = MaterialTheme.colorScheme.onSecondary
+        )
+        ButtonVariant.Subtle -> ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+        else -> ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
     }
 }
