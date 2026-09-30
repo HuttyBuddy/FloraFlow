@@ -268,9 +268,9 @@ fun WalkthroughOverlay(
 
                             val description = when (currentStep) {
                                 WalkthroughStep.WELCOME -> "Let's take a quick interactive tour of your 3-card plant sanctuary."
-                                WalkthroughStep.DASHBOARD_GARDEN -> "Card 1 displays your Restorative Corner Neural Load score, room daylight level, and retake prompt."
+                                WalkthroughStep.DASHBOARD_GARDEN -> "Card 1 displays your Restorative Corner wellness score, room daylight level, and retake prompt."
                                 WalkthroughStep.DASHBOARD_STATS -> "Card 2 recommends living companion plants matched to your corner's natural light."
-                                WalkthroughStep.PLANNER_TAB -> "Card 3 lets you check off 1-tap daily plant care habits and listen to eco-acoustic soundscapes."
+                                WalkthroughStep.PLANNER_TAB -> "Card 3 lets you check off 1-tap daily plant care habits and listen to nature soundscapes."
                                 WalkthroughStep.AI_ADVISOR_TAB -> "Tap 'Chat with AI Plant Counsel' at the top of any card to consult Dr. Julian on plant placement & care."
                                 WalkthroughStep.AR_LENS_TAB -> "Enjoy your calm, restorative plant sanctuary!"
                             }

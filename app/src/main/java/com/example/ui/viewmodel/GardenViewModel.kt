@@ -130,6 +130,16 @@ class GardenViewModel @JvmOverloads constructor(
     private val _showPaywallDialog = MutableStateFlow(false)
     val showPaywallDialog: StateFlow<Boolean> = _showPaywallDialog.asStateFlow()
 
+    // In-app review: the ViewModel decides *when* (success moments); the
+    // Activity launches the Play review flow. Guardrails live in ReviewHelper.
+    private val _reviewRequestEvent = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val reviewRequestEvent: SharedFlow<Unit> = _reviewRequestEvent.asSharedFlow()
+
+    private fun onSuccessMoment() {
+        com.example.util.ReviewHelper.recordSuccessMoment(getApplication())
+        _reviewRequestEvent.tryEmit(Unit)
+    }
+
     fun triggerPaywall() {
         _showPaywallDialog.value = true
     }
@@ -767,6 +777,8 @@ class GardenViewModel @JvmOverloads constructor(
         }
 
         refreshWidget()
+        // Peak-engagement moment: the user just got a personalized result.
+        onSuccessMoment()
     }
 
     fun skipAssessment() {
@@ -1177,30 +1189,51 @@ class GardenViewModel @JvmOverloads constructor(
 
                 val existing = repository.allLayouts.firstOrNull() ?: emptyList()
                 if (existing.isEmpty()) {
+                    // First-run showcase garden: a full, lively starter space so
+                    // the app never opens on an empty grid. Six varied plants,
+                    // spread across the 5x5 plot, each with care tasks scheduled
+                    // below — the user's first impression is a garden that's
+                    // already alive, not a blank canvas.
                     val defaultLayout = GardenLayout(
                         name = "My First Space",
                         style = "Indoor Area",
                         climate = "Temperate",
-                        gridString = "0,0,Bonsai Juniper|4,4,English Lavender",
+                        gridString = "0,0,Snake Plant|2,0,Golden Pothos|4,0,English Lavender|1,2,Peace Lily|3,2,Spider Plant|2,4,Bonsai Juniper",
                     )
                     val layoutId = repository.insertLayout(defaultLayout).toInt()
 
                     repository.insertPlants(listOf(
                         Plant(
                             layoutId = layoutId,
-                            name = "Bonsai Juniper",
-                            type = "Tree",
-                            careSpring = "Prune branches to maintain classic indoor shape. Water regularly.",
-                            careSummer = "Keep in partial shade during intense afternoon sun. Water daily.",
-                            careAutumn = "Let foliage change naturally. Clear fallen leaves quickly.",
-                            careWinter = "Protect roots from deep freeze. Keep compost moist but not wet.",
-                            soilType = "Rich organic clay loam",
-                            sunlight = "Partial shade",
-                            growthProgress = 40,
-                            matureSize = "Small (1-2 ft)",
-                            wateringNeeds = "High",
-                            bloomTime = "Early Spring",
-                            pestsDiseases = "Scale insects, Root rot"
+                            name = "Snake Plant",
+                            type = "Succulent",
+                            careSpring = "Wipe leaves monthly. Water only when soil is fully dry.",
+                            careSummer = "Thrives in bright indirect light. Water sparingly.",
+                            careAutumn = "Reduce watering as growth slows.",
+                            careWinter = "Keep above 50°F. Water once a month at most.",
+                            soilType = "Sandy, fast-draining cactus mix",
+                            sunlight = "Low to bright indirect",
+                            growthProgress = 70,
+                            matureSize = "Tall (2-4 ft)",
+                            wateringNeeds = "Low",
+                            bloomTime = "Rarely indoors",
+                            pestsDiseases = "Mealybugs, Root rot"
+                        ),
+                        Plant(
+                            layoutId = layoutId,
+                            name = "Golden Pothos",
+                            type = "Vine",
+                            careSpring = "Prune leggy vines to encourage bushy growth.",
+                            careSummer = "Water when top inch of soil dries. Mist occasionally.",
+                            careAutumn = "Trim back and propagate cuttings in water.",
+                            careWinter = "Keep away from cold drafts.",
+                            soilType = "Standard potting mix",
+                            sunlight = "Low to bright indirect",
+                            growthProgress = 55,
+                            matureSize = "Trailing (6-10 ft)",
+                            wateringNeeds = "Moderate",
+                            bloomTime = "Rarely indoors",
+                            pestsDiseases = "Spider mites, Scale"
                         ),
                         Plant(
                             layoutId = layoutId,
@@ -1217,8 +1250,59 @@ class GardenViewModel @JvmOverloads constructor(
                             wateringNeeds = "Low",
                             bloomTime = "Mid Summer",
                             pestsDiseases = "Spittlebugs, Damp-off rots"
+                        ),
+                        Plant(
+                            layoutId = layoutId,
+                            name = "Peace Lily",
+                            type = "Flower",
+                            careSpring = "Repot if rootbound. Wipe broad leaves clean.",
+                            careSummer = "Keep soil consistently moist. Loves humidity.",
+                            careAutumn = "Reduce feeding; maintain even moisture.",
+                            careWinter = "Avoid cold windowsills and heating vents.",
+                            soilType = "Rich, moisture-retentive potting mix",
+                            sunlight = "Low to medium indirect",
+                            growthProgress = 45,
+                            matureSize = "Medium (1-3 ft)",
+                            wateringNeeds = "High",
+                            bloomTime = "Spring",
+                            pestsDiseases = "Spider mites, Aphids"
+                        ),
+                        Plant(
+                            layoutId = layoutId,
+                            name = "Spider Plant",
+                            type = "Foliage",
+                            careSpring = "Repot plantlets or share them with friends.",
+                            careSummer = "Water regularly; trim brown leaf tips.",
+                            careAutumn = "Ease off fertilizer as days shorten.",
+                            careWinter = "Keep in bright indirect light.",
+                            soilType = "Loose, well-draining potting mix",
+                            sunlight = "Bright indirect",
+                            growthProgress = 50,
+                            matureSize = "Medium (1-2 ft spread)",
+                            wateringNeeds = "Moderate",
+                            bloomTime = "Summer (small white flowers)",
+                            pestsDiseases = "Aphids, Whiteflies"
+                        ),
+                        Plant(
+                            layoutId = layoutId,
+                            name = "Bonsai Juniper",
+                            type = "Tree",
+                            careSpring = "Prune branches to maintain classic indoor shape. Water regularly.",
+                            careSummer = "Keep in partial shade during intense afternoon sun. Water daily.",
+                            careAutumn = "Let foliage change naturally. Clear fallen leaves quickly.",
+                            careWinter = "Protect roots from deep freeze. Keep compost moist but not wet.",
+                            soilType = "Rich organic clay loam",
+                            sunlight = "Partial shade",
+                            growthProgress = 40,
+                            matureSize = "Small (1-2 ft)",
+                            wateringNeeds = "High",
+                            bloomTime = "Early Spring",
+                            pestsDiseases = "Scale insects, Root rot"
                         )
                     ))
+                    // Schedule care tasks for the showcase plants immediately so
+                    // the dashboard shows upcoming tasks on first launch.
+                    careScheduler.syncCareSchedules()
 
                     repository.insertMoodLog(
                         MoodLog(
@@ -1487,6 +1571,8 @@ class GardenViewModel @JvmOverloads constructor(
     // --- Plants Operations ---
     fun addPlant(name: String, type: String, template: PlantTemplate?) {
         val layout = _activeLayout.value ?: return
+        // Success moment: the user's 3rd plant means real investment in the app.
+        val hitsThirdPlant = _activePlants.value.size >= 2
         viewModelScope.launch(Dispatchers.IO) {
             val newPlant = Plant(
                 layoutId = layout.id,
@@ -1507,6 +1593,7 @@ class GardenViewModel @JvmOverloads constructor(
             repository.insertPlant(newPlant)
             careScheduler.syncCareSchedules()
         }
+        if (hitsThirdPlant) onSuccessMoment()
     }
 
     fun updatePlantProgress(plantId: Int, progress: Int) {
@@ -1675,13 +1762,13 @@ class GardenViewModel @JvmOverloads constructor(
                 "6. CRITICAL IMAGE REQUIREMENT: Whenever you recommend, mention, or suggest plants, always refer to them by their standard names (e.g., 'Snake Plant', 'Lavender', 'Monstera Deliciosa', 'Bonsai Juniper', 'Rosemary', 'Peace Lily', 'Fiddle Leaf Fig', 'ZZ Plant', etc.) so that the Counsel tab can display real photo outputs and examples inline."
             } else if (score != null) {
                 val zone = when (score) {
-                    in 15..20 -> "Green Zone — Low Neural Load"
-                    in 8..14 -> "Yellow Zone — Moderate Neural Load"
-                    else -> "Red Zone — High Neural Load"
+                    in 15..20 -> "Green Zone — High Wellness"
+                    in 8..14 -> "Yellow Zone — Moderate Wellness"
+                    else -> "Red Zone — Low Wellness"
                 }
                 val categoriesStr = categories.joinToString(", ")
-                "You are the FloraFlow Biophilic Design Advisor. You help users reduce their Neural Load by recommending specific changes to their indoor physical environments — focusing strictly on indoor houseplants, room lighting, and indoor sanctuary spaces.\n\n" +
-                "The user's current Neural Load score is: $score/20 ($zone).\n" +
+                "You are the FloraFlow Biophilic Design Advisor. You help users improve their Space Wellness Score by recommending specific changes to their indoor physical environments — focusing strictly on indoor houseplants, room lighting, and indoor sanctuary spaces.\n\n" +
+                "The user's current Space Wellness Score is: $score/20 ($zone).\n" +
                 "Their lowest-scoring categories are: $categoriesStr.\n\n" +
                 "RULES:\n" +
                 "1. Every recommendation must connect to their biology. Do not just say 'add a plant.' Say WHY it matters for their nervous system.\n" +
@@ -2142,7 +2229,7 @@ class GardenViewModel @JvmOverloads constructor(
         context.sendBroadcast(intent)
     }
 
-    // --- Neural Restoration Index & Soundscapes ---
+    // --- Restoration Score & Soundscapes ---
     val allRestorationLogs: StateFlow<List<RestorationLog>> = repository.allRestorationLogs
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -2197,6 +2284,8 @@ class GardenViewModel @JvmOverloads constructor(
             )
             repository.insertRestorationLog(log)
         }
+        // Success moment: the user finished a full restoration session.
+        onSuccessMoment()
     }
 
     // Soundscape Background Service Integration

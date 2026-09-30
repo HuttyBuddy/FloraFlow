@@ -29,7 +29,7 @@ enum class PlantParentArchetype(
     CYBERPUNK_BOTANIST(
         title = "Cyberpunk Botanist",
         icon = "⚡",
-        description = "Thrives in artificial LED zones with high binaural brainwave focus.",
+        description = "Thrives in artificial LED zones with focused ambient flow.",
         badgeColorHex = "#7B1FA2"
     ),
     SANCTUARY_MASTER(

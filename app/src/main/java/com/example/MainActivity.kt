@@ -139,6 +139,15 @@ class MainActivity : ComponentActivity() {
         var initialValidationActive by mutableStateOf(!startupMode.runsProductionStartup)
 
         setContent {
+            // In-app review prompt: fires at most once per version, only after
+            // genuine success moments (see GardenViewModel + ReviewHelper).
+            val activity = this
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                viewModel.reviewRequestEvent.collect {
+                    com.example.util.ReviewHelper.maybeRequestReview(activity)
+                }
+            }
+
             val showRestorativeValidationFlow by viewModel.showRestorativeValidationFlow.collectAsState()
             val isValidationActive = initialValidationActive || showRestorativeValidationFlow
             val isDarkThemeOverridden by viewModel.isDarkTheme.collectAsState()

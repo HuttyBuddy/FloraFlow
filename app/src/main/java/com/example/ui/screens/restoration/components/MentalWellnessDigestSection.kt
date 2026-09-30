@@ -16,7 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Psychology
+import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -32,13 +32,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+/**
+ * Weekly digest built ONLY from the user's real activity — streak derived
+ * from mood/care logs, the live Restoration Score, logged care minutes, and
+ * the count of soundscape sessions this week.
+ *
+ * Previously this section rendered hardcoded demo numbers (a "-28% cognitive
+ * load" claim, 5-day streak, 84 pts) for every user. Fabricated personal stats
+ * are a trust and policy problem; every number here now comes from the caller.
+ */
 @Composable
 fun MentalWellnessDigestSection(
-    cognitiveReductionPct: Int = 28,
-    streakDays: Int = 5,
-    averageNri: Int = 84,
-    totalCareMinutes: Int = 45,
-    summaryHighlights: String = "Your indoor sanctuary lowered estimated mental fatigue by 28% this week through 45 minutes of active eco-acoustic immersion and leaf misting.",
+    streakDays: Int,
+    avgRestorationScore: Int,
+    totalCareMinutes: Int,
+    sessionsThisWeek: Int,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -48,7 +56,7 @@ fun MentalWellnessDigestSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Gamified Mental Wellness Digest",
+                text = "Weekly Wellness Digest",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFA8E6CF)
@@ -71,7 +79,7 @@ fun MentalWellnessDigestSection(
         }
 
         Text(
-            text = "AI-generated weekly summary of cognitive load reduction & sanctuary milestones",
+            text = "Your real activity this week — sessions, streaks and care minutes",
             fontSize = 12.sp,
             color = Color.White.copy(alpha = 0.6f),
             modifier = Modifier.padding(bottom = 12.dp)
@@ -93,20 +101,20 @@ fun MentalWellnessDigestSection(
                     horizontalAlignment = Alignment.Start
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Psychology,
+                        imageVector = Icons.Default.Spa,
                         contentDescription = null,
                         tint = Color(0xFFA8E6CF),
                         modifier = Modifier.size(24.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "-$cognitiveReductionPct%",
+                        text = "$sessionsThisWeek",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFA8E6CF)
                     )
                     Text(
-                        text = "Cognitive Load",
+                        text = "Sessions this week",
                         fontSize = 11.sp,
                         color = Color.White.copy(alpha = 0.7f)
                     )
@@ -131,7 +139,7 @@ fun MentalWellnessDigestSection(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "$averageNri NRI",
+                        text = "$avgRestorationScore pts",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFFFB74D)
@@ -147,7 +155,12 @@ fun MentalWellnessDigestSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // AI Summary Digest Box
+        // Weekly summary box — honest copy derived from the same real numbers.
+        val summaryText = if (sessionsThisWeek == 0 && totalCareMinutes == 0) {
+            "Your digest builds as you go — finish a soundscape session or log plant care and your week will take shape here."
+        } else {
+            "This week: $sessionsThisWeek soundscape session(s) and $totalCareMinutes minute(s) of plant care logged. Small rituals, kept daily, are the whole game."
+        }
         Card(
             shape = RoundedCornerShape(18.dp),
             colors = CardDefaults.cardColors(containerColor = Color(0x2B1F483E)),
@@ -182,7 +195,7 @@ fun MentalWellnessDigestSection(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = summaryHighlights,
+                        text = summaryText,
                         fontSize = 12.sp,
                         lineHeight = 18.sp,
                         color = Color.White.copy(alpha = 0.85f)

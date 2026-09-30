@@ -317,7 +317,7 @@ fun AiStudioScreen(
             ) {
                 ControlTabButton(
                     icon = Icons.Default.Favorite,
-                    label = "Neural Scan",
+                    label = "Wellness Scan",
                     active = showNeuralLoad,
                     onClick = { showNeuralLoad = !showNeuralLoad },
                     modifier = Modifier.weight(1f)
@@ -1120,7 +1120,7 @@ fun AiStudioScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                // Neural Load Dashboard Widget on widescreen
+                // Space Wellness dashboard widget on widescreen
                 NeuralLoadDashboardWidget(
                     assessmentScore = assessmentScore,
                     lowestCategories = lowestCategories,
@@ -1770,9 +1770,9 @@ fun NeuralLoadDashboardWidget(
                     else -> Color(0xFFF44336)
                 }
                 val zoneName = when (assessmentScore) {
-                    in 15..20 -> "Green Zone — Low Neural Load"
-                    in 8..14 -> "Yellow Zone — Moderate Load"
-                    else -> "Red Zone — High Neural Load"
+                    in 15..20 -> "Green Zone — High Wellness"
+                    in 8..14 -> "Yellow Zone — Moderate Wellness"
+                    else -> "Red Zone — Low Wellness"
                 }
 
                 Row(
@@ -1790,7 +1790,7 @@ fun NeuralLoadDashboardWidget(
                                 .background(zoneColor, CircleShape)
                         )
                         Text(
-                            text = "Neural Load Score",
+                            text = "Space Wellness Score",
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurface
@@ -1883,7 +1883,7 @@ fun NeuralLoadDashboardWidget(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = "Take a 2-minute neural load scan to personalize Dr. Julian's recommendations.",
+                            text = "Take a 2-minute wellness scan to personalize your AI advisor's recommendations.",
                             fontSize = 10.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             lineHeight = 13.sp

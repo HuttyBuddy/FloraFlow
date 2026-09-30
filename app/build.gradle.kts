@@ -207,6 +207,9 @@ dependencies {
   implementation(libs.androidx.fragment.ktx)
   implementation(libs.play.billing)
   implementation(libs.play.billing.ktx)
+  // In-app review prompt at success moments (ratings drive listing conversion).
+  implementation(libs.play.review)
+  implementation(libs.play.review.ktx)
   implementation(libs.androidx.security.crypto)
   // QR codes burned into share cards, and Play Store install attribution for those shares.
   implementation(libs.zxing.core)

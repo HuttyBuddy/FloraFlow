@@ -50,7 +50,7 @@ val faqs = listOf(
     FAQItem(
         id = 1,
         question = "How do I design my restorative plant corner?",
-        answer = "Swipe through the 3 cards on the main Sanctuary screen. Card 1 displays your Neural Load score and natural light setup. Card 2 recommends companion living plants matched to your space, and Card 3 provides daily care habit check-ins and binaural soundscapes.",
+        answer = "Swipe through the 3 cards on the main Sanctuary screen. Card 1 displays your Space Wellness score and natural light setup. Card 2 recommends companion living plants matched to your space, and Card 3 provides daily care habit check-ins and nature soundscapes.",
         category = "Restorative Corner"
     ),
     FAQItem(
@@ -61,14 +61,14 @@ val faqs = listOf(
     ),
     FAQItem(
         id = 3,
-        question = "How do I use Botanical Eco-Acoustics & Soundscapes?",
+        question = "How do I use nature soundscapes?",
         answer = "Go to Card 3 (Daily Tend & Soundscapes) to listen to binaural beats (Alpha, Theta, or Delta frequencies) paired with natural forest rainfall while spending time near your living plants.",
         category = "Soundscapes"
     ),
     FAQItem(
         id = 4,
         question = "Is a premium subscription required?",
-        answer = "FloraFlow is free for basic plant placement and daily habit tracking. It includes a trial of premium features (3 free AI Plant Counsel consultations and 3 free soundscape sessions). FloraFlow PRO unlocks unlimited AI consultations, full Eco-Acoustic soundscapes, and custom Neural Load metrics.",
+        answer = "FloraFlow is free for basic plant placement and daily habit tracking. It includes a trial of premium features (3 free AI Plant Counsel consultations and 3 free soundscape sessions). FloraFlow PRO unlocks unlimited AI consultations, the full nature soundscape library, and custom wellness metrics.",
         category = "Premium"
     ),
     FAQItem(

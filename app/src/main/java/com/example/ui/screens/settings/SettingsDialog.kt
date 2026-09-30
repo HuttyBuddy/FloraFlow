@@ -206,7 +206,7 @@ fun SettingsDialog(
 
                     SettingsActionRow(
                         title = "Retake Restorative Corner Assessment",
-                        subtitle = "Recalculate your Neural Load score & space guidance",
+                        subtitle = "Recalculate your Space Wellness score & space guidance",
                         icon = Icons.Default.Eco,
                         iconTint = MaterialTheme.colorScheme.primary,
                         onClick = {
@@ -219,7 +219,7 @@ fun SettingsDialog(
                         val simulate30Days by viewModel.simulate30Days.collectAsState()
                         SettingsActionRow(
                             title = if (simulate30Days) "Disable 30-Day Simulation" else "Simulate 30 Days Elapsed",
-                            subtitle = "Toggle the monthly Neural Load audit reminder",
+                            subtitle = "Toggle the monthly wellness check reminder",
                             icon = Icons.Default.Timer,
                             iconTint = if (simulate30Days) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                             onClick = {

@@ -567,7 +567,7 @@ fun CalculatingScreen(
     
     LaunchedEffect(Unit) {
         delay(800)
-        textToShow = "Calculating Neural Load..."
+        textToShow = "Calculating your score..."
         delay(800)
         textToShow = "Generating your results..."
         delay(900)
@@ -643,19 +643,19 @@ fun ResultScreen(
         when (score) {
             in 15..20 -> ZoneDetails(
                 "GREEN ZONE", 
-                "LOW NEURAL LOAD", 
+                "HIGH WELLNESS", 
                 Color(0xFF1B4A2F),
                 Brush.verticalGradient(listOf(Color(0xFF0F311C), Color(0xFF225235)))
             )
             in 8..14 -> ZoneDetails(
                 "YELLOW ZONE", 
-                "MODERATE NEURAL LOAD", 
+                "MODERATE WELLNESS", 
                 Color(0xFF825E1B),
                 Brush.verticalGradient(listOf(Color(0xFF42300D), Color(0xFF6B4D16)))
             )
             else -> ZoneDetails(
                 "RED ZONE", 
-                "HIGH NEURAL LOAD", 
+                "LOW WELLNESS", 
                 Color(0xFF702123),
                 Brush.verticalGradient(listOf(Color(0xFF3B1012), Color(0xFF631C1E)))
             )
@@ -674,7 +674,7 @@ fun ResultScreen(
         Spacer(modifier = Modifier.height(48.dp))
         
         Text(
-            text = "Your Neural Load Score",
+            text = "Your Space Wellness Score",
             style = MaterialTheme.typography.labelLarge.copy(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
@@ -704,11 +704,11 @@ fun ResultScreen(
         if (prevScore != -1) {
             val delta = score - prevScore
             val textDelta = if (delta > 0) {
-                "Your Neural Load improved from $prevScore/20 to $score/20 (+$delta)!"
+                "Your Space Wellness Score improved from $prevScore/20 to $score/20 (+$delta)!"
             } else if (delta < 0) {
-                "Your Neural Load went from $prevScore/20 to $score/20 ($delta)."
+                "Your Space Wellness Score went from $prevScore/20 to $score/20 ($delta)."
             } else {
-                "Your Neural Load remained at $score/20."
+                "Your Space Wellness Score remained at $score/20."
             }
             Text(
                 text = textDelta,
@@ -832,9 +832,9 @@ fun PersonalizedPaywallScreen(
 ) {
     val zoneInfo = remember(score) {
         when (score) {
-            in 15..20 -> Triple("GREEN ZONE", "LOW NEURAL LOAD", Color(0xFF1B4A2F))
-            in 8..14 -> Triple("YELLOW ZONE", "MODERATE NEURAL LOAD", Color(0xFF825E1B))
-            else -> Triple("RED ZONE", "HIGH NEURAL LOAD", Color(0xFF702123))
+            in 15..20 -> Triple("GREEN ZONE", "HIGH WELLNESS", Color(0xFF1B4A2F))
+            in 8..14 -> Triple("YELLOW ZONE", "MODERATE WELLNESS", Color(0xFF825E1B))
+            else -> Triple("RED ZONE", "LOW WELLNESS", Color(0xFF702123))
         }
     }
     val isGreenZone = score >= 15
@@ -908,8 +908,8 @@ fun PersonalizedPaywallScreen(
             if (isGreenZone) {
                 val maintenancePerks = listOf(
                     "Unlimited AI Advisor" to "Get instant expert guidance whenever your space or season changes, with no query limit.",
-                    "Full Restoration Journal" to "Unlock every binaural soundscape session to keep your stress metrics trending low.",
-                    "Progress Trends" to "See your Neural Load history over time and catch small dips before they become setbacks."
+                    "Full Restoration Journal" to "Unlock every soundscape session to keep your wellness trending up.",
+                    "Progress Trends" to "See your wellness score history over time and catch small dips before they become setbacks."
                 )
                 maintenancePerks.forEach { (title, detail) ->
                     Card(
@@ -981,13 +981,13 @@ fun PersonalizedPaywallScreen(
                                     text = when (category) {
                                         "NATURAL LIGHT" -> "Critical light deprivation. Unlock tailored light-boost layouts to boost your melatonin & circadian rhythm."
                                         "LIVING PLANTS" -> "Low biophilic plant density. Unlock low-maintenance botanical layouts to oxygenate your room."
-                                        "ACOUSTIC CALM" -> "High cognitive noise pollution. Unlock custom binaural soundscapes to decrease cortisol levels."
+                                        "ACOUSTIC CALM" -> "High noise pollution. Unlock custom binaural soundscapes for calmer, more focused moments."
                                         "NATURE VIEWS" -> "Sparse nature connectivity. Unlock spatial layouts designed to maximize nature views."
                                         "NATURAL MATERIALS" -> "Artificial texture dominance. Unlock recommendations for biophilic materials and natural fibers."
                                         "AIR & VENTILATION" -> "Stale airflow. Unlock guidance on fresh-air rhythms to reset your nervous system."
                                         "ORGANIC FORMS" -> "Rigid, institutional shapes. Unlock curated organic decor and layout suggestions."
                                         "WATER FEATURES" -> "Missing the sound of water. Unlock soothing water-feature soundscapes and layout ideas."
-                                        "SENSORY RICHNESS" -> "Sensory-flat environment. Unlock scent and texture recommendations that signal safety to your brain."
+                                        "SENSORY RICHNESS" -> "Sensory-flat environment. Unlock scent and texture recommendations that make your space feel calmer and more inviting."
                                         "SEASONAL AWARENESS" -> "Disconnected from seasonal rhythms. Unlock seasonal planting and light-cycle guidance."
                                         else -> "Unlock a fully personalized biophilic restoration plan tailored to your space."
                                     },
@@ -1003,7 +1003,7 @@ fun PersonalizedPaywallScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             FloraFlowButton(
-                text = "Start 3-Day Free Trial",
+                text = "Unlock FloraFlow PRO",
                 onClick = { onUpgradeClick(true) },
                 modifier = Modifier.fillMaxWidth(),
                 leadingIcon = Icons.Default.AutoAwesome
@@ -1011,15 +1011,22 @@ fun PersonalizedPaywallScreen(
             
             Spacer(modifier = Modifier.height(16.dp))
             
-            TextButton(
+            // Free path gets equal visual weight: the paywall must never feel
+            // like a gate the user can't see past. Both options are explicit.
+            OutlinedButton(
                 onClick = onBypassClick,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                border = androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    Color.White.copy(alpha = 0.5f)
+                )
             ) {
                 Text(
-                    text = "Continue with Basic Free Tips",
-                    color = Color.White.copy(alpha = 0.7f),
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
+                    text = "Continue with free tips",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp,
+                    modifier = Modifier.padding(vertical = 4.dp)
                 )
             }
             

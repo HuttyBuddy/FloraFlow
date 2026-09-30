@@ -136,7 +136,7 @@ fun PaywallDialog(
                     )
                     PaywallFeatureRow(
                         title = "Custom 4–40Hz Binaural Audio",
-                        subtitle = "Alpha & Theta brainwave soundscapes for calm focus"
+                        subtitle = "Alpha & Theta tones for calm focus"
                     )
                     PaywallFeatureRow(
                         title = "Sanctuary Care Streak Rewards",

@@ -86,7 +86,7 @@ fun PremiumUpsellScreen(
             )
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
             Text(
-                text = "Use your phone to plan and bring your biophilic space to life. Unlock premium eco-acoustic soundscapes and biophilic design neuroscience.",
+                text = "Use your phone to plan and bring your green space to life. Unlock premium nature soundscapes and personalized design guidance.",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -104,8 +104,8 @@ fun PremiumUpsellScreen(
                 verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
             ) {
                 PremiumFeatureRow(
-                    title = "Eco-Acoustic Restoration Journal",
-                    description = "Immersive eco-acoustic binaural soundscapes & Neural Restoration Journal with dynamic stress metrics."
+                    title = "Nature Sounds Journal",
+                    description = "Immersive nature soundscapes & Restoration Journal with wellness insights."
                 )
                 PremiumFeatureRow(
                     title = "Gemini AI Advisor",

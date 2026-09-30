@@ -20,7 +20,7 @@ import kotlin.math.sin
 import kotlin.math.tanh
 
 /**
- * Real-time playback of the generative eco-acoustic engine.
+ * Real-time playback of the generative ambient soundscape engine.
  *
  * The DSP itself lives in [Soundscape] so the Reels exporter can render the identical
  * sound offline — a shared clip carries the same soundscape the user heard. This service
@@ -396,7 +396,7 @@ class SoundscapeService : Service() {
                 "Restoration Soundscapes",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Background Nature & Binaural Beat playback for neural restoration"
+                description = "Background nature soundscape playback"
             }
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
