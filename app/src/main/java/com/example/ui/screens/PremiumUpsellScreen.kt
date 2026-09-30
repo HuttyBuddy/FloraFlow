@@ -122,7 +122,7 @@ fun PremiumUpsellScreen(
     // Fall back to static placeholder copy only while the real Play offer is
     // unknown (loading, or debug mock mode) — never claim a trial length
     // that Play Console doesn't actually have configured.
-    val annualPrice = annualOffer?.formattedPrice ?: "$49.99 Yearly"
+    val annualPrice = annualOffer?.formattedPrice ?: "$29.99 Yearly"
     val annualTrialDays: Int? = annualOffer?.trialDays
     val annualTrialLabel = if (annualTrialDays != null) {
         "$annualTrialDays-Day Free Trial, then $annualPrice"
@@ -130,7 +130,7 @@ fun PremiumUpsellScreen(
         annualPrice
     }
 
-    val monthlyPrice = monthlyOffer?.formattedPrice ?: "$9.99"
+    val monthlyPrice = monthlyOffer?.formattedPrice ?: "$3.99"
     val monthlyTrialDays: Int? = monthlyOffer?.trialDays
     val monthlyTrialLabel = if (monthlyTrialDays != null) {
         "$monthlyTrialDays-Day Free Trial, then $monthlyPrice/mo"

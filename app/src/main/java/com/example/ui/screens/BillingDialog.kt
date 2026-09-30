@@ -56,7 +56,7 @@ fun BillingDialog(
     val tiers = listOf(
         BillingPlan(
             name = "FloraFlow PRO Monthly",
-            price = "$9.99",
+            price = "$3.99",
             period = "month",
             trial = "3-Day Free Trial",
             description = "Unlocks unlimited Gemini-powered AI advice, full Restoration Journal access, and the complete nature soundscape library.",
@@ -65,7 +65,7 @@ fun BillingDialog(
         ),
         BillingPlan(
             name = "FloraFlow PRO Annual",
-            price = "$49.99 Yearly",
+            price = "$29.99 Yearly",
             period = "",
             trial = "3-Day Free Trial",
             description = "Save 20%! Unlocks unlimited Gemini-powered AI advice, the full nature soundscape library, wellness logs, and advanced layouts.",

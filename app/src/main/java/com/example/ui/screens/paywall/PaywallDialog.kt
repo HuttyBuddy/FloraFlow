@@ -45,9 +45,9 @@ fun PaywallDialog(
     var selectedIsAnnual by remember { mutableStateOf(true) }
 
     // Live Play prices when available; consistent static fallbacks otherwise.
-    val annualPrice = annualOffer?.formattedPrice ?: "$49.99"
+    val annualPrice = annualOffer?.formattedPrice ?: "$29.99"
     val annualTrialDays: Int? = annualOffer?.trialDays
-    val monthlyPrice = monthlyOffer?.formattedPrice ?: "$9.99"
+    val monthlyPrice = monthlyOffer?.formattedPrice ?: "$3.99"
     val usingLivePrices = annualOffer != null && monthlyOffer != null
 
     BasicAlertDialog(
