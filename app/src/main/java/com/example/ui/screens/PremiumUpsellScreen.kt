@@ -123,14 +123,22 @@ fun PremiumUpsellScreen(
     // unknown (loading, or debug mock mode) — never claim a trial length
     // that Play Console doesn't actually have configured.
     val annualPrice = annualOffer?.formattedPrice ?: "$49.99 Yearly"
-    val annualTrialDays = 3
-    val annualTrialLabel = "$annualTrialDays-Day Free Trial, then $annualPrice"
+    val annualTrialDays: Int? = annualOffer?.trialDays
+    val annualTrialLabel = if (annualTrialDays != null) {
+        "$annualTrialDays-Day Free Trial, then $annualPrice"
+    } else {
+        annualPrice
+    }
 
-    val monthlyPrice = monthlyOffer?.formattedPrice ?: "$4.99"
-    val monthlyTrialDays = 3
-    val monthlyTrialLabel = "$monthlyTrialDays-Day Free Trial, then $monthlyPrice/mo"
+    val monthlyPrice = monthlyOffer?.formattedPrice ?: "$9.99"
+    val monthlyTrialDays: Int? = monthlyOffer?.trialDays
+    val monthlyTrialLabel = if (monthlyTrialDays != null) {
+        "$monthlyTrialDays-Day Free Trial, then $monthlyPrice/mo"
+    } else {
+        "$monthlyPrice/mo"
+    }
 
-    val selectedTrialDays = if (selectAnnual) annualTrialDays else monthlyTrialDays
+    val selectedTrialDays: Int = if (selectAnnual) annualTrialDays ?: 0 else monthlyTrialDays ?: 0
 
     val ctaPricingCard = @Composable {
         Column(

@@ -132,7 +132,7 @@ fun PrivacyPolicyContent() {
     BulletPoint("Your API interactions are governed by Google's standard Generative AI Privacy Terms.")
 
     SectionHeader("3. Third-Party Services")
-    ParagraphText("We employ Google Play Services to manage app distribution, licensing verification, and subscription status. We may also link to external botanical reference websites or use Google Gemini API for natural language queries.")
+    ParagraphText("We employ Google Play Services to manage app distribution, licensing verification, and subscription status. We may also link to external botanical reference websites or use Google Gemini API for natural language queries. We use Firebase Analytics and Crashlytics for anonymous usage analytics and crash reports (device identifiers, app interactions, feature usage); no assessment scores or personal content are transmitted. Weather data is fetched for the ZIP code you enter from Open-Meteo and Zippopotam (approximate location only).")
 
     SectionHeader("4. Data Security")
     ParagraphText("Since your data remains in secure sandboxed local storage, its safety relies on Android system permissions. We recommend keeping your device updated and backed up via Google Drive device backup.")

@@ -892,6 +892,17 @@ fun PersonalizedPaywallScreen(
                 textAlign = TextAlign.Center
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Health policy: general-wellness disclaimer on the assessment result
+            Text(
+                text = "General wellness information only — not medical advice. If you have health concerns, please talk to a qualified professional.",
+                style = MaterialTheme.typography.bodySmall.copy(
+                    color = Color.White.copy(alpha = 0.6f)
+                ),
+                textAlign = TextAlign.Center
+            )
+
             Spacer(modifier = Modifier.height(24.dp))
 
             if (isGreenZone) {

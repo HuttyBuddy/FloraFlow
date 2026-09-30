@@ -17,11 +17,9 @@ object AnalyticsHelper {
         firebaseAnalytics?.logEvent(name, params)
     }
 
-    fun logAssessmentComplete(score: Int) {
-        val bundle = Bundle().apply {
-            putInt("score", score)
-        }
-        logEvent("assessment_complete", bundle)
+    fun logAssessmentComplete() {
+        // NOTE: the assessment score itself is never transmitted (privacy policy).
+        logEvent("assessment_complete")
     }
 
     fun logPaywallView(source: String) {

@@ -171,8 +171,8 @@ fun RestorationJournalScreen(
     val tracks = listOf(
         SoundscapeTrackInfo("Alpha Focus", "Forest Breeze 🍃", 200f, 10f, "A living forest breeze with hand-struck wind chimes, under Alpha waves (10Hz) for alert, relaxed focus. Generated live — it never loops or repeats."),
         SoundscapeTrackInfo("Theta Meditate", "Gentle Rain 🌧️", 200f, 6f, "Soft rainfall with droplets scattered around you, under Theta waves (6Hz) for deep visualization and mental stillness. Generated live — it never loops or repeats."),
-        SoundscapeTrackInfo("Delta Sleep", "Ocean Waves 🌊", 150f, 2.5f, "Slow ocean swells breaking in the distance, under Delta waves (2.5Hz) for physical healing and deep sleep. Generated live — it never loops or repeats."),
-        SoundscapeTrackInfo("Gamma Focus", "Pine Mountain Canopy 🌲", 250f, 40f, "High canopy mountain wind with rustling pine needles, under Gamma waves (40Hz) for peak mental clarity. Generated live — it never loops or repeats."),
+        SoundscapeTrackInfo("Delta Sleep", "Ocean Waves 🌊", 150f, 2.5f, "Slow ocean swells breaking in the distance, under Delta waves (2.5Hz) for deep rest and sleep. Generated live — it never loops or repeats."),
+        SoundscapeTrackInfo("Gamma Focus", "Pine Mountain Canopy 🌲", 250f, 40f, "High canopy mountain wind with rustling pine needles, under Gamma waves (40Hz) for focused energy. Generated live — it never loops or repeats."),
         SoundscapeTrackInfo("Alpha Calm", "Bamboo Wind & Stream 🎋", 180f, 8.5f, "A gentle flowing mountain stream with hollow bamboo taps, under Alpha waves (8.5Hz) for calm grounding. Generated live — it never loops or repeats.")
     )
 
@@ -666,6 +666,13 @@ fun RestorationJournalScreen(
                                 text = "Complete these exercises to boost your Neural Restoration Index.",
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.5f),
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                            // Health policy: general-wellness disclaimer
+                            Text(
+                                text = "General wellness information only — not medical advice.",
+                                fontSize = 10.sp,
+                                color = Color.White.copy(alpha = 0.4f),
                                 modifier = Modifier.padding(bottom = 12.dp)
                             )
 
@@ -972,6 +979,12 @@ fun NriGaugeCard(
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFFA8E6CF)
+            )
+            // Health policy: general-wellness disclaimer on the NRI gauge
+            Text(
+                text = "A general wellness score — not a medical measurement.",
+                fontSize = 10.sp,
+                color = Color.White.copy(alpha = 0.4f)
             )
             Spacer(modifier = Modifier.height(24.dp))
 

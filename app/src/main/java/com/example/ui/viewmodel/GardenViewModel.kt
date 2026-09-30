@@ -59,6 +59,15 @@ data class ScreenRect(
     val centerY: Float get() = top + height / 2
 }
 
+/** Appended to every AI system instruction: the advisor must never give
+ * medical or mental-health advice. General wellness information only. */
+private const val AI_MEDICAL_GUARDRAIL =
+    "\n\nSAFETY RULES:\n" +
+    "1. You are a gardening and plant-care advisor, NOT a medical or mental-health professional.\n" +
+    "2. Never diagnose, treat, or advise on any human medical or mental-health condition (including anxiety, depression, sleep disorders, or stress disorders).\n" +
+    "3. If asked about health effects, give only general wellness information and recommend consulting a qualified professional.\n" +
+    "4. Do not make clinical efficacy claims (e.g. that a plant, sound, or scent will cure, heal, or treat anything)."
+
 class GardenViewModel @JvmOverloads constructor(
     application: Application,
     database: GardenDatabase? = null,
@@ -93,6 +102,14 @@ class GardenViewModel @JvmOverloads constructor(
 
     private val _isAiLoading = MutableStateFlow(value = false)
     val isAiLoading: StateFlow<Boolean> = _isAiLoading.asStateFlow()
+
+    // GenAI policy: disclosure must be acknowledged before any prompt/photo leaves the device
+    private val _showAiDisclosure = MutableStateFlow(false)
+    val showAiDisclosure: StateFlow<Boolean> = _showAiDisclosure.asStateFlow()
+
+    // GenAI policy: confirmation that a content report was recorded
+    private val _aiReportSent = MutableStateFlow(false)
+    val aiReportSent: StateFlow<Boolean> = _aiReportSent.asStateFlow()
 
     // Mock AR Lens Placement States
     private val _arPlacedPlants = MutableStateFlow<List<ArPlantPlacement>>(emptyList())
@@ -1586,9 +1603,42 @@ class GardenViewModel @JvmOverloads constructor(
         }
     }
 
+    // --- GenAI disclosure & reporting (Play GenAI policy) ---
+    fun hasAcknowledgedAiDisclosure(): Boolean =
+        sharedPrefs.getBoolean("ai_disclosure_ack", false)
+
+    fun acknowledgeAiDisclosure() {
+        sharedPrefs.edit { putBoolean("ai_disclosure_ack", true) }
+        _showAiDisclosure.value = false
+    }
+
+    fun dismissAiDisclosure() {
+        _showAiDisclosure.value = false
+    }
+
+    /** Records an in-app report against an AI answer. Only the reason category is
+     * logged — never the user's message or the AI text — so reports stay anonymous. */
+    fun reportAiContent(reason: String) {
+        try {
+            val bundle = android.os.Bundle().apply { putString("reason", reason) }
+            com.example.analytics.AnalyticsHelper.logEvent("ai_content_report", bundle)
+        } catch (_: Exception) { /* analytics must never break the UI */ }
+        _aiReportSent.value = true
+    }
+
+    fun consumeAiReportSent() {
+        _aiReportSent.value = false
+    }
+
     // --- Real-time Gemini Client interactions ---
     fun sendAiChatMessage(message: String, imageBytesBase64: String? = null, imageMimeType: String? = "image/jpeg") {
         if (message.isBlank() && imageBytesBase64 == null) return
+        // GenAI policy: no prompt or photo may be transmitted before the user
+        // has acknowledged the AI disclosure.
+        if (!hasAcknowledgedAiDisclosure()) {
+            _showAiDisclosure.value = true
+            return
+        }
         recordAiQuery(message)
         
         val upsellMsg = "🔒 Free AI Advisor biophilic limit reached (3/3 queries).\n\nPlease upgrade to FloraFlow PRO to unlock unlimited conversational plant care, professional garden blueprinting, and expert AI botany diagnosis! 🌸✨"
@@ -1662,7 +1712,7 @@ class GardenViewModel @JvmOverloads constructor(
             val response = GeminiApiClient.getGardeningAdvice(
                 prompt = message,
                 chatHistory = cleanHistory.dropLast(1),
-                systemInstruction = systemIns,
+                systemInstruction = systemIns + AI_MEDICAL_GUARDRAIL,
                 imageBytesBase64 = imageBytesBase64,
                 imageMimeType = imageMimeType
             )
@@ -1770,6 +1820,9 @@ class GardenViewModel @JvmOverloads constructor(
                 )
             )
             _aiChatHistory.value = updatedHistory
+            // Conversion: open the real paywall so the upsell is actionable,
+            // not a dead-end message.
+            triggerPaywall()
             return true
         }
 

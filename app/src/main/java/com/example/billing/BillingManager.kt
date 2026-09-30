@@ -128,6 +128,17 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
         }
     }
 
+    /** Estimates the next renewal date from the purchase time and the product's
+     * billing period. Google Play owns the authoritative date (the app links
+     * to the Play subscription center) — this is a receipt display estimate
+     * only, never fabricated from an assumed trial length. */
+    private fun estimateRenewalDate(purchaseTimeMillis: Long, productId: String?): String {
+        val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
+        val cal = Calendar.getInstance().apply { timeInMillis = purchaseTimeMillis }
+        if (productId == PRODUCT_YEARLY) cal.add(Calendar.YEAR, 1) else cal.add(Calendar.MONTH, 1)
+        return sdf.format(cal.time)
+    }
+
     private fun processPurchases(purchases: List<Purchase>, allowRevoke: Boolean) {
         var isPro = false
         var hasPending = false
@@ -154,11 +165,7 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
                 tier = if (product == PRODUCT_YEARLY) "FloraFlow PRO Annual" else "FloraFlow PRO Monthly"
                 txId = purchase.orderId ?: "—"
 
-                val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
-                val cal = Calendar.getInstance()
-                // For a 3-day free trial, billing starts in 3 days
-                cal.add(Calendar.DAY_OF_YEAR, 3)
-                billingDate = sdf.format(cal.time)
+                billingDate = estimateRenewalDate(purchase.purchaseTime, product)
             } else if (purchase.purchaseState == Purchase.PurchaseState.PENDING) {
                 hasPending = true
                 Log.i("BillingManager", "Purchase is pending. Waiting for completion.")
@@ -346,11 +353,7 @@ class BillingManager(private val context: Context) : PurchasesUpdatedListener {
                 (SecureRandom().nextInt(9000) + 1000).toString() + "-" +
                 (SecureRandom().nextInt(90000) + 10000).toString()
 
-        val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.US)
-        val cal = Calendar.getInstance()
-        // For a 3-day free trial, billing starts in 3 days
-        cal.add(Calendar.DAY_OF_YEAR, 3)
-        val billingDate = sdf.format(cal.time)
+        val billingDate = estimateRenewalDate(System.currentTimeMillis(), productId)
 
         _isPremium.value = true
         _subscriptionTier.value = tier

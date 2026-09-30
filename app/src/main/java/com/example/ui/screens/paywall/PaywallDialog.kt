@@ -33,11 +33,22 @@ fun PaywallDialog(
     visible: Boolean,
     onDismiss: () -> Unit,
     onSubscribe: (isAnnual: Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    // Real, Play-verified price + trial length for each plan. Null means
+    // "not yet known" — the UI falls back to static placeholder copy and
+    // never claims a trial Play hasn't confirmed.
+    monthlyOffer: com.example.billing.BillingManager.OfferInfo? = null,
+    annualOffer: com.example.billing.BillingManager.OfferInfo? = null
 ) {
     if (!visible) return
 
     var selectedIsAnnual by remember { mutableStateOf(true) }
+
+    // Live Play prices when available; consistent static fallbacks otherwise.
+    val annualPrice = annualOffer?.formattedPrice ?: "$49.99"
+    val annualTrialDays: Int? = annualOffer?.trialDays
+    val monthlyPrice = monthlyOffer?.formattedPrice ?: "$9.99"
+    val usingLivePrices = annualOffer != null && monthlyOffer != null
 
     BasicAlertDialog(
         onDismissRequest = onDismiss,
@@ -143,9 +154,9 @@ fun PaywallDialog(
                     // Annual Tier (Best Value)
                     PaywallTierCard(
                         selected = selectedIsAnnual,
-                        title = "Annual Pass (3-Day Free Trial)",
-                        price = "$49.99 / year",
-                        subtext = "$4.16 / month — SAVE 58%",
+                        title = if (annualTrialDays != null) "Annual Pass ($annualTrialDays-Day Free Trial)" else "Annual Pass",
+                        price = "$annualPrice / year",
+                        subtext = if (usingLivePrices) "Billed once a year — cancel anytime" else "$4.16 / month — SAVE 58%",
                         badgeText = "BEST VALUE",
                         onClick = { selectedIsAnnual = true },
                         testTag = "tier_annual_card"
@@ -155,7 +166,7 @@ fun PaywallDialog(
                     PaywallTierCard(
                         selected = !selectedIsAnnual,
                         title = "Monthly Pass",
-                        price = "$9.99 / month",
+                        price = "$monthlyPrice / month",
                         subtext = "Flexible billing, cancel anytime",
                         badgeText = null,
                         onClick = { selectedIsAnnual = false },
@@ -176,7 +187,7 @@ fun PaywallDialog(
                         .testTag("subscribe_cta_btn")
                 ) {
                     Text(
-                        text = if (selectedIsAnnual) "Start 3-Day Free Trial" else "Subscribe Now ($9.99/mo)",
+                        text = if (selectedIsAnnual && annualTrialDays != null) "Start $annualTrialDays-Day Free Trial" else "Subscribe Now",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimary

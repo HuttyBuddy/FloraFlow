@@ -97,6 +97,20 @@ fun AiStudioScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
+    // GenAI policy: disclosure gate + report confirmation
+    val showAiDisclosure by viewModel.showAiDisclosure.collectAsStateWithLifecycle()
+    val aiReportSent by viewModel.aiReportSent.collectAsStateWithLifecycle()
+    var reportDialogOpen by remember { mutableStateOf(false) }
+
+    LaunchedEffect(aiReportSent) {
+        if (aiReportSent) {
+            android.widget.Toast.makeText(
+                context, "Thanks — your report was recorded.", android.widget.Toast.LENGTH_SHORT
+            ).show()
+            viewModel.consumeAiReportSent()
+        }
+    }
+
     // Persisted trial quota (not session chat-history count) — matches the
     // actual gate in GardenViewModel.checkPremiumLimit, so clearing the chat
     // or reopening the screen can't desync the displayed remaining count.
@@ -524,7 +538,11 @@ fun AiStudioScreen(
                                     )
                                     .padding(horizontal = 14.dp, vertical = 10.dp)
                             ) {
-                                ChatBubbleContent(content = content, isUser = isUser)
+                                ChatBubbleContent(
+                                    content = content,
+                                    isUser = isUser,
+                                    onReportAi = { reportDialogOpen = true }
+                                )
                             }
                         }
                     }
@@ -878,7 +896,11 @@ fun AiStudioScreen(
                                             )
                                             .padding(horizontal = 14.dp, vertical = 10.dp)
                                     ) {
-                                        ChatBubbleContent(content = content, isUser = isUser)
+                                        ChatBubbleContent(
+                                            content = content,
+                                            isUser = isUser,
+                                            onReportAi = { reportDialogOpen = true }
+                                        )
                                     }
                                 }
                             }
@@ -1879,6 +1901,23 @@ fun NeuralLoadDashboardWidget(
                 }
             }
         }
+    }
+
+    // GenAI policy: first-use disclosure + per-answer reporting
+    if (showAiDisclosure) {
+        AiDisclosureDialog(
+            onAcknowledge = { viewModel.acknowledgeAiDisclosure() },
+            onDismiss = { viewModel.dismissAiDisclosure() }
+        )
+    }
+    if (reportDialogOpen) {
+        ReportAiContentDialog(
+            onSubmit = { reason ->
+                viewModel.reportAiContent(reason)
+                reportDialogOpen = false
+            },
+            onDismiss = { reportDialogOpen = false }
+        )
     }
 }
 

@@ -23,7 +23,23 @@ import java.util.concurrent.TimeUnit
 data class GenerateContentRequest(
     val contents: List<Content>,
     @Json(name = "generationConfig") val generationConfig: GenerationConfig? = null,
-    @Json(name = "systemInstruction") val systemInstruction: Content? = null
+    @Json(name = "systemInstruction") val systemInstruction: Content? = null,
+    @Json(name = "safetySettings") val safetySettings: List<SafetySetting>? = null
+)
+
+/** Explicit Gemini safety configuration — block medium-and-above harm
+ * across all categories rather than relying on API defaults. */
+@JsonClass(generateAdapter = true)
+data class SafetySetting(
+    val category: String,
+    val threshold: String
+)
+
+fun defaultSafetySettings() = listOf(
+    SafetySetting("HARM_CATEGORY_HARASSMENT", "BLOCK_MEDIUM_AND_ABOVE"),
+    SafetySetting("HARM_CATEGORY_HATE_SPEECH", "BLOCK_MEDIUM_AND_ABOVE"),
+    SafetySetting("HARM_CATEGORY_SEXUALLY_EXPLICIT", "BLOCK_MEDIUM_AND_ABOVE"),
+    SafetySetting("HARM_CATEGORY_DANGEROUS_CONTENT", "BLOCK_MEDIUM_AND_ABOVE")
 )
 
 @JsonClass(generateAdapter = true)
@@ -138,6 +154,14 @@ object GeminiApiClient {
             return@withContext getOfflineBotanicalAdvice(prompt)
         }
 
+        // Release safety: shipped builds must route AI through the proxy
+        // (server-held key). Never call Google directly with an embedded
+        // API key in a release build — the key is extractable from the APK
+        // and the direct path bypasses server-side rate limiting.
+        if (!isProxyActive && !BuildConfig.DEBUG) {
+            return@withContext "AI features are temporarily unavailable. Please try again later."
+        }
+
         val requestKey = if (isProxyActive) {
             null
         } else {
@@ -176,7 +200,8 @@ object GeminiApiClient {
             generationConfig = GenerationConfig(temperature = 0.7f),
             systemInstruction = systemInstruction?.let {
                 Content(parts = listOf(Part(text = it)))
-            }
+            },
+            safetySettings = defaultSafetySettings()
         )
 
         try {
