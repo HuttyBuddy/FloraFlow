@@ -447,7 +447,7 @@ private data class BiophilicStepInfo(
 private fun getBiophilicStepInfo(category: String): BiophilicStepInfo {
     val upper = category.uppercase()
     return when {
-        upper.contains("LIGHT") || upper.contains("DAYLIGHT") -> BiophilicStepInfo("Maximize natural daylight", "Set your desk/sitting area within 5 feet of natural light to regulate sleep cycles and cortisol.", 1)
+        upper.contains("LIGHT") || upper.contains("DAYLIGHT") -> BiophilicStepInfo("Maximize natural daylight", "Set your desk/sitting area within 5 feet of natural light — daylight helps keep your daily rhythm on track.", 1)
         upper.contains("PLANT") || upper.contains("GREEN") -> BiophilicStepInfo("Add companion living plants", "Sow at least 2-3 distinct plants (e.g., ivy, bonsai) in your space to lower sympathetic nervous system arousal.", 1)
         upper.contains("ACOUSTIC") || upper.contains("SOUND") || upper.contains("WATER") || upper.contains("MASKING") -> BiophilicStepInfo("Introduce sound masking", "Place a tabletop moving water feature or play soothing botanical rain sounds to mask distracting background hums.", 2)
         upper.contains("MATERIAL") || upper.contains("TEXTURE") -> BiophilicStepInfo("Introduce natural textures", "Integrate materials like wood, cork, or a clay plant pot into your setup to stabilize stress baselines.", 1)

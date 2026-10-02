@@ -128,7 +128,7 @@ fun PaywallDialog(
                 ) {
                     PaywallFeatureRow(
                         title = "Unlimited AI Plant Counsel",
-                        subtitle = "Instant Leaf Doctor vision diagnosis & 24/7 care guidance"
+                        subtitle = "Photo plant health checks & 24/7 care guidance"
                     )
                     PaywallFeatureRow(
                         title = "Real-Time Spatial Lux Meter",

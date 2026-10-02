@@ -32,3 +32,6 @@ node_modules/
 /diff*.patch
 temp_original*.kt
 .gstack/
+
+# signing keys must never be tracked
+debug.keystore.base64

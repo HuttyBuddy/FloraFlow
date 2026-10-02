@@ -56,7 +56,7 @@ val faqs = listOf(
     FAQItem(
         id = 2,
         question = "What is the AI Plant Counsel and how can it help?",
-        answer = "The AI Plant Counsel is powered by Gemini and acts as your personal plant & space advisor. Tap 'Chat with AI Plant Counsel' at the top of any card to ask Dr. Julian about plant placement, natural light requirements, pest control, or companion synergy.",
+        answer = "The AI Plant Counsel is powered by Gemini and acts as your personal plant & space advisor. Tap 'Chat with AI Plant Counsel' at the top of any card to ask Julian about plant placement, natural light requirements, pest control, or companion synergy.",
         category = "AI Counsel"
     ),
     FAQItem(

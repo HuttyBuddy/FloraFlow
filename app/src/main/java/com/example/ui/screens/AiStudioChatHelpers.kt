@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.api.Content
 import com.example.ui.components.PlantImages
+import com.example.ui.viewmodel.AiReport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -137,7 +138,7 @@ fun ChatBubbleContent(
     ) {
         if (!isUser) {
             Text(
-                text = "DR. JULIAN GREENLEAF",
+                text = "JULIAN GREENLEAF · AI GARDEN ADVISOR",
                 fontSize = 9.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -248,6 +249,46 @@ fun ChatBubbleContent(
     }
 }
 
+/**
+ * GenAI policy: confirmation shown after an AI answer is reported. Gives the
+ * user an anonymous reference ID and a one-tap route to email it to support
+ * for human review. No message content is ever attached automatically.
+ */
+@Composable
+fun AiReportConfirmationDialog(
+    report: AiReport,
+    onEmailSupport: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Report recorded", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "Thanks — your report was recorded anonymously.",
+                    fontSize = 13.sp
+                )
+                Text(
+                    "Reference ID: ${report.id}",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "Want a person to review it? Email the reference ID to our support team — nothing else is sent unless you add it.",
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onEmailSupport) { Text("Email support") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Done") }
+        }
+    )
+}
 /**
  * GenAI policy: prominent disclosure shown before the first AI prompt or photo
  * is transmitted off-device. The user must acknowledge it to continue.

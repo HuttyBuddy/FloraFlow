@@ -59,6 +59,14 @@ data class ScreenRect(
     val centerY: Float get() = top + height / 2
 }
 
+/** Anonymous reference for an AI-answer report. Only the ID, reason, and
+ * timestamp leave the device unless the user emails the ID to support. */
+data class AiReport(
+    val id: String,
+    val reason: String,
+    val timestampUtc: String
+)
+
 /** Appended to every AI system instruction: the advisor must never give
  * medical or mental-health advice. General wellness information only. */
 private const val AI_MEDICAL_GUARDRAIL =
@@ -107,9 +115,18 @@ class GardenViewModel @JvmOverloads constructor(
     private val _showAiDisclosure = MutableStateFlow(false)
     val showAiDisclosure: StateFlow<Boolean> = _showAiDisclosure.asStateFlow()
 
+    // Message/photo held at the disclosure gate so it can be sent after the
+    // user acknowledges, instead of being silently dropped.
+    private var pendingAiMessage: String? = null
+    private var pendingAiImageBase64: String? = null
+    private var pendingAiImageMime: String? = null
+
     // GenAI policy: confirmation that a content report was recorded
     private val _aiReportSent = MutableStateFlow(false)
     val aiReportSent: StateFlow<Boolean> = _aiReportSent.asStateFlow()
+
+    private val _lastAiReport = MutableStateFlow<AiReport?>(null)
+    val lastAiReport: StateFlow<AiReport?> = _lastAiReport.asStateFlow()
 
     // Mock AR Lens Placement States
     private val _arPlacedPlants = MutableStateFlow<List<ArPlantPlacement>>(emptyList())
@@ -1697,19 +1714,43 @@ class GardenViewModel @JvmOverloads constructor(
     fun acknowledgeAiDisclosure() {
         sharedPrefs.edit { putBoolean("ai_disclosure_ack", true) }
         _showAiDisclosure.value = false
+        // Resend whatever the disclosure gate held back.
+        val pendingMsg = pendingAiMessage
+        val pendingImg = pendingAiImageBase64
+        val pendingMime = pendingAiImageMime
+        pendingAiMessage = null
+        pendingAiImageBase64 = null
+        pendingAiImageMime = null
+        if (pendingMsg != null || pendingImg != null) {
+            sendAiChatMessage(pendingMsg ?: "", pendingImg, pendingMime)
+        }
     }
 
     fun dismissAiDisclosure() {
         _showAiDisclosure.value = false
+        pendingAiMessage = null
+        pendingAiImageBase64 = null
+        pendingAiImageMime = null
     }
 
-    /** Records an in-app report against an AI answer. Only the reason category is
-     * logged — never the user's message or the AI text — so reports stay anonymous. */
+    /** Records an in-app report against an AI answer. Only the reason category
+     * and a generated reference ID are logged — never the user's message or
+     * the AI text — so reports stay anonymous unless the user chooses to
+     * email the reference ID to support for human review. */
     fun reportAiContent(reason: String) {
+        val id = "FF-" + System.currentTimeMillis().toString(36).uppercase() +
+            "-" + (1000..9999).random()
+        val utc = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).apply {
+            timeZone = java.util.TimeZone.getTimeZone("UTC")
+        }.format(java.util.Date())
         try {
-            val bundle = android.os.Bundle().apply { putString("reason", reason) }
+            val bundle = android.os.Bundle().apply {
+                putString("reason", reason)
+                putString("report_id", id)
+            }
             com.example.analytics.AnalyticsHelper.logEvent("ai_content_report", bundle)
         } catch (_: Exception) { /* analytics must never break the UI */ }
+        _lastAiReport.value = AiReport(id = id, reason = reason, timestampUtc = utc)
         _aiReportSent.value = true
     }
 
@@ -1717,12 +1758,60 @@ class GardenViewModel @JvmOverloads constructor(
         _aiReportSent.value = false
     }
 
+    fun consumeLastAiReport() {
+        _lastAiReport.value = null
+    }
+
+    // --- Privacy controls ---
+
+    fun isAnalyticsOptedOut(): Boolean =
+        sharedPrefs.getBoolean("analytics_opt_out", false)
+
+    fun setAnalyticsOptOut(optOut: Boolean) {
+        sharedPrefs.edit { putBoolean("analytics_opt_out", optOut) }
+        com.example.analytics.AnalyticsHelper.setCollectionEnabled(!optOut)
+    }
+
+    /** Permanently deletes all local user data: the Room database, all
+     * preferences, and cached files. The AI disclosure consent is cleared too,
+     * so it will be asked again. */
+    fun deleteAllUserData(onDone: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val db = database ?: GardenDatabase.getDatabase(application)
+                db.clearAllTables()
+            } catch (_: Exception) { }
+            try {
+                sharedPrefs.edit { clear() }
+            } catch (_: Exception) { }
+            try {
+                application.cacheDir.deleteRecursively()
+            } catch (_: Exception) { }
+            withContext(Dispatchers.Main) { onDone() }
+        }
+    }
+
+    /** Opens Google Play's subscription management page — Play is the source
+     * of truth for renewal dates and cancellation. */
+    fun openManageSubscription(context: android.content.Context) {
+        try {
+            val uri = billingManager.buildManageSubscriptionUri()
+            context.startActivity(
+                android.content.Intent(android.content.Intent.ACTION_VIEW, uri)
+            )
+        } catch (_: Exception) { }
+    }
+
     // --- Real-time Gemini Client interactions ---
     fun sendAiChatMessage(message: String, imageBytesBase64: String? = null, imageMimeType: String? = "image/jpeg") {
         if (message.isBlank() && imageBytesBase64 == null) return
         // GenAI policy: no prompt or photo may be transmitted before the user
-        // has acknowledged the AI disclosure.
+        // has acknowledged the AI disclosure. Hold the message/photo and send
+        // it automatically once they acknowledge.
         if (!hasAcknowledgedAiDisclosure()) {
+            pendingAiMessage = message
+            pendingAiImageBase64 = imageBytesBase64
+            pendingAiImageMime = imageMimeType
             _showAiDisclosure.value = true
             return
         }
@@ -1754,7 +1843,7 @@ class GardenViewModel @JvmOverloads constructor(
             val systemIns = if (_isSpaceDiagnosisMode.value) {
                 "You are the FloraFlow Space Diagnosis Assistant. Your goal is to guide the user through a friendly, step-by-step conversational audit of their room/space to determine its biophilic conditions.\n\n" +
                 "INSTRUCTIONS:\n" +
-                "1. If this is the start of the diagnosis (e.g. the user asks to run a detailed diagnosis), introduce yourself warmly as Dr. Julian and ask them about their space, specifically focusing on: Nature Views, Living Plants, Natural Light, Acoustic Calm, Natural Materials, Air & Ventilation, Organic Forms, Water Features, Sensory Richness, and Seasonal Awareness.\n" +
+                "1. If this is the start of the diagnosis (e.g. the user asks to run a detailed diagnosis), introduce yourself warmly as Julian and ask them about their space, specifically focusing on: Nature Views, Living Plants, Natural Light, Acoustic Calm, Natural Materials, Air & Ventilation, Organic Forms, Water Features, Sensory Richness, and Seasonal Awareness.\n" +
                 "2. Ask them questions one by one or in a friendly, conversational group so they do not feel overwhelmed.\n" +
                 "3. Once the user provides answers to all of these aspects, assess their space. Give them a biophilic score out of 20, map it to a zone (Green: 15-20, Yellow: 8-14, Red: <8), provide a brief analysis of their strengths/weaknesses, and suggest 3 highly specific biophilic improvements.\n" +
                 "4. CRITICAL: In your final assessment message, you MUST append the token [DIAGNOSIS_RESULT: score=X, lowest=CATEGORY1, CATEGORY2] at the very end of your response, where X is the score and the lowest categories are the names of the aspects they scored lowest on. You MUST choose category names EXACTLY from this list (spelling and punctuation matter): NATURE VIEWS, LIVING PLANTS, NATURAL LIGHT, ACOUSTIC CALM, NATURAL MATERIALS, AIR & VENTILATION, ORGANIC FORMS, WATER FEATURES, SENSORY RICHNESS, SEASONAL AWARENESS. Separate multiple categories with commas. Example: [DIAGNOSIS_RESULT: score=12, lowest=LIVING PLANTS, NATURAL LIGHT].\n" +

@@ -678,6 +678,7 @@ fun SuccessReceiptStep(
     activePlan: BillingPlan,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     val transactionId by viewModel.subscriptionTransactionId.collectAsStateWithLifecycle()
     val billingDate by viewModel.subscriptionBillingDate.collectAsStateWithLifecycle()
 
@@ -739,9 +740,18 @@ fun SuccessReceiptStep(
                 ReceiptItemRow(label = "Transaction Order ID", value = transactionId ?: "Synced from Google Play")
                 ReceiptItemRow(label = "Trial Period Entitlement", value = activePlan.trial)
                 ReceiptItemRow(label = "Payment Authorized price", value = "${activePlan.price} / ${activePlan.period}")
-                ReceiptItemRow(label = "Estimated Renewal Date", value = billingDate ?: "Next Month")
+                // Play owns the authoritative renewal date — this is a receipt
+                // estimate only. The button below opens Play's subscription center.
+                ReceiptItemRow(label = "Next Renewal (estimate)", value = billingDate ?: "See Google Play")
                 ReceiptItemRow(label = "Billing Status", value = "ACTIVE")
             }
+        }
+
+        TextButton(
+            onClick = { viewModel.openManageSubscription(context) },
+            modifier = Modifier.testTag("manage_subscription_button")
+        ) {
+            Text("Manage subscription on Google Play")
         }
 
         Spacer(modifier = Modifier.height(16.dp))

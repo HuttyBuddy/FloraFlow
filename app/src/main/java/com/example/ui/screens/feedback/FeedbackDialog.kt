@@ -158,7 +158,7 @@ fun FeedbackDialog(
 
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Help us cultivate a better therapeutic garden experience. Share your thoughts, report bugs, or suggest features!",
+                            text = "Help us cultivate a better, more calming garden experience. Share your thoughts, report bugs, or suggest features!",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -424,7 +424,7 @@ fun getRatingDescriptor(rating: Int): String {
         1 -> "🥀 Wilted: Having critical issues or blockers. Feeling extremely discouraged."
         2 -> "🍂 Stagnant: Below expectations, needs direct fertilization and improvements."
         3 -> "🌿 Growing: Performing adequately, but there are areas with room for cultivation."
-        4 -> "🌸 Blooming: Highly satisfying, therapeutic vibe is blooming beautifully."
+        4 -> "🌸 Blooming: Highly satisfying, calm vibe is blooming beautifully."
         5 -> "🌟 Thriving: Pure bliss! The botanical garden app is perfectly aligned with peace."
         else -> "Nurturing design ideas"
     }

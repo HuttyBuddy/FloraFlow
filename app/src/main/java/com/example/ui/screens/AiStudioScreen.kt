@@ -66,14 +66,14 @@ import kotlin.math.sin
 
 private val AI_SUGGESTIONS_PORTRAIT = listOf(
     "🌱 Suggest perfect companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
-    "🐛 Analyze yellowing leaves / plant pest diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
+    "🐛 Analyze yellowing leaves / plant pest diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as an effective remedy?",
     "🧘 Explore nature-based wellbeing" to "How can caring for and spending time in my green space support calm, focus, and a restorative daily routine?",
     "🔍 Run a conversational Space Diagnosis" to "I want to run a detailed Space Diagnosis of my environment."
 )
 
 private val AI_SUGGESTIONS_LANDSCAPE = listOf(
     "🌱 Suggest companion plant matches" to "Suggest highly compatible companion plants for an Indoor Area design. What thrives alongside Bonsai Juniper and Lavender?",
-    "🐛 Analyze yellowing leaves diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as a therapeutic cure?",
+    "🐛 Analyze yellowing leaves diagnosis" to "How do I diagnose yellowing speckled leaves on young plants, and what organic pesticides act as an effective remedy?",
     "🧘 Explore nature-based wellbeing" to "How can caring for and spending time in my green space support calm, focus, and a restorative daily routine?",
     "🔍 Run Space Diagnosis" to "I want to run a detailed Space Diagnosis of my environment."
 )
@@ -100,16 +100,8 @@ fun AiStudioScreen(
     // GenAI policy: disclosure gate + report confirmation
     val showAiDisclosure by viewModel.showAiDisclosure.collectAsStateWithLifecycle()
     val aiReportSent by viewModel.aiReportSent.collectAsStateWithLifecycle()
+    val lastAiReport by viewModel.lastAiReport.collectAsStateWithLifecycle()
     var reportDialogOpen by remember { mutableStateOf(false) }
-
-    LaunchedEffect(aiReportSent) {
-        if (aiReportSent) {
-            android.widget.Toast.makeText(
-                context, "Thanks — your report was recorded.", android.widget.Toast.LENGTH_SHORT
-            ).show()
-            viewModel.consumeAiReportSent()
-        }
-    }
 
     // Persisted trial quota (not session chat-history count) — matches the
     // actual gate in GardenViewModel.checkPremiumLimit, so clearing the chat
@@ -192,7 +184,7 @@ fun AiStudioScreen(
         val layout = activeLayout
         if (layout != null) {
             val msg = when (metricType) {
-                "soil_temp" -> "Dr. Julian, my current soil temperature is 70.9°F. Is this optimal for my '${layout.style}' garden in '${layout.climate}' climate? What biology-driven suggestions do you have to regulate it?"
+                "soil_temp" -> "Julian, my current soil temperature is 70.9°F. Is this optimal for my '${layout.style}' garden in '${layout.climate}' climate? What biology-driven suggestions do you have to regulate it?"
                 "moisture" -> {
                     val moistureVal = when (layout.style) {
                         "Desert", "Xeriscaping" -> "18%"
@@ -200,11 +192,11 @@ fun AiStudioScreen(
                         "Tropical" -> "75%"
                         else -> "52%"
                     }
-                    "Dr. Julian, my garden soil moisture is currently at $moistureVal. How does this level affect the transpiration and nutrient absorption for a '${layout.style}' styled space?"
+                    "Julian, my garden soil moisture is currently at $moistureVal. How does this level affect the transpiration and nutrient absorption for a '${layout.style}' styled space?"
                 }
                 "species" -> {
                     val plantsList = activePlants.joinToString(", ") { it.name }
-                    "Dr. Julian, I have these active species in my garden: [$plantsList]. Can you analyze their companion compatibility and physiological synergy?"
+                    "Julian, I have these active species in my garden: [$plantsList]. Can you analyze their companion compatibility and physiological synergy?"
                 }
                 else -> ""
             }
@@ -220,7 +212,7 @@ fun AiStudioScreen(
             title = { Text("Attach Plant Photo", fontWeight = FontWeight.Bold) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Select how you want to add a photo of your plant for Dr. Julian to analyze:")
+                    Text("Select how you want to add a photo of your plant for Julian to analyze:")
                     
                     Button(
                         onClick = {
@@ -301,7 +293,7 @@ fun AiStudioScreen(
         ) {
             Spacer(modifier = Modifier.height(4.dp))
 
-            // 1. Dr. Julian Greenleaf's Glowing Live Profile Header
+            // 1. Julian Greenleaf's Glowing Live Profile Header
             BotanistProfileHeader(
                 isAiLoading = isAiLoading,
                 aiStatus = aiStatus,
@@ -488,7 +480,7 @@ fun AiStudioScreen(
                             if (!isUser) {
                                 Image(
                                     painter = painterResource(id = R.drawable.julian_avatar),
-                                    contentDescription = "Dr. Julian Greenleaf",
+                                    contentDescription = "Julian Greenleaf",
                                     modifier = Modifier
                                         .padding(end = 8.dp, top = 2.dp)
                                         .size(32.dp)
@@ -846,7 +838,7 @@ fun AiStudioScreen(
                                     if (!isUser) {
                                         Image(
                                             painter = painterResource(id = R.drawable.julian_avatar),
-                                            contentDescription = "Dr. Julian Greenleaf",
+                                            contentDescription = "Julian Greenleaf",
                                             modifier = Modifier
                                                 .padding(end = 8.dp, top = 2.dp)
                                                 .size(32.dp)
@@ -1917,6 +1909,28 @@ fun NeuralLoadDashboardWidget(
                 reportDialogOpen = false
             },
             onDismiss = { reportDialogOpen = false }
+        )
+    }
+    // GenAI policy: report confirmation with a reference ID and a human-review route
+    if (aiReportSent && lastAiReport != null) {
+        AiReportConfirmationDialog(
+            report = lastAiReport!!,
+            onEmailSupport = {
+                val r = lastAiReport!!
+                val intent = com.example.support.buildSupportEmailIntent(
+                    subject = "FloraFlow AI report ${r.id}",
+                    body = com.example.support.aiReportEmailBody(r.id, r.reason, r.timestampUtc)
+                )
+                try {
+                    context.startActivity(intent)
+                } catch (_: Exception) { }
+                viewModel.consumeAiReportSent()
+                viewModel.consumeLastAiReport()
+            },
+            onDismiss = {
+                viewModel.consumeAiReportSent()
+                viewModel.consumeLastAiReport()
+            }
         )
     }
 }
