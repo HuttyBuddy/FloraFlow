@@ -139,6 +139,15 @@ class MainActivity : ComponentActivity() {
         var initialValidationActive by mutableStateOf(!startupMode.runsProductionStartup)
 
         setContent {
+            // In-app review prompt: fires at most once per version, only after
+            // genuine success moments (see GardenViewModel + ReviewHelper).
+            val activity = this
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                viewModel.reviewRequestEvent.collect {
+                    com.example.util.ReviewHelper.maybeRequestReview(activity)
+                }
+            }
+
             val showRestorativeValidationFlow by viewModel.showRestorativeValidationFlow.collectAsState()
             val isValidationActive = initialValidationActive || showRestorativeValidationFlow
             val isDarkThemeOverridden by viewModel.isDarkTheme.collectAsState()
@@ -205,10 +214,29 @@ class MainActivity : ComponentActivity() {
                 // Scaffold (and its previous BillingDialog instance) exists.
                 val showPaywallDialog by viewModel.showPaywallDialog.collectAsState()
 
+                // Real, Play-verified price + trial info for the main paywall —
+                // queried once so the paywall never advertises a price or trial
+                // that Play Console doesn't actually have configured.
+                var paywallMonthlyOffer by remember { mutableStateOf<com.example.billing.BillingManager.OfferInfo?>(null) }
+                var paywallAnnualOffer by remember { mutableStateOf<com.example.billing.BillingManager.OfferInfo?>(null) }
+                LaunchedEffect(Unit) {
+                    viewModel.billingManager.queryOfferDetails(
+                        listOf(
+                            com.example.billing.BillingManager.PRODUCT_MONTHLY,
+                            com.example.billing.BillingManager.PRODUCT_YEARLY
+                        )
+                    ) { offers ->
+                        paywallMonthlyOffer = offers[com.example.billing.BillingManager.PRODUCT_MONTHLY]
+                        paywallAnnualOffer = offers[com.example.billing.BillingManager.PRODUCT_YEARLY]
+                    }
+                }
+
                 com.example.ui.screens.paywall.PaywallDialog(
                     visible = showPaywallDialog,
                     onDismiss = { viewModel.dismissPaywall() },
-                    onSubscribe = { isAnnual -> viewModel.subscribePro(isAnnual) }
+                    onSubscribe = { isAnnual -> viewModel.subscribePro(isAnnual) },
+                    monthlyOffer = paywallMonthlyOffer,
+                    annualOffer = paywallAnnualOffer
                 )
 
                 BillingDialog(viewModel = viewModel)

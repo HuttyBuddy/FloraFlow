@@ -34,8 +34,8 @@ android {
     applicationId = "com.aistudio.dreamgardendesigner.fhqpvw"
     minSdk = 24
     targetSdk = 37
-    versionCode = 22
-    versionName = "9.0.1.3"
+    versionCode = 23
+    versionName = "9.0.1.4"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     manifestPlaceholders["automaticStartupEnabled"] = "true"
@@ -207,6 +207,9 @@ dependencies {
   implementation(libs.androidx.fragment.ktx)
   implementation(libs.play.billing)
   implementation(libs.play.billing.ktx)
+  // In-app review prompt at success moments (ratings drive listing conversion).
+  implementation(libs.play.review)
+  implementation(libs.play.review.ktx)
   implementation(libs.androidx.security.crypto)
   // QR codes burned into share cards, and Play Store install attribution for those shares.
   implementation(libs.zxing.core)

@@ -23,7 +23,23 @@ import java.util.concurrent.TimeUnit
 data class GenerateContentRequest(
     val contents: List<Content>,
     @Json(name = "generationConfig") val generationConfig: GenerationConfig? = null,
-    @Json(name = "systemInstruction") val systemInstruction: Content? = null
+    @Json(name = "systemInstruction") val systemInstruction: Content? = null,
+    @Json(name = "safetySettings") val safetySettings: List<SafetySetting>? = null
+)
+
+/** Explicit Gemini safety configuration — block medium-and-above harm
+ * across all categories rather than relying on API defaults. */
+@JsonClass(generateAdapter = true)
+data class SafetySetting(
+    val category: String,
+    val threshold: String
+)
+
+fun defaultSafetySettings() = listOf(
+    SafetySetting("HARM_CATEGORY_HARASSMENT", "BLOCK_MEDIUM_AND_ABOVE"),
+    SafetySetting("HARM_CATEGORY_HATE_SPEECH", "BLOCK_MEDIUM_AND_ABOVE"),
+    SafetySetting("HARM_CATEGORY_SEXUALLY_EXPLICIT", "BLOCK_MEDIUM_AND_ABOVE"),
+    SafetySetting("HARM_CATEGORY_DANGEROUS_CONTENT", "BLOCK_MEDIUM_AND_ABOVE")
 )
 
 @JsonClass(generateAdapter = true)
@@ -138,6 +154,14 @@ object GeminiApiClient {
             return@withContext getOfflineBotanicalAdvice(prompt)
         }
 
+        // Release safety: shipped builds must route AI through the proxy
+        // (server-held key). Never call Google directly with an embedded
+        // API key in a release build — the key is extractable from the APK
+        // and the direct path bypasses server-side rate limiting.
+        if (!isProxyActive && !BuildConfig.DEBUG) {
+            return@withContext "AI features are temporarily unavailable. Please try again later."
+        }
+
         val requestKey = if (isProxyActive) {
             null
         } else {
@@ -176,7 +200,8 @@ object GeminiApiClient {
             generationConfig = GenerationConfig(temperature = 0.7f),
             systemInstruction = systemInstruction?.let {
                 Content(parts = listOf(Part(text = it)))
-            }
+            },
+            safetySettings = defaultSafetySettings()
         )
 
         try {
@@ -220,7 +245,7 @@ object GeminiApiClient {
         val lower = prompt.lowercase()
         return when {
             lower.contains("yellow") || lower.contains("speckled") || lower.contains("pest") || lower.contains("cure") -> {
-                "🌱 **Dr. Julian's Diagnostic Analysis:**\n\n" +
+                "🌱 **Julian's Diagnostic Analysis:**\n\n" +
                 "Speckled, yellowing leaves on young plants typically indicate early-stage **spider mites** or **thrips** feeding on plant cell sap, or a soil nutrient lockup.\n\n" +
                 "**Organic Therapeutic Cures:**\n" +
                 "1. 🧴 **Cold-Pressed Neem Oil Spray:** Mix 1 tsp organic Neem Oil with 1/2 tsp gentle Castile soap in 1L warm water. Spray undersides of leaves weekly.\n" +
@@ -237,7 +262,7 @@ object GeminiApiClient {
                 "Great choices for indoor biophilic harmony include pairing **Monstera Deliciosa** with low-tier **Pothos** trailing vines and a vertical **Fiddle Leaf Fig**. These create a multi-layer air-purifying indoor sanctuary!"
             }
             else -> {
-                "🪴 **Dr. Julian's Biophilic Advice:**\n\n" +
+                "🪴 **Julian's Biophilic Advice:**\n\n" +
                 "Indoor plants thrive when light, airflow, and soil moisture are in rhythm. For optimal sanctuary growth, balance humidity around 50% and group complementary species like **Peace Lily**, **Snake Plant**, and **Pothos**!"
             }
         }

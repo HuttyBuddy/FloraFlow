@@ -86,7 +86,7 @@ fun PremiumUpsellScreen(
             )
             Spacer(modifier = Modifier.height(MaterialTheme.spacing.small))
             Text(
-                text = "Use your phone to plan and bring your biophilic space to life. Unlock premium eco-acoustic soundscapes and biophilic design neuroscience.",
+                text = "Use your phone to plan and bring your green space to life. Unlock premium nature soundscapes and personalized design guidance.",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -104,8 +104,8 @@ fun PremiumUpsellScreen(
                 verticalArrangement = Arrangement.spacedBy(MaterialTheme.spacing.medium)
             ) {
                 PremiumFeatureRow(
-                    title = "Eco-Acoustic Restoration Journal",
-                    description = "Immersive eco-acoustic binaural soundscapes & Neural Restoration Journal with dynamic stress metrics."
+                    title = "Nature Sounds Journal",
+                    description = "Immersive nature soundscapes & Restoration Journal with wellness insights."
                 )
                 PremiumFeatureRow(
                     title = "Gemini AI Advisor",
@@ -122,15 +122,23 @@ fun PremiumUpsellScreen(
     // Fall back to static placeholder copy only while the real Play offer is
     // unknown (loading, or debug mock mode) — never claim a trial length
     // that Play Console doesn't actually have configured.
-    val annualPrice = annualOffer?.formattedPrice ?: "$49.99 Yearly"
-    val annualTrialDays = 3
-    val annualTrialLabel = "$annualTrialDays-Day Free Trial, then $annualPrice"
+    val annualPrice = annualOffer?.formattedPrice ?: "$29.99 Yearly"
+    val annualTrialDays: Int? = annualOffer?.trialDays
+    val annualTrialLabel = if (annualTrialDays != null) {
+        "$annualTrialDays-Day Free Trial, then $annualPrice"
+    } else {
+        annualPrice
+    }
 
-    val monthlyPrice = monthlyOffer?.formattedPrice ?: "$4.99"
-    val monthlyTrialDays = 3
-    val monthlyTrialLabel = "$monthlyTrialDays-Day Free Trial, then $monthlyPrice/mo"
+    val monthlyPrice = monthlyOffer?.formattedPrice ?: "$3.99"
+    val monthlyTrialDays: Int? = monthlyOffer?.trialDays
+    val monthlyTrialLabel = if (monthlyTrialDays != null) {
+        "$monthlyTrialDays-Day Free Trial, then $monthlyPrice/mo"
+    } else {
+        "$monthlyPrice/mo"
+    }
 
-    val selectedTrialDays = if (selectAnnual) annualTrialDays else monthlyTrialDays
+    val selectedTrialDays: Int = if (selectAnnual) annualTrialDays ?: 0 else monthlyTrialDays ?: 0
 
     val ctaPricingCard = @Composable {
         Column(

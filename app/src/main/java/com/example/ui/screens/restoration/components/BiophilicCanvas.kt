@@ -21,7 +21,7 @@ import com.example.ui.components.graphics.dappledSunlightOverlay
 
 /**
  * BiophilicCanvas renders live, organic ambient visual graphics (light rays, foliage ripples,
- * pulsing sanctuary aura rings) synchronized with eco-acoustic playback.
+ * pulsing sanctuary aura rings) synchronized with soundscape playback.
  */
 @Composable
 fun BiophilicCanvas(

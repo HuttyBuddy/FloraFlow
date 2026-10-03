@@ -712,7 +712,7 @@ object ClimatePlants {
             isIndoor = true,
             funFacts = listOf(
                 "Lavender belongs to the mint family Lamiaceae.",
-                "Its scent is widely used in aromatherapy to reduce anxiety and improve sleep."
+                "Its scent is widely used in aromatherapy for relaxation."
             )
         ),
         PlantTemplate(

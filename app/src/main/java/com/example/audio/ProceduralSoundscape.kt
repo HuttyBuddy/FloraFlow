@@ -10,7 +10,7 @@ import kotlin.math.tanh
 import kotlin.random.Random
 
 /**
- * The generative eco-acoustic engine, shared by every surface that needs FloraFlow's sound.
+ * The generative ambient soundscape engine, shared by every surface that needs FloraFlow's sound.
  *
  * [SoundscapeService][com.example.ui.screens.restoration.SoundscapeService] renders these
  * generators in real time for playback; [OfflineSoundscapeRenderer] renders the exact same

@@ -47,6 +47,7 @@ fun SettingsDialog(
     var showRateDialog by remember { mutableStateOf(false) }
     var showPrivacy by remember { mutableStateOf(false) }
     var showTerms by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
 
     BasicAlertDialog(
         onDismissRequest = onDismiss,
@@ -145,7 +146,7 @@ fun SettingsDialog(
 
                     SettingsActionRow(
                         title = if (isPremium) "FloraFlow PRO Active ✨" else "Upgrade to FloraFlow PRO",
-                        subtitle = if (isPremium) "Your PRO features & AI recommendations are unlocked" else "Unlock 10Hz binaural soundscapes & deep AI room transforms",
+                        subtitle = if (isPremium) "Your PRO features & AI recommendations are unlocked" else "Unlock unlimited AI chats & nature soundscapes",
                         icon = Icons.Default.WorkspacePremium,
                         iconTint = MaterialTheme.extendedColors.premiumGold,
                         onClick = {
@@ -195,6 +196,22 @@ fun SettingsDialog(
                     )
 
                     SettingsActionRow(
+                        title = "Contact Support",
+                        subtitle = "Email us at ${com.example.support.SUPPORT_EMAIL}",
+                        icon = Icons.Default.Email,
+                        iconTint = MaterialTheme.colorScheme.secondary,
+                        onClick = {
+                            val intent = com.example.support.buildSupportEmailIntent(
+                                subject = "FloraFlow support",
+                                body = ""
+                            )
+                            try {
+                                context.startActivity(intent)
+                            } catch (_: Exception) { }
+                        }
+                    )
+
+                    SettingsActionRow(
                         title = "Replay App Tour",
                         subtitle = "Launch the walkthrough overlay again",
                         icon = Icons.Default.Explore,
@@ -206,7 +223,7 @@ fun SettingsDialog(
 
                     SettingsActionRow(
                         title = "Retake Restorative Corner Assessment",
-                        subtitle = "Recalculate your Neural Load score & space guidance",
+                        subtitle = "Recalculate your Space Wellness score & space guidance",
                         icon = Icons.Default.Eco,
                         iconTint = MaterialTheme.colorScheme.primary,
                         onClick = {
@@ -219,7 +236,7 @@ fun SettingsDialog(
                         val simulate30Days by viewModel.simulate30Days.collectAsState()
                         SettingsActionRow(
                             title = if (simulate30Days) "Disable 30-Day Simulation" else "Simulate 30 Days Elapsed",
-                            subtitle = "Toggle the monthly Neural Load audit reminder",
+                            subtitle = "Toggle the monthly wellness check reminder",
                             icon = Icons.Default.Timer,
                             iconTint = if (simulate30Days) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
                             onClick = {
@@ -283,6 +300,44 @@ fun SettingsDialog(
                     )
                 }
 
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+                // Privacy & data controls
+                Text(
+                    text = "Privacy & Data",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    var analyticsOptedOut by remember { mutableStateOf(viewModel.isAnalyticsOptedOut()) }
+                    SettingsSwitchRow(
+                        title = "Usage Analytics",
+                        subtitle = if (analyticsOptedOut)
+                            "Off — no usage data is collected"
+                        else
+                            "On — anonymous usage data helps improve the app",
+                        icon = Icons.Default.Analytics,
+                        checked = !analyticsOptedOut,
+                        onCheckedChange = { enabled ->
+                            viewModel.setAnalyticsOptOut(!enabled)
+                            analyticsOptedOut = !enabled
+                        }
+                    )
+
+                    SettingsActionRow(
+                        title = "Delete All My Data",
+                        subtitle = "Permanently erase gardens, logs, and settings from this device",
+                        icon = Icons.Default.DeleteForever,
+                        iconTint = MaterialTheme.colorScheme.error,
+                        onClick = { showDeleteConfirm = true }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(8.dp))
 
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -293,14 +348,14 @@ fun SettingsDialog(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "FloraFlow: Indoor Sanctuaries — Breathe life into every corner of your indoor space",
+                        text = "FloraFlow: Plant Care Planner",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                     Text(
-                        text = "v9.0.1.2 | HuttyBuddy",
+                        text = "v9.0.1.3 | HuttyBuddy",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
@@ -316,6 +371,40 @@ fun SettingsDialog(
         viewModel = viewModel
     )
 
+    if (showDeleteConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Delete all my data?", fontWeight = FontWeight.Bold) },
+            text = {
+                Text(
+                    "This permanently deletes your gardens, plants, logs, scores, and settings " +
+                        "from this device. Your Google Play subscription is not affected. " +
+                        "This cannot be undone."
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirm = false
+                        viewModel.deleteAllUserData {
+                            android.widget.Toast.makeText(
+                                context,
+                                "All data deleted.",
+                                android.widget.Toast.LENGTH_LONG
+                            ).show()
+                            onDismiss()
+                        }
+                    }
+                ) {
+                    Text("Delete everything", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
+            }
+        )
+    }
+
     LegalDialog(
         showPrivacy = showPrivacy,
         showTerms = showTerms,
@@ -324,6 +413,57 @@ fun SettingsDialog(
             showTerms = false
         }
     )
+}
+
+@Composable
+fun SettingsSwitchRow(
+    title: String,
+    subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconTint: Color = MaterialTheme.colorScheme.primary,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { onCheckedChange(!checked) }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(iconTint.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconTint,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
+    }
 }
 
 @Composable

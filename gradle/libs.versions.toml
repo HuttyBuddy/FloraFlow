@@ -43,6 +43,7 @@ secretsGradlePlugin = "2.0.1"
 arsceneview = "4.18.0"
 work = "2.9.1"
 billing = "9.0.0"
+playReview = "2.0.2"
 splashscreen = "1.0.1"
 fragment = "1.8.9"
 zxingCore = "3.5.3"
@@ -110,6 +111,8 @@ arsceneview = { group = "io.github.sceneview", name = "arsceneview", version.ref
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work" }
 play-billing = { group = "com.android.billingclient", name = "billing", version.ref = "billing" }
 play-billing-ktx = { group = "com.android.billingclient", name = "billing-ktx", version.ref = "billing" }
+play-review = { group = "com.google.android.play", name = "review", version.ref = "playReview" }
+play-review-ktx = { group = "com.google.android.play", name = "review-ktx", version.ref = "playReview" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxingCore" }
 play-install-referrer = { group = "com.android.installreferrer", name = "installreferrer", version.ref = "installReferrer" }
 

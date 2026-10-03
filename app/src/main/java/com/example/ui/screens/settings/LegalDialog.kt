@@ -115,7 +115,7 @@ fun LegalDialog(
 @Composable
 fun PrivacyPolicyContent() {
     Text(
-        text = "Last Updated: July 2026",
+        text = "Last Updated: October 2026",
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.secondary,
         modifier = Modifier.fillMaxWidth(),
@@ -123,28 +123,37 @@ fun PrivacyPolicyContent() {
     )
 
     SectionHeader("1. Information Collection")
-    ParagraphText("HuttyBuddy operates the FloraFlow application. Your custom garden designs, companion plant layouts, greenhouse cultivars, and therapeutic gardening logs are stored locally on your device in an encrypted SQLite database. We do not have access to or transmit this data to our servers.")
+    ParagraphText("HuttyBuddy operates the FloraFlow application. Your custom garden designs, companion plant layouts, greenhouse cultivars, and garden journals are stored locally on your device in an encrypted SQLite database. We do not have access to or transmit this data to our servers.")
 
     SectionHeader("2. Generative AI Consultations")
     ParagraphText("FloraFlow utilizes the Google Gemini API to provide real-time botanical consultations, companion matching suggestions, and seasonal care answers. When you prompt the AI Advisor:")
     BulletPoint("Your text prompts are sent securely to the Google Gemini API to compile answers.")
+    BulletPoint("If you attach a plant photo, it is sent with your prompt for analysis.")
+    BulletPoint("Before your first AI use, the app asks for your consent — nothing is sent until you agree.")
     BulletPoint("No personal identification data is attached to these requests.")
     BulletPoint("Your API interactions are governed by Google's standard Generative AI Privacy Terms.")
 
     SectionHeader("3. Third-Party Services")
-    ParagraphText("We employ Google Play Services to manage app distribution, licensing verification, and subscription status. We may also link to external botanical reference websites or use Google Gemini API for natural language queries.")
+    ParagraphText("We employ Google Play Services to manage app distribution, licensing verification, and subscription status. We may also link to external botanical reference websites or use Google Gemini API for natural language queries. We use Firebase Analytics and Crashlytics for anonymous usage analytics and crash reports (device identifiers, app interactions, feature usage); no assessment scores or personal content are transmitted. You can turn analytics off anytime in Settings > Usage Analytics. Weather data is fetched for the ZIP code you enter from Open-Meteo and Zippopotam (approximate location only).")
 
     SectionHeader("4. Data Security")
     ParagraphText("Since your data remains in secure sandboxed local storage, its safety relies on Android system permissions. We recommend keeping your device updated and backed up via Google Drive device backup.")
 
     SectionHeader("5. Children's Privacy")
     ParagraphText("Our Service does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from anyone.")
+
+    SectionHeader("6. Your Rights & Controls")
+    ParagraphText("You are in control of your data:")
+    BulletPoint("AI consent: the app asks for your consent before your first AI chat or photo analysis, and you can report any AI answer with the flag button under it.")
+    BulletPoint("Analytics opt-out: turn off usage analytics anytime in Settings > Usage Analytics.")
+    BulletPoint("Delete everything: Settings > Delete All My Data permanently erases your gardens, logs, scores, and settings from this device.")
+    BulletPoint("Contact: questions about privacy? Email huttybuddy20@gmail.com.")
 }
 
 @Composable
 fun TermsOfServiceContent() {
     Text(
-        text = "Last Updated: July 2026",
+        text = "Last Updated: October 2026",
         style = MaterialTheme.typography.labelSmall,
         color = MaterialTheme.colorScheme.secondary,
         modifier = Modifier.fillMaxWidth(),
@@ -158,7 +167,7 @@ fun TermsOfServiceContent() {
     ParagraphText("We grant you a personal, non-transferable, non-exclusive license to use the app for personal, non-commercial gardening, landscaping, and mindfulness tracking. You must not decompile, reverse engineer, or redistribute app binaries.")
 
     SectionHeader("3. Generative AI & Consultations")
-    ParagraphText("The AI Advisor (Dr. Greenleaf) is a botanical assistant powered by large language models. The information is provided for general guidance, landscaping ideas, and mindfulness tracking. It does NOT constitute certified agricultural or structural engineering advice.")
+    ParagraphText("The AI Advisor (Julian Greenleaf) is a botanical assistant powered by large language models. The information is provided for general guidance, landscaping ideas, and mindfulness tracking. It does NOT constitute certified agricultural, structural engineering, or medical advice. You can report any AI answer with the flag button underneath it.")
 
     SectionHeader("4. Subscriptions and Payments")
     ParagraphText("Certain features are locked behind a FloraFlow PRO subscription tier. Subscriptions are billed through Google Play billing services and are subject to Google Play store terms and refund policies.")

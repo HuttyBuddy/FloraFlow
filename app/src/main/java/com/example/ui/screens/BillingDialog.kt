@@ -56,19 +56,19 @@ fun BillingDialog(
     val tiers = listOf(
         BillingPlan(
             name = "FloraFlow PRO Monthly",
-            price = "$4.99",
+            price = "$3.99",
             period = "month",
             trial = "3-Day Free Trial",
-            description = "Unlocks unlimited Gemini-Powered AI advice, full Neural Restoration Journal access, and synthesized brainwave soundscapes.",
+            description = "Unlocks unlimited Gemini-powered AI advice, full Restoration Journal access, and the complete nature soundscape library.",
             isPopular = false,
             isAnnual = false
         ),
         BillingPlan(
             name = "FloraFlow PRO Annual",
-            price = "$49.99 Yearly",
+            price = "$29.99 Yearly",
             period = "",
             trial = "3-Day Free Trial",
-            description = "Save 20%! Unlocks unlimited Gemini-Powered AI advice, full Eco-Acoustic journal chimes, stress metric logs, and advanced layouts.",
+            description = "Save 20%! Unlocks unlimited Gemini-powered AI advice, the full nature soundscape library, wellness logs, and advanced layouts.",
             isPopular = true,
             isAnnual = true
         )
@@ -678,6 +678,7 @@ fun SuccessReceiptStep(
     activePlan: BillingPlan,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     val transactionId by viewModel.subscriptionTransactionId.collectAsStateWithLifecycle()
     val billingDate by viewModel.subscriptionBillingDate.collectAsStateWithLifecycle()
 
@@ -739,9 +740,18 @@ fun SuccessReceiptStep(
                 ReceiptItemRow(label = "Transaction Order ID", value = transactionId ?: "Synced from Google Play")
                 ReceiptItemRow(label = "Trial Period Entitlement", value = activePlan.trial)
                 ReceiptItemRow(label = "Payment Authorized price", value = "${activePlan.price} / ${activePlan.period}")
-                ReceiptItemRow(label = "Automatic Renewal Date", value = billingDate ?: "Next Month")
+                // Play owns the authoritative renewal date — this is a receipt
+                // estimate only. The button below opens Play's subscription center.
+                ReceiptItemRow(label = "Next Renewal (estimate)", value = billingDate ?: "See Google Play")
                 ReceiptItemRow(label = "Billing Status", value = "ACTIVE")
             }
+        }
+
+        TextButton(
+            onClick = { viewModel.openManageSubscription(context) },
+            modifier = Modifier.testTag("manage_subscription_button")
+        ) {
+            Text("Manage subscription on Google Play")
         }
 
         Spacer(modifier = Modifier.height(16.dp))

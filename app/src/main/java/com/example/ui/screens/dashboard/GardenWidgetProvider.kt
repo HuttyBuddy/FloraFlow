@@ -56,13 +56,13 @@ class GardenWidgetProvider : AppWidgetProvider() {
                     in 8..14 -> "Yellow Zone"
                     else -> "Red Zone"
                 }
-                "Neural Load: $effectiveScore/20 ($zone)"
+                "Wellness Score: $effectiveScore/20 ($zone)"
             } else {
-                "Neural Load: Not Taken"
+                "Wellness Score: Not Taken"
             }
 
             val isAssessmentSkipped = appPrefs.getBoolean("assessment_skipped", false)
-            val finalNeuralStr = if (isAssessmentSkipped && effectiveScore == null) "Neural Load: Skipped" else neuralStr
+            val finalNeuralStr = if (isAssessmentSkipped && effectiveScore == null) "Wellness Score: Skipped" else neuralStr
 
             val step1 = appPrefs.getBoolean("step_1_completed", false)
             val step2 = appPrefs.getBoolean("step_2_completed", false)

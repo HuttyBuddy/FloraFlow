@@ -319,7 +319,7 @@ fun MindfulCareRoutinesSection(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Routine Complete! Restored +15 NRI",
+                                    text = "Routine Complete! +15 pts",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFA8E6CF)

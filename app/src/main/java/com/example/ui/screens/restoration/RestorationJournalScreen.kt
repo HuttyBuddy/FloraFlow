@@ -5,6 +5,7 @@ import android.widget.Toast
 import com.example.ui.screens.restoration.components.BiophilicCanvas
 import com.example.ui.screens.restoration.components.MindfulCareRoutinesSection
 import com.example.ui.screens.restoration.components.MentalWellnessDigestSection
+import com.example.ui.screens.dashboard.components.calculateStreak
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
@@ -92,6 +93,7 @@ fun RestorationJournalScreen(
     val baseFreq by viewModel.baseFrequency.collectAsStateWithLifecycle()
     val diffFreq by viewModel.diffFrequency.collectAsStateWithLifecycle()
     val restorationLogs by viewModel.allRestorationLogs.collectAsStateWithLifecycle()
+    val moodLogs by viewModel.allMoodLogs.collectAsStateWithLifecycle()
     val isPremium by viewModel.isPremium.collectAsStateWithLifecycle()
     val restorationTrialCount by viewModel.restorationTrialCount.collectAsStateWithLifecycle()
     val sleepTimerEndTime by viewModel.sleepTimerEndTime.collectAsStateWithLifecycle()
@@ -171,8 +173,8 @@ fun RestorationJournalScreen(
     val tracks = listOf(
         SoundscapeTrackInfo("Alpha Focus", "Forest Breeze 🍃", 200f, 10f, "A living forest breeze with hand-struck wind chimes, under Alpha waves (10Hz) for alert, relaxed focus. Generated live — it never loops or repeats."),
         SoundscapeTrackInfo("Theta Meditate", "Gentle Rain 🌧️", 200f, 6f, "Soft rainfall with droplets scattered around you, under Theta waves (6Hz) for deep visualization and mental stillness. Generated live — it never loops or repeats."),
-        SoundscapeTrackInfo("Delta Sleep", "Ocean Waves 🌊", 150f, 2.5f, "Slow ocean swells breaking in the distance, under Delta waves (2.5Hz) for physical healing and deep sleep. Generated live — it never loops or repeats."),
-        SoundscapeTrackInfo("Gamma Focus", "Pine Mountain Canopy 🌲", 250f, 40f, "High canopy mountain wind with rustling pine needles, under Gamma waves (40Hz) for peak mental clarity. Generated live — it never loops or repeats."),
+        SoundscapeTrackInfo("Delta Sleep", "Ocean Waves 🌊", 150f, 2.5f, "Slow ocean swells breaking in the distance, under Delta waves (2.5Hz) for deep rest and sleep. Generated live — it never loops or repeats."),
+        SoundscapeTrackInfo("Gamma Focus", "Pine Mountain Canopy 🌲", 250f, 40f, "High canopy mountain wind with rustling pine needles, under Gamma waves (40Hz) for focused energy. Generated live — it never loops or repeats."),
         SoundscapeTrackInfo("Alpha Calm", "Bamboo Wind & Stream 🎋", 180f, 8.5f, "A gentle flowing mountain stream with hollow bamboo taps, under Alpha waves (8.5Hz) for calm grounding. Generated live — it never loops or repeats.")
     )
 
@@ -211,7 +213,7 @@ fun RestorationJournalScreen(
                         color = Color(0xFFA8E6CF)
                     )
                     Text(
-                        text = "Eco-Acoustics & Sensory Mindfulness",
+                        text = "Nature Sounds & Sensory Mindfulness",
                         fontSize = 13.sp,
                         color = Color(0xFF81C784).copy(alpha = 0.7f)
                     )
@@ -290,12 +292,27 @@ fun RestorationJournalScreen(
             if (activeSectionTab == 1) {
                 MindfulCareRoutinesSection(
                     onCompleteRoutine = { title, duration, startMood, endMood ->
-                        Toast.makeText(context, "Completed: $title (+15 NRI)", Toast.LENGTH_LONG).show()
+                        Toast.makeText(context, "Completed: $title (+15 pts)", Toast.LENGTH_LONG).show()
                     },
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
             } else if (activeSectionTab == 2) {
-                MentalWellnessDigestSection(modifier = Modifier.padding(vertical = 8.dp))
+                // Weekly digest from real activity — no fabricated stats.
+                val weekAgo = remember { System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L }
+                val sessionsThisWeek = remember(restorationLogs) {
+                    restorationLogs.count { it.timestamp >= weekAgo }
+                }
+                val totalCareMinutes = remember(moodLogs) {
+                    moodLogs.filter { it.timestamp >= weekAgo }.sumOf { it.activityMinutes }
+                }
+                val digestStreak = remember(moodLogs) { calculateStreak(moodLogs) }
+                MentalWellnessDigestSection(
+                    streakDays = digestStreak,
+                    avgRestorationScore = nriScore,
+                    totalCareMinutes = totalCareMinutes,
+                    sessionsThisWeek = sessionsThisWeek,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 if (activeLayout == null || activePlants.isEmpty()) {
                     EmptyStateCard()
@@ -330,14 +347,14 @@ fun RestorationJournalScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                text = "Eco-Acoustic Soundscapes",
+                                text = "Nature Soundscapes",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFA8E6CF),
                                 modifier = Modifier.align(Alignment.Start)
                             )
                             Text(
-                                text = "Living nature scenes generated in real time, layered with binaural brainwave tones",
+                                text = "Living nature scenes generated in real time, layered with binaural tones",
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.5f),
                                 modifier = Modifier
@@ -423,7 +440,7 @@ fun RestorationJournalScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("🧠 Binaural brainwaves", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                                    Text("🎧 Binaural tones", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
                                     Text("${(binauralVol * 100).toInt()}%", fontSize = 12.sp, color = Color(0xFFA8E6CF))
                                 }
                                 Slider(
@@ -472,7 +489,7 @@ fun RestorationJournalScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text("🌀 Brainwave Frequency ($brainwaveState)", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                                    Text("🌀 Tone Frequency ($brainwaveState)", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
                                     Text(String.format(java.util.Locale.US, "%.1f Hz", diffFreq), fontSize = 12.sp, color = Color(0xFFA8E6CF))
                                 }
                                 Slider(
@@ -663,9 +680,16 @@ fun RestorationJournalScreen(
                                 color = Color(0xFFA8E6CF)
                             )
                             Text(
-                                text = "Complete these exercises to boost your Neural Restoration Index.",
+                                text = "Complete these exercises to boost your Restoration Score.",
                                 fontSize = 12.sp,
                                 color = Color.White.copy(alpha = 0.5f),
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                            // Health policy: general-wellness disclaimer
+                            Text(
+                                text = "General wellness information only — not medical advice.",
+                                fontSize = 10.sp,
+                                color = Color.White.copy(alpha = 0.4f),
                                 modifier = Modifier.padding(bottom = 12.dp)
                             )
 
@@ -793,7 +817,7 @@ fun RestorationJournalScreen(
                                       textAlign = TextAlign.Center
                                   )
                                   Text(
-                                      text = "You have completed your 3 free trial sessions. Upgrade to FloraFlow PRO for unlimited Forest Breeze, Gentle Rain & Ocean Wave sessions — living soundscapes that never loop — plus sleep timer fade-outs and neural restoration tracking!",
+                                      text = "You have completed your 3 free trial sessions. Upgrade to FloraFlow PRO for unlimited Forest Breeze, Gentle Rain & Ocean Wave sessions — living soundscapes that never loop — plus sleep timer fade-outs and Restoration Score tracking!",
                                       fontSize = 12.sp,
                                       color = Color.White.copy(alpha = 0.75f),
                                       textAlign = TextAlign.Center,
@@ -936,13 +960,13 @@ fun NriGaugeCard(
 ) {
     val ratingText = when {
         nriScore >= 75 -> "Optimal Restoration Potential"
-        nriScore >= 50 -> "Moderate Cognitive Recovery"
+        nriScore >= 50 -> "Moderate Restoration"
         else -> "Mild Biophilic Restoration"
     }
 
     val ratingDesc = when {
-        nriScore >= 75 -> "Your layout possesses excellent diversity and synergy, perfect for stress recovery and focus."
-        nriScore >= 50 -> "Adding more unique companion plant varieties can boost cognitive restoration properties."
+        nriScore >= 75 -> "Your layout has excellent diversity and synergy — great for unwinding and focus."
+        nriScore >= 50 -> "Adding more unique companion plant varieties can boost your space's restorative feel."
         else -> "Place more companion synergy pairs next to each other to lower sensory fatigue."
     }
 
@@ -968,10 +992,16 @@ fun NriGaugeCard(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Neural Restoration Index (NRI)",
+                text = "Restoration Score",
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = Color(0xFFA8E6CF)
+            )
+            // Health policy: general-wellness disclaimer on the Restoration Score gauge
+            Text(
+                text = "A general wellness score — not a medical measurement.",
+                fontSize = 10.sp,
+                color = Color.White.copy(alpha = 0.4f)
             )
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -1346,7 +1376,7 @@ fun NriHistoryChart(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Stress Relief Progress (NRI History)",
+                text = "Stress Relief Progress (Score History)",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFFA8E6CF),

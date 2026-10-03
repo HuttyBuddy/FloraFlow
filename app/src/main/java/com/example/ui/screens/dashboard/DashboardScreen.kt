@@ -372,7 +372,7 @@ fun DashboardScreen(
                         color = MaterialTheme.colorScheme.onPrimary
                     )
                     Text(
-                        text = "Let Dr. Julian guide you through an audit of the state of your biophilic space",
+                        text = "Let Julian guide you through an audit of the state of your biophilic space",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f)
                     )
