@@ -1223,6 +1223,45 @@ fun AiStudioScreen(
             }
         }
     }
+
+    // GenAI policy: first-use disclosure + per-answer reporting
+    if (showAiDisclosure) {
+        AiDisclosureDialog(
+            onAcknowledge = { viewModel.acknowledgeAiDisclosure() },
+            onDismiss = { viewModel.dismissAiDisclosure() }
+        )
+    }
+    if (reportDialogOpen) {
+        ReportAiContentDialog(
+            onSubmit = { reason ->
+                viewModel.reportAiContent(reason)
+                reportDialogOpen = false
+            },
+            onDismiss = { reportDialogOpen = false }
+        )
+    }
+    // GenAI policy: report confirmation with a reference ID and a human-review route
+    if (aiReportSent && lastAiReport != null) {
+        AiReportConfirmationDialog(
+            report = lastAiReport!!,
+            onEmailSupport = {
+                val r = lastAiReport!!
+                val intent = com.example.support.buildSupportEmailIntent(
+                    subject = "FloraFlow AI report ${r.id}",
+                    body = com.example.support.aiReportEmailBody(r.id, r.reason, r.timestampUtc)
+                )
+                try {
+                    context.startActivity(intent)
+                } catch (_: Exception) { }
+                viewModel.consumeAiReportSent()
+                viewModel.consumeLastAiReport()
+            },
+            onDismiss = {
+                viewModel.consumeAiReportSent()
+                viewModel.consumeLastAiReport()
+            }
+        )
+    }
 }
 
 @Composable
@@ -1893,45 +1932,6 @@ fun NeuralLoadDashboardWidget(
                 }
             }
         }
-    }
-
-    // GenAI policy: first-use disclosure + per-answer reporting
-    if (showAiDisclosure) {
-        AiDisclosureDialog(
-            onAcknowledge = { viewModel.acknowledgeAiDisclosure() },
-            onDismiss = { viewModel.dismissAiDisclosure() }
-        )
-    }
-    if (reportDialogOpen) {
-        ReportAiContentDialog(
-            onSubmit = { reason ->
-                viewModel.reportAiContent(reason)
-                reportDialogOpen = false
-            },
-            onDismiss = { reportDialogOpen = false }
-        )
-    }
-    // GenAI policy: report confirmation with a reference ID and a human-review route
-    if (aiReportSent && lastAiReport != null) {
-        AiReportConfirmationDialog(
-            report = lastAiReport!!,
-            onEmailSupport = {
-                val r = lastAiReport!!
-                val intent = com.example.support.buildSupportEmailIntent(
-                    subject = "FloraFlow AI report ${r.id}",
-                    body = com.example.support.aiReportEmailBody(r.id, r.reason, r.timestampUtc)
-                )
-                try {
-                    context.startActivity(intent)
-                } catch (_: Exception) { }
-                viewModel.consumeAiReportSent()
-                viewModel.consumeLastAiReport()
-            },
-            onDismiss = {
-                viewModel.consumeAiReportSent()
-                viewModel.consumeLastAiReport()
-            }
-        )
     }
 }
 

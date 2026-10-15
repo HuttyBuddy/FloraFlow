@@ -78,7 +78,7 @@ private const val AI_MEDICAL_GUARDRAIL =
 
 class GardenViewModel @JvmOverloads constructor(
     application: Application,
-    database: GardenDatabase? = null,
+    private val database: GardenDatabase? = null,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : AndroidViewModel(application) {
 
@@ -1777,17 +1777,18 @@ class GardenViewModel @JvmOverloads constructor(
      * so it will be asked again. */
     fun deleteAllUserData(onDone: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
+            val app = getApplication<Application>()
             try {
-                val db = database ?: GardenDatabase.getDatabase(application)
+                val db = database ?: GardenDatabase.getDatabase(app)
                 db.clearAllTables()
             } catch (_: Exception) { }
             try {
                 sharedPrefs.edit { clear() }
             } catch (_: Exception) { }
             try {
-                application.cacheDir.deleteRecursively()
+                app.cacheDir.deleteRecursively()
             } catch (_: Exception) { }
-            withContext(Dispatchers.Main) { onDone() }
+            kotlinx.coroutines.withContext(Dispatchers.Main) { onDone() }
         }
     }
 
