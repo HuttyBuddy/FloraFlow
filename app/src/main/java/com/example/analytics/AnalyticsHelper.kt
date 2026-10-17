@@ -3,9 +3,11 @@ package com.example.analytics
 import android.content.Context
 import android.os.Bundle
 import com.google.firebase.analytics.FirebaseAnalytics
+import androidx.annotation.VisibleForTesting
 
 object AnalyticsHelper {
-    private var firebaseAnalytics: FirebaseAnalytics? = null
+    @VisibleForTesting
+    internal var firebaseAnalytics: FirebaseAnalytics? = null
 
     fun initialize(context: Context) {
         if (firebaseAnalytics == null) {
