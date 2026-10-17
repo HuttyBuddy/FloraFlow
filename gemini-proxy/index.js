@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const express = require('express');
 const axios = require('axios');
 const dotenv = require('dotenv');
@@ -39,7 +40,18 @@ function requireAppSecret(req, res, next) {
         return res.status(500).json({ error: 'Server configuration error: APP_SHARED_SECRET not set' });
     }
     const provided = req.header('X-App-Secret');
-    if (provided !== APP_SHARED_SECRET) {
+    const providedStr = typeof provided === 'string' ? provided : '';
+    const expectedBuffer = Buffer.from(APP_SHARED_SECRET);
+    const providedBuffer = Buffer.from(providedStr);
+
+    let isMatch = true;
+    if (providedBuffer.length !== expectedBuffer.length) {
+        isMatch = false;
+    }
+
+    const compareBuffer = isMatch ? providedBuffer : expectedBuffer;
+
+    if (!crypto.timingSafeEqual(compareBuffer, expectedBuffer) || !isMatch) {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     next();
