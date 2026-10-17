@@ -187,7 +187,11 @@ class CareScheduler(
                 .getAppWidgetIds(android.content.ComponentName(context, GardenWidgetProvider::class.java))
             widgetIntent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
             context.sendBroadcast(widgetIntent)
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            if (com.example.BuildConfig.DEBUG) {
+                Log.e("CareScheduler", "Failed to update home screen widgets", e)
+            }
+        }
     }
 
     private fun getWateringIntervalDays(wateringNeeds: String): Int {
