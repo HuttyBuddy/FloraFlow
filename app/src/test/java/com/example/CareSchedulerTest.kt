@@ -16,6 +16,8 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import android.content.ContextWrapper
+import android.content.Intent
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -130,5 +132,26 @@ class CareSchedulerTest {
         val expectedNextDue = System.currentTimeMillis() + TimeUnit.DAYS.toMillis(10)
         // Check next due time is approximately in 10 days
         assertTrue(nextTask.dueDate >= expectedNextDue - TimeUnit.MINUTES.toMillis(5))
+    }
+
+    @Test
+    fun testSyncCareSchedulesIgnoresBroadcastException() = runTest {
+        // Create a custom ContextWrapper that throws an exception when sendBroadcast is called
+        val contextWrapper = object : ContextWrapper(context) {
+            override fun sendBroadcast(intent: Intent?) {
+                throw RuntimeException("Simulated broadcast exception")
+            }
+        }
+
+        // Instantiate CareScheduler with the custom context
+        val failingBroadcastScheduler = CareScheduler(contextWrapper, gardenRepository, weatherRepository)
+
+        // This should not crash despite sendBroadcast throwing an exception
+        try {
+            failingBroadcastScheduler.syncCareSchedules()
+            // If we get here, the test passed because the exception was caught in CareScheduler
+        } catch (e: Exception) {
+            org.junit.Assert.fail("Exception should have been caught inside syncCareSchedules(): ${e.message}")
+        }
     }
 }
