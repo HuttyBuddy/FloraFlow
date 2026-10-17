@@ -1,4 +1,4 @@
-## 2024-07-20 - Sensitive Data Exposure via Logging
-**Vulnerability:** Application logs were exposing internal API state and potential failure messages unrestrictedly.
-**Learning:** Even diagnostic logs can leak sensitive backend URL parameters or state configurations if they aren't stripped from production builds.
-**Prevention:** Always wrap diagnostic `Log.e` or `Log.d` statements with `if (BuildConfig.DEBUG)` using the application's BuildConfig to ensure they are compiled out or skipped in release builds.
+## 2025-02-28 - Secure Logging Configuration
+**Vulnerability:** Sensitive error messages were being logged to logcat in production builds via `Log.d` and `Log.e` in background workers.
+**Learning:** Background workers and viewmodels often contain exception handling that logs full error details for debugging. If left unguarded, this leaks internal application state, stack traces, or potentially user data into the system log.
+**Prevention:** Always wrap potentially sensitive Android `Log` statements in `if (com.example.BuildConfig.DEBUG)` checks to ensure they are stripped from release builds, as Android's default ProGuard rules do not automatically remove all log calls.
